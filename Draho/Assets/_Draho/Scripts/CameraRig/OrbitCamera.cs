@@ -38,7 +38,7 @@ namespace Draho.CameraRig
 
         [Header("Climbing")]
         [Tooltip("While the cat climbs, the camera moves back and looks more level, so the wall does not fill the view.")]
-        [SerializeField] float climbDistance = 2.1f;
+        [SerializeField] float climbDistance = 1.7f;
         [SerializeField] float climbPitch = 6f;
         [SerializeField] float climbFocusHeight = 0.35f;
 

@@ -24,9 +24,9 @@ namespace Draho.World
         [Header("Senses (m)")]
         [SerializeField] float hearRunning = 4f;
         [SerializeField] float hearWalking = 2.2f;
-        [SerializeField] float hearSneaking = 0.7f;
+        [SerializeField] float hearSneaking = 0.6f;
         [SerializeField] float seeAlways = 0.45f;
-        [SerializeField] float stalkRadius = 1f;
+        [SerializeField] float stalkRadius = 1.3f;
 
         [Header("Moves")]
         [SerializeField] float flySpeed = 3.5f;
@@ -175,7 +175,8 @@ namespace Draho.World
                 : cat.Speed < 0.05f ? seeAlways
                 : cat.Speed > cat.Stats.walkSpeed * 1.5f ? hearRunning
                 : hearWalking;
-            if (cat.IsAirborne || cat.IsClimbing) radius = Mathf.Max(radius, hearWalking);
+            // A landing is loud (not the small drop when the cat stands up from a crouch).
+            if ((cat.IsAirborne && cat.VerticalVelocity < -1.5f) || cat.IsClimbing) radius = Mathf.Max(radius, hearWalking);
             return distance < Mathf.Max(radius, seeAlways);
         }
 

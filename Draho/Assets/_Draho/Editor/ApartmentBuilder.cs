@@ -678,7 +678,7 @@ namespace Draho.EditorTools
             0 => new Color(0.13f, 0.27f, 0.11f),
             1 => new Color(0.18f, 0.34f, 0.13f),
             2 => new Color(0.24f, 0.42f, 0.16f),
-            _ => new Color(0.33f, 0.48f, 0.2f), // young leaves
+            _ => new Color(0.28f, 0.43f, 0.17f), // young leaves
         });
 
         static Texture2D BrickTexture() => MakeTexture("Bricks.png", 256, (x, y, size) =>

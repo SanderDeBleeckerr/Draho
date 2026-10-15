@@ -105,7 +105,7 @@ const steps = {
     ['03_duck', 'duck', ''],
     ['04_sneak', 'move', '0,1,0,3'],
     ['05_sneak_more', 'move', '0,1,0,3'],
-    ['06_sneak_close', 'move', '0,1,0,2'],
+    ['06_sneak_close', 'move', '0,1,0,3.5'],
     ['07_stand', 'duck', ''],
     ['08_run_at_birds', 'move', '0,1,1,1.5'],
     ['09_birds_up', 'wait', '1.5'],

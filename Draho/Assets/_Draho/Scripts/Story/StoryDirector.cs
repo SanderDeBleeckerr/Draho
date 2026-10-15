@@ -10,7 +10,7 @@ namespace Draho.Story
     /// Chapter 1, "The scratching sound": a list of story beats. Each beat shows a line and a goal,
     /// and ends when its goal is done.
     /// Test hooks in the web build URL: ?beat=2 starts at beat 2, ?at=6.5,1.2 puts the cat at x,z,
-    /// ?at=6.5,1.2,90 also turns it (degrees, 0 = north, 90 = east).
+    /// ?at=6.5,1.2,90 also turns it (degrees, 0 = north, 90 = east), ?at=-7,-4,180,5.8 also sets the height.
     /// </summary>
     public class StoryDirector : MonoBehaviour
     {
@@ -101,14 +101,32 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The trunk is too thin higher up. But at the end of the garden, ivy hangs down the old wall. A ladder for cats.",
+                    Story = "The trunk is too thin higher up. But at the end of the garden, ivy grows up the old wall. A ladder for cats.",
                     Goal = "Walk up to the ivy, then hold your thumb in the middle of the stick to climb.",
-                    // At the top, not halfway: the end text must not cover the climb.
                     Done = () => cat.IsClimbing && cat.transform.position.y > 2.6f,
                 },
                 new Beat
                 {
-                    Story = "From up here Drahomil sees the whole garden. End of chapter 1. Thank you for playing!",
+                    Story = "End of chapter 1! But the ivy does not stop here. It goes all the way up to the roof.",
+                    Goal = "Keep holding: climb to the top and pull yourself onto the roof.",
+                    Done = () => cat.IsGrounded && cat.transform.position.y > 6f,
+                },
+                new Beat
+                {
+                    Story = "Chapter 2: The Rooftops. Warm gravel, chimneys, and the whole block below. Nobody comes up here. Except cats.",
+                    Goal = "Find the drainpipe on the high wall. Climb it to the highest roof.",
+                    Done = () => cat.IsGrounded && cat.transform.position.y > 8.4f,
+                },
+                new Beat
+                {
+                    Story = "The highest point of the block. Drahomil can see the garden, the maple and the blackbirds, all very small.",
+                    Goal = "Find a way down to the low roof at the back.",
+                    Done = () => cat.IsGrounded && cat.transform.position.y > 3.5f && cat.transform.position.y < 4f
+                                 && cat.transform.position.z < -11f,
+                },
+                new Beat
+                {
+                    Story = "End of chapter 2 for now. More of the block comes soon. Thank you for playing!",
                     Goal = "",
                     Done = () => false,
                 },
@@ -196,7 +214,8 @@ namespace Draho.Story
                     if (v.Length >= 2)
                     {
                         Quaternion turn = v.Length >= 3 ? Quaternion.Euler(0f, v[2], 0f) : cat.transform.rotation;
-                        cat.Teleport(new Vector3(v[0], 0.05f, v[1]), turn);
+                        float y = v.Length >= 4 ? v[3] : 0f; // the 4th value: height, to start on a roof
+                        cat.Teleport(new Vector3(v[0], y + 0.05f, v[1]), turn);
                     }
                 }
             }

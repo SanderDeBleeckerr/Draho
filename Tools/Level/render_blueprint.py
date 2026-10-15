@@ -40,8 +40,9 @@ def main(src, dst):
     z1 = max(r["z1"] for r in inside)
     t = lay["wall"]["thickness"]
 
-    span = max(r["x1"] for r in rooms) - min(r["x0"] for r in rooms)
-    fig, ax = plt.subplots(figsize=(max(14, span * 0.75), 6.2), dpi=120)
+    span = max(r["x1"] for r in rooms) - min(min(r["x0"] for r in rooms), *(b["x0"] for b in lay.get("buildings", [])))
+    depth = max(r["z1"] for r in rooms) - min(min(r["z0"] for r in rooms), *(b["z0"] for b in lay.get("buildings", [])))
+    fig, ax = plt.subplots(figsize=(max(14, span * 0.75), max(6.2, depth * 0.62)), dpi=120)
     ax.set_facecolor("#F7F5F0")
 
     # Rooms and floor tiles.
@@ -134,6 +135,19 @@ def main(src, dst):
         ax.text((ex0 + ex1) / 2, (ez0 + ez1) / 2 + (0.25 if ez0 >= 2.5 else -0.25), e["label"], ha="center",
                 va="center", fontsize=7, color="#5A4A3A", zorder=7)
 
+    # Neighbouring buildings with walkable flat roofs (height in metres).
+    for b in lay.get("buildings", []):
+        ax.add_patch(mp.Rectangle((b["x0"], b["z0"]), b["x1"] - b["x0"], b["z1"] - b["z0"], facecolor=b["roof_color"],
+                                  edgecolor=b["color"], lw=2.5, alpha=0.35 + 0.05 * b["h"], zorder=2))
+        ax.text((b["x0"] + b["x1"]) / 2, (b["z0"] + b["z1"]) / 2, "%s\nroof %.1f m" % (b["label"].split(" (")[0], b["h"]),
+                ha="center", va="center", fontsize=8, color="white", weight="bold", zorder=5)
+    for p in lay.get("roof_props", []):
+        ax.add_patch(mp.Rectangle((p["x"] - p["w"] / 2, p["z"] - p["d"] / 2), p["w"], p["d"], facecolor=p["color"], zorder=6))
+        ax.text(p["x"], p["z"] - p["d"] / 2 - 0.15, p["id"], ha="center", va="top", fontsize=7, color="white", zorder=6)
+    for e in lay.get("bounds", []):
+        (ex0, ez0), (ex1, ez1) = e["from"], e["to"]
+        ax.plot([ex0, ex1], [ez0, ez1], color="#C0392B", lw=1, ls=":", zorder=6)
+
     # Garden paths (stone slabs).
     for pa in lay.get("garden_paths", []):
         (px0, pz0), (px1, pz1) = pa["from"], pa["to"]
@@ -142,6 +156,10 @@ def main(src, dst):
 
     # Climbable surfaces (ivy).
     for c in lay.get("climbables", []):
+        if c["type"] == "pipe":
+            ax.plot(c["x"], c["z"], "o", color=c["color"], markersize=6, zorder=10)
+            ax.text(c["x"], c["z"] + 0.3, c["label"], ha="center", va="bottom", fontsize=7.5, color="white", zorder=13)
+            continue
         if c["type"] == "tree":  # trunk and crown seen from above
             ax.add_patch(mp.Circle((c["x"], c["z"]), 1.6, facecolor=c["top_color"], alpha=0.3, edgecolor="none", zorder=9))
             ax.add_patch(mp.Circle((c["x"], c["z"]), c["radius"], facecolor=c["color"], edgecolor="#1F3A18", zorder=10))
@@ -199,8 +217,10 @@ def main(src, dst):
                  fontsize=12, color="#2E2C29")
     ax.set_aspect("equal")
     gx0 = min(r["x0"] for r in rooms)
-    ax.set_xlim(gx0 - 0.5, x1 + 1.1)
-    ax.set_ylim(z0 - 1.2, z1 + 0.6)
+    bx0 = min([gx0] + [b["x0"] for b in lay.get("buildings", [])])
+    bz0 = min([z0] + [b["z0"] for b in lay.get("buildings", [])])
+    ax.set_xlim(bx0 - 0.5, x1 + 1.1)
+    ax.set_ylim(bz0 - 1.2, z1 + 0.6)
     ax.axis("off")
     fig.tight_layout()
     fig.savefig(dst, facecolor=fig.get_facecolor())

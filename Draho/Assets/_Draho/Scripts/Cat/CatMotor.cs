@@ -257,7 +257,7 @@ namespace Draho.Cat
         {
             Vector3 forward = -wallNormal;
             Vector3 to = new Vector3(transform.position.x, climbable.TopY + 0.02f, transform.position.z)
-                         + forward * (controller.radius * 2f + 0.12f);
+                         + forward * (controller.radius * 2f + 0.25f); // well onto the top, also past ivy or a pipe
             float r = controller.radius;
             int mask = ~(1 << gameObject.layer);
             if (Physics.CheckCapsule(to + Vector3.up * (r + 0.03f), to + Vector3.up * (standHeight - r), r * 0.9f, mask,

@@ -37,7 +37,7 @@ namespace Draho.Cat
         [Tooltip("Slower than this, a jump becomes 'stand up on the hind legs'.")]
         public float rearSpeedThreshold = 0.2f;
         public float rearTime = 1.1f;
-        public float climbSpeed = 0.45f;
+        public float climbSpeed = 0.6f;
         [Tooltip("How far in front of the body a climbable surface can be.")]
         public float climbReach = 0.3f;
         [Tooltip("Climb onto the top when the paws are this close to it.")]

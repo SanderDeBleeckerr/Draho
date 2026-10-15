@@ -55,7 +55,11 @@ namespace Draho.EditorTools
             public Zone[] garden_zones;
             public BirdSpot[] birds;
             public GardenPath[] garden_paths;
+            public Building[] buildings;
+            public Prop[] roof_props;
+            public Edge[] bounds;
         }
+        [Serializable] class Building { public string id, color, roof_color; public float x0, x1, z0, z1, h; }
         [Serializable] class GardenPath { public string id, color; public float[] from, to; public float w, slab; }
         [Serializable] class BirdSpot { public string id; public float x, z; }
         [Serializable] class Zone { public string id, material, color; public float x0, x1; }
@@ -109,6 +113,7 @@ namespace Draho.EditorTools
             foreach (var prop in layout.props) BuildProp(prop);
             BuildGarden(layout);
             BuildPaths(layout);
+            BuildBuildings(layout);
             foreach (var c in layout.climbables ?? new ClimbableInfo[0]) BuildClimbable(c);
 
             var spawn = new GameObject("SpawnPoint").transform;
@@ -469,6 +474,53 @@ namespace Draho.EditorTools
             }
         }
 
+        /// <summary>
+        /// Neighbouring buildings as brick blocks with flat gravel roofs the cat can walk on (heights from the
+        /// Flemish height model), roof props, and invisible walls at the edge of the playable roofs.
+        /// </summary>
+        static void BuildBuildings(Layout layout)
+        {
+            foreach (var b in layout.buildings ?? new Building[0])
+            {
+                var root = new GameObject(b.id).transform;
+                root.SetParent(level, false);
+                float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+                const float roofT = 0.12f, coping = 0.06f;
+                var brick = Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
+                var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 2f);
+                var stone = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
+                Box("Walls", new Vector3(cx, (b.h - roofT) / 2, cz), new Vector3(w, b.h - roofT, d), brick).transform.SetParent(root, true);
+                Box("Roof", new Vector3(cx, b.h - roofT / 2, cz), new Vector3(w, roofT, d), gravel).transform.SetParent(root, true);
+                // A thin stone coping along the edges: the roof line reads clearly from the garden.
+                foreach (float z in new[] { b.z0, b.z1 })
+                    Box("Coping", new Vector3(cx, b.h + coping / 2, z), new Vector3(w + 0.04f, coping, 0.12f), stone, collider: false).transform.SetParent(root, true);
+                foreach (float x in new[] { b.x0, b.x1 })
+                    Box("Coping", new Vector3(x, b.h + coping / 2, cz), new Vector3(0.12f, coping, d + 0.04f), stone, collider: false).transform.SetParent(root, true);
+            }
+
+            foreach (var p in layout.roof_props ?? new Prop[0])
+            {
+                // Stands on the highest roof under it.
+                float baseY = (layout.buildings ?? new Building[0])
+                    .Where(b => p.x > b.x0 && p.x < b.x1 && p.z > b.z0 && p.z < b.z1).Select(b => b.h).DefaultIfEmpty(0f).Max();
+                var go = Box(p.id, new Vector3(p.x, baseY + p.h / 2, p.z), new Vector3(p.w, p.h, p.d), Mat($"Apt_{p.id}", Hex(p.color), 0.1f, BrickTexture(), new Vector2(p.w, p.h)));
+                Box(p.id + "_cap", new Vector3(p.x, baseY + p.h + 0.03f, p.z), new Vector3(p.w + 0.08f, 0.06f, p.d + 0.08f), Mat("Apt_Coping", Color.gray, 0.2f), collider: false)
+                    .transform.SetParent(go.transform, true);
+            }
+
+            foreach (var e in layout.bounds ?? new Edge[0])
+            {
+                bool alongX = Mathf.Approximately(e.from[1], e.to[1]);
+                float line = alongX ? e.from[1] : e.from[0];
+                float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
+                float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
+                float mid = (a + b) / 2, len = b - a;
+                var block = Box($"Bound_{e.id}", alongX ? new Vector3(mid, 7f, line) : new Vector3(line, 7f, mid),
+                    alongX ? new Vector3(len, 14f, 0.1f) : new Vector3(0.1f, 14f, len), null);
+                Object.DestroyImmediate(block.GetComponent<Renderer>());
+            }
+        }
+
         /// <summary>Stone slabs in a line over the lawn, with a strip of grass between them.</summary>
         static void BuildPaths(Layout layout)
         {
@@ -599,7 +651,23 @@ namespace Draho.EditorTools
                 leaves.AddComponent<MeshFilter>().sharedMesh = IvyLeafMesh(c, h);
                 var leafRenderer = leaves.AddComponent<MeshRenderer>();
                 leafRenderer.sharedMaterial = IvyLeafMat();
-                climbable.Configure(c.climb_top, false);
+                climbable.Configure(c.climb_top, c.standable);
+                return;
+            }
+            if (c.type == "pipe")
+            {
+                // A drainpipe from c.bottom (a lower roof) to the top, with brackets.
+                var pipe = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                pipe.name = "Pipe";
+                pipe.transform.SetParent(root, false);
+                float len = c.h - c.bottom;
+                pipe.transform.localPosition = Vector3.up * (c.bottom + len / 2);
+                pipe.transform.localScale = new Vector3(c.radius * 2, len / 2, c.radius * 2);
+                pipe.GetComponent<Renderer>().sharedMaterial = Mat($"Apt_{c.id}", Hex(c.color), 0.5f);
+                for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
+                    Box("Bracket", root.position + new Vector3(0f, y, -c.radius), new Vector3(c.radius * 2.6f, 0.03f, c.radius * 2.2f),
+                        Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
+                climbable.Configure(c.climb_top, c.standable);
                 return;
             }
             if (c.type == "tree")
@@ -862,6 +930,9 @@ namespace Draho.EditorTools
                 for (float t = a + step; t < b - 0.5f; t += step)
                     perches.Add(alongX ? new Vector3(t, top, line) : new Vector3(line, top, t));
             }
+            foreach (var bld in layout.buildings ?? new Building[0]) // the front edges of roofs
+                for (float x = bld.x0 + 1.5f; x < bld.x1 - 1f; x += 3.5f)
+                    perches.Add(new Vector3(x, bld.h + 0.06f, bld.z1 - 0.06f));
             foreach (var c in layout.climbables ?? new ClimbableInfo[0]) // the outer branches of trees
                 if (c.type == "tree")
                     for (int i = 0; i < 3; i++)

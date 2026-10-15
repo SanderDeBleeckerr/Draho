@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 12,
+  "version": 13,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -222,19 +222,19 @@
   ],
   "garden_edges": [
     {
-      "id": "building_wall",
-      "label": "Side wall of the neighbouring building, old brick (real north-west)",
+      "id": "yard_wall",
+      "label": "Garden wall to the yard (guess)",
       "style": "wall",
       "from": [
-        -24.0,
+        -3.0,
         0.0
       ],
       "to": [
         0.0,
         0.0
       ],
-      "h": 6.0,
-      "color": "#C48E74",
+      "h": 2.5,
+      "color": "#B07A62",
       "material": "brick"
     },
     {
@@ -253,21 +253,6 @@
       "color": "#8A6E52",
       "post_color": "#B5B0A8",
       "post_spacing": 2.0
-    },
-    {
-      "id": "end_fence",
-      "label": "End of the garden (guess: wooden fence)",
-      "style": "wall",
-      "from": [
-        -24.0,
-        0.0
-      ],
-      "to": [
-        -24.0,
-        5.0
-      ],
-      "h": 1.8,
-      "color": "#7A6650"
     }
   ],
   "spawn": {
@@ -364,17 +349,17 @@
     {
       "id": "ivy",
       "type": "ivy",
-      "label": "Ivy hanging from the top of the building wall (climbable)",
+      "label": "Ivy up the wall to the flat roof (climbable)",
       "x": -22.0,
       "z": 0.0,
       "w": 4.0,
       "d": 0.12,
-      "h": 6.0,
-      "climb_top": 3.2,
+      "h": 6.5,
+      "climb_top": 6.5,
       "bottom": 0.35,
       "color": "#2F5A26",
       "top_color": "#3F7330",
-      "standable": false
+      "standable": true
     },
     {
       "id": "maple",
@@ -388,6 +373,20 @@
       "color": "#5E5248",
       "top_color": "#4E7A2E",
       "standable": false
+    },
+    {
+      "id": "drainpipe",
+      "type": "pipe",
+      "label": "Drainpipe up the high block",
+      "x": -7.0,
+      "z": -4.44,
+      "radius": 0.05,
+      "h": 8.6,
+      "bottom": 5.8,
+      "climb_top": 8.6,
+      "color": "#6E6E6A",
+      "top_color": "#6E6E6A",
+      "standable": true
     }
   ],
   "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
@@ -441,6 +440,154 @@
       "w": 0.3,
       "slab": 0.6,
       "color": "#86817A"
+    }
+  ],
+  "buildings_note": "Heights from the open Flemish height model (DHM II surface minus terrain, 1 m) and GRB footprints; game metres, rounded.",
+  "buildings": [
+    {
+      "id": "roof_a",
+      "label": "Flat roof behind the ivy wall (6.5 m)",
+      "x0": -24,
+      "x1": -11,
+      "z0": -22,
+      "z1": 0,
+      "h": 6.5,
+      "color": "#B07A62",
+      "roof_color": "#6B6862"
+    },
+    {
+      "id": "roof_b",
+      "label": "Lower roof (5.8 m)",
+      "x0": -11,
+      "x1": -3,
+      "z0": -4.5,
+      "z1": 0,
+      "h": 5.8,
+      "color": "#B07A62",
+      "roof_color": "#6B6862"
+    },
+    {
+      "id": "block_c",
+      "label": "High block (8.6 m)",
+      "x0": -11,
+      "x1": -3,
+      "z0": -11,
+      "z1": -4.5,
+      "h": 8.6,
+      "color": "#A8735C",
+      "roof_color": "#5E5B56"
+    },
+    {
+      "id": "roof_d",
+      "label": "Low back roof (3.7 m)",
+      "x0": -11,
+      "x1": -1,
+      "z0": -22,
+      "z1": -11,
+      "h": 3.7,
+      "color": "#B07A62",
+      "roof_color": "#6B6862"
+    },
+    {
+      "id": "end_shed",
+      "label": "Outbuilding at the garden end (4.2 m)",
+      "x0": -28,
+      "x1": -24,
+      "z0": 0,
+      "z1": 5,
+      "h": 4.2,
+      "color": "#9A8A78",
+      "roof_color": "#5E5B56"
+    }
+  ],
+  "roof_props": [
+    {
+      "id": "chimney",
+      "x": -16,
+      "z": -8,
+      "w": 0.6,
+      "d": 0.6,
+      "h": 1.2,
+      "color": "#8E5A48"
+    }
+  ],
+  "bounds": [
+    {
+      "id": "west",
+      "from": [
+        -28,
+        -22
+      ],
+      "to": [
+        -28,
+        5
+      ]
+    },
+    {
+      "id": "west_roof",
+      "from": [
+        -24,
+        -22
+      ],
+      "to": [
+        -24,
+        0
+      ]
+    },
+    {
+      "id": "back",
+      "from": [
+        -28,
+        -22
+      ],
+      "to": [
+        -1,
+        -22
+      ]
+    },
+    {
+      "id": "east_back",
+      "from": [
+        -1,
+        -22
+      ],
+      "to": [
+        -1,
+        -11
+      ]
+    },
+    {
+      "id": "east_mid",
+      "from": [
+        -3,
+        -11
+      ],
+      "to": [
+        -3,
+        0
+      ]
+    },
+    {
+      "id": "shed_north",
+      "from": [
+        -28,
+        5
+      ],
+      "to": [
+        -24,
+        5
+      ]
+    },
+    {
+      "id": "shed_south",
+      "from": [
+        -28,
+        0
+      ],
+      "to": [
+        -24,
+        0
+      ]
     }
   ]
 }

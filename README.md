@@ -8,6 +8,7 @@ The game uses Unity.
 - [Game Design Document](docs/GDD.md)
 - [Version 1 Technical Plan](docs/V1_PLAN.md)
 - [Asset Shortlist](docs/ASSETS.md) (on hold: we use our own placeholder cat for now)
+- [Working from a phone](docs/PHONE_WORKFLOW.md): GitHub builds the game, you play it in Safari
 
 ## Current state: playground
 
@@ -17,7 +18,7 @@ walks off the edge, it falls. After 10 m, it comes back at the start.
 ## Open the project
 
 1. Clone the repository. (Git LFS is prepared in `.gitattributes`, but it is off for now.)
-2. Install **Unity 6.3 LTS** with **iOS Build Support** from Unity Hub.
+2. Install **Unity 6000.3.26f1** (6.3 LTS) with **iOS Build Support** from Unity Hub.
 3. In Unity Hub, click **Add → Add project from disk** and select the `Draho/` folder in this repository.
 4. Unity asks *"enable the new Input System backends?"*. Click **Yes**. The editor restarts.
 5. In the menu bar, click **Draho → Build Playground Scene**. The script creates the URP settings, the

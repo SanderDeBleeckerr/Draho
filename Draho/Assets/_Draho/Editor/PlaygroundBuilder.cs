@@ -30,19 +30,25 @@ namespace Draho.EditorTools
         const string MaterialDir = Root + "/Art/Materials";
         const string SettingsDir = Root + "/Settings";
         const string PrefabDir = Root + "/Prefabs";
-        const string ScenePath = Root + "/Scenes/Playground.unity";
+        public const string ScenePath = Root + "/Scenes/Playground.unity";
         const int IgnoreRaycastLayer = 2;
         const float FloorSize = 20f; // meters; walk past the edge to fall off the world
 
         [MenuItem("Draho/Build Playground Scene")]
+        static void BuildFromMenu()
+        {
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) Build();
+        }
+
+        /// <summary>Creates all assets and the scene. Also called by the CI build (no dialogs).</summary>
         public static void Build()
         {
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             foreach (var dir in new[] { MaterialDir, SettingsDir, PrefabDir, ArtDir + "/Textures", Path.GetDirectoryName(ScenePath) })
                 Directory.CreateDirectory(dir);
             AssetDatabase.Refresh(); // the asset database must know the new folders
 
             EnsureUrp();
+            EnsureInputSystemActive();
             ConfigurePlayer();
             CatStats stats = LoadOrCreate<CatStats>(SettingsDir + "/CatStats.asset");
             AnimatorController controller = BuildAnimator(stats);
@@ -65,6 +71,18 @@ namespace Draho.EditorTools
             GraphicsSettings.defaultRenderPipeline = urp;
             QualitySettings.renderPipeline = urp;
             Debug.Log("Draho: created and assigned a URP asset.");
+        }
+
+        /// <summary>Player Settings > Active Input Handling = "Input System Package (New)".</summary>
+        static void EnsureInputSystemActive()
+        {
+            var settings = Unsupported.GetSerializedAssetInterfaceSingleton("PlayerSettings");
+            var so = new SerializedObject(settings);
+            var handler = so.FindProperty("activeInputHandler");
+            if (handler == null || handler.intValue == 1) return;
+            handler.intValue = 1;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Debug.LogWarning("Draho: switched Active Input Handling to the Input System. Restart the editor.");
         }
 
         static void ConfigurePlayer()

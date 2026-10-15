@@ -126,6 +126,7 @@ const steps = {
     ['03_run', 'move', '0,1,1,10'],
     ['04_run', 'move', '0,1,1,10'],
     ['05_run', 'move', '0,1,1,12'],
+    ['05b_over', 'move', '0,1,1,2'],
     ['06_inside', 'wait', '2'],
   ],
   // Start with ?beat=16&at=-25,-12,270,6.5 : on the riverhouse roof; run west, drop onto the quay shed and the quay.

@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 3,
+  "version": 4,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from 2 photos and 1 video. Every size is a GUESS until the owner measures it. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -246,9 +246,9 @@
     {
       "id": "inner_court",
       "label": "Inner court (round stones)",
-      "x0": 4.6,
+      "x0": 6.0,
       "z0": 3.2,
-      "x1": 7.6,
+      "x1": 9.0,
       "z1": 5.0,
       "surface": "pebbles",
       "color": "#B9B2A6",
@@ -259,7 +259,7 @@
         "east"
       ],
       "glass_height": 2.6,
-      "note": "1.8 m deep x 3 m wide. Wall-high glass on south (kitchen), west (living room) and east. North wall is solid and in line with the living room north wall. ASSUMED: it starts at the living room / kitchen line, and the strip east of it (x 7.6-9.0) is still kitchen."
+      "note": "1.8 m deep x 3 m wide, in the north-east corner. North wall in line with the living room north wall; east side on the kitchen east wall line. Wall-high glass on south, west and east (owner: 'except in the north')."
     }
   ]
 }

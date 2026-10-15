@@ -39,7 +39,7 @@ namespace Draho.Cat
         public float rearTime = 1.1f;
         public float climbSpeed = 0.45f;
         [Tooltip("How far in front of the body a climbable surface can be.")]
-        public float climbReach = 0.2f;
+        public float climbReach = 0.3f;
         [Tooltip("Climb onto the top when the paws are this close to it.")]
         public float mantleReach = 0.35f;
         public float mantleTime = 0.5f;

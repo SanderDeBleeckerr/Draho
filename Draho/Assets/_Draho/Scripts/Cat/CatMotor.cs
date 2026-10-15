@@ -173,14 +173,16 @@ namespace Draho.Cat
             foreach (float height in WallProbeHeights)
             {
                 Vector3 origin = transform.position + Vector3.up * height;
-                if (!Physics.Raycast(origin, transform.forward, out RaycastHit hit, controller.radius + stats.climbReach,
+                // A thick probe, so a thin tree trunk a little to the side is found too.
+                const float probe = 0.06f;
+                if (!Physics.SphereCast(origin, probe, transform.forward, out RaycastHit hit, controller.radius + stats.climbReach - probe,
                         mask, QueryTriggerInteraction.Ignore))
                     continue;
                 if (Mathf.Abs(hit.normal.y) > 0.4f) continue; // not a wall
                 wall = hit.collider.GetComponentInParent<Climbable>();
                 if (wall == null) continue;
                 normal = Vector3.ProjectOnPlane(hit.normal, Vector3.up).normalized;
-                wallDistance = hit.distance;
+                wallDistance = hit.distance + probe;
                 return true;
             }
             return false;

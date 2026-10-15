@@ -92,7 +92,7 @@ const steps = {
     ['06_leap_off', 'jump', ''],
     ['07_landed', 'wait', '1.5'],
   ],
-  // Start with ?beat=6&at=-22,3.85,0 : in front of the maple trunk (use with climbhold).
+  // Start with ?beat=6&at=-22,3.9,0 : in front of the maple trunk (use with climbhold).
   // Start with ?beat=4&at=-0.5,1.2,270 : on the terrace by the door, looking down the garden.
   garden: [
     ['02_walk', 'move', '0,1,0,3'],

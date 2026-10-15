@@ -7,6 +7,9 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using Draho.Story;
+using Draho.UI;
 using Draho.World;
 using Object = UnityEngine.Object;
 
@@ -46,6 +49,8 @@ namespace Draho.EditorTools
             public Court[] courts;
             public Edge[] garden_edges;
             public Spawn spawn;
+            public Hole[] mouse_holes;
+            public Lamp[] lamps;
         }
         [Serializable] class FloorInfo { public float tile_size; public string color; }
         [Serializable] class WallInfo { public float height; public float thickness; public string color; }
@@ -66,6 +71,8 @@ namespace Draho.EditorTools
         [Serializable] class Door { public string id, side; public float from, to, open_gap; }
         [Serializable] class Edge { public string id, color; public float[] from, to; public float h; }
         [Serializable] class Spawn { public float x, z; public string facing; }
+        [Serializable] class Hole { public string id, facing; public float x, z; }
+        [Serializable] class Lamp { public string id, color; public float x, y, z, intensity, range; }
 #pragma warning restore 0649
 
         // ------------------------------------------------------------------ build
@@ -88,7 +95,9 @@ namespace Draho.EditorTools
             spawn.SetParent(level, false);
             spawn.SetPositionAndRotation(new Vector3(layout.spawn.x, 0.02f, layout.spawn.z),
                 Quaternion.Euler(0f, FacingYaw(layout.spawn.facing) + 180f, 0f)); // the cat looks along +Z
-            PlaygroundBuilder.AddPlayerRig(scene, catPrefab, spawn, new Color(0.62f, 0.72f, 0.85f));
+            Transform hud = PlaygroundBuilder.AddPlayerRig(scene, catPrefab, spawn, new Color(0.62f, 0.72f, 0.85f));
+            BuildLamps(layout);
+            BuildStory(layout, hud);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log($"Draho: built '{layout.name}' with {layout.props.Length} props -> {ScenePath}");
@@ -419,6 +428,159 @@ namespace Draho.EditorTools
                 float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
                 WallSegment(e.id, alongX, line, a, b, 0f, e.h, 0.08f, Mat($"Apt_{e.id}", Hex(e.color), 0.1f));
             }
+        }
+
+        // ------------------------------------------------------------------ light
+        static void BuildLamps(Layout layout)
+        {
+            foreach (var l in layout.lamps ?? new Lamp[0])
+            {
+                var light = new GameObject(l.id).AddComponent<Light>();
+                light.transform.SetParent(level, false);
+                light.transform.position = new Vector3(l.x, l.y, l.z);
+                light.type = LightType.Point;
+                light.color = Hex(l.color);
+                light.intensity = l.intensity;
+                light.range = l.range;
+                light.shadows = LightShadows.None; // cheap on the phone
+            }
+        }
+
+        // ------------------------------------------------------------------ story: chapter 1
+        static void BuildStory(Layout layout, Transform hud)
+        {
+            var holes = new List<Transform>();
+            var dark = Mat("Apt_MouseHole", new Color(0.03f, 0.025f, 0.02f), 0f);
+            foreach (var h in layout.mouse_holes ?? new Hole[0])
+            {
+                var hole = new GameObject(h.id).transform;
+                hole.SetParent(level, false);
+                // Forward points from the wall into the room.
+                hole.SetPositionAndRotation(new Vector3(h.x, 0f, h.z), Quaternion.Euler(0f, FacingYaw(h.facing) + 180f, 0f));
+                // A dark half disc on the wall: a flat cylinder, half under the floor.
+                var arch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                arch.name = "Arch";
+                Object.DestroyImmediate(arch.GetComponent<Collider>());
+                arch.transform.SetParent(hole, false);
+                arch.transform.localPosition = new Vector3(0f, 0f, 0.004f);
+                arch.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                arch.transform.localScale = new Vector3(0.09f, 0.003f, 0.11f);
+                arch.GetComponent<Renderer>().sharedMaterial = dark;
+                holes.Add(hole);
+            }
+            if (holes.Count == 0) return;
+
+            Mouse mouse = MouseModel(holes);
+            var hudComp = StoryPanel(hud);
+            var director = new GameObject("StoryDirector").AddComponent<StoryDirector>();
+            director.Configure(hudComp, mouse, layout.rooms.Where(r => !r.outdoor).Min(r => r.x0));
+            mouse.gameObject.SetActive(false); // the story lets it out
+        }
+
+        /// <summary>A small grey mouse made of primitives, with a CharacterController.</summary>
+        static Mouse MouseModel(List<Transform> holes)
+        {
+            var root = new GameObject("Mouse");
+            root.transform.SetParent(level, false);
+            root.transform.SetPositionAndRotation(holes[0].position, holes[0].rotation);
+            root.layer = 2; // the cat's layer; Mouse turns off cat-mouse collisions
+            var cc = root.AddComponent<CharacterController>();
+            cc.radius = 0.035f;
+            cc.height = 0.075f;
+            cc.center = new Vector3(0f, 0.0375f, 0f);
+            cc.stepOffset = 0.02f;
+            cc.skinWidth = 0.005f;
+            cc.minMoveDistance = 0f;
+
+            var fur = Mat("Mouse_Fur", new Color(0.47f, 0.43f, 0.4f), 0.2f);
+            var pink = Mat("Mouse_Pink", new Color(0.86f, 0.6f, 0.6f), 0.3f);
+            var eye = Mat("Mouse_Eye", new Color(0.02f, 0.02f, 0.02f), 0.9f);
+            var body = new GameObject("Body").transform;
+            body.SetParent(root.transform, false);
+            Transform Part(PrimitiveType type, string name, Transform parent, Vector3 pos, Vector3 euler, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(type);
+                go.name = name;
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.layer = 2;
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localRotation = Quaternion.Euler(euler);
+                go.transform.localScale = scale;
+                var r = go.GetComponent<Renderer>();
+                r.sharedMaterial = m;
+                r.shadowCastingMode = ShadowCastingMode.On;
+                return go.transform;
+            }
+            Part(PrimitiveType.Capsule, "Torso", body, new Vector3(0f, 0.03f, 0f), new Vector3(90f, 0f, 0f), new Vector3(0.055f, 0.045f, 0.05f), fur);
+            Part(PrimitiveType.Sphere, "Head", body, new Vector3(0f, 0.035f, 0.05f), Vector3.zero, new Vector3(0.042f, 0.038f, 0.05f), fur);
+            Part(PrimitiveType.Sphere, "Nose", body, new Vector3(0f, 0.032f, 0.077f), Vector3.zero, Vector3.one * 0.009f, pink);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Part(PrimitiveType.Sphere, "Ear", body, new Vector3(side * 0.017f, 0.058f, 0.042f), new Vector3(0f, side * 20f, 0f),
+                    new Vector3(0.024f, 0.024f, 0.005f), pink);
+                Part(PrimitiveType.Sphere, "Eye", body, new Vector3(side * 0.012f, 0.043f, 0.066f), Vector3.zero, Vector3.one * 0.008f, eye);
+            }
+            var tailPivot = new GameObject("TailPivot").transform;
+            tailPivot.SetParent(body, false);
+            tailPivot.localPosition = new Vector3(0f, 0.018f, -0.04f);
+            Part(PrimitiveType.Cylinder, "Tail", tailPivot, new Vector3(0f, -0.006f, -0.05f), new Vector3(95f, 0f, 0f),
+                new Vector3(0.006f, 0.05f, 0.006f), pink);
+
+            var mouse = root.AddComponent<Mouse>();
+            mouse.Configure(holes.ToArray(), body, tailPivot);
+            return mouse;
+        }
+
+        static StoryHud StoryPanel(Transform canvas)
+        {
+            var panel = new GameObject("StoryPanel", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+            var rt = (RectTransform)panel.transform;
+            rt.SetParent(canvas, false);
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.sizeDelta = new Vector2(1400f, 170f);
+            rt.anchoredPosition = new Vector2(0f, -24f);
+            var bg = panel.GetComponent<Image>();
+            bg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
+            bg.type = Image.Type.Sliced;
+            bg.color = new Color(0.05f, 0.05f, 0.07f, 0.55f);
+            bg.raycastTarget = false;
+            var group = panel.GetComponent<CanvasGroup>();
+            group.blocksRaycasts = false;
+            group.interactable = false;
+
+            Text Line(string name, float top, float height, int size, FontStyle style, Color color)
+            {
+                var go = new GameObject(name, typeof(RectTransform), typeof(Text));
+                var t = go.GetComponent<Text>();
+                var trt = (RectTransform)go.transform;
+                trt.SetParent(rt, false);
+                trt.anchorMin = new Vector2(0f, 1f);
+                trt.anchorMax = new Vector2(1f, 1f);
+                trt.pivot = new Vector2(0.5f, 1f);
+                trt.offsetMin = new Vector2(36f, -top - height);
+                trt.offsetMax = new Vector2(-36f, -top);
+                t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                t.fontSize = size;
+                t.fontStyle = style;
+                t.color = color;
+                t.alignment = TextAnchor.MiddleCenter;
+                t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.raycastTarget = false;
+                return t;
+            }
+            Text story = Line("Story", 14f, 84f, 40, FontStyle.Italic, new Color(1f, 1f, 1f, 0.95f));
+            Text goal = Line("Goal", 100f, 56f, 34, FontStyle.Bold, new Color(1f, 0.82f, 0.4f));
+
+            var hud = panel.AddComponent<StoryHud>();
+            var so = new SerializedObject(hud);
+            so.FindProperty("story").objectReferenceValue = story;
+            so.FindProperty("goal").objectReferenceValue = goal;
+            so.FindProperty("group").objectReferenceValue = group;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return hud;
         }
 
         // ------------------------------------------------------------------ helpers

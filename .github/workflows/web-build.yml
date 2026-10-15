@@ -74,6 +74,9 @@ jobs:
       - name: Check build output
         run: test -f build/WebGL/WebGL/index.html || { echo "::error::No index.html in build/WebGL/WebGL"; ls -R build | head -50; exit 1; }
 
+      - name: Stamp the build with the commit (Tools/Playtest waits for it)
+        run: echo "$GITHUB_SHA" | sudo tee build/WebGL/WebGL/version.txt
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/WebGL/WebGL

@@ -81,17 +81,83 @@ namespace Draho.EditorTools
         // ------------------------------------------------------------------ project
         static void EnsureUrp()
         {
-            if (GraphicsSettings.defaultRenderPipeline is UniversalRenderPipelineAsset) return;
-            var rendererData = ScriptableObject.CreateInstance<UniversalRendererData>();
-            AssetDatabase.CreateAsset(rendererData, SettingsDir + "/Mobile_Renderer.asset");
-            var urp = UniversalRenderPipelineAsset.Create(rendererData);
+            var urp = GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
+            if (urp == null)
+            {
+                var rendererData = ScriptableObject.CreateInstance<UniversalRendererData>();
+                AssetDatabase.CreateAsset(rendererData, SettingsDir + "/Mobile_Renderer.asset");
+                urp = UniversalRenderPipelineAsset.Create(rendererData);
+                AssetDatabase.CreateAsset(urp, SettingsDir + "/Mobile_URP.asset");
+                GraphicsSettings.defaultRenderPipeline = urp;
+                QualitySettings.renderPipeline = urp;
+                Debug.Log("Draho: created and assigned a URP asset.");
+            }
             urp.renderScale = 1f;
             urp.msaaSampleCount = 2;
-            urp.shadowDistance = 15f;
-            AssetDatabase.CreateAsset(urp, SettingsDir + "/Mobile_URP.asset");
-            GraphicsSettings.defaultRenderPipeline = urp;
-            QualitySettings.renderPipeline = urp;
-            Debug.Log("Draho: created and assigned a URP asset.");
+            urp.shadowDistance = 10f;    // the apartment is small: spend the shadow map on it
+            urp.shadowCascadeCount = 2;
+            // Soft shadows and the shadow map size have no public setter in every URP version.
+            var so = new SerializedObject(urp);
+            SetIfFound(so, "m_MainLightShadowmapResolution", 2048);
+            SetIfFound(so, "m_SoftShadowsSupported", true);
+            SetIfFound(so, "m_SupportsHDR", true);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(urp);
+
+            // A renderer made from code can miss its post-processing data; then post effects do not render.
+            var rendererAsset = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(SettingsDir + "/Mobile_Renderer.asset");
+            if (rendererAsset != null && rendererAsset.postProcessData == null)
+            {
+                rendererAsset.postProcessData = AssetDatabase.LoadAssetAtPath<PostProcessData>(
+                    "Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset");
+                Debug.Log($"Draho: post-process data assigned: {rendererAsset.postProcessData != null}");
+                EditorUtility.SetDirty(rendererAsset);
+            }
+        }
+
+        static void SetIfFound(SerializedObject so, string name, object value)
+        {
+            var prop = so.FindProperty(name);
+            if (prop == null) { Debug.LogWarning($"Draho: URP setting '{name}' not found."); return; }
+            if (value is bool b) prop.boolValue = b;
+            else prop.intValue = (int)value;
+        }
+
+        /// <summary>Filmic look: neutral tone mapping, a soft bloom on the lights and a light vignette.</summary>
+        static VolumeProfile PostProfile()
+        {
+            string path = SettingsDir + "/PostProcess.asset";
+            // Both scenes use this asset, so refill it instead of making a new one.
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, path);
+            }
+            foreach (var old in profile.components.ToArray()) Object.DestroyImmediate(old, true);
+            profile.components.Clear();
+
+            T Add<T>() where T : VolumeComponent
+            {
+                var c = profile.Add<T>(true);
+                c.name = typeof(T).Name;
+                AssetDatabase.AddObjectToAsset(c, profile);
+                return c;
+            }
+            Add<Tonemapping>().mode.Override(TonemappingMode.Neutral);
+            var bloom = Add<Bloom>();
+            bloom.threshold.Override(1.0f);
+            bloom.intensity.Override(0.35f);
+            bloom.scatter.Override(0.6f);
+            var color = Add<ColorAdjustments>();
+            color.postExposure.Override(0.15f);
+            color.contrast.Override(8f);
+            color.saturation.Override(6f);
+            var vignette = Add<Vignette>();
+            vignette.intensity.Override(0.22f);
+            vignette.smoothness.Override(0.45f);
+            EditorUtility.SetDirty(profile);
+            return profile;
         }
 
         /// <summary>Player Settings > Active Input Handling = "Input System Package (New)".</summary>
@@ -115,6 +181,7 @@ namespace Draho.EditorTools
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
             PlayerSettings.allowedAutorotateToLandscapeLeft = true;
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
+            PlayerSettings.WebGL.template = "PROJECT:Draho"; // Assets/WebGLTemplates/Draho: full screen
         }
 
         // ------------------------------------------------------------------ assets
@@ -358,7 +425,8 @@ namespace Draho.EditorTools
         }
 
         /// <summary>The cat at the spawn point, touch controls, the orbit camera and the fall respawn.</summary>
-        internal static void AddPlayerRig(Scene scene, GameObject catPrefab, Transform spawn, Color background)
+        /// <returns>The HUD canvas, for more UI.</returns>
+        internal static Transform AddPlayerRig(Scene scene, GameObject catPrefab, Transform spawn, Color background)
         {
             var cat = (GameObject)PrefabUtility.InstantiatePrefab(catPrefab, scene);
             cat.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
@@ -410,6 +478,10 @@ namespace Draho.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = background;
             camGo.transform.position = spawn.position + new Vector3(0f, 0.6f, -1.2f);
+            cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+            var volume = new GameObject("PostProcess").AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.sharedProfile = PostProfile();
             var orbit = camGo.AddComponent<OrbitCamera>();
             SetField(orbit, "target", cat.transform);
             SetField(orbit, "lookArea", lookArea);
@@ -421,6 +493,7 @@ namespace Draho.EditorTools
             var respawn = new GameObject("FallRespawn").AddComponent<FallRespawn>();
             SetField(respawn, "motor", motor);
             SetField(respawn, "spawnPoint", spawn);
+            return canvasGo.transform;
         }
 
         static TouchButton HudButton(Transform canvas, string name, string label, Vector2 fromBottomRight, float size,

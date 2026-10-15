@@ -35,6 +35,11 @@ namespace Draho.Story
         Climbable maple;
         Hedgehog hedgehog;
         bool visitedLindens;
+        Duck[] ducks;
+        Climbable[] lindens;
+        Transform churchDoor;
+
+        static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
         int index = -1;
         float beatTime;
         float walked;
@@ -53,6 +58,9 @@ namespace Draho.Story
             door = FindAnyObjectByType<SlidingDoor>();
             birds = FindObjectsByType<Bird>(FindObjectsSortMode.None);
             hedgehog = FindAnyObjectByType<Hedgehog>();
+            ducks = FindObjectsByType<Duck>(FindObjectsSortMode.None);
+            lindens = Array.FindAll(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name.StartsWith("linden"));
+            churchDoor = GameObject.Find("Marker_ChurchDoor")?.transform;
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
 
@@ -166,6 +174,12 @@ namespace Draho.Story
                 },
                 new Beat
                 {
+                    Story = "Ducks on the river! They watch Drahomil: a friend, or a fox? Running scares them away.",
+                    Goal = "Sit still at the edge of the quay until a duck paddles close.",
+                    Done = () => ducks.Length == 0 || Array.Exists(ducks, d => d.IsClose),
+                },
+                new Beat
+                {
                     Story = "The quay becomes a narrow edge along a house, right above the water. Cats do not like swimming.",
                     Goal = "Follow the river to the white wall. Walk on the edge, or take the rooftops.",
                     Done = () => cat.transform.position.z < -104f,
@@ -178,14 +192,18 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "A lawn, a row of old lindens, little white houses with red doors and a church. Only the bells make a sound.",
-                    Goal = "Explore: sit under the lindens, then visit the church door.",
+                    Story = "A big quiet lawn, rows of old lindens, little houses with red doors and a church. Only the bells make a sound.",
+                    Goal = "Explore: sit under a linden, then find the big church.",
                     Begin = () => { visitedLindens = false; },
                     Done = () =>
                     {
                         Vector3 p = cat.transform.position;
-                        if (Mathf.Abs(p.z + 124f) < 2f && p.x > -26f && p.x < -4f) visitedLindens = true;
-                        return visitedLindens && Vector2.Distance(new Vector2(p.x, p.z), new Vector2(-15f, -137f)) < 2f;
+                        if (!visitedLindens && Array.Exists(lindens, l => Vector3.Distance(Flat(l.transform.position), Flat(p)) < 2f))
+                        {
+                            visitedLindens = true;
+                            Debug.Log("STORY sat under a linden");
+                        }
+                        return visitedLindens && (churchDoor == null || Vector3.Distance(Flat(churchDoor.position), Flat(p)) < 4f);
                     },
                 },
                 new Beat
@@ -259,6 +277,13 @@ namespace Draho.Story
             string hog = hedgehog == null ? "" : $" hedgehog ({hedgehog.transform.position.x:0.0}, {hedgehog.transform.position.z:0.0})" +
                 (hedgehog.AtNest ? " at nest" : hedgehog.Trusts ? " leads" : hedgehog.IsCurled ? " curled" : "");
             return $"birds {down}/{birds.Length} on ground, nearest {nearest:0.0} m{hog}";
+        }
+
+        /// <summary>Test hook: SendMessage('StoryDirector', 'TestTeleport', 'x,z,yaw[,y]').</summary>
+        public void TestTeleport(string args)
+        {
+            float[] v = Array.ConvertAll(args.Split(','), n => float.Parse(n, System.Globalization.CultureInfo.InvariantCulture));
+            cat.Teleport(new Vector3(v[0], (v.Length >= 4 ? v[3] : 0f) + 0.05f, v[1]), Quaternion.Euler(0f, v.Length >= 3 ? v[2] : 0f, 0f));
         }
 
         void ApplyUrlArguments(out int startBeat)

@@ -143,6 +143,25 @@ def main(src, dst):
     for g in lay.get("grounds", []):
         ax.add_patch(mp.Rectangle((g["x0"], g["z0"]), g["x1"] - g["x0"], g["z1"] - g["z0"], facecolor=g["color"], alpha=0.6, zorder=1))
 
+    # The begijnhof (real footprints, turned to lie along the river).
+    bg = lay.get("begijnhof")
+    if bg:
+        import math as _m
+        for h in bg["houses"]:
+            r = _m.radians(h["yaw"]); ux, uz = _m.cos(r), -_m.sin(r); vx, vz = _m.sin(r), _m.cos(r)
+            pts = [(h["x"] + sx * h["w"] / 2 * ux + sz * h["d"] / 2 * vx, h["z"] + sx * h["w"] / 2 * uz + sz * h["d"] / 2 * vz)
+                   for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+            ax.add_patch(mp.Polygon(pts, closed=True, facecolor="#8E5A48" if h.get("church") else "#D9CFC0", edgecolor="#6A5A4A", lw=0.4, zorder=3))
+        for w in bg["walls"]:
+            ax.plot([w["x0"], w["x1"]], [w["z0"], w["z1"]], color="#B5ADA0", lw=2, zorder=4)
+        for l in bg["lindens"]:
+            ax.plot(l["x"], l["z"], "o", color="#5C8A35", markersize=3, zorder=5)
+        for t in bg["trees"]:
+            ax.add_patch(mp.Circle((t["x"], t["z"]), 3, facecolor="#7A3A3A" if t["kind"] == "beech" else "#3F6B2A", alpha=0.6, zorder=5))
+        ax.plot(*bg["church_door"], "*", color="#F5E663", markersize=10, zorder=6)
+    for dk in lay.get("ducks", []):
+        ax.plot(dk["x"], dk["z"], "v", color="#2F6B4A", markersize=6, zorder=6)
+
     # Neighbouring buildings with walkable flat roofs (height in metres).
     for b in lay.get("buildings", []):
         ax.add_patch(mp.Rectangle((b["x0"], b["z0"]), b["x1"] - b["x0"], b["z1"] - b["z0"], facecolor=b["roof_color"],
@@ -243,7 +262,8 @@ def main(src, dst):
     ax.set_aspect("equal")
     gx0 = min(r["x0"] for r in rooms)
     bx0 = min([gx0] + [b["x0"] for b in lay.get("buildings", [])] + [g["x0"] for g in lay.get("grounds", [])])
-    bz0 = min([z0] + [b["z0"] for b in lay.get("buildings", [])])
+    x1 = max([x1] + [g["x1"] for g in lay.get("grounds", [])])
+    bz0 = min([z0] + [b["z0"] for b in lay.get("buildings", [])] + [g["z0"] for g in lay.get("grounds", [])])
     ax.set_xlim(bx0 - 0.5, x1 + 1.1)
     bz1 = max([z1] + [b["z1"] for b in lay.get("buildings", [])])
     ax.set_ylim(bz0 - 1.2, bz1 + 0.6)

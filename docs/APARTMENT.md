@@ -67,6 +67,8 @@ Open data (Flemish VHA waterways, the heritage inventory, GRB and DHM II) shows 
 Near the block the game keeps real sizes: roofs of 6-9 m between the garden end and the quay, a quay about
 1 m above the water, a river about 12 m wide. The long stretch to the begijnhof is shortened and stylised
 on purpose: the repository stores no real distance or direction between the home and a public landmark.
-The begijnhof itself is stylised too: a white wall, small white houses with red doors and pitched roofs,
-a church and a row of pollarded lindens (the real one has listed pollarded lindens).
+The begijnhof uses its real shape: 127 house footprints (GRB) with eave and ridge heights (DHM II), the
+church, the boundary as a white wall, 38 pollarded lindens from the two listed linden rows, the listed
+weeping copper beech, maples and horse chestnut, and other large trees from the height model. It is turned
+180 degrees so that its river side lies along the game river. Mallards swim on the river.
 

@@ -1,1450 +1,3208 @@
 {
-  "name": "Drahomil's apartment",
-  "version": 15,
-  "units": "metres",
-  "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
-  "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
-  "floor": {
-    "material": "tile",
-    "tile_size": 0.6,
-    "color": "#6E6A64"
+ "name": "Drahomil's apartment",
+ "version": 16,
+ "units": "metres",
+ "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
+ "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
+ "floor": {
+  "material": "tile",
+  "tile_size": 0.6,
+  "color": "#6E6A64"
+ },
+ "wall": {
+  "height": 2.6,
+  "thickness": 0.2,
+  "color": "#E4E2DC"
+ },
+ "rooms": [
+  {
+   "id": "living",
+   "label": "Living room",
+   "x0": 0.0,
+   "z0": 0.0,
+   "x1": 4.6,
+   "z1": 5.0
   },
-  "wall": {
-    "height": 2.6,
-    "thickness": 0.2,
-    "color": "#E4E2DC"
+  {
+   "id": "kitchen",
+   "label": "Kitchen",
+   "x0": 4.6,
+   "z0": 0.0,
+   "x1": 7.6,
+   "z1": 5.0
   },
-  "rooms": [
-    {
-      "id": "living",
-      "label": "Living room",
-      "x0": 0.0,
-      "z0": 0.0,
-      "x1": 4.6,
-      "z1": 5.0
-    },
-    {
-      "id": "kitchen",
-      "label": "Kitchen",
-      "x0": 4.6,
-      "z0": 0.0,
-      "x1": 7.6,
-      "z1": 5.0
-    },
-    {
-      "id": "garden",
-      "label": "Garden",
-      "x0": -24.0,
-      "z0": 0.0,
-      "x1": 0.0,
-      "z1": 5.0,
-      "outdoor": true
-    }
-  ],
-  "openings": [
-    {
-      "id": "sliding_door",
-      "label": "Sliding glass door",
-      "wall": "west",
-      "from": 1.4,
-      "to": 4.4,
-      "height": 2.4,
-      "kenney": "wallWindowSlide",
-      "note": "Sketchfab 'Pro Line Contemporary Sliding Door' (CC BY). Opens when the cat waits in front of it, inside or in the garden.",
-      "model": "SlidingDoor"
-    }
-  ],
-  "props": [
-    {
-      "id": "sofa",
-      "label": "Green sofa",
-      "room": "living",
-      "x": 2.6,
-      "z": 4.5,
-      "w": 2.2,
-      "d": 0.9,
-      "h": 0.85,
-      "facing": "south",
-      "kenney": "loungeSofa",
-      "color": "#1F5E57"
-    },
-    {
-      "id": "coffee_table",
-      "label": "Coffee table",
-      "room": "living",
-      "x": 2.6,
-      "z": 3.0,
-      "w": 1.0,
-      "d": 1.0,
-      "h": 0.45,
-      "facing": "south",
-      "kenney": "tableCoffeeSquare",
-      "color": "#6B4A2E"
-    },
-    {
-      "id": "rug",
-      "label": "Red rug",
-      "room": "living",
-      "x": 2.6,
-      "z": 2.9,
-      "w": 2.4,
-      "d": 1.7,
-      "h": 0.01,
-      "facing": "south",
-      "kenney": "rugRectangle",
-      "color": "#9E2A2B"
-    },
-    {
-      "id": "radiator",
-      "label": "Radiator + plants",
-      "room": "living",
-      "x": 1.1,
-      "z": 4.92,
-      "w": 0.9,
-      "d": 0.12,
-      "h": 0.6,
-      "y": 0.15,
-      "facing": "south",
-      "kenney": null,
-      "color": "#F2F2F2"
-    },
-    {
-      "id": "plant_stand",
-      "label": "Plant stand",
-      "room": "living",
-      "x": 0.45,
-      "z": 4.3,
-      "w": 0.4,
-      "d": 0.4,
-      "h": 0.7,
-      "facing": "south",
-      "kenney": "pottedPlant",
-      "color": "#3E7A3A"
-    },
-    {
-      "id": "cat_tree",
-      "label": "Cat tree",
-      "room": "living",
-      "x": 4.1,
-      "z": 4.35,
-      "w": 0.45,
-      "d": 0.45,
-      "h": 0.75,
-      "facing": "south",
-      "kenney": null,
-      "color": "#3A3D4A",
-      "note": "Drahomil's own. Stands next to the court door. Custom model (Kenney has none)."
-    },
-    {
-      "id": "poster",
-      "label": "Puzzle poster",
-      "room": "living",
-      "x": 3.3,
-      "z": 4.98,
-      "w": 1.0,
-      "d": 0.03,
-      "h": 0.7,
-      "y": 1.3,
-      "facing": "south",
-      "kenney": null,
-      "color": "#7A3F6B"
-    },
-    {
-      "id": "island",
-      "label": "Kitchen island (drawers + hob)",
-      "room": "kitchen",
-      "x": 6.1,
-      "z": 1.9,
-      "w": 2.0,
-      "d": 0.95,
-      "h": 0.9,
-      "facing": "south",
-      "kenney": "kitchenCabinetDrawer + kitchenStove",
-      "color": "#F4F4F2",
-      "top_color": "#5A5856",
-      "note": "White handle-less drawers, dark-grey top. Drawers face the back counter (south). Moved south in v3 to leave a walkway in front of the court glass."
-    },
-    {
-      "id": "back_counter",
-      "label": "Back counter (coffee machine)",
-      "room": "kitchen",
-      "x": 5.95,
-      "z": 0.3,
-      "w": 2.1,
-      "d": 0.6,
-      "h": 0.9,
-      "facing": "north",
-      "kenney": "kitchenCabinet + kitchenSink + kitchenCoffeeMachine",
-      "color": "#F4F4F2",
-      "top_color": "#5A5856",
-      "note": "Against the south wall, west of the fridge. Wood wall panel behind it."
-    },
-    {
-      "id": "fridge",
-      "label": "Fridge column",
-      "room": "kitchen",
-      "x": 7.3,
-      "z": 0.3,
-      "w": 0.6,
-      "d": 0.6,
-      "h": 2.1,
-      "facing": "north",
-      "kenney": "kitchenFridgeLarge",
-      "color": "#F4F4F2",
-      "note": "East end of the south wall. (Confirmed by owner.)"
-    },
-    {
-      "id": "picnic_table",
-      "label": "Picnic table with benches (owner's pin)",
-      "room": "garden",
-      "x": -1.4,
-      "z": 2.6,
-      "w": 1.8,
-      "d": 1.5,
-      "h": 0.75,
-      "facing": "east",
-      "kenney": "",
-      "color": "#9C8A70"
-    },
-    {
-      "id": "firewood",
-      "label": "Firewood stack against the building wall",
-      "room": "garden",
-      "x": -7.0,
-      "z": 0.25,
-      "w": 1.4,
-      "d": 0.45,
-      "h": 0.9,
-      "facing": "north",
-      "kenney": "",
-      "color": "#7B5B3A"
-    }
-  ],
-  "garden_edges": [
-    {
-      "id": "yard_wall",
-      "label": "Garden wall to the yard (guess)",
-      "style": "wall",
-      "from": [
-        -3.0,
-        0.0
-      ],
-      "to": [
-        0.0,
-        0.0
-      ],
-      "h": 2.5,
-      "color": "#B07A62",
-      "material": "brick"
-    },
-    {
-      "id": "neighbour_fence",
-      "label": "Fence to the neighbour's garden: concrete posts, horizontal planks (real south-east)",
-      "style": "posts",
-      "from": [
-        -24.0,
-        5.0
-      ],
-      "to": [
-        0.0,
-        5.0
-      ],
-      "h": 1.8,
-      "color": "#8A6E52",
-      "post_color": "#B5B0A8",
-      "post_spacing": 2.0,
-      "gap_at": -19.5,
-      "gap_w": 0.4,
-      "gap_h": 0.4
-    }
-  ],
-  "spawn": {
-    "x": 4.95,
-    "z": 1.2,
-    "facing": "north",
-    "note": "Next to the island, like in the video."
-  },
-  "courts": [
-    {
-      "id": "inner_court",
-      "label": "Inner court (round stones)",
-      "x0": 4.6,
-      "z0": 3.2,
-      "x1": 7.6,
-      "z1": 5.0,
-      "surface": "pebbles",
-      "color": "#B9B2A6",
-      "outdoor": true,
-      "glass": [
-        "south",
-        "west"
-      ],
-      "glass_height": 2.6,
-      "note": "1.8 m deep x 3 m wide, same width as the kitchen. Its north and east sides are the outer walls of the house. Wall-high glass on the south (kitchen) and west (living room) sides. Entered through the narrowly open west glass door next to the cat tree.",
-      "doors": [
-        {
-          "id": "court_door",
-          "side": "west",
-          "from": 3.4,
-          "to": 4.2,
-          "open_gap": 0.15,
-          "label": "Door",
-          "note": "Right of the cat tree. Open just wide enough for Drahomil to squeeze through."
-        }
-      ],
-      "outer_walls": [
-        "north",
-        "east"
-      ]
-    }
-  ],
-  "mouse_holes": [
-    {
-      "id": "hole_fridge",
-      "x": 7.6,
-      "z": 1.05,
-      "facing": "west",
-      "note": "East kitchen wall, next to the fridge."
-    },
-    {
-      "id": "hole_court",
-      "x": 7.6,
-      "z": 2.8,
-      "facing": "west",
-      "note": "East kitchen wall, before the court."
-    },
-    {
-      "id": "hole_living",
-      "x": 3.6,
-      "z": 0.0,
-      "facing": "north",
-      "note": "South living room wall."
-    },
-    {
-      "id": "hole_garden_door",
-      "x": 0.0,
-      "z": 0.7,
-      "facing": "east",
-      "note": "West wall, south of the sliding door."
-    }
-  ],
-  "lamps": [
-    {
-      "id": "kitchen_lamp",
-      "x": 6.1,
-      "z": 2.2,
-      "y": 2.3,
-      "intensity": 1.6,
-      "range": 5.5,
-      "color": "#FFD9A8"
-    },
-    {
-      "id": "living_lamp",
-      "x": 2.4,
-      "z": 3.2,
-      "y": 2.3,
-      "intensity": 1.3,
-      "range": 5.0,
-      "color": "#FFD2A0"
-    }
-  ],
-  "climbables": [
-    {
-      "id": "ivy",
-      "type": "ivy",
-      "label": "Ivy up the wall to the flat roof (climbable)",
-      "x": -22.0,
-      "z": 0.0,
-      "w": 4.0,
-      "d": 0.12,
-      "h": 6.5,
-      "climb_top": 6.5,
-      "bottom": 0.35,
-      "color": "#2F5A26",
-      "top_color": "#3F7330",
-      "standable": true
-    },
-    {
-      "id": "maple",
-      "type": "tree",
-      "label": "Maple (climbable to about fence height)",
-      "x": -22.0,
-      "z": 4.3,
-      "radius": 0.14,
-      "h": 2.4,
-      "climb_top": 1.9,
-      "color": "#5E5248",
-      "top_color": "#4E7A2E",
-      "standable": false
-    },
-    {
-      "id": "drainpipe",
-      "type": "pipe",
-      "label": "Drainpipe up the high block",
-      "x": -7.0,
-      "z": -4.44,
-      "radius": 0.05,
-      "h": 8.6,
-      "bottom": 5.8,
-      "climb_top": 8.6,
-      "color": "#6E6E6A",
-      "top_color": "#6E6E6A",
-      "standable": true
-    },
-    {
-      "id": "drainpipe_back",
-      "type": "pipe",
-      "label": "Drainpipe from the low roof back up",
-      "x": -10.94,
-      "z": -16.0,
-      "radius": 0.05,
-      "h": 6.5,
-      "bottom": 3.7,
-      "climb_top": 6.5,
-      "color": "#6E6E6A",
-      "top_color": "#6E6E6A",
-      "standable": true,
-      "wall": "-x"
-    },
-    {
-      "id": "beg_ivy",
-      "type": "ivy",
-      "label": "Ivy on the begijnhof wall",
-      "x": -33.0,
-      "z": -112.0,
-      "w": 2.4,
-      "d": 0.12,
-      "h": 2.6,
-      "climb_top": 2.6,
-      "bottom": 0.0,
-      "color": "#2F5A26",
-      "top_color": "#3F7330",
-      "standable": true
-    },
-    {
-      "id": "linden_1",
-      "type": "linden",
-      "label": "Pollarded linden",
-      "x": -25,
-      "z": -124.0,
-      "radius": 0.16,
-      "h": 2.6,
-      "climb_top": 2.2,
-      "color": "#5E5248",
-      "top_color": "#5C8A35",
-      "standable": false
-    },
-    {
-      "id": "linden_2",
-      "type": "linden",
-      "label": "",
-      "x": -21,
-      "z": -124.0,
-      "radius": 0.16,
-      "h": 2.6,
-      "climb_top": 2.2,
-      "color": "#5E5248",
-      "top_color": "#5C8A35",
-      "standable": false
-    },
-    {
-      "id": "linden_3",
-      "type": "linden",
-      "label": "",
-      "x": -17,
-      "z": -124.0,
-      "radius": 0.16,
-      "h": 2.6,
-      "climb_top": 2.2,
-      "color": "#5E5248",
-      "top_color": "#5C8A35",
-      "standable": false
-    },
-    {
-      "id": "linden_4",
-      "type": "linden",
-      "label": "",
-      "x": -13,
-      "z": -124.0,
-      "radius": 0.16,
-      "h": 2.6,
-      "climb_top": 2.2,
-      "color": "#5E5248",
-      "top_color": "#5C8A35",
-      "standable": false
-    },
-    {
-      "id": "linden_5",
-      "type": "linden",
-      "label": "",
-      "x": -9,
-      "z": -124.0,
-      "radius": 0.16,
-      "h": 2.6,
-      "climb_top": 2.2,
-      "color": "#5E5248",
-      "top_color": "#5C8A35",
-      "standable": false
-    },
-    {
-      "id": "linden_6",
-      "type": "linden",
-      "label": "",
-      "x": -5,
-      "z": -124.0,
-      "radius": 0.16,
-      "h": 2.6,
-      "climb_top": 2.2,
-      "color": "#5E5248",
-      "top_color": "#5C8A35",
-      "standable": false
-    }
-  ],
-  "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
-  "garden_zones": [
-    {
-      "id": "terrace",
-      "label": "Terrace (pavers)",
-      "x0": -5.0,
-      "x1": 0.0,
-      "material": "tiles",
-      "color": "#8E8A84"
-    },
-    {
-      "id": "lawn",
-      "label": "Lawn",
-      "x0": -24.0,
-      "x1": -5.0,
-      "material": "grass",
-      "color": "#4A6332"
-    }
-  ],
-  "birds": [
-    {
-      "id": "blackbird_1",
-      "x": -6.5,
-      "z": 3.3
-    },
-    {
-      "id": "blackbird_2",
-      "x": -11.0,
-      "z": 2.0
-    },
-    {
-      "id": "blackbird_3",
-      "x": -16.0,
-      "z": 3.6
-    }
-  ],
-  "garden_paths": [
-    {
-      "id": "stone_path",
-      "label": "Stone path (30 cm)",
-      "from": [
-        -5.0,
-        1.15
-      ],
-      "to": [
-        -24.0,
-        1.15
-      ],
-      "w": 0.3,
-      "slab": 0.6,
-      "color": "#86817A"
-    }
-  ],
-  "buildings_note": "Heights from the open Flemish height model (DHM II surface minus terrain, 1 m) and GRB footprints; game metres, rounded.",
-  "buildings": [
-    {
-      "id": "roof_a",
-      "label": "Flat roof behind the ivy wall (6.5 m)",
-      "x0": -24,
-      "x1": -11,
-      "z0": -22,
-      "z1": 0,
-      "h": 6.5,
-      "color": "#B07A62",
-      "roof_color": "#6B6862"
-    },
-    {
-      "id": "roof_b",
-      "label": "Lower roof (5.8 m)",
-      "x0": -11,
-      "x1": -3,
-      "z0": -4.5,
-      "z1": 0,
-      "h": 5.8,
-      "color": "#B07A62",
-      "roof_color": "#6B6862"
-    },
-    {
-      "id": "block_c",
-      "label": "High block (8.6 m)",
-      "x0": -11,
-      "x1": -3,
-      "z0": -11,
-      "z1": -4.5,
-      "h": 8.6,
-      "color": "#A8735C",
-      "roof_color": "#5E5B56"
-    },
-    {
-      "id": "roof_d",
-      "label": "Low back roof (3.7 m)",
-      "x0": -11,
-      "x1": -1,
-      "z0": -22,
-      "z1": -11,
-      "h": 3.7,
-      "color": "#B07A62",
-      "roof_color": "#6B6862"
-    },
-    {
-      "id": "end_shed",
-      "label": "Outbuilding at the garden end (4.2 m)",
-      "x0": -28,
-      "x1": -24,
-      "z0": 0,
-      "z1": 5,
-      "h": 4.2,
-      "color": "#9A8A78",
-      "roof_color": "#5E5B56"
-    },
-    {
-      "id": "neighbour_workshop",
-      "label": "Neighbour's workshop (5.5 m)",
-      "x0": -28,
-      "x1": -8,
-      "z0": 9.5,
-      "z1": 17,
-      "h": 5.5,
-      "color": "#9C8C7E",
-      "roof_color": "#5E5B56"
-    },
-    {
-      "id": "neighbour_annex",
-      "label": "Neighbour's annex (3 m)",
-      "x0": -2,
-      "x1": 2,
-      "z0": 5.15,
-      "z1": 9,
-      "h": 3.0,
-      "color": "#C9BFB2",
-      "roof_color": "#5E5B56"
-    },
-    {
-      "id": "riverhouse",
-      "label": "House by the river (6.5 m)",
-      "x0": -31,
-      "x1": -24,
-      "z0": -16,
-      "z1": -1,
-      "h": 6.5,
-      "color": "#A8735C",
-      "roof_color": "#6B6862"
-    },
-    {
-      "id": "riverhouse_tower",
-      "label": "Tower (8.8 m)",
-      "x0": -30,
-      "x1": -26.5,
-      "z0": -10,
-      "z1": -5,
-      "h": 8.8,
-      "color": "#9E6B55",
-      "roof_color": "#5E5B56"
-    },
-    {
-      "id": "quay_shed",
-      "label": "Quay shed (3.2 m)",
-      "x0": -33.5,
-      "x1": -31,
-      "z0": -13,
-      "z1": -6,
-      "h": 3.2,
-      "color": "#8E8478",
-      "roof_color": "#55524E"
-    },
-    {
-      "id": "row_1",
-      "label": "Riverside row (6.0 m)",
-      "x0": -31,
-      "x1": -24,
-      "z0": -40,
-      "z1": -16,
-      "h": 6.0,
-      "color": "#B38F78",
-      "roof_color": "#6B6862"
-    },
-    {
-      "id": "row_ledge",
-      "label": "House on the water (6.6 m)",
-      "x0": -34.55,
-      "x1": -24,
-      "z0": -75,
-      "z1": -40,
-      "h": 6.6,
-      "color": "#A8826C",
-      "roof_color": "#5E5B56"
-    },
-    {
-      "id": "row_3",
-      "label": "Riverside row (6.0 m)",
-      "x0": -31,
-      "x1": -24,
-      "z0": -112,
-      "z1": -75,
-      "h": 6.0,
-      "color": "#B9A796",
-      "roof_color": "#6B6862"
-    },
-    {
-      "id": "beg_wall",
-      "label": "Begijnhof wall (2.6 m)",
-      "x0": -35,
-      "x1": 5,
-      "z0": -112.4,
-      "z1": -112,
-      "h": 2.6,
-      "color": "#E8E2D6",
-      "roof_color": "#B5ADA0",
-      "material": "plaster"
-    },
-    {
-      "id": "beg_house_w1",
-      "label": "Begijnhof house",
-      "x0": -35,
-      "x1": -29,
-      "z0": -130,
-      "z1": -115,
-      "h": 4.2,
-      "ridge": 2.6,
-      "color": "#EFEAE0",
-      "roof_color": "#9A4A32",
-      "material": "plaster",
-      "roof": "pitched",
-      "front": "+x"
-    },
-    {
-      "id": "beg_house_w2",
-      "label": "Begijnhof house",
-      "x0": -35,
-      "x1": -29,
-      "z0": -150,
-      "z1": -133,
-      "h": 4.2,
-      "ridge": 2.6,
-      "color": "#EDE6D8",
-      "roof_color": "#8F4530",
-      "material": "plaster",
-      "roof": "pitched",
-      "front": "+x"
-    },
-    {
-      "id": "beg_house_e1",
-      "label": "Begijnhof house",
-      "x0": -1,
-      "x1": 5,
-      "z0": -135,
-      "z1": -115,
-      "h": 4.2,
-      "ridge": 2.6,
-      "color": "#EFEAE0",
-      "roof_color": "#9A4A32",
-      "material": "plaster",
-      "roof": "pitched",
-      "front": "-x"
-    },
-    {
-      "id": "beg_house_e2",
-      "label": "Begijnhof house",
-      "x0": -1,
-      "x1": 5,
-      "z0": -160,
-      "z1": -138,
-      "h": 4.2,
-      "ridge": 2.6,
-      "color": "#E9E1D2",
-      "roof_color": "#8F4530",
-      "material": "plaster",
-      "roof": "pitched",
-      "front": "-x"
-    },
-    {
-      "id": "beg_house_s",
-      "label": "Begijnhof houses",
-      "x0": -29,
-      "x1": -1,
-      "z0": -170,
-      "z1": -164,
-      "h": 4.2,
-      "ridge": 2.6,
-      "color": "#EDE6D8",
-      "roof_color": "#9A4A32",
-      "material": "plaster",
-      "roof": "pitched",
-      "front": "+z"
-    },
-    {
-      "id": "beg_church",
-      "label": "Begijnhof church",
-      "x0": -20,
-      "x1": -10,
-      "z0": -155,
-      "z1": -138,
-      "h": 8.0,
-      "ridge": 5.0,
-      "color": "#B07A62",
-      "roof_color": "#5A4E48",
-      "roof": "pitched",
-      "front": "+z"
-    }
-  ],
-  "roof_props": [
-    {
-      "id": "chimney",
-      "x": -16,
-      "z": -8,
-      "w": 0.6,
-      "d": 0.6,
-      "h": 1.2,
-      "color": "#8E5A48"
-    }
-  ],
-  "bounds": [
-    {
-      "id": "east_back",
-      "from": [
-        -1,
-        -22
-      ],
-      "to": [
-        -1,
-        -11
-      ]
-    },
-    {
-      "id": "east_mid",
-      "from": [
-        -3,
-        -11
-      ],
-      "to": [
-        -3,
-        0
-      ]
-    },
-    {
-      "id": "shed_north",
-      "from": [
-        -28,
-        5
-      ],
-      "to": [
-        -24,
-        5
-      ]
-    },
-    {
-      "id": "wild_west",
-      "from": [
-        -26,
-        5
-      ],
-      "to": [
-        -26,
-        9.5
-      ]
-    },
-    {
-      "id": "wild_north",
-      "from": [
-        -8,
-        9.5
-      ],
-      "to": [
-        -2,
-        9.5
-      ]
-    },
-    {
-      "id": "back",
-      "from": [
-        -24,
-        -22
-      ],
-      "to": [
-        -1,
-        -22
-      ]
-    },
-    {
-      "id": "rows_east",
-      "from": [
-        -24,
-        -112
-      ],
-      "to": [
-        -24,
-        -22
-      ]
-    },
-    {
-      "id": "quay_north_end",
-      "from": [
-        -35,
-        5
-      ],
-      "to": [
-        -28,
-        5
-      ]
-    },
-    {
-      "id": "beg_north_outside",
-      "from": [
-        -24,
-        -111.95
-      ],
-      "to": [
-        5,
-        -111.95
-      ]
-    },
-    {
-      "id": "beg_east",
-      "from": [
-        5,
-        -170
-      ],
-      "to": [
-        5,
-        -112
-      ]
-    },
-    {
-      "id": "beg_south",
-      "from": [
-        -35,
-        -170
-      ],
-      "to": [
-        5,
-        -170
-      ]
-    },
-    {
-      "id": "beg_west",
-      "from": [
-        -35,
-        -170
-      ],
-      "to": [
-        -35,
-        -112.4
-      ]
-    }
-  ],
-  "context_note": "Scenery only (no colliders): the other buildings of the block, as boxes in game metres (centre, size, yaw, height).",
-  "context_buildings": [
-    {
-      "x": 32.2,
-      "z": 16.2,
-      "w": 5.7,
-      "d": 12.4,
-      "yaw": 68.4,
-      "h": 12.7
-    },
-    {
-      "x": 30.2,
-      "z": 21.2,
-      "w": 12.6,
-      "d": 5.3,
-      "yaw": 156.1,
-      "h": 13.1
-    },
-    {
-      "x": 38.5,
-      "z": 2.3,
-      "w": 13.5,
-      "d": 5.7,
-      "yaw": 158.2,
-      "h": 16.0
-    },
-    {
-      "x": 30.6,
-      "z": 26.9,
-      "w": 17.8,
-      "d": 5.0,
-      "yaw": 155.7,
-      "h": 12.6
-    },
-    {
-      "x": 42.6,
-      "z": -7.3,
-      "w": 13.4,
-      "d": 15.7,
-      "yaw": 157.1,
-      "h": 14.9
-    },
-    {
-      "x": 27.2,
-      "z": 34.7,
-      "w": 17.9,
-      "d": 12.0,
-      "yaw": -23.7,
-      "h": 15.3
-    },
-    {
-      "x": 39.9,
-      "z": 20.7,
-      "w": 8.2,
-      "d": 5.2,
-      "yaw": -111.5,
-      "h": 12.1
-    },
-    {
-      "x": 37.8,
-      "z": 25.9,
-      "w": 5.2,
-      "d": 3.1,
-      "yaw": 157.4,
-      "h": 3.9
-    },
-    {
-      "x": 47.8,
-      "z": -15.6,
-      "w": 3.6,
-      "d": 16.4,
-      "yaw": -113.0,
-      "h": 10.8
-    },
-    {
-      "x": 24.8,
-      "z": 46.5,
-      "w": 22.7,
-      "d": 11.6,
-      "yaw": -23.6,
-      "h": 11.2
-    },
-    {
-      "x": 46.8,
-      "z": 25.3,
-      "w": 11.9,
-      "d": 11.0,
-      "yaw": -110.7,
-      "h": 12.0
-    },
-    {
-      "x": 53.1,
-      "z": -0.4,
-      "w": 12.3,
-      "d": 20.9,
-      "yaw": -20.9,
-      "h": 14.6
-    },
-    {
-      "x": 49.9,
-      "z": -20.7,
-      "w": 16.6,
-      "d": 7.7,
-      "yaw": 159.6,
-      "h": 10.6
-    },
-    {
-      "x": 44.8,
-      "z": 31.5,
-      "w": 8.9,
-      "d": 11.9,
-      "yaw": -112.5,
-      "h": 5.9
-    },
-    {
-      "x": 42.8,
-      "z": 36.5,
-      "w": 12.2,
-      "d": 2.3,
-      "yaw": 155.3,
-      "h": 8.4
-    },
-    {
-      "x": 20.1,
-      "z": 50.6,
-      "w": 17.5,
-      "d": 11.5,
-      "yaw": -23.9,
-      "h": 11.5
-    },
-    {
-      "x": 28.0,
-      "z": -51.0,
-      "w": 22.7,
-      "d": 5.3,
-      "yaw": -180.0,
-      "h": 13.5
-    },
-    {
-      "x": 58.4,
-      "z": -11.1,
-      "w": 7.0,
-      "d": 3.6,
-      "yaw": 159.0,
-      "h": 3.9
-    },
-    {
-      "x": 54.0,
-      "z": 30.6,
-      "w": 18.2,
-      "d": 6.2,
-      "yaw": -106.6,
-      "h": 8.2
-    },
-    {
-      "x": 55.6,
-      "z": -27.8,
-      "w": 21.8,
-      "d": 9.6,
-      "yaw": -20.4,
-      "h": 11.8
-    },
-    {
-      "x": 16.4,
-      "z": 60.2,
-      "w": 18.1,
-      "d": 4.3,
-      "yaw": 156.6,
-      "h": 10.9
-    },
-    {
-      "x": 58.7,
-      "z": 30.2,
-      "w": 15.2,
-      "d": 4.5,
-      "yaw": -99.8,
-      "h": 11.4
-    },
-    {
-      "x": 64.5,
-      "z": 5.8,
-      "w": 15.3,
-      "d": 20.7,
-      "yaw": 102.0,
-      "h": 16.4
-    },
-    {
-      "x": 62.6,
-      "z": 29.5,
-      "w": 7.6,
-      "d": 12.9,
-      "yaw": 9.1,
-      "h": 11.7
-    },
-    {
-      "x": 21.2,
-      "z": 69.0,
-      "w": 34.1,
-      "d": 8.4,
-      "yaw": 157.0,
-      "h": 11.7
-    },
-    {
-      "x": 11.4,
-      "z": 71.6,
-      "w": 4.3,
-      "d": 18.0,
-      "yaw": -113.0,
-      "h": 10.7
-    },
-    {
-      "x": 68.7,
-      "z": 29.0,
-      "w": 4.7,
-      "d": 11.8,
-      "yaw": -170.1,
-      "h": 11.9
-    },
-    {
-      "x": 5.2,
-      "z": 74.5,
-      "w": 8.9,
-      "d": 6.1,
-      "yaw": -23.1,
-      "h": 8.1
-    },
-    {
-      "x": -76.2,
-      "z": 6.2,
-      "w": 31.4,
-      "d": 18.4,
-      "yaw": -87.8,
-      "h": 5.4
-    },
-    {
-      "x": 73.2,
-      "z": 28.2,
-      "w": 11.8,
-      "d": 4.6,
-      "yaw": -79.7,
-      "h": 11.5
-    },
-    {
-      "x": 57.6,
-      "z": 54.9,
-      "w": 47.4,
-      "d": 25.6,
-      "yaw": 71.9,
-      "h": 12.4
-    },
-    {
-      "x": -92.5,
-      "z": -12.2,
-      "w": 26.4,
-      "d": 17.9,
-      "yaw": -88.7,
-      "h": 3.0
-    },
-    {
-      "x": -63,
-      "z": 9,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 7.5
-    },
-    {
-      "x": -63,
-      "z": -5,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 9
-    },
-    {
-      "x": -63,
-      "z": -19,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 6.5
-    },
-    {
-      "x": -63,
-      "z": -33,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 10
-    },
-    {
-      "x": -63,
-      "z": -47,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 8
-    },
-    {
-      "x": -63,
-      "z": -61,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 7.5
-    },
-    {
-      "x": -63,
-      "z": -75,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 9
-    },
-    {
-      "x": -63,
-      "z": -89,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 6.5
-    },
-    {
-      "x": -63,
-      "z": -103,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 10
-    },
-    {
-      "x": -63,
-      "z": -117,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 8
-    },
-    {
-      "x": -63,
-      "z": -131,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 7.5
-    },
-    {
-      "x": -63,
-      "z": -145,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 9
-    },
-    {
-      "x": -63,
-      "z": -159,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 6.5
-    },
-    {
-      "x": -63,
-      "z": -173,
-      "w": 10,
-      "d": 12.5,
-      "yaw": 0,
-      "h": 10
-    }
-  ],
-  "wild_garden": {
-    "label": "The neighbour's wild garden (nobody home for months)",
-    "x0": -26,
-    "x1": -2,
-    "z0": 5.06,
-    "z1": 9.5,
-    "color": "#5E6A34",
-    "grass_clumps": 26,
-    "bushes": [
-      {
-        "x": -25,
-        "z": 6.2,
-        "r": 0.6
-      },
-      {
-        "x": -24.6,
-        "z": 8.7,
-        "r": 0.7
-      },
-      {
-        "x": -14,
-        "z": 9.1,
-        "r": 0.5
-      },
-      {
-        "x": -9,
-        "z": 5.7,
-        "r": 0.4
-      },
-      {
-        "x": -4.5,
-        "z": 9.1,
-        "r": 0.6
-      },
-      {
-        "x": -3,
-        "z": 6,
-        "r": 0.45
-      }
-    ],
-    "wheelbarrow": {
-      "x": -6.5,
-      "z": 8.2,
-      "yaw": 80
-    },
-    "chair": {
-      "x": -17,
-      "z": 7.6,
-      "yaw": 30
-    },
-    "barrel": {
-      "x": -11.5,
-      "z": 8.9
-    },
-    "hedgehog": {
-      "x": -15,
-      "z": 7.0,
-      "yaw": 90
-    }
-  },
-  "riverside_note": "Chapter 4-5: the river and the quay beside the block are at real scale (open VHA waterways, GRB, DHM II); the long stretch to the begijnhof is shortened and stylised, so it does not give a real distance.",
-  "grounds": [
-    {
-      "id": "quay_north",
-      "x0": -35,
-      "x1": -31,
-      "z0": -40,
-      "z1": 5,
-      "top": 0.0,
-      "color": "#8C877E",
-      "material": "stone"
-    },
-    {
-      "id": "quay_ledge",
-      "x0": -35,
-      "x1": -34.55,
-      "z0": -75,
-      "z1": -40,
-      "top": 0.0,
-      "color": "#8C877E",
-      "material": "stone"
-    },
-    {
-      "id": "quay_south",
-      "x0": -35,
-      "x1": -31,
-      "z0": -112,
-      "z1": -75,
-      "top": 0.0,
-      "color": "#8C877E",
-      "material": "stone"
-    },
-    {
-      "id": "beg_lawn",
-      "x0": -29,
-      "x1": -1,
-      "z0": -164,
-      "z1": -112.4,
-      "top": 0.0,
-      "color": "#5B7A3A",
-      "material": "grass"
-    },
-    {
-      "id": "beg_path",
-      "x0": -29,
-      "x1": -1,
-      "z0": -137,
-      "z1": -135,
-      "top": 0.01,
-      "color": "#9C958A",
-      "material": "stone"
-    },
-    {
-      "id": "far_bank",
-      "x0": -58,
-      "x1": -48,
-      "z0": -175,
-      "z1": 20,
-      "top": 0.0,
-      "color": "#8C877E",
-      "material": "stone"
-    }
-  ],
-  "water": {
-    "x0": -48,
-    "x1": -35,
-    "z0": -175,
-    "z1": 20,
-    "top": -1.0,
-    "color": "#2E4A48"
+  {
+   "id": "garden",
+   "label": "Garden",
+   "x0": -24.0,
+   "z0": 0.0,
+   "x1": 0.0,
+   "z1": 5.0,
+   "outdoor": true
   }
+ ],
+ "openings": [
+  {
+   "id": "sliding_door",
+   "label": "Sliding glass door",
+   "wall": "west",
+   "from": 1.4,
+   "to": 4.4,
+   "height": 2.4,
+   "kenney": "wallWindowSlide",
+   "note": "Sketchfab 'Pro Line Contemporary Sliding Door' (CC BY). Opens when the cat waits in front of it, inside or in the garden.",
+   "model": "SlidingDoor"
+  }
+ ],
+ "props": [
+  {
+   "id": "sofa",
+   "label": "Green sofa",
+   "room": "living",
+   "x": 2.6,
+   "z": 4.5,
+   "w": 2.2,
+   "d": 0.9,
+   "h": 0.85,
+   "facing": "south",
+   "kenney": "loungeSofa",
+   "color": "#1F5E57"
+  },
+  {
+   "id": "coffee_table",
+   "label": "Coffee table",
+   "room": "living",
+   "x": 2.6,
+   "z": 3.0,
+   "w": 1.0,
+   "d": 1.0,
+   "h": 0.45,
+   "facing": "south",
+   "kenney": "tableCoffeeSquare",
+   "color": "#6B4A2E"
+  },
+  {
+   "id": "rug",
+   "label": "Red rug",
+   "room": "living",
+   "x": 2.6,
+   "z": 2.9,
+   "w": 2.4,
+   "d": 1.7,
+   "h": 0.01,
+   "facing": "south",
+   "kenney": "rugRectangle",
+   "color": "#9E2A2B"
+  },
+  {
+   "id": "radiator",
+   "label": "Radiator + plants",
+   "room": "living",
+   "x": 1.1,
+   "z": 4.92,
+   "w": 0.9,
+   "d": 0.12,
+   "h": 0.6,
+   "y": 0.15,
+   "facing": "south",
+   "kenney": null,
+   "color": "#F2F2F2"
+  },
+  {
+   "id": "plant_stand",
+   "label": "Plant stand",
+   "room": "living",
+   "x": 0.45,
+   "z": 4.3,
+   "w": 0.4,
+   "d": 0.4,
+   "h": 0.7,
+   "facing": "south",
+   "kenney": "pottedPlant",
+   "color": "#3E7A3A"
+  },
+  {
+   "id": "cat_tree",
+   "label": "Cat tree",
+   "room": "living",
+   "x": 4.1,
+   "z": 4.35,
+   "w": 0.45,
+   "d": 0.45,
+   "h": 0.75,
+   "facing": "south",
+   "kenney": null,
+   "color": "#3A3D4A",
+   "note": "Drahomil's own. Stands next to the court door. Custom model (Kenney has none)."
+  },
+  {
+   "id": "poster",
+   "label": "Puzzle poster",
+   "room": "living",
+   "x": 3.3,
+   "z": 4.98,
+   "w": 1.0,
+   "d": 0.03,
+   "h": 0.7,
+   "y": 1.3,
+   "facing": "south",
+   "kenney": null,
+   "color": "#7A3F6B"
+  },
+  {
+   "id": "island",
+   "label": "Kitchen island (drawers + hob)",
+   "room": "kitchen",
+   "x": 6.1,
+   "z": 1.9,
+   "w": 2.0,
+   "d": 0.95,
+   "h": 0.9,
+   "facing": "south",
+   "kenney": "kitchenCabinetDrawer + kitchenStove",
+   "color": "#F4F4F2",
+   "top_color": "#5A5856",
+   "note": "White handle-less drawers, dark-grey top. Drawers face the back counter (south). Moved south in v3 to leave a walkway in front of the court glass."
+  },
+  {
+   "id": "back_counter",
+   "label": "Back counter (coffee machine)",
+   "room": "kitchen",
+   "x": 5.95,
+   "z": 0.3,
+   "w": 2.1,
+   "d": 0.6,
+   "h": 0.9,
+   "facing": "north",
+   "kenney": "kitchenCabinet + kitchenSink + kitchenCoffeeMachine",
+   "color": "#F4F4F2",
+   "top_color": "#5A5856",
+   "note": "Against the south wall, west of the fridge. Wood wall panel behind it."
+  },
+  {
+   "id": "fridge",
+   "label": "Fridge column",
+   "room": "kitchen",
+   "x": 7.3,
+   "z": 0.3,
+   "w": 0.6,
+   "d": 0.6,
+   "h": 2.1,
+   "facing": "north",
+   "kenney": "kitchenFridgeLarge",
+   "color": "#F4F4F2",
+   "note": "East end of the south wall. (Confirmed by owner.)"
+  },
+  {
+   "id": "picnic_table",
+   "label": "Picnic table with benches (owner's pin)",
+   "room": "garden",
+   "x": -1.4,
+   "z": 2.6,
+   "w": 1.8,
+   "d": 1.5,
+   "h": 0.75,
+   "facing": "east",
+   "kenney": "",
+   "color": "#9C8A70"
+  },
+  {
+   "id": "firewood",
+   "label": "Firewood stack against the building wall",
+   "room": "garden",
+   "x": -7.0,
+   "z": 0.25,
+   "w": 1.4,
+   "d": 0.45,
+   "h": 0.9,
+   "facing": "north",
+   "kenney": "",
+   "color": "#7B5B3A"
+  }
+ ],
+ "garden_edges": [
+  {
+   "id": "yard_wall",
+   "label": "Garden wall to the yard (guess)",
+   "style": "wall",
+   "from": [
+    -3.0,
+    0.0
+   ],
+   "to": [
+    0.0,
+    0.0
+   ],
+   "h": 2.5,
+   "color": "#B07A62",
+   "material": "brick"
+  },
+  {
+   "id": "neighbour_fence",
+   "label": "Fence to the neighbour's garden: concrete posts, horizontal planks (real south-east)",
+   "style": "posts",
+   "from": [
+    -24.0,
+    5.0
+   ],
+   "to": [
+    0.0,
+    5.0
+   ],
+   "h": 1.8,
+   "color": "#8A6E52",
+   "post_color": "#B5B0A8",
+   "post_spacing": 2.0,
+   "gap_at": -19.5,
+   "gap_w": 0.4,
+   "gap_h": 0.4
+  }
+ ],
+ "spawn": {
+  "x": 4.95,
+  "z": 1.2,
+  "facing": "north",
+  "note": "Next to the island, like in the video."
+ },
+ "courts": [
+  {
+   "id": "inner_court",
+   "label": "Inner court (round stones)",
+   "x0": 4.6,
+   "z0": 3.2,
+   "x1": 7.6,
+   "z1": 5.0,
+   "surface": "pebbles",
+   "color": "#B9B2A6",
+   "outdoor": true,
+   "glass": [
+    "south",
+    "west"
+   ],
+   "glass_height": 2.6,
+   "note": "1.8 m deep x 3 m wide, same width as the kitchen. Its north and east sides are the outer walls of the house. Wall-high glass on the south (kitchen) and west (living room) sides. Entered through the narrowly open west glass door next to the cat tree.",
+   "doors": [
+    {
+     "id": "court_door",
+     "side": "west",
+     "from": 3.4,
+     "to": 4.2,
+     "open_gap": 0.15,
+     "label": "Door",
+     "note": "Right of the cat tree. Open just wide enough for Drahomil to squeeze through."
+    }
+   ],
+   "outer_walls": [
+    "north",
+    "east"
+   ]
+  }
+ ],
+ "mouse_holes": [
+  {
+   "id": "hole_fridge",
+   "x": 7.6,
+   "z": 1.05,
+   "facing": "west",
+   "note": "East kitchen wall, next to the fridge."
+  },
+  {
+   "id": "hole_court",
+   "x": 7.6,
+   "z": 2.8,
+   "facing": "west",
+   "note": "East kitchen wall, before the court."
+  },
+  {
+   "id": "hole_living",
+   "x": 3.6,
+   "z": 0.0,
+   "facing": "north",
+   "note": "South living room wall."
+  },
+  {
+   "id": "hole_garden_door",
+   "x": 0.0,
+   "z": 0.7,
+   "facing": "east",
+   "note": "West wall, south of the sliding door."
+  }
+ ],
+ "lamps": [
+  {
+   "id": "kitchen_lamp",
+   "x": 6.1,
+   "z": 2.2,
+   "y": 2.3,
+   "intensity": 1.6,
+   "range": 5.5,
+   "color": "#FFD9A8"
+  },
+  {
+   "id": "living_lamp",
+   "x": 2.4,
+   "z": 3.2,
+   "y": 2.3,
+   "intensity": 1.3,
+   "range": 5.0,
+   "color": "#FFD2A0"
+  }
+ ],
+ "climbables": [
+  {
+   "id": "ivy",
+   "type": "ivy",
+   "label": "Ivy up the wall to the flat roof (climbable)",
+   "x": -22.0,
+   "z": 0.0,
+   "w": 4.0,
+   "d": 0.12,
+   "h": 6.5,
+   "climb_top": 6.5,
+   "bottom": 0.35,
+   "color": "#2F5A26",
+   "top_color": "#3F7330",
+   "standable": true
+  },
+  {
+   "id": "maple",
+   "type": "tree",
+   "label": "Maple (climbable to about fence height)",
+   "x": -22.0,
+   "z": 4.3,
+   "radius": 0.14,
+   "h": 2.4,
+   "climb_top": 1.9,
+   "color": "#5E5248",
+   "top_color": "#4E7A2E",
+   "standable": false
+  },
+  {
+   "id": "drainpipe",
+   "type": "pipe",
+   "label": "Drainpipe up the high block",
+   "x": -7.0,
+   "z": -4.44,
+   "radius": 0.05,
+   "h": 8.6,
+   "bottom": 5.8,
+   "climb_top": 8.6,
+   "color": "#6E6E6A",
+   "top_color": "#6E6E6A",
+   "standable": true
+  },
+  {
+   "id": "drainpipe_back",
+   "type": "pipe",
+   "label": "Drainpipe from the low roof back up",
+   "x": -10.94,
+   "z": -16.0,
+   "radius": 0.05,
+   "h": 6.5,
+   "bottom": 3.7,
+   "climb_top": 6.5,
+   "color": "#6E6E6A",
+   "top_color": "#6E6E6A",
+   "standable": true,
+   "wall": "-x"
+  },
+  {
+   "id": "beg_ivy",
+   "type": "ivy",
+   "label": "Ivy on the begijnhof wall",
+   "x": -33.0,
+   "z": -111.93,
+   "w": 1.6,
+   "d": 0.12,
+   "h": 2.6,
+   "climb_top": 2.6,
+   "bottom": 0.0,
+   "color": "#2F5A26",
+   "top_color": "#3F7330",
+   "standable": true
+  }
+ ],
+ "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
+ "garden_zones": [
+  {
+   "id": "terrace",
+   "label": "Terrace (pavers)",
+   "x0": -5.0,
+   "x1": 0.0,
+   "material": "tiles",
+   "color": "#8E8A84"
+  },
+  {
+   "id": "lawn",
+   "label": "Lawn",
+   "x0": -24.0,
+   "x1": -5.0,
+   "material": "grass",
+   "color": "#4A6332"
+  }
+ ],
+ "birds": [
+  {
+   "id": "blackbird_1",
+   "x": -6.5,
+   "z": 3.3
+  },
+  {
+   "id": "blackbird_2",
+   "x": -11.0,
+   "z": 2.0
+  },
+  {
+   "id": "blackbird_3",
+   "x": -16.0,
+   "z": 3.6
+  }
+ ],
+ "garden_paths": [
+  {
+   "id": "stone_path",
+   "label": "Stone path (30 cm)",
+   "from": [
+    -5.0,
+    1.15
+   ],
+   "to": [
+    -24.0,
+    1.15
+   ],
+   "w": 0.3,
+   "slab": 0.6,
+   "color": "#86817A"
+  }
+ ],
+ "buildings_note": "Heights from the open Flemish height model (DHM II surface minus terrain, 1 m) and GRB footprints; game metres, rounded.",
+ "buildings": [
+  {
+   "id": "roof_a",
+   "label": "Flat roof behind the ivy wall (6.5 m)",
+   "x0": -24,
+   "x1": -11,
+   "z0": -22,
+   "z1": 0,
+   "h": 6.5,
+   "color": "#B07A62",
+   "roof_color": "#6B6862"
+  },
+  {
+   "id": "roof_b",
+   "label": "Lower roof (5.8 m)",
+   "x0": -11,
+   "x1": -3,
+   "z0": -4.5,
+   "z1": 0,
+   "h": 5.8,
+   "color": "#B07A62",
+   "roof_color": "#6B6862"
+  },
+  {
+   "id": "block_c",
+   "label": "High block (8.6 m)",
+   "x0": -11,
+   "x1": -3,
+   "z0": -11,
+   "z1": -4.5,
+   "h": 8.6,
+   "color": "#A8735C",
+   "roof_color": "#5E5B56"
+  },
+  {
+   "id": "roof_d",
+   "label": "Low back roof (3.7 m)",
+   "x0": -11,
+   "x1": -1,
+   "z0": -22,
+   "z1": -11,
+   "h": 3.7,
+   "color": "#B07A62",
+   "roof_color": "#6B6862"
+  },
+  {
+   "id": "end_shed",
+   "label": "Outbuilding at the garden end (4.2 m)",
+   "x0": -28,
+   "x1": -24,
+   "z0": 0,
+   "z1": 5,
+   "h": 4.2,
+   "color": "#9A8A78",
+   "roof_color": "#5E5B56"
+  },
+  {
+   "id": "neighbour_workshop",
+   "label": "Neighbour's workshop (5.5 m)",
+   "x0": -28,
+   "x1": -8,
+   "z0": 9.5,
+   "z1": 17,
+   "h": 5.5,
+   "color": "#9C8C7E",
+   "roof_color": "#5E5B56"
+  },
+  {
+   "id": "neighbour_annex",
+   "label": "Neighbour's annex (3 m)",
+   "x0": -2,
+   "x1": 2,
+   "z0": 5.15,
+   "z1": 9,
+   "h": 3.0,
+   "color": "#C9BFB2",
+   "roof_color": "#5E5B56"
+  },
+  {
+   "id": "riverhouse",
+   "label": "House by the river (6.5 m)",
+   "x0": -31,
+   "x1": -24,
+   "z0": -16,
+   "z1": -1,
+   "h": 6.5,
+   "color": "#A8735C",
+   "roof_color": "#6B6862"
+  },
+  {
+   "id": "riverhouse_tower",
+   "label": "Tower (8.8 m)",
+   "x0": -30,
+   "x1": -26.5,
+   "z0": -10,
+   "z1": -5,
+   "h": 8.8,
+   "color": "#9E6B55",
+   "roof_color": "#5E5B56"
+  },
+  {
+   "id": "quay_shed",
+   "label": "Quay shed (3.2 m)",
+   "x0": -33.5,
+   "x1": -31,
+   "z0": -13,
+   "z1": -6,
+   "h": 3.2,
+   "color": "#8E8478",
+   "roof_color": "#55524E"
+  },
+  {
+   "id": "row_1",
+   "label": "Riverside row (6.0 m)",
+   "x0": -31,
+   "x1": -24,
+   "z0": -40,
+   "z1": -16,
+   "h": 6.0,
+   "color": "#B38F78",
+   "roof_color": "#6B6862"
+  },
+  {
+   "id": "row_ledge",
+   "label": "House on the water (6.6 m)",
+   "x0": -34.55,
+   "x1": -24,
+   "z0": -75,
+   "z1": -40,
+   "h": 6.0,
+   "color": "#A8826C",
+   "roof_color": "#5E5B56"
+  },
+  {
+   "id": "row_3",
+   "label": "Riverside row (6.0 m)",
+   "x0": -31,
+   "x1": -24,
+   "z0": -111.3,
+   "z1": -75,
+   "h": 6.0,
+   "color": "#B9A796",
+   "roof_color": "#6B6862"
+  }
+ ],
+ "roof_props": [
+  {
+   "id": "chimney",
+   "x": -16,
+   "z": -8,
+   "w": 0.6,
+   "d": 0.6,
+   "h": 1.2,
+   "color": "#8E5A48"
+  }
+ ],
+ "bounds": [
+  {
+   "id": "east_back",
+   "from": [
+    -1,
+    -22
+   ],
+   "to": [
+    -1,
+    -11
+   ]
+  },
+  {
+   "id": "east_mid",
+   "from": [
+    -3,
+    -11
+   ],
+   "to": [
+    -3,
+    0
+   ]
+  },
+  {
+   "id": "shed_north",
+   "from": [
+    -28,
+    5
+   ],
+   "to": [
+    -24,
+    5
+   ]
+  },
+  {
+   "id": "wild_west",
+   "from": [
+    -26,
+    5
+   ],
+   "to": [
+    -26,
+    9.5
+   ]
+  },
+  {
+   "id": "wild_north",
+   "from": [
+    -8,
+    9.5
+   ],
+   "to": [
+    -2,
+    9.5
+   ]
+  },
+  {
+   "id": "back",
+   "from": [
+    -24,
+    -22
+   ],
+   "to": [
+    -1,
+    -22
+   ]
+  },
+  {
+   "id": "rows_east",
+   "from": [
+    -24,
+    -112
+   ],
+   "to": [
+    -24,
+    -22
+   ]
+  },
+  {
+   "id": "quay_north_end",
+   "from": [
+    -35,
+    5
+   ],
+   "to": [
+    -28,
+    5
+   ]
+  }
+ ],
+ "context_note": "Scenery only (no colliders): the other buildings of the block, as boxes in game metres (centre, size, yaw, height).",
+ "context_buildings": [
+  {
+   "x": 32.2,
+   "z": 16.2,
+   "w": 5.7,
+   "d": 12.4,
+   "yaw": 68.4,
+   "h": 12.7
+  },
+  {
+   "x": 30.2,
+   "z": 21.2,
+   "w": 12.6,
+   "d": 5.3,
+   "yaw": 156.1,
+   "h": 13.1
+  },
+  {
+   "x": 38.5,
+   "z": 2.3,
+   "w": 13.5,
+   "d": 5.7,
+   "yaw": 158.2,
+   "h": 16.0
+  },
+  {
+   "x": 30.6,
+   "z": 26.9,
+   "w": 17.8,
+   "d": 5.0,
+   "yaw": 155.7,
+   "h": 12.6
+  },
+  {
+   "x": 42.6,
+   "z": -7.3,
+   "w": 13.4,
+   "d": 15.7,
+   "yaw": 157.1,
+   "h": 14.9
+  },
+  {
+   "x": 27.2,
+   "z": 34.7,
+   "w": 17.9,
+   "d": 12.0,
+   "yaw": -23.7,
+   "h": 15.3
+  },
+  {
+   "x": 39.9,
+   "z": 20.7,
+   "w": 8.2,
+   "d": 5.2,
+   "yaw": -111.5,
+   "h": 12.1
+  },
+  {
+   "x": 37.8,
+   "z": 25.9,
+   "w": 5.2,
+   "d": 3.1,
+   "yaw": 157.4,
+   "h": 3.9
+  },
+  {
+   "x": 47.8,
+   "z": -15.6,
+   "w": 3.6,
+   "d": 16.4,
+   "yaw": -113.0,
+   "h": 10.8
+  },
+  {
+   "x": 24.8,
+   "z": 46.5,
+   "w": 22.7,
+   "d": 11.6,
+   "yaw": -23.6,
+   "h": 11.2
+  },
+  {
+   "x": 46.8,
+   "z": 25.3,
+   "w": 11.9,
+   "d": 11.0,
+   "yaw": -110.7,
+   "h": 12.0
+  },
+  {
+   "x": 53.1,
+   "z": -0.4,
+   "w": 12.3,
+   "d": 20.9,
+   "yaw": -20.9,
+   "h": 14.6
+  },
+  {
+   "x": 49.9,
+   "z": -20.7,
+   "w": 16.6,
+   "d": 7.7,
+   "yaw": 159.6,
+   "h": 10.6
+  },
+  {
+   "x": 44.8,
+   "z": 31.5,
+   "w": 8.9,
+   "d": 11.9,
+   "yaw": -112.5,
+   "h": 5.9
+  },
+  {
+   "x": 42.8,
+   "z": 36.5,
+   "w": 12.2,
+   "d": 2.3,
+   "yaw": 155.3,
+   "h": 8.4
+  },
+  {
+   "x": 20.1,
+   "z": 50.6,
+   "w": 17.5,
+   "d": 11.5,
+   "yaw": -23.9,
+   "h": 11.5
+  },
+  {
+   "x": 28.0,
+   "z": -51.0,
+   "w": 22.7,
+   "d": 5.3,
+   "yaw": -180.0,
+   "h": 13.5
+  },
+  {
+   "x": 58.4,
+   "z": -11.1,
+   "w": 7.0,
+   "d": 3.6,
+   "yaw": 159.0,
+   "h": 3.9
+  },
+  {
+   "x": 54.0,
+   "z": 30.6,
+   "w": 18.2,
+   "d": 6.2,
+   "yaw": -106.6,
+   "h": 8.2
+  },
+  {
+   "x": 55.6,
+   "z": -27.8,
+   "w": 21.8,
+   "d": 9.6,
+   "yaw": -20.4,
+   "h": 11.8
+  },
+  {
+   "x": 16.4,
+   "z": 60.2,
+   "w": 18.1,
+   "d": 4.3,
+   "yaw": 156.6,
+   "h": 10.9
+  },
+  {
+   "x": 58.7,
+   "z": 30.2,
+   "w": 15.2,
+   "d": 4.5,
+   "yaw": -99.8,
+   "h": 11.4
+  },
+  {
+   "x": 64.5,
+   "z": 5.8,
+   "w": 15.3,
+   "d": 20.7,
+   "yaw": 102.0,
+   "h": 16.4
+  },
+  {
+   "x": 62.6,
+   "z": 29.5,
+   "w": 7.6,
+   "d": 12.9,
+   "yaw": 9.1,
+   "h": 11.7
+  },
+  {
+   "x": 21.2,
+   "z": 69.0,
+   "w": 34.1,
+   "d": 8.4,
+   "yaw": 157.0,
+   "h": 11.7
+  },
+  {
+   "x": 11.4,
+   "z": 71.6,
+   "w": 4.3,
+   "d": 18.0,
+   "yaw": -113.0,
+   "h": 10.7
+  },
+  {
+   "x": 68.7,
+   "z": 29.0,
+   "w": 4.7,
+   "d": 11.8,
+   "yaw": -170.1,
+   "h": 11.9
+  },
+  {
+   "x": 5.2,
+   "z": 74.5,
+   "w": 8.9,
+   "d": 6.1,
+   "yaw": -23.1,
+   "h": 8.1
+  },
+  {
+   "x": -76.2,
+   "z": 6.2,
+   "w": 31.4,
+   "d": 18.4,
+   "yaw": -87.8,
+   "h": 5.4
+  },
+  {
+   "x": 73.2,
+   "z": 28.2,
+   "w": 11.8,
+   "d": 4.6,
+   "yaw": -79.7,
+   "h": 11.5
+  },
+  {
+   "x": 57.6,
+   "z": 54.9,
+   "w": 47.4,
+   "d": 25.6,
+   "yaw": 71.9,
+   "h": 12.4
+  },
+  {
+   "x": -92.5,
+   "z": -12.2,
+   "w": 26.4,
+   "d": 17.9,
+   "yaw": -88.7,
+   "h": 3.0
+  },
+  {
+   "x": -63,
+   "z": 9,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 7.5
+  },
+  {
+   "x": -63,
+   "z": -5,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 9
+  },
+  {
+   "x": -63,
+   "z": -19,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 6.5
+  },
+  {
+   "x": -63,
+   "z": -33,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 10
+  },
+  {
+   "x": -63,
+   "z": -47,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 8
+  },
+  {
+   "x": -63,
+   "z": -61,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 7.5
+  },
+  {
+   "x": -63,
+   "z": -75,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 9
+  },
+  {
+   "x": -63,
+   "z": -89,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 6.5
+  },
+  {
+   "x": -63,
+   "z": -103,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 10
+  },
+  {
+   "x": -63,
+   "z": -117,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 8
+  },
+  {
+   "x": -63,
+   "z": -131,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 7.5
+  },
+  {
+   "x": -63,
+   "z": -145,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 9
+  },
+  {
+   "x": -63,
+   "z": -159,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 6.5
+  },
+  {
+   "x": -63,
+   "z": -173,
+   "w": 10,
+   "d": 12.5,
+   "yaw": 0,
+   "h": 10
+  }
+ ],
+ "wild_garden": {
+  "label": "The neighbour's wild garden (nobody home for months)",
+  "x0": -26,
+  "x1": -2,
+  "z0": 5.06,
+  "z1": 9.5,
+  "color": "#5E6A34",
+  "grass_clumps": 26,
+  "bushes": [
+   {
+    "x": -25,
+    "z": 6.2,
+    "r": 0.6
+   },
+   {
+    "x": -24.6,
+    "z": 8.7,
+    "r": 0.7
+   },
+   {
+    "x": -14,
+    "z": 9.1,
+    "r": 0.5
+   },
+   {
+    "x": -9,
+    "z": 5.7,
+    "r": 0.4
+   },
+   {
+    "x": -4.5,
+    "z": 9.1,
+    "r": 0.6
+   },
+   {
+    "x": -3,
+    "z": 6,
+    "r": 0.45
+   }
+  ],
+  "wheelbarrow": {
+   "x": -6.5,
+   "z": 8.2,
+   "yaw": 80
+  },
+  "chair": {
+   "x": -17,
+   "z": 7.6,
+   "yaw": 30
+  },
+  "barrel": {
+   "x": -11.5,
+   "z": 8.9
+  },
+  "hedgehog": {
+   "x": -15,
+   "z": 7.0,
+   "yaw": 90
+  }
+ },
+ "riverside_note": "Chapter 4-5: the river and the quay beside the block are at real scale (open VHA waterways, GRB, DHM II); the long stretch to the begijnhof is shortened and stylised, so it does not give a real distance.",
+ "grounds": [
+  {
+   "id": "quay_north",
+   "x0": -35,
+   "x1": -31,
+   "z0": -40,
+   "z1": 5,
+   "top": 0.0,
+   "color": "#8C877E",
+   "material": "stone"
+  },
+  {
+   "id": "quay_ledge",
+   "x0": -35,
+   "x1": -34.55,
+   "z0": -75,
+   "z1": -40,
+   "top": 0.0,
+   "color": "#8C877E",
+   "material": "stone"
+  },
+  {
+   "id": "quay_south",
+   "x0": -35,
+   "x1": -31,
+   "z0": -112.6,
+   "z1": -75,
+   "top": 0.0,
+   "color": "#8C877E",
+   "material": "stone"
+  },
+  {
+   "id": "far_bank",
+   "x0": -58,
+   "x1": -48,
+   "z0": -420,
+   "z1": 20,
+   "top": 0.0,
+   "color": "#8C877E",
+   "material": "stone"
+  },
+  {
+   "id": "beg_lawn_w",
+   "x0": -35,
+   "x1": -24,
+   "z0": -390,
+   "z1": -112.6,
+   "top": 0.0,
+   "color": "#5B7A3A",
+   "material": "grass"
+  },
+  {
+   "id": "beg_lawn",
+   "x0": -24,
+   "x1": 190,
+   "z0": -390,
+   "z1": -94.5,
+   "top": 0.0,
+   "color": "#5B7A3A",
+   "material": "grass"
+  }
+ ],
+ "water": {
+  "x0": -48,
+  "x1": -35,
+  "z0": -420,
+  "z1": 20,
+  "top": -1.0,
+  "color": "#2E4A48"
+ },
+ "begijnhof": {
+  "anchor_note": "Real footprints and heights of a begijnhof (GRB, DHM II, heritage trees), turned 180 degrees and placed by the river in the game.",
+  "houses": [
+   {
+    "x": 10.77,
+    "z": -358.75,
+    "w": 8.93,
+    "d": 6.77,
+    "yaw": 70.9,
+    "h": 9.6,
+    "ridge": 1.3,
+    "front": "+z"
+   },
+   {
+    "x": 104.96,
+    "z": -146.53,
+    "w": 12.73,
+    "d": 11.62,
+    "yaw": 161.0,
+    "h": 6.9,
+    "ridge": 2.8,
+    "front": "+z"
+   },
+   {
+    "x": 11.22,
+    "z": -303.21,
+    "w": 12.84,
+    "d": 8.98,
+    "yaw": 76.9,
+    "h": 3.6,
+    "ridge": 6.9,
+    "front": "+z"
+   },
+   {
+    "x": 103.2,
+    "z": -322.72,
+    "w": 4.26,
+    "d": 2.81,
+    "yaw": -108.8,
+    "h": 2.6,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 164.91,
+    "z": -289.88,
+    "w": 7.26,
+    "d": 3.21,
+    "yaw": -20.0,
+    "h": 3.1,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 4.22,
+    "z": -361.33,
+    "w": 9.63,
+    "d": 7.38,
+    "yaw": 70.3,
+    "h": 6.3,
+    "ridge": 2.6,
+    "front": "+z"
+   },
+   {
+    "x": 43.42,
+    "z": -327.62,
+    "w": 7.05,
+    "d": 3.24,
+    "yaw": -19.3,
+    "h": 2.8,
+    "ridge": 1.5,
+    "front": "+z"
+   },
+   {
+    "x": 1.7,
+    "z": -295.79,
+    "w": 16.96,
+    "d": 5.91,
+    "yaw": 166.9,
+    "h": 3.4,
+    "ridge": 5.3,
+    "front": "-z"
+   },
+   {
+    "x": 58.76,
+    "z": -340.85,
+    "w": 10.99,
+    "d": 6.96,
+    "yaw": -108.7,
+    "h": 7.1,
+    "ridge": 3.1,
+    "front": "-z"
+   },
+   {
+    "x": 57.52,
+    "z": -304.06,
+    "w": 9.5,
+    "d": 9.14,
+    "yaw": 151.0,
+    "h": 9.5,
+    "ridge": 2.3,
+    "front": "-z"
+   },
+   {
+    "x": 130.26,
+    "z": -317.44,
+    "w": 13.19,
+    "d": 6.47,
+    "yaw": 69.3,
+    "h": 3.3,
+    "ridge": 6.8,
+    "front": "-z"
+   },
+   {
+    "x": 181.68,
+    "z": -293.66,
+    "w": 8.61,
+    "d": 6.82,
+    "yaw": 172.3,
+    "h": 7.2,
+    "ridge": 3.3,
+    "front": "-z"
+   },
+   {
+    "x": 35.73,
+    "z": -165.39,
+    "w": 12.03,
+    "d": 3.09,
+    "yaw": 155.4,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": -23.53,
+    "z": -298.57,
+    "w": 10.92,
+    "d": 8.54,
+    "yaw": -96.9,
+    "h": 9.6,
+    "ridge": 3.5,
+    "front": "-z"
+   },
+   {
+    "x": 50.54,
+    "z": -307.95,
+    "w": 10.47,
+    "d": 9.25,
+    "yaw": -28.3,
+    "h": 5.3,
+    "ridge": 5.7,
+    "front": "+z"
+   },
+   {
+    "x": -20.66,
+    "z": -318.83,
+    "w": 10.57,
+    "d": 8.0,
+    "yaw": 164.0,
+    "h": 5.2,
+    "ridge": 4.1,
+    "front": "-z"
+   },
+   {
+    "x": 163.14,
+    "z": -219.45,
+    "w": 11.39,
+    "d": 7.1,
+    "yaw": 157.9,
+    "h": 7.8,
+    "ridge": 3.0,
+    "front": "-z"
+   },
+   {
+    "x": 98.88,
+    "z": -314.27,
+    "w": 3.55,
+    "d": 3.03,
+    "yaw": 68.9,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": -2.84,
+    "z": -210.62,
+    "w": 13.87,
+    "d": 11.88,
+    "yaw": 82.1,
+    "h": 7.7,
+    "ridge": 3.1,
+    "front": "+z"
+   },
+   {
+    "x": 166.63,
+    "z": -236.52,
+    "w": 18.86,
+    "d": 14.02,
+    "yaw": 75.4,
+    "h": 5.4,
+    "ridge": 4.2,
+    "front": "-z"
+   },
+   {
+    "x": 142.08,
+    "z": -258.4,
+    "w": 5.06,
+    "d": 2.29,
+    "yaw": -110.4,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 136.78,
+    "z": -314.96,
+    "w": 13.17,
+    "d": 7.49,
+    "yaw": -110.7,
+    "h": 3.2,
+    "ridge": 7.0,
+    "front": "+z"
+   },
+   {
+    "x": 40.87,
+    "z": -314.33,
+    "w": 13.47,
+    "d": 12.69,
+    "yaw": 62.4,
+    "h": 5.5,
+    "ridge": 5.0,
+    "front": "+z"
+   },
+   {
+    "x": -26.12,
+    "z": -188.12,
+    "w": 25.76,
+    "d": 20.27,
+    "yaw": -98.0,
+    "h": 8.2,
+    "ridge": 6.5,
+    "front": "-z"
+   },
+   {
+    "x": 71.61,
+    "z": -135.89,
+    "w": 12.62,
+    "d": 9.97,
+    "yaw": -119.5,
+    "h": 4.7,
+    "ridge": 5.1,
+    "front": "+z"
+   },
+   {
+    "x": 173.93,
+    "z": -249.97,
+    "w": 11.32,
+    "d": 6.76,
+    "yaw": -104.8,
+    "h": 6.9,
+    "ridge": 2.7,
+    "front": "+z"
+   },
+   {
+    "x": 151.44,
+    "z": -252.35,
+    "w": 18.78,
+    "d": 12.91,
+    "yaw": 73.4,
+    "h": 6.8,
+    "ridge": 3.5,
+    "front": "-z"
+   },
+   {
+    "x": 63.75,
+    "z": -139.81,
+    "w": 13.36,
+    "d": 7.83,
+    "yaw": -118.3,
+    "h": 5.9,
+    "ridge": 4.3,
+    "front": "+z"
+   },
+   {
+    "x": 91.92,
+    "z": -293.05,
+    "w": 6.38,
+    "d": 5.14,
+    "yaw": -110.5,
+    "h": 2.5,
+    "ridge": 8.9,
+    "front": "+z"
+   },
+   {
+    "x": 146.81,
+    "z": -311.09,
+    "w": 14.3,
+    "d": 13.15,
+    "yaw": 159.0,
+    "h": 3.6,
+    "ridge": 6.4,
+    "front": "-z"
+   },
+   {
+    "x": 85.61,
+    "z": -338.0,
+    "w": 10.07,
+    "d": 6.51,
+    "yaw": 160.9,
+    "h": 7.4,
+    "ridge": 2.6,
+    "front": "-z"
+   },
+   {
+    "x": 152.36,
+    "z": -221.65,
+    "w": 11.55,
+    "d": 10.61,
+    "yaw": -110.3,
+    "h": 4.0,
+    "ridge": 6.3,
+    "front": "+z"
+   },
+   {
+    "x": 79.17,
+    "z": -303.74,
+    "w": 35.64,
+    "d": 27.02,
+    "yaw": -113.2,
+    "h": 9.1,
+    "ridge": 3.6,
+    "front": "-z"
+   },
+   {
+    "x": 76.89,
+    "z": -338.4,
+    "w": 10.39,
+    "d": 6.97,
+    "yaw": -109.1,
+    "h": 3.2,
+    "ridge": 5.8,
+    "front": "-z"
+   },
+   {
+    "x": 13.83,
+    "z": -286.14,
+    "w": 19.23,
+    "d": 7.92,
+    "yaw": -9.7,
+    "h": 5.1,
+    "ridge": 7.7,
+    "front": "+z"
+   },
+   {
+    "x": 153.75,
+    "z": -199.61,
+    "w": 21.31,
+    "d": 14.85,
+    "yaw": -110.9,
+    "h": 5.2,
+    "ridge": 5.4,
+    "front": "+z"
+   },
+   {
+    "x": -11.62,
+    "z": -334.18,
+    "w": 5.31,
+    "d": 1.85,
+    "yaw": 73.9,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 132.63,
+    "z": -221.53,
+    "w": 13.76,
+    "d": 9.72,
+    "yaw": -111.9,
+    "h": 6.2,
+    "ridge": 4.5,
+    "front": "+z"
+   },
+   {
+    "x": 22.57,
+    "z": -149.46,
+    "w": 42.44,
+    "d": 14.92,
+    "yaw": -21.8,
+    "h": 10.4,
+    "ridge": 4.7,
+    "front": "-z"
+   },
+   {
+    "x": 148.34,
+    "z": -290.62,
+    "w": 13.17,
+    "d": 12.07,
+    "yaw": 69.7,
+    "h": 6.9,
+    "ridge": 3.5,
+    "front": "-z"
+   },
+   {
+    "x": 52.01,
+    "z": -343.1,
+    "w": 10.89,
+    "d": 7.28,
+    "yaw": 71.2,
+    "h": 7.2,
+    "ridge": 3.0,
+    "front": "+z"
+   },
+   {
+    "x": 45.05,
+    "z": -194.17,
+    "w": 58.33,
+    "d": 26.23,
+    "yaw": 159.4,
+    "h": 12,
+    "ridge": 9,
+    "front": "",
+    "church": true
+   },
+   {
+    "x": -17.63,
+    "z": -338.94,
+    "w": 11.12,
+    "d": 5.59,
+    "yaw": 74.0,
+    "h": 7.3,
+    "ridge": 2.0,
+    "front": "+z"
+   },
+   {
+    "x": -10.02,
+    "z": -293.15,
+    "w": 11.97,
+    "d": 6.11,
+    "yaw": 82.0,
+    "h": 7.4,
+    "ridge": 2.3,
+    "front": "+z"
+   },
+   {
+    "x": 124.36,
+    "z": -319.71,
+    "w": 13.23,
+    "d": 6.27,
+    "yaw": 69.7,
+    "h": 3.0,
+    "ridge": 6.9,
+    "front": "-z"
+   },
+   {
+    "x": 144.71,
+    "z": -208.49,
+    "w": 9.33,
+    "d": 3.53,
+    "yaw": -17.5,
+    "h": 2.7,
+    "ridge": 2.4,
+    "front": "+z"
+   },
+   {
+    "x": 4.49,
+    "z": -192.04,
+    "w": 28.25,
+    "d": 9.34,
+    "yaw": -21.7,
+    "h": 7.3,
+    "ridge": 4.7,
+    "front": "-z"
+   },
+   {
+    "x": 101.18,
+    "z": -300.39,
+    "w": 13.91,
+    "d": 5.12,
+    "yaw": -110.6,
+    "h": 5.9,
+    "ridge": 4.9,
+    "front": "+z"
+   },
+   {
+    "x": 165.58,
+    "z": -250.62,
+    "w": 4.27,
+    "d": 2.52,
+    "yaw": -15.2,
+    "h": 2.6,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 156.81,
+    "z": -287.5,
+    "w": 13.22,
+    "d": 6.37,
+    "yaw": 69.4,
+    "h": 8.2,
+    "ridge": 2.6,
+    "front": "-z"
+   },
+   {
+    "x": 56.83,
+    "z": -144.25,
+    "w": 15.07,
+    "d": 8.57,
+    "yaw": 61.7,
+    "h": 5.6,
+    "ridge": 5.1,
+    "front": "-z"
+   },
+   {
+    "x": -8.38,
+    "z": -304.82,
+    "w": 11.75,
+    "d": 6.13,
+    "yaw": 82.0,
+    "h": 7.4,
+    "ridge": 2.5,
+    "front": "+z"
+   },
+   {
+    "x": -14.64,
+    "z": -349.44,
+    "w": 11.0,
+    "d": 5.69,
+    "yaw": 73.8,
+    "h": 7.1,
+    "ridge": 2.3,
+    "front": "+z"
+   },
+   {
+    "x": 36.81,
+    "z": -324.72,
+    "w": 3.51,
+    "d": 3.25,
+    "yaw": 160.9,
+    "h": 3.8,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 59.07,
+    "z": -314.7,
+    "w": 11.51,
+    "d": 5.75,
+    "yaw": -28.0,
+    "h": 7.0,
+    "ridge": 2.5,
+    "front": "+z"
+   },
+   {
+    "x": 8.46,
+    "z": -248.84,
+    "w": 19.78,
+    "d": 13.03,
+    "yaw": -5.3,
+    "h": 3.9,
+    "ridge": 6.3,
+    "front": "+z"
+   },
+   {
+    "x": 177.75,
+    "z": -265.07,
+    "w": 19.93,
+    "d": 6.73,
+    "yaw": 76.1,
+    "h": 6.9,
+    "ridge": 2.7,
+    "front": "-z"
+   },
+   {
+    "x": -20.6,
+    "z": -328.49,
+    "w": 10.59,
+    "d": 5.48,
+    "yaw": -106.1,
+    "h": 7.4,
+    "ridge": 2.0,
+    "front": "-z"
+   },
+   {
+    "x": -38.6,
+    "z": -383.1,
+    "w": 16.18,
+    "d": 3.23,
+    "yaw": -3.7,
+    "h": 6.2,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 173.25,
+    "z": -287.6,
+    "w": 7.35,
+    "d": 2.96,
+    "yaw": -96.2,
+    "h": 2.9,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": -24.95,
+    "z": -288.53,
+    "w": 10.0,
+    "d": 8.37,
+    "yaw": 81.8,
+    "h": 3.8,
+    "ridge": 9,
+    "front": "+z"
+   },
+   {
+    "x": 52.63,
+    "z": -293.1,
+    "w": 8.81,
+    "d": 1.54,
+    "yaw": 146.1,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 98.8,
+    "z": -171.25,
+    "w": 7.77,
+    "d": 3.66,
+    "yaw": 158.3,
+    "h": 2.6,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 138.8,
+    "z": -266.36,
+    "w": 10.06,
+    "d": 8.64,
+    "yaw": 161.7,
+    "h": 8.9,
+    "ridge": 3.2,
+    "front": "-z"
+   },
+   {
+    "x": 89.05,
+    "z": -157.01,
+    "w": 4.43,
+    "d": 2.46,
+    "yaw": -22.7,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 139.56,
+    "z": -214.6,
+    "w": 5.18,
+    "d": 4.83,
+    "yaw": -110.7,
+    "h": 3.4,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 109.88,
+    "z": -173.31,
+    "w": 11.79,
+    "d": 8.8,
+    "yaw": -24.0,
+    "h": 7.4,
+    "ridge": 3.4,
+    "front": "-z"
+   },
+   {
+    "x": 106.14,
+    "z": -163.93,
+    "w": 11.78,
+    "d": 11.37,
+    "yaw": -112.0,
+    "h": 6.7,
+    "ridge": 4.2,
+    "front": "+z"
+   },
+   {
+    "x": -25.79,
+    "z": -310.14,
+    "w": 11.59,
+    "d": 5.33,
+    "yaw": -105.7,
+    "h": 7.1,
+    "ridge": 2.4,
+    "front": "-z"
+   },
+   {
+    "x": 181.09,
+    "z": -282.09,
+    "w": 16.45,
+    "d": 6.66,
+    "yaw": 82.3,
+    "h": 7.3,
+    "ridge": 3.0,
+    "front": "-z"
+   },
+   {
+    "x": 164.31,
+    "z": -279.49,
+    "w": 3.55,
+    "d": 2.92,
+    "yaw": 73.3,
+    "h": 2.9,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 158.93,
+    "z": -213.17,
+    "w": 14.86,
+    "d": 7.73,
+    "yaw": -20.9,
+    "h": 7.4,
+    "ridge": 3.3,
+    "front": "+z"
+   },
+   {
+    "x": 5.65,
+    "z": -171.15,
+    "w": 42.24,
+    "d": 33.24,
+    "yaw": 158.9,
+    "h": 4.4,
+    "ridge": 8.0,
+    "front": "+z"
+   },
+   {
+    "x": 175.45,
+    "z": -296.91,
+    "w": 4.83,
+    "d": 2.84,
+    "yaw": -9.5,
+    "h": 2.9,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 121.61,
+    "z": -200.72,
+    "w": 33.14,
+    "d": 10.28,
+    "yaw": -111.3,
+    "h": 9.6,
+    "ridge": 4.4,
+    "front": "+z"
+   },
+   {
+    "x": 113.23,
+    "z": -181.61,
+    "w": 12.05,
+    "d": 9.17,
+    "yaw": 155.8,
+    "h": 7.7,
+    "ridge": 2.9,
+    "front": "+z"
+   },
+   {
+    "x": 22.57,
+    "z": -300.14,
+    "w": 14.84,
+    "d": 12.38,
+    "yaw": -14.5,
+    "h": 3.3,
+    "ridge": 7.3,
+    "front": "+z"
+   },
+   {
+    "x": 142.3,
+    "z": -296.0,
+    "w": 7.37,
+    "d": 3.06,
+    "yaw": 70.1,
+    "h": 2.6,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 144.01,
+    "z": -223.38,
+    "w": 14.5,
+    "d": 6.48,
+    "yaw": -111.7,
+    "h": 3.5,
+    "ridge": 7.1,
+    "front": "+z"
+   },
+   {
+    "x": 135.44,
+    "z": -230.88,
+    "w": 15.22,
+    "d": 6.37,
+    "yaw": 160.3,
+    "h": 7.6,
+    "ridge": 3.1,
+    "front": "-z"
+   },
+   {
+    "x": 157.52,
+    "z": -307.07,
+    "w": 12.95,
+    "d": 10.59,
+    "yaw": -111.0,
+    "h": 3.3,
+    "ridge": 6.7,
+    "front": "+z"
+   },
+   {
+    "x": 12.94,
+    "z": -258.12,
+    "w": 13.31,
+    "d": 7.02,
+    "yaw": -10.8,
+    "h": 7.8,
+    "ridge": 3.6,
+    "front": "+z"
+   },
+   {
+    "x": 50.68,
+    "z": -150.81,
+    "w": 10.06,
+    "d": 8.51,
+    "yaw": 62.0,
+    "h": 6.2,
+    "ridge": 4.4,
+    "front": "-z"
+   },
+   {
+    "x": 167.47,
+    "z": -303.34,
+    "w": 12.84,
+    "d": 10.72,
+    "yaw": -110.7,
+    "h": 7.0,
+    "ridge": 3.0,
+    "front": "+z"
+   },
+   {
+    "x": 164.84,
+    "z": -247.88,
+    "w": 4.33,
+    "d": 3.16,
+    "yaw": 164.7,
+    "h": 2.7,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 149.32,
+    "z": -278.8,
+    "w": 14.74,
+    "d": 8.33,
+    "yaw": 159.7,
+    "h": 7.8,
+    "ridge": 3.9,
+    "front": "-z"
+   },
+   {
+    "x": 169.61,
+    "z": -267.73,
+    "w": 5.8,
+    "d": 3.21,
+    "yaw": 77.1,
+    "h": 3.0,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 180.2,
+    "z": -301.14,
+    "w": 14.94,
+    "d": 7.76,
+    "yaw": 159.0,
+    "h": 7.0,
+    "ridge": 3.2,
+    "front": "-z"
+   },
+   {
+    "x": 117.73,
+    "z": -273.74,
+    "w": 33.33,
+    "d": 19.45,
+    "yaw": -117.8,
+    "h": 8.4,
+    "ridge": 4.3,
+    "front": "+z"
+   },
+   {
+    "x": 127.68,
+    "z": -228.12,
+    "w": 4.39,
+    "d": 4.26,
+    "yaw": 157.6,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 143.88,
+    "z": -238.92,
+    "w": 5.94,
+    "d": 2.44,
+    "yaw": 161.1,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 45.47,
+    "z": -347.46,
+    "w": 14.86,
+    "d": 8.14,
+    "yaw": -109.3,
+    "h": 7.1,
+    "ridge": 3.7,
+    "front": "-z"
+   },
+   {
+    "x": 16.92,
+    "z": -356.95,
+    "w": 9.56,
+    "d": 6.07,
+    "yaw": -108.9,
+    "h": 6.0,
+    "ridge": 3.7,
+    "front": "-z"
+   },
+   {
+    "x": 100.35,
+    "z": -328.7,
+    "w": 13.81,
+    "d": 7.09,
+    "yaw": -109.3,
+    "h": 5.3,
+    "ridge": 7.2,
+    "front": "+z"
+   },
+   {
+    "x": 93.06,
+    "z": -331.34,
+    "w": 14.17,
+    "d": 8.41,
+    "yaw": 70.7,
+    "h": 3.8,
+    "ridge": 6.4,
+    "front": "-z"
+   },
+   {
+    "x": 38.85,
+    "z": -352.15,
+    "w": 10.27,
+    "d": 7.54,
+    "yaw": -108.3,
+    "h": 6.8,
+    "ridge": 2.3,
+    "front": "-z"
+   },
+   {
+    "x": 23.94,
+    "z": -354.12,
+    "w": 9.18,
+    "d": 8.73,
+    "yaw": -18.9,
+    "h": 5.5,
+    "ridge": 4.1,
+    "front": "+z"
+   },
+   {
+    "x": 32.09,
+    "z": -354.38,
+    "w": 10.33,
+    "d": 6.69,
+    "yaw": 71.7,
+    "h": 6.5,
+    "ridge": 2.8,
+    "front": "+z"
+   },
+   {
+    "x": 67.64,
+    "z": -339.25,
+    "w": 14.85,
+    "d": 11.07,
+    "yaw": 70.9,
+    "h": 7.9,
+    "ridge": 3.6,
+    "front": "+z"
+   },
+   {
+    "x": -32.6,
+    "z": -171.67,
+    "w": 12.33,
+    "d": 7.81,
+    "yaw": -97.5,
+    "h": 3.8,
+    "ridge": 2.8,
+    "front": "-z"
+   },
+   {
+    "x": 109.62,
+    "z": -329.01,
+    "w": 10.4,
+    "d": 6.54,
+    "yaw": -20.1,
+    "h": 7.4,
+    "ridge": 2.4,
+    "front": "+z"
+   },
+   {
+    "x": 117.43,
+    "z": -322.19,
+    "w": 13.4,
+    "d": 8.93,
+    "yaw": 71.7,
+    "h": 4.3,
+    "ridge": 5.7,
+    "front": "-z"
+   },
+   {
+    "x": -3.56,
+    "z": -365.32,
+    "w": 12.18,
+    "d": 10.0,
+    "yaw": 70.1,
+    "h": 4.4,
+    "ridge": 5.7,
+    "front": "+z"
+   },
+   {
+    "x": 97.8,
+    "z": -293.06,
+    "w": 6.12,
+    "d": 2.79,
+    "yaw": -21.1,
+    "h": 3.8,
+    "ridge": 9,
+    "front": "+z"
+   },
+   {
+    "x": 19.44,
+    "z": -323.29,
+    "w": 35.4,
+    "d": 24.78,
+    "yaw": 163.5,
+    "h": 8.5,
+    "ridge": 4.6,
+    "front": "-z"
+   },
+   {
+    "x": 8.24,
+    "z": -279.28,
+    "w": 27.95,
+    "d": 7.46,
+    "yaw": -7.6,
+    "h": 3.8,
+    "ridge": 9,
+    "front": "+z"
+   },
+   {
+    "x": 127.86,
+    "z": -255.29,
+    "w": 18.32,
+    "d": 16.39,
+    "yaw": -113.5,
+    "h": 5.7,
+    "ridge": 4.8,
+    "front": "+z"
+   },
+   {
+    "x": 96.78,
+    "z": -304.34,
+    "w": 9.63,
+    "d": 5.95,
+    "yaw": 69.6,
+    "h": 7.8,
+    "ridge": 2.8,
+    "front": "-z"
+   },
+   {
+    "x": 83.79,
+    "z": -283.51,
+    "w": 9.74,
+    "d": 9.62,
+    "yaw": -119.3,
+    "h": 9.0,
+    "ridge": 2.1,
+    "front": "-z"
+   },
+   {
+    "x": 91.34,
+    "z": -279.35,
+    "w": 10.02,
+    "d": 8.49,
+    "yaw": 57.9,
+    "h": 9.1,
+    "ridge": 1.8,
+    "front": "-z"
+   },
+   {
+    "x": -4.14,
+    "z": -229.16,
+    "w": 31.86,
+    "d": 25.16,
+    "yaw": 167.8,
+    "h": 8.1,
+    "ridge": 4.9,
+    "front": "+z"
+   },
+   {
+    "x": 151.96,
+    "z": -238.64,
+    "w": 7.37,
+    "d": 4.04,
+    "yaw": 73.2,
+    "h": 3.2,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": -13.03,
+    "z": -150.0,
+    "w": 4.93,
+    "d": 3.71,
+    "yaw": 158.2,
+    "h": 5.2,
+    "ridge": 7.1,
+    "front": "+z"
+   },
+   {
+    "x": 94.5,
+    "z": -125.69,
+    "w": 3.56,
+    "d": 2.92,
+    "yaw": 158.8,
+    "h": 4.0,
+    "ridge": 1.9,
+    "front": "+z"
+   },
+   {
+    "x": 93.4,
+    "z": -165.37,
+    "w": 4.09,
+    "d": 2.8,
+    "yaw": -24.7,
+    "h": 2.5,
+    "ridge": 0,
+    "front": "-z"
+   },
+   {
+    "x": 104.54,
+    "z": -278.75,
+    "w": 21.92,
+    "d": 14.48,
+    "yaw": -122.1,
+    "h": 4.7,
+    "ridge": 6.2,
+    "front": "+z"
+   },
+   {
+    "x": 9.73,
+    "z": -269.66,
+    "w": 21.06,
+    "d": 12.38,
+    "yaw": 169.3,
+    "h": 6.5,
+    "ridge": 6.1,
+    "front": "-z"
+   },
+   {
+    "x": 116.78,
+    "z": -298.05,
+    "w": 21.93,
+    "d": 10.0,
+    "yaw": -114.2,
+    "h": 6.6,
+    "ridge": 4.1,
+    "front": "+z"
+   },
+   {
+    "x": 105.85,
+    "z": -156.17,
+    "w": 17.08,
+    "d": 7.18,
+    "yaw": -19.0,
+    "h": 7.5,
+    "ridge": 3.9,
+    "front": "-z"
+   },
+   {
+    "x": 49.77,
+    "z": -319.14,
+    "w": 9.21,
+    "d": 6.83,
+    "yaw": 151.0,
+    "h": 6.7,
+    "ridge": 2.9,
+    "front": "-z"
+   },
+   {
+    "x": 108.1,
+    "z": -300.11,
+    "w": 9.69,
+    "d": 8.1,
+    "yaw": -110.9,
+    "h": 7.7,
+    "ridge": 3.0,
+    "front": "+z"
+   },
+   {
+    "x": 147.81,
+    "z": -268.23,
+    "w": 10.13,
+    "d": 8.99,
+    "yaw": 158.6,
+    "h": 6.0,
+    "ridge": 4.3,
+    "front": "-z"
+   },
+   {
+    "x": 86.59,
+    "z": -131.82,
+    "w": 29.33,
+    "d": 22.72,
+    "yaw": 68.4,
+    "h": 7.8,
+    "ridge": 5.3,
+    "front": "-z"
+   },
+   {
+    "x": 157.02,
+    "z": -264.83,
+    "w": 10.32,
+    "d": 9.37,
+    "yaw": -22.3,
+    "h": 7.8,
+    "ridge": 2.4,
+    "front": "+z"
+   },
+   {
+    "x": 135.75,
+    "z": -291.51,
+    "w": 12.35,
+    "d": 6.09,
+    "yaw": -20.3,
+    "h": 8.2,
+    "ridge": 2.5,
+    "front": "+z"
+   },
+   {
+    "x": 133.7,
+    "z": -299.31,
+    "w": 7.22,
+    "d": 2.2,
+    "yaw": -112.9,
+    "h": 2.7,
+    "ridge": 0,
+    "front": "+z"
+   },
+   {
+    "x": 127.23,
+    "z": -298.45,
+    "w": 13.33,
+    "d": 9.52,
+    "yaw": -110.9,
+    "h": 4.4,
+    "ridge": 6.5,
+    "front": "+z"
+   }
+  ],
+  "walls": [
+   {
+    "x0": 170.11,
+    "z0": -222.25,
+    "x1": 183.29,
+    "z1": -273.49
+   },
+   {
+    "x0": 183.29,
+    "z0": -273.49,
+    "x1": 187.23,
+    "z1": -302.6
+   },
+   {
+    "x0": 187.23,
+    "z0": -302.6,
+    "x1": 91.28,
+    "z1": -339.47
+   },
+   {
+    "x0": 91.28,
+    "z0": -339.47,
+    "x1": -30.24,
+    "z1": -380.55
+   },
+   {
+    "x0": -30.24,
+    "z0": -380.55,
+    "x1": -35.0,
+    "z1": -382.44
+   },
+   {
+    "x0": -35.0,
+    "z0": -382.44,
+    "x1": -35.0,
+    "z1": -370.06
+   },
+   {
+    "x0": -35.0,
+    "z0": -370.06,
+    "x1": -35.0,
+    "z1": -330.73
+   },
+   {
+    "x0": -35.0,
+    "z0": -330.73,
+    "x1": -35.0,
+    "z1": -247.46
+   },
+   {
+    "x0": -35.0,
+    "z0": -247.46,
+    "x1": -35.0,
+    "z1": -226.91
+   },
+   {
+    "x0": -35.0,
+    "z0": -226.91,
+    "x1": -34.36,
+    "z1": -202.29
+   },
+   {
+    "x0": -34.36,
+    "z0": -202.29,
+    "x1": -35.0,
+    "z1": -167.33
+   },
+   {
+    "x0": -35.0,
+    "z0": -167.33,
+    "x1": -35.0,
+    "z1": -112.4
+   },
+   {
+    "x0": -35.0,
+    "z0": -112.4,
+    "x1": 10.38,
+    "z1": -106.19
+   },
+   {
+    "x0": 10.38,
+    "z0": -106.19,
+    "x1": 9.46,
+    "z1": -103.67
+   },
+   {
+    "x0": 9.46,
+    "z0": -103.67,
+    "x1": 39.6,
+    "z1": -94.52
+   },
+   {
+    "x0": 39.6,
+    "z0": -94.52,
+    "x1": 51.34,
+    "z1": -129.99
+   },
+   {
+    "x0": 51.34,
+    "z0": -129.99,
+    "x1": 92.98,
+    "z1": -113.52
+   },
+   {
+    "x0": 92.98,
+    "z0": -113.52,
+    "x1": 93.7,
+    "z1": -118.77
+   },
+   {
+    "x0": 93.7,
+    "z0": -118.77,
+    "x1": 104.12,
+    "z1": -145.42
+   },
+   {
+    "x0": 104.12,
+    "z0": -145.42,
+    "x1": 110.24,
+    "z1": -143.09
+   },
+   {
+    "x0": 110.24,
+    "z0": -143.09,
+    "x1": 114.43,
+    "z1": -154.85
+   },
+   {
+    "x0": 114.43,
+    "z0": -154.85,
+    "x1": 119.44,
+    "z1": -152.98
+   },
+   {
+    "x0": 119.44,
+    "z0": -152.98,
+    "x1": 137.0,
+    "z1": -195.19
+   },
+   {
+    "x0": 137.0,
+    "z0": -195.19,
+    "x1": 156.88,
+    "z1": -187.01
+   },
+   {
+    "x0": 156.88,
+    "z0": -187.01,
+    "x1": 170.11,
+    "z1": -222.25
+   }
+  ],
+  "lindens": [
+   {
+    "x": 50.6,
+    "z": -169.49,
+    "h": 15.6
+   },
+   {
+    "x": 39.6,
+    "z": -174.49,
+    "h": 15.5
+   },
+   {
+    "x": 44.6,
+    "z": -173.49,
+    "h": 14.8
+   },
+   {
+    "x": 34.6,
+    "z": -177.49,
+    "h": 14.1
+   },
+   {
+    "x": 65.6,
+    "z": -162.49,
+    "h": 13.6
+   },
+   {
+    "x": 59.6,
+    "z": -165.49,
+    "h": 13.4
+   },
+   {
+    "x": 71.6,
+    "z": -161.49,
+    "h": 11.7
+   },
+   {
+    "x": 77.6,
+    "z": -157.49,
+    "h": 10.7
+   },
+   {
+    "x": 78.6,
+    "z": -268.49,
+    "h": 11.9
+   },
+   {
+    "x": 102.6,
+    "z": -252.49,
+    "h": 11.7
+   },
+   {
+    "x": 88.6,
+    "z": -262.49,
+    "h": 11.3
+   },
+   {
+    "x": 119.6,
+    "z": -230.49,
+    "h": 11.2
+   },
+   {
+    "x": 26.6,
+    "z": -255.49,
+    "h": 11.0
+   },
+   {
+    "x": 98.6,
+    "z": -255.49,
+    "h": 10.9
+   },
+   {
+    "x": 33.6,
+    "z": -289.49,
+    "h": 10.9
+   },
+   {
+    "x": 57.6,
+    "z": -282.49,
+    "h": 10.6
+   },
+   {
+    "x": 27.6,
+    "z": -261.49,
+    "h": 10.5
+   },
+   {
+    "x": 68.6,
+    "z": -274.49,
+    "h": 10.4
+   },
+   {
+    "x": 118.6,
+    "z": -240.49,
+    "h": 10.3
+   },
+   {
+    "x": 115.6,
+    "z": -225.49,
+    "h": 10.3
+   },
+   {
+    "x": 26.6,
+    "z": -248.49,
+    "h": 10.2
+   },
+   {
+    "x": 30.6,
+    "z": -273.49,
+    "h": 10.2
+   },
+   {
+    "x": 113.6,
+    "z": -220.49,
+    "h": 9.9
+   },
+   {
+    "x": 30.6,
+    "z": -279.49,
+    "h": 9.7
+   },
+   {
+    "x": 48.6,
+    "z": -286.49,
+    "h": 9.6
+   },
+   {
+    "x": 23.6,
+    "z": -243.49,
+    "h": 9.5
+   },
+   {
+    "x": 27.6,
+    "z": -267.49,
+    "h": 9.5
+   },
+   {
+    "x": 64.6,
+    "z": -278.49,
+    "h": 9.5
+   },
+   {
+    "x": 94.6,
+    "z": -258.49,
+    "h": 9.0
+   },
+   {
+    "x": 33.6,
+    "z": -283.49,
+    "h": 8.6
+   },
+   {
+    "x": 44.6,
+    "z": -291.49,
+    "h": 8.3
+   },
+   {
+    "x": 52.6,
+    "z": -283.49,
+    "h": 8.2
+   },
+   {
+    "x": 75.6,
+    "z": -264.49,
+    "h": 8.0
+   },
+   {
+    "x": 119.6,
+    "z": -235.49,
+    "h": 6.4
+   },
+   {
+    "x": 110.6,
+    "z": -213.49,
+    "h": 5.2
+   },
+   {
+    "x": 82.6,
+    "z": -264.49,
+    "h": 4.1
+   },
+   {
+    "x": 73.6,
+    "z": -270.49,
+    "h": 3.7
+   },
+   {
+    "x": 21.6,
+    "z": -226.49,
+    "h": 3.6
+   }
+  ],
+  "trees": [
+   {
+    "x": -34.24,
+    "z": -246.27,
+    "h": 18.6,
+    "kind": "maple"
+   },
+   {
+    "x": -17.8,
+    "z": -255.95,
+    "h": 18.4,
+    "kind": "maple"
+   },
+   {
+    "x": -23.83,
+    "z": -245.36,
+    "h": 20.2,
+    "kind": "beech"
+   },
+   {
+    "x": -27.12,
+    "z": -280.97,
+    "h": 8.0,
+    "kind": "chestnut"
+   },
+   {
+    "x": -29.4,
+    "z": -239.49,
+    "h": 22.8,
+    "kind": "tree"
+   },
+   {
+    "x": -12.4,
+    "z": -279.49,
+    "h": 22.3,
+    "kind": "tree"
+   },
+   {
+    "x": -31.4,
+    "z": -256.49,
+    "h": 21.3,
+    "kind": "tree"
+   },
+   {
+    "x": -28.4,
+    "z": -222.49,
+    "h": 19.5,
+    "kind": "tree"
+   },
+   {
+    "x": -18.4,
+    "z": -283.49,
+    "h": 18.6,
+    "kind": "tree"
+   },
+   {
+    "x": -15.4,
+    "z": -272.49,
+    "h": 18.5,
+    "kind": "tree"
+   },
+   {
+    "x": 14.6,
+    "z": -134.49,
+    "h": 18.5,
+    "kind": "tree"
+   },
+   {
+    "x": -28.4,
+    "z": -215.49,
+    "h": 18.3,
+    "kind": "tree"
+   },
+   {
+    "x": 7.6,
+    "z": -133.49,
+    "h": 18.0,
+    "kind": "tree"
+   },
+   {
+    "x": 87.6,
+    "z": -314.49,
+    "h": 17.9,
+    "kind": "tree"
+   },
+   {
+    "x": -7.4,
+    "z": -274.49,
+    "h": 17.6,
+    "kind": "tree"
+   },
+   {
+    "x": 16.6,
+    "z": -107.49,
+    "h": 17.1,
+    "kind": "tree"
+   },
+   {
+    "x": 25.6,
+    "z": -102.49,
+    "h": 16.9,
+    "kind": "tree"
+   },
+   {
+    "x": -5.4,
+    "z": -281.49,
+    "h": 16.6,
+    "kind": "tree"
+   },
+   {
+    "x": 66.6,
+    "z": -229.49,
+    "h": 16.3,
+    "kind": "tree"
+   },
+   {
+    "x": 66.6,
+    "z": -238.49,
+    "h": 16.2,
+    "kind": "tree"
+   },
+   {
+    "x": -6.4,
+    "z": -257.49,
+    "h": 16.1,
+    "kind": "tree"
+   },
+   {
+    "x": 12.6,
+    "z": -127.49,
+    "h": 16.1,
+    "kind": "tree"
+   },
+   {
+    "x": -5.4,
+    "z": -147.49,
+    "h": 16.0,
+    "kind": "tree"
+   },
+   {
+    "x": -29.4,
+    "z": -136.49,
+    "h": 15.9,
+    "kind": "tree"
+   },
+   {
+    "x": 96.6,
+    "z": -288.49,
+    "h": 15.8,
+    "kind": "tree"
+   },
+   {
+    "x": -0.4,
+    "z": -309.49,
+    "h": 15.7,
+    "kind": "tree"
+   },
+   {
+    "x": 63.6,
+    "z": -220.49,
+    "h": 15.2,
+    "kind": "tree"
+   },
+   {
+    "x": 1.6,
+    "z": -147.49,
+    "h": 15.0,
+    "kind": "tree"
+   },
+   {
+    "x": -32.4,
+    "z": -146.49,
+    "h": 14.9,
+    "kind": "tree"
+   },
+   {
+    "x": -21.4,
+    "z": -217.49,
+    "h": 14.8,
+    "kind": "tree"
+   },
+   {
+    "x": -1.4,
+    "z": -138.49,
+    "h": 14.6,
+    "kind": "tree"
+   }
+  ],
+  "church_door": [
+   50.09,
+   -207.57
+  ],
+  "blocks": [
+   {
+    "x0": 170.35,
+    "z0": -222.19,
+    "x1": 183.53,
+    "z1": -273.43
+   },
+   {
+    "x0": 183.54,
+    "z0": -273.46,
+    "x1": 187.48,
+    "z1": -302.57
+   },
+   {
+    "x0": 187.32,
+    "z0": -302.83,
+    "x1": 91.37,
+    "z1": -339.7
+   },
+   {
+    "x0": 91.36,
+    "z0": -339.71,
+    "x1": -30.16,
+    "z1": -380.79
+   },
+   {
+    "x0": -30.15,
+    "z0": -380.78,
+    "x1": -34.91,
+    "z1": -382.67
+   },
+   {
+    "x0": -35.25,
+    "z0": -382.44,
+    "x1": -35.25,
+    "z1": -370.06
+   },
+   {
+    "x0": -35.25,
+    "z0": -370.06,
+    "x1": -35.25,
+    "z1": -330.73
+   },
+   {
+    "x0": -35.25,
+    "z0": -330.73,
+    "x1": -35.25,
+    "z1": -247.46
+   },
+   {
+    "x0": -35.25,
+    "z0": -247.46,
+    "x1": -35.25,
+    "z1": -226.91
+   },
+   {
+    "x0": -35.25,
+    "z0": -226.9,
+    "x1": -34.61,
+    "z1": -202.28
+   },
+   {
+    "x0": -34.61,
+    "z0": -202.29,
+    "x1": -35.25,
+    "z1": -167.33
+   },
+   {
+    "x0": -35.25,
+    "z0": -167.33,
+    "x1": -35.25,
+    "z1": -112.4
+   },
+   {
+    "x0": -24.03,
+    "z0": -110.65,
+    "x1": 10.35,
+    "z1": -105.94
+   },
+   {
+    "x0": 10.15,
+    "z0": -106.28,
+    "x1": 9.23,
+    "z1": -103.76
+   },
+   {
+    "x0": 9.39,
+    "z0": -103.43,
+    "x1": 39.53,
+    "z1": -94.28
+   },
+   {
+    "x0": 39.84,
+    "z0": -94.44,
+    "x1": 51.58,
+    "z1": -129.91
+   },
+   {
+    "x0": 51.25,
+    "z0": -129.76,
+    "x1": 92.89,
+    "z1": -113.29
+   },
+   {
+    "x0": 93.23,
+    "z0": -113.49,
+    "x1": 93.95,
+    "z1": -118.74
+   },
+   {
+    "x0": 93.93,
+    "z0": -118.68,
+    "x1": 104.35,
+    "z1": -145.33
+   },
+   {
+    "x0": 104.03,
+    "z0": -145.19,
+    "x1": 110.15,
+    "z1": -142.86
+   },
+   {
+    "x0": 110.48,
+    "z0": -143.01,
+    "x1": 114.67,
+    "z1": -154.77
+   },
+   {
+    "x0": 114.34,
+    "z0": -154.62,
+    "x1": 119.35,
+    "z1": -152.75
+   },
+   {
+    "x0": 119.67,
+    "z0": -152.88,
+    "x1": 137.23,
+    "z1": -195.09
+   },
+   {
+    "x0": 136.9,
+    "z0": -194.96,
+    "x1": 156.78,
+    "z1": -186.78
+   },
+   {
+    "x0": 157.11,
+    "z0": -186.92,
+    "x1": 170.34,
+    "z1": -222.16
+   }
+  ]
+ },
+ "ducks": [
+  {
+   "x": -41,
+   "z": -20,
+   "count": 4
+  },
+  {
+   "x": -42,
+   "z": -60,
+   "count": 3
+  },
+  {
+   "x": -40,
+   "z": -140,
+   "count": 3
+  }
+ ]
 }

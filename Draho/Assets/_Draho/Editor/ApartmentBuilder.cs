@@ -62,7 +62,20 @@ namespace Draho.EditorTools
             public WildGarden wild_garden;
             public Ground[] grounds;
             public Water water;
+            public Begijnhof begijnhof;
+            public DuckSpot[] ducks;
         }
+        [Serializable] class Begijnhof
+        {
+            public BegHouse[] houses;
+            public Seg[] walls, blocks;
+            public BegTree[] lindens, trees;
+            public float[] church_door;
+        }
+        [Serializable] class BegHouse { public float x, z, w, d, yaw, h, ridge; public string front; public bool church; }
+        [Serializable] class BegTree { public float x, z, h; public string kind; }
+        [Serializable] class Seg { public float x0, z0, x1, z1; }
+        [Serializable] class DuckSpot { public float x, z; public int count; }
         [Serializable] class WildGarden
         {
             public float x0, x1, z0, z1;
@@ -136,6 +149,8 @@ namespace Draho.EditorTools
             BuildPaths(layout);
             BuildBuildings(layout);
             BuildWildGarden(layout.wild_garden);
+            BuildBegijnhof(layout.begijnhof);
+            BuildDucks(layout);
             foreach (var c in layout.climbables ?? new ClimbableInfo[0]) BuildClimbable(c);
 
             var spawn = new GameObject("SpawnPoint").transform;
@@ -771,6 +786,159 @@ namespace Draho.EditorTools
             water.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
             var respawn = water.AddComponent<WaterRespawn>();
             respawn.Configure(new Rect(w.x0, w.z0, w.x1 - w.x0, w.z1 - w.z0), w.top);
+        }
+
+        /// <summary>Mallards on the river: drakes (green head) and brown ducks, in small groups.</summary>
+        static void BuildDucks(Layout layout)
+        {
+            var w = layout.water;
+            if (w == null || layout.ducks == null) return;
+            var rng = new System.Random(8);
+            var orange = Mat("Duck_Beak", new Color(0.95f, 0.62f, 0.12f), 0.4f);
+            var brown = Mat("Duck_Brown", new Color(0.45f, 0.33f, 0.22f), 0.2f);
+            var grey = Mat("Duck_Grey", new Color(0.66f, 0.64f, 0.6f), 0.25f);
+            var green = Mat("Duck_Green", new Color(0.08f, 0.32f, 0.2f), 0.7f);
+            var white = Mat("Duck_White", new Color(0.9f, 0.9f, 0.88f), 0.3f);
+            var dark = Mat("Mouse_Eye", new Color(0.02f, 0.02f, 0.02f), 0.9f);
+            int n = 0;
+            foreach (var group in layout.ducks)
+                for (int i = 0; i < Mathf.Max(1, group.count); i++)
+                {
+                    bool drake = i % 2 == 0;
+                    var root = new GameObject($"Duck_{n++}");
+                    root.transform.SetParent(level, false);
+                    root.transform.SetPositionAndRotation(
+                        new Vector3(group.x + ((float)rng.NextDouble() - 0.5f) * 3f, w.top, group.z + ((float)rng.NextDouble() - 0.5f) * 4f),
+                        Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f));
+                    Transform Part(Transform parent, Vector3 pos, Vector3 scale, Material m, PrimitiveType type = PrimitiveType.Sphere)
+                    {
+                        var go = GameObject.CreatePrimitive(type);
+                        Object.DestroyImmediate(go.GetComponent<Collider>());
+                        go.transform.SetParent(parent, false);
+                        go.transform.localPosition = pos;
+                        go.transform.localScale = scale;
+                        go.GetComponent<Renderer>().sharedMaterial = m;
+                        return go.transform;
+                    }
+                    var body = new GameObject("Body").transform;
+                    body.SetParent(root.transform, false);
+                    Part(body, new Vector3(0f, 0.06f, 0f), new Vector3(0.2f, 0.14f, 0.36f), drake ? grey : brown);
+                    Part(body, new Vector3(0f, 0.1f, -0.19f), new Vector3(0.1f, 0.06f, 0.12f), drake ? dark : brown); // tail
+                    var head = new GameObject("Head").transform;
+                    head.SetParent(body, false);
+                    head.localPosition = new Vector3(0f, 0.17f, 0.15f);
+                    Part(head, Vector3.zero, new Vector3(0.11f, 0.11f, 0.13f), drake ? green : brown);
+                    if (drake) Part(head, new Vector3(0f, -0.06f, 0.01f), new Vector3(0.1f, 0.025f, 0.1f), white); // white collar
+                    Part(head, new Vector3(0f, -0.01f, 0.09f), new Vector3(0.05f, 0.022f, 0.08f), orange, PrimitiveType.Cube);
+                    foreach (float sx in new[] { -1f, 1f })
+                        Part(head, new Vector3(sx * 0.045f, 0.02f, 0.04f), Vector3.one * 0.016f, dark);
+                    root.AddComponent<Duck>().Configure(body, head, new Rect(w.x0, w.z0, w.x1 - w.x0, w.z1 - w.z0), w.top);
+                }
+        }
+
+        /// <summary>
+        /// The begijnhof from real data (GRB footprints, DHM II heights, listed trees), turned to lie along the
+        /// river: houses with pitched roofs, the church, the boundary wall, the lindens and the old trees.
+        /// Everything here is static scenery (batched), except the lindens the cat can climb.
+        /// </summary>
+        static void BuildBegijnhof(Begijnhof bg)
+        {
+            if (bg == null || bg.houses == null) return;
+            var root = new GameObject("Begijnhof").transform;
+            root.SetParent(level, false);
+            var plaster = new[] { "#EFEAE0", "#E9E1D2", "#F3EFE6" };
+            var bricks = new[] { "#A8644C", "#B5735A" };
+            var roofs = new[] { "#9A4A32", "#8F4530", "#5A4E48" };
+            int i = 0;
+            foreach (var h in bg.houses)
+            {
+                var house = new GameObject(h.church ? "Church" : $"House_{i}").transform;
+                house.SetParent(root, false);
+                bool brick = h.church || i % 5 < 2;
+                var b = new Building
+                {
+                    id = h.church ? "Beg_Church" : brick ? $"Beg_Brick_{i % bricks.Length}" : $"Beg_Plaster_{i % plaster.Length}",
+                    color = h.church ? "#9C6A55" : brick ? bricks[i % bricks.Length] : plaster[i % plaster.Length],
+                    roof_color = h.church ? "#4E4A48" : roofs[i % 2],
+                    material = brick ? "brick" : "plaster",
+                    x0 = -h.w / 2, x1 = h.w / 2, z0 = -h.d / 2, z1 = h.d / 2, h = h.h,
+                    ridge = h.ridge > 1f ? h.ridge : Mathf.Min(h.d, h.w) * 0.35f,
+                    front = h.front,
+                };
+                PitchedHouse(house, b); // built around the origin, then moved and turned
+                house.SetPositionAndRotation(new Vector3(h.x, 0f, h.z), Quaternion.Euler(0f, h.yaw, 0f));
+                i++;
+            }
+            var wallMat = Mat("Beg_Wall", Hex("#E8E2D6"), 0.12f);
+            var copingMat = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
+            foreach (var w in bg.walls ?? new Seg[0])
+            {
+                var a = new Vector3(w.x0, 0f, w.z0); var e = new Vector3(w.x1, 0f, w.z1);
+                float len = Vector3.Distance(a, e);
+                var rot = Quaternion.LookRotation((e - a).normalized);
+                var wall = Box("BegWall", (a + e) / 2 + Vector3.up * 1.3f, new Vector3(0.4f, 2.6f, len + 0.4f), wallMat);
+                wall.transform.rotation = rot;
+                wall.transform.SetParent(root, true);
+                var cap = Box("Coping", (a + e) / 2 + Vector3.up * 2.63f, new Vector3(0.5f, 0.06f, len + 0.5f), copingMat, collider: false);
+                cap.transform.rotation = rot;
+                cap.transform.SetParent(root, true);
+            }
+            foreach (var w in bg.blocks ?? new Seg[0]) // invisible: the cat stays inside (or on the wall)
+            {
+                var a = new Vector3(w.x0, 0f, w.z0); var e = new Vector3(w.x1, 0f, w.z1);
+                var block = Box("BegBound", (a + e) / 2 + Vector3.up * 7f, new Vector3(0.1f, 14f, Vector3.Distance(a, e) + 0.5f), null);
+                block.transform.rotation = Quaternion.LookRotation((e - a).normalized);
+                Object.DestroyImmediate(block.GetComponent<Renderer>());
+            }
+            var bark = Mat("Beg_Bark", new Color(0.33f, 0.28f, 0.24f), 0.1f);
+            var leafColours = new Dictionary<string, Color>
+            {
+                { "beech", new Color(0.33f, 0.16f, 0.17f) },   // copper beech (weeping)
+                { "chestnut", new Color(0.24f, 0.42f, 0.16f) },
+                { "maple", new Color(0.3f, 0.47f, 0.18f) },
+                { "tree", new Color(0.27f, 0.44f, 0.2f) },
+            };
+            var rng = new System.Random(21);
+            foreach (var t in bg.trees ?? new BegTree[0])
+            {
+                var tree = new GameObject($"Tree_{t.kind}").transform;
+                tree.SetParent(root, false);
+                tree.position = new Vector3(t.x, 0f, t.z);
+                float height = Mathf.Clamp(t.h, 7f, 20f), crownR = height * 0.32f;
+                bool weeping = t.kind == "beech";
+                var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                trunk.transform.SetParent(tree, false);
+                trunk.transform.localPosition = Vector3.up * height * 0.3f;
+                trunk.transform.localScale = new Vector3(0.45f, height * 0.3f, 0.45f);
+                trunk.GetComponent<Renderer>().sharedMaterial = bark;
+                var leaves = Mat($"Beg_Leaves_{t.kind}", leafColours.TryGetValue(t.kind, out var lc) ? lc : leafColours["tree"], 0.1f);
+                for (int k = 0; k < 5; k++)
+                {
+                    var blob = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.DestroyImmediate(blob.GetComponent<Collider>());
+                    blob.transform.SetParent(tree, false);
+                    float a = k * 1.26f + (float)rng.NextDouble();
+                    blob.transform.localPosition = new Vector3(Mathf.Cos(a) * crownR * 0.45f, height * (weeping ? 0.55f : 0.68f) + (k == 0 ? crownR * 0.3f : 0f), Mathf.Sin(a) * crownR * 0.45f);
+                    blob.transform.localScale = weeping ? new Vector3(crownR * 1.2f, crownR * 1.6f, crownR * 1.2f) : Vector3.one * crownR * (1.1f + 0.3f * (float)rng.NextDouble());
+                    blob.GetComponent<Renderer>().sharedMaterial = leaves;
+                }
+            }
+            if (bg.church_door != null && bg.church_door.Length == 2)
+            {
+                var marker = new GameObject("Marker_ChurchDoor");
+                marker.transform.SetParent(level, false);
+                marker.transform.position = new Vector3(bg.church_door[0], 0f, bg.church_door[1]);
+            }
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+                GameObjectUtility.SetStaticEditorFlags(child.gameObject, StaticEditorFlags.BatchingStatic);
+
+            int n = 0;
+            foreach (var l in bg.lindens ?? new BegTree[0]) // pollarded lindens: climbable, not static
+                BuildClimbable(new ClimbableInfo
+                {
+                    id = $"linden_{++n}", type = "linden", x = l.x, z = l.z, radius = 0.16f, h = 2.6f, climb_top = 2.2f,
+                    color = "#5E5248", top_color = "#5C8A35",
+                });
         }
 
         /// <summary>A house with a pitched roof (ridge along the long side), gables, a door and windows on its front.</summary>

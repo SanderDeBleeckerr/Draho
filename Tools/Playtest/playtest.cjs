@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|quay|ledge|begwall|begijnhof|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -113,6 +113,21 @@ const steps = {
     ['08_follow_end', 'move', '0.3,1,0,3'],
     ['09_wait', 'wait', '6'],
   ],
+  // Start with ?beat=17&at=-34.6,-20,270 : at the quay edge, facing the water; sit still until a duck comes.
+  ducks: [
+    ['02_sit', 'wait', '6'],
+    ['03_ducks_come', 'wait', '8'],
+    ['04_run', 'move', '0,-1,1,1.5'],
+    ['05_ducks_flee', 'wait', '3'],
+  ],
+  // Start with ?beat=18&at=-27.5,-20,180,6 : on the riverside roofs; run south along them and drop into the begijnhof.
+  roofroute: [
+    ['02_run', 'move', '0,1,1,10'],
+    ['03_run', 'move', '0,1,1,10'],
+    ['04_run', 'move', '0,1,1,10'],
+    ['05_run', 'move', '0,1,1,12'],
+    ['06_inside', 'wait', '2'],
+  ],
   // Start with ?beat=16&at=-25,-12,270,6.5 : on the riverhouse roof; run west, drop onto the quay shed and the quay.
   quay: [
     ['02_run_west', 'move', '0,1,1,2'],
@@ -120,14 +135,14 @@ const steps = {
     ['04_off_shed', 'move', '0,1,1,1.5'],
     ['05_quay', 'wait', '1.5'],
   ],
-  // Start with ?beat=17&at=-34.78,-36,180 : on the quay; run along the narrow edge to the begijnhof wall.
+  // Start with ?beat=18&at=-34.78,-36,180 : on the quay; run along the narrow edge to the begijnhof wall.
   ledge: [
     ['02_run', 'move', '0,1,1,8'],
     ['03_ledge', 'move', '0,1,1,8'],
     ['04_more', 'move', '0,1,1,8'],
     ['05_wall', 'move', '0,1,1,9'],
   ],
-  // Start with ?beat=18&at=-33,-111.55,180 : at the ivy on the begijnhof wall; climb over and drop in.
+  // Start with ?beat=19&at=-33,-111.55,180 : at the ivy on the begijnhof wall; climb over and drop in.
   begwall: [
     ['02_hold', 'hold', '3'],
     ['03_hold', 'hold', '3'],
@@ -135,12 +150,13 @@ const steps = {
     ['05_drop_in', 'move', '0,1,0,1.5'],
     ['06_inside', 'wait', '1.5'],
   ],
-  // Start with ?beat=19&at=-15,-119,180 : inside the begijnhof; lindens, then the church door.
+  // Start with ?beat=20&at=21.6,-223.5,180 : by a real linden in the begijnhof; then (teleport) the church door.
   begijnhof: [
-    ['02_to_lindens', 'move', '0,1,0,9'],
+    ['02_to_linden', 'move', '0,1,0,3'],
     ['03_sit', 'wait', '2'],
-    ['04_to_church', 'move', '0,1,1,6.5'],
-    ['05_door', 'wait', '2'],
+    ['04_church', 'call', 'StoryDirector.TestTeleport:50.1,-211.2,0'],
+    ['05_door', 'wait', '3'],
+    ['06_look_up', 'move', '0,-1,0,1'],
   ],
   // Start with ?beat=14&at=-16.5,7,90 : the hedgehog trusts the cat at once (test hook); follow it to its nest.
   nest: [
@@ -199,7 +215,10 @@ for (const [name, action, arg] of steps) {
   if (action === 'tap') await tapStick();
   else if (action === 'jump') await send('TestJump', '');
   else if (action === 'duck') await send('TestCrouch', '');
-  else if (action === 'call') { const [o, m] = arg.split('.'); await page.evaluate(([o, m]) => window.unityInstance.SendMessage(o, m), [o, m]); }
+  else if (action === 'call') {
+    const [target, value] = arg.split(':'); const [o, m] = target.split('.');
+    await page.evaluate(([o, m, v]) => v === undefined ? window.unityInstance.SendMessage(o, m) : window.unityInstance.SendMessage(o, m, v), [o, m, value]);
+  }
   else if (action === 'hold') { await send('TestHold', arg); await page.waitForTimeout(+arg * 1000); }
   else if (action === 'runjump') { await send('TestMove', arg); await page.waitForTimeout(1200); await send('TestJump', ''); await page.waitForTimeout(800); }
   else if (action === 'move') { await send('TestMove', arg); await page.waitForTimeout(+arg.split(',')[3] * 1000); }

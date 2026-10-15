@@ -82,7 +82,7 @@ const steps = {
     ['07_leap_off', 'jump', ''],
     ['08_landed', 'wait', '1.5'],
   ],
-  // Start with ?beat=4&at=-1,2.6,90 : on the terrace, looking down the garden.
+  // Start with ?beat=4&at=-1,2.6,270 : on the terrace, looking down the garden.
   garden: [
     ['02_walk', 'move', '0,1,0,3'],
     ['03_run', 'move', '0,1,1,3'],

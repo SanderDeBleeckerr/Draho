@@ -860,12 +860,15 @@ namespace Draho.EditorTools
 
         static Texture2D GrassTexture() => MakeTexture("Grass.png", 256, (x, y, size) =>
         {
-            // Blades: hashed streaks of lighter and darker green.
-            int h1 = (x * 73856093) ^ (y / 3 * 19349663);
-            int h2 = ((x / 2) * 83492791) ^ ((y / 5) * 1640531527);
-            float n = ((h1 >> 4) & 255) / 255f * 0.5f + ((h2 >> 6) & 255) / 255f * 0.5f;
-            float v = 0.8f + 0.35f * n;
-            return new Color(0.55f * v, 0.75f * v, 0.42f * v);
+            // Short blades (fine noise) over soft patches (smooth noise that tiles), low contrast.
+            int h1 = (x * 73856093) ^ (y * 19349663);
+            float blades = ((h1 >> 4) & 255) / 255f;
+            float u = x * 2f * Mathf.PI / size, w = y * 2f * Mathf.PI / size;
+            float patches = 0.5f + 0.25f * Mathf.Sin(u * 3f + Mathf.Sin(w * 2f)) * Mathf.Cos(w * 4f + 0.7f * Mathf.Sin(u * 5f))
+                            + 0.25f * Mathf.Sin(u * 7f + w * 5f) * 0.5f;
+            float v = 0.85f + 0.12f * blades + 0.15f * (patches - 0.5f);
+            float dry = Mathf.Clamp01((patches - 0.65f) * 3f) * 0.12f; // some yellowish patches
+            return new Color((0.62f + dry) * v, 0.72f * v, 0.5f * v);
         });
 
         static float Repeat(float p, int pixel, int size)

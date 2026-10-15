@@ -40,6 +40,7 @@ namespace Draho.Cat
         float timeSinceMoveInput = 99f;
         Climbable climbable;
         Vector3 wallNormal;
+        float wallDistance; // from the cat's centre to the climbed surface
         Vector3 mantleFrom, mantleTo;
 
         public CatStats Stats => stats;
@@ -166,6 +167,7 @@ namespace Draho.Cat
                 wall = hit.collider.GetComponentInParent<Climbable>();
                 if (wall == null) continue;
                 normal = Vector3.ProjectOnPlane(hit.normal, Vector3.up).normalized;
+                wallDistance = hit.distance;
                 return true;
             }
             return false;
@@ -208,7 +210,10 @@ namespace Draho.Cat
             }
 
             Vector3 right = Vector3.Cross(Vector3.up, -wallNormal);
-            Vector3 motion = Vector3.up * ClimbVelocity + right * (move.x * stats.climbSpeed * 0.5f) - wallNormal * 0.1f;
+            // Stay just in front of the climbed surface: never press under an overhang (ivy above the ground).
+            float gap = wallDistance - controller.radius - 0.02f;
+            float toWall = Mathf.Clamp(gap * 6f, -0.5f, 0.3f);
+            Vector3 motion = Vector3.up * ClimbVelocity + right * (move.x * stats.climbSpeed * 0.5f) - wallNormal * toWall;
             CollisionFlags flags = controller.Move(motion * dt);
             if ((flags & CollisionFlags.Above) != 0 && Time.frameCount % 30 == 0)
                 Debug.Log($"CAT climb blocked above at {transform.position.y:0.00}");

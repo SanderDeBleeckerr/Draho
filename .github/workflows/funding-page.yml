@@ -1,0 +1,84 @@
+# Publishes the static pages in site/ (the funding page at /Draho/funding/) without a Unity build.
+# GitHub Pages replaces the whole site on each deploy, so this workflow takes the game files
+# from the last successful "Web build" run (artifact "webgl-game") and deploys them again,
+# together with site/. The game at the site root and version.txt do not change.
+name: Funding page
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".github/workflows/funding-page.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: funding-page
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      deploy: ${{ steps.game.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find the current game build
+        id: game
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          # When the same push also changes the game, "Web build" deploys the game and site/ together.
+          if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "$BEFORE" 2>/dev/null \
+             && git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qE '^(Draho/|\.github/workflows/web-build\.yml$)'; then
+            echo "::notice::This push also changes the game. Web build publishes the funding page."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow web-build.yml --branch main \
+                   --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          if [ -z "$run_id" ] || ! gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts" \
+               --jq '.artifacts[] | select(.name=="webgl-game" and .expired==false) | .id' | grep -q .; then
+            echo "::warning::No game artifact found (it expires after 90 days). Run 'Web build (play on phone)' once; it publishes the game and the funding page."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        if: steps.game.outputs.deploy == 'true'
+        with:
+          name: webgl-game
+          path: out
+          run-id: ${{ steps.game.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Add the static pages (site/) next to the game
+        if: steps.game.outputs.deploy == 'true'
+        run: |
+          test -f out/index.html || { echo "::error::The game artifact has no index.html"; exit 1; }
+          cp -r site/. out/
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.game.outputs.deploy == 'true'
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}funding/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

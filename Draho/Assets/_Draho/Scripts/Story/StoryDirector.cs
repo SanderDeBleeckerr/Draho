@@ -128,8 +128,8 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The low roof is warm and quiet. From here Drahomil sees over the fence: the neighbour's garden, wild and empty. Nobody has been there for months.",
-                    Goal = "Climb back up the drainpipe, jump down into your garden and look for a loose plank in the fence near the maple.",
+                    Story = "From up here Drahomil sees the neighbour's garden: wild and empty for months.",
+                    Goal = "Go back down to your garden. Find a loose plank in the fence near the maple.",
                     Done = () => cat.transform.position.z > 5.3f && cat.transform.position.y < 1f,
                 },
                 new Beat
@@ -146,14 +146,14 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The hedgehog unrolls, sniffs Drahomil's nose, and trots off. It wants to show something.",
+                    Story = "The hedgehog sniffs Drahomil's nose and trots off. It wants to show something.",
                     Goal = "Follow the hedgehog. Go slowly.",
                     Done = () => hedgehog == null || (hedgehog.AtNest
                                  && Vector3.Distance(hedgehog.transform.position, cat.transform.position) < 1.6f),
                 },
                 new Beat
                 {
-                    Story = "Under the old wheelbarrow: a nest of leaves and moss, and three tiny hoglets. Drahomil will keep the secret. End of chapter 3 for now. Thank you for playing!",
+                    Story = "Under the old wheelbarrow: a nest with three tiny hoglets. Drahomil keeps the secret. End of chapter 3 for now!",
                     Goal = "",
                     Done = () => false,
                 },

@@ -77,7 +77,7 @@ namespace Draho.World
 
                 case State.Lead:
                     // Walk to the nest; wait for the cat when it is far behind.
-                    if (d < 3f) Walk(nest.position, walkSpeed * 1.3f, dt);
+                    if (d < 3.5f) Walk(nest.position, walkSpeed * 2.5f, dt); // leads at 0.35 m/s, waits for the cat
                     if (Flat(nest.position - transform.position).magnitude < 0.08f)
                     {
                         state = State.Home;

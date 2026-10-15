@@ -79,6 +79,8 @@ def main(src, dst):
         sides = {"south": ((c["x0"], c["z0"]), (c["x1"], c["z0"])), "north": ((c["x0"], c["z1"]), (c["x1"], c["z1"])),
                  "west": ((c["x0"], c["z0"]), (c["x0"], c["z1"])), "east": ((c["x1"], c["z0"]), (c["x1"], c["z1"]))}
         for side, ((sx0, sz0), (sx1, sz1)) in sides.items():
+            if side in c.get("outer_walls", []):
+                continue  # the house's outer wall is already drawn
             glass = side in c.get("glass", [])
             ax.plot([sx0, sx1], [sz0, sz1], color="#4BA3C7" if glass else "#2E2C29", lw=3 if glass else 7,
                     zorder=8, solid_capstyle="butt")

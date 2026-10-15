@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 5,
+  "version": 6,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -255,11 +255,10 @@
       "outdoor": true,
       "glass": [
         "south",
-        "west",
-        "east"
+        "west"
       ],
       "glass_height": 2.6,
-      "note": "1.8 m deep x 3 m wide, same width as the kitchen. North wall = living room north wall, east side = kitchen east wall. Wall-high glass on south, west and east. Entered through the narrowly open west glass door next to the cat tree.",
+      "note": "1.8 m deep x 3 m wide, same width as the kitchen. Its north and east sides are the outer walls of the house. Wall-high glass on the south (kitchen) and west (living room) sides. Entered through the narrowly open west glass door next to the cat tree.",
       "doors": [
         {
           "id": "court_door",
@@ -270,6 +269,10 @@
           "label": "Door",
           "note": "Right of the cat tree. Open just wide enough for Drahomil to squeeze through."
         }
+      ],
+      "outer_walls": [
+        "north",
+        "east"
       ]
     }
   ]

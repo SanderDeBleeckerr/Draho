@@ -17,7 +17,7 @@ We make a blueprint first. We place and colour the models only after the bluepri
 | Floor | Large dark-grey tiles (about 60 × 60 cm) everywhere inside. |
 | Kitchen | Island with white handle-less drawers, dark-grey top, black induction hob. A back counter with a coffee machine in front of a wood panel wall. |
 | Living room | Teal velvet 3-seat sofa against the far wall. Radiator with plants on the left. Wooden square coffee table on a red patterned rug. Cat tree (grey, sisal post) to the right of the sofa. Puzzle poster above the sofa. |
-| Inner court | Open-air court with round stones, 1.8 m × 3 m, same width as the kitchen (3 m). North wall = living room north wall, east side = kitchen east wall. Drahomil enters through the west glass door, which is open a crack, next to the cat tree. Wall-high glass on the south, west and east sides; solid north wall in line with the living room north wall. |
+| Inner court | Open-air court with round stones, 1.8 m × 3 m, same width as the kitchen (3 m). North wall = living room north wall, east side = kitchen east wall. Drahomil enters through the west glass door, which is open a crack, next to the cat tree. Its north and east sides are the outer walls of the house; wall-high glass on the south and west sides. |
 | Garden side | Floor-to-ceiling sliding glass door. Outside: terrace tiles, a wooden picnic bench, a wooden fence and a brick wall. |
 | Cat ideas | Open drawers to hide in (video), the cat tree, the radiator shelf with plants, the sofa back. |
 

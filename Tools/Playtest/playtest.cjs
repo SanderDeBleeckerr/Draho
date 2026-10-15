@@ -43,7 +43,15 @@ await page.mouse.click(426, 196); // focus the canvas
 await shot('01_spawn');
 
 // A short touch on the joystick area is a tap (jump, or stand up when the cat stands still).
-const tapStick = async () => { await page.touchscreen.tap(140, 300); log.push(`${stamp()} [input] tap stick`); };
+// Down and up 100 ms apart, like a thumb (one-frame taps can be missed by the game).
+const cdp = await page.context().newCDPSession(page);
+const tapStick = async () => {
+  const point = [{ x: 140, y: 300 }];
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: point });
+  await page.waitForTimeout(100);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  log.push(`${stamp()} [input] tap stick`);
+};
 const scenario = process.argv[4] || 'tour';
 const steps = {
   tour: [
@@ -68,7 +76,7 @@ const steps = {
     ['07_run', ['ShiftLeft', 'KeyW'], 800],
     ['08_wait', [], 4000],
   ],
-  // Start with ?beat=6&at=-3.75,3.62 : in front of the shed, facing it.
+  // Start with ?beat=5&at=-3.75,3.62 : in front of the shed, facing it.
   climb: [
     ['02_tap_still', 'tap', 500],
     ['03_rear_climb', [], 600],

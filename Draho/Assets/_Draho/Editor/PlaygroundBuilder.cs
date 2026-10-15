@@ -390,8 +390,12 @@ namespace Draho.EditorTools
         /// <summary>Safety net: the cat must face +Z and be about 0.3 m high.</summary>
         static void FixModelOrientationAndScale(GameObject model)
         {
-            var head = model.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == "Head");
-            if (head != null && model.transform.InverseTransformPoint(head.position).z < 0f)
+            var bones = model.GetComponentsInChildren<Transform>();
+            var head = bones.FirstOrDefault(t => t.name == "Head");
+            var tail = bones.FirstOrDefault(t => t.name == "Tail1");
+            float headZ = head != null ? model.transform.InverseTransformPoint(head.position).z : 0f;
+            float tailZ = tail != null ? model.transform.InverseTransformPoint(tail.position).z : 0f;
+            if (head != null && tail != null && headZ < tailZ)
             {
                 model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
                 Debug.LogWarning("Draho: cat model faced backwards; rotated it 180°.");

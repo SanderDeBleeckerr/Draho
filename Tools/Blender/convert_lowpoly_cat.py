@@ -862,6 +862,7 @@ print(f"CHECK size x {size[0]:.3f} y {size[1]:.3f} z {size[2]:.3f} m (y = nose t
 os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
 select_only(arm, body)
 arm.animation_data.action = idle
+scene.frame_set(0)  # the stored pose must be a standing cat (Unity checks the facing with it)
 bpy.ops.export_scene.fbx(
     filepath=args.out, use_selection=True, object_types={"ARMATURE", "MESH"},
     axis_forward="Z", axis_up="Y", apply_unit_scale=True, apply_scale_options="FBX_SCALE_ALL",

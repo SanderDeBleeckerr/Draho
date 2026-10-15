@@ -8,7 +8,7 @@ Claude improves the game in rounds. Each round has the same steps:
 3. **Play.** `NODE_PATH=$(npm root -g) node Tools/Playtest/playtest.cjs <url> <out-dir>` opens the
    game in headless Chromium as an iPhone in landscape, plays a short input script (walk, run, jump,
    duck, wait at the door) and saves screenshots and the browser console (`console.log`).
-   - Third argument: scenario `tour` (default), `climb` (use with `?beat=6&at=-3.75,3.62`) or `mouse`
+   - Third argument: scenario `tour` (default), `climb` (use with `?beat=5&at=-3.75,3.62`) or `mouse`
      (use with `?beat=2&at=5.9,1.05,90`).
    - `?beat=N` starts the story at beat N. `?at=x,z[,yaw]` puts the cat at a point of the blueprint (yaw: 0 = north, 90 = east).
    - Lines that start with `STORY` in the console show the story progress.

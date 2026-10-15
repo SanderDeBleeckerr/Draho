@@ -125,11 +125,13 @@ namespace Draho.Cat
                     mode = Mode.Rearing;
                     modeTimer = 0f;
                     speed = 0f;
+                    Debug.Log("CAT rear");
                 }
                 else
                 {
                     speed = carried;
                     verticalVelocity = Mathf.Sqrt(2f * -stats.gravity * stats.jumpHeight);
+                    Debug.Log($"CAT jump at {carried:0.00} m/s");
                     timeSinceGrounded = stats.coyoteTime + 1f; // no second jump in the air
                 }
             }
@@ -168,6 +170,7 @@ namespace Draho.Cat
             speed = 0f;
             verticalVelocity = 0f;
             ClimbVelocity = 0f;
+            Debug.Log($"CAT climb {wall.name}");
         }
 
         void UpdateClimb(float dt)
@@ -228,6 +231,7 @@ namespace Draho.Cat
             mantleFrom = transform.position;
             mantleTo = to;
             controller.enabled = false;
+            Debug.Log("CAT pull up");
             return true;
         }
 

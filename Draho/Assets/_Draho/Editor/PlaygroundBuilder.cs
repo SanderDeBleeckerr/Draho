@@ -259,10 +259,9 @@ namespace Draho.EditorTools
             var materials = new[]
             {
                 LitMaterial("Fur", new Color(0.12f, 0.12f, 0.135f), 0.35f),
-                LitMaterial("Eye", new Color(0.86f, 0.66f, 0.1f), 0.85f),
-                LitMaterial("Pupil", Color.black, 0.9f),
-                LitMaterial("Glint", Color.white, 0.9f),
-                LitMaterial("Nose", new Color(0.3f, 0.19f, 0.21f), 0.5f),
+                LitMaterial("Eye", Color.white, 0.85f, CatTexture("CatEye")),   // iris, pupil, highlight
+                LitMaterial("Pupil", Color.black, 0.9f),                       // lid line and mouth
+                LitMaterial("Nose", Color.white, 0.5f, CatTexture("CatNose")),  // leather and nostrils
                 LitMaterial("InnerEar", new Color(0.36f, 0.22f, 0.25f), 0.2f),
                 LitMaterial("Whisker", new Color(0.82f, 0.82f, 0.8f), 0.4f),
             }.ToDictionary(m => m.name);
@@ -285,6 +284,18 @@ namespace Draho.EditorTools
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabDir + "/Drahomil.prefab");
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        /// <summary>Face textures painted by Tools/Blender/convert_lowpoly_cat.py (clamped: they cover one part each).</summary>
+        static Texture2D CatTexture(string name)
+        {
+            string path = $"{ArtDir}/Cat/Textures/{name}.png";
+            if (AssetImporter.GetAtPath(path) is TextureImporter importer && importer.wrapMode != TextureWrapMode.Clamp)
+            {
+                importer.wrapMode = TextureWrapMode.Clamp;
+                importer.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         /// <summary>Safety net: the cat must face +Z and be about 0.3 m high.</summary>

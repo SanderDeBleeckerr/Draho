@@ -28,6 +28,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--glb", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--renders")
+ap.add_argument("--textures", help="where to write CatEye.png / CatNose.png (default: <out dir>/Textures)")
 args = ap.parse_args(argv)
 
 FPS = 24
@@ -436,15 +437,117 @@ bpy.context.view_layer.update()
 body.data.materials.clear()
 body.data.materials.append(material("Fur", (0.03, 0.03, 0.035), 0.6))
 MATS = {
-    "Eye": material("Eye", (0.86, 0.66, 0.1), 0.15),      # amber
+    "Eye": material("Eye", (1.0, 1.0, 1.0), 0.1),         # colours in CatEye.png
     "Pupil": material("Pupil", (0.0, 0.0, 0.0), 0.1),
     "Glint": material("Glint", (1.0, 1.0, 1.0), 0.1),
-    "Nose": material("Nose", (0.3, 0.19, 0.21), 0.45),     # dusky pink-grey
+    "Nose": material("Nose", (1.0, 1.0, 1.0), 0.45),       # colours in CatNose.png
     "InnerEar": material("InnerEar", (0.36, 0.22, 0.25), 0.6),
     "Whisker": material("Whisker", (0.82, 0.82, 0.8), 0.4),
 }
 
 import bmesh  # noqa: E402  (after bpy, see build_drahomil.py)
+import numpy as np  # noqa: E402  (ships with bpy)
+
+TEX_DIR = args.textures or os.path.join(os.path.dirname(os.path.abspath(args.out)), "Textures")
+os.makedirs(TEX_DIR, exist_ok=True)
+
+
+def save_texture(name, rgb):
+    """Writes an (H, W, 3) array (sRGB, 0..1, row 0 = bottom) as PNG and uses it in the material."""
+    h, w, _ = rgb.shape
+    img = bpy.data.images.new(name, w, h, alpha=False)
+    rgba = np.concatenate([np.clip(rgb, 0, 1), np.ones((h, w, 1))], axis=2)
+    img.pixels.foreach_set(rgba.astype(np.float32).ravel())
+    path = os.path.join(TEX_DIR, name + ".png")
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+    return img
+
+
+def use_texture(mat, img):
+    nodes = mat.node_tree.nodes
+    tex = nodes.new("ShaderNodeTexImage")
+    tex.image = img
+    tex.extension = "EXTEND"
+    mat.node_tree.links.new(tex.outputs["Color"], nodes["Principled BSDF"].inputs["Base Color"])
+
+
+def grid(size):
+    """Pixel centres as s, t in -1..1 (t up)."""
+    c = (np.arange(size) + 0.5) / size * 2 - 1
+    return np.meshgrid(c, c)  # s varies along x (columns), t along y (rows, bottom first)
+
+
+def mix(a, b, f):
+    f = np.clip(f, 0, 1)[..., None]
+    return np.asarray(a) * (1 - f) + np.asarray(b) * f
+
+
+def smooth(e0, e1, x):
+    t = np.clip((x - e0) / (e1 - e0), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def paint_eye(size=256):
+    """Amber cat eye: dark limbal ring, gradient iris with fibres, soft-edged slit pupil with depth,
+    shadow from the upper lid and a highlight. The almond fills about the unit circle."""
+    s, t = grid(size)
+    r = np.sqrt((s / 0.95) ** 2 + (t / 0.87) ** 2)          # 1 at the almond's edge
+    ang = np.arctan2(t, s)
+    rng = np.random.default_rng(7)
+    fibre_noise = np.interp(ang, np.linspace(-np.pi, np.pi, 90), rng.normal(0, 1, 90))
+    # Iris: light gold near the pupil -> amber -> dark olive-brown ring at the edge.
+    col = mix((0.97, 0.84, 0.36), (0.88, 0.56, 0.12), smooth(0.15, 0.75, r))
+    col = mix(col, (0.30, 0.18, 0.05), smooth(0.72, 1.0, r))
+    col *= (1 + 0.07 * np.sin(ang * 46 + 3 * fibre_noise) * smooth(0.2, 0.5, r) * (1 - smooth(0.8, 1.0, r)))[..., None]
+    # Pupil: a vertical slit with a soft edge. Depth: a dark ring of iris around it, and inside it
+    # a gradient from deep blue-green at the rim to pure black in the centre.
+    p = np.sqrt((s / 0.22) ** 2 + (t / 0.84) ** 2)
+    col *= (1 - 0.28 * (1 - smooth(1.0, 1.6, p)))[..., None]               # shadow around the pupil
+    inner = mix((0.0, 0.0, 0.0), (0.03, 0.09, 0.10), smooth(0.25, 1.0, p))
+    col = mix(inner, col, smooth(0.92, 1.08, p))
+    # Upper lid shadow: the top of the eye sits in the socket.
+    col *= (1 - 0.38 * smooth(0.15, 0.95, t))[..., None]
+    # Highlights: one big soft window light (upper left) and a small bounce (lower right).
+    hl = np.exp(-(((s + 0.38) / 0.13) ** 2 + ((t - 0.42) / 0.11) ** 2))
+    col = mix(col, (1.0, 1.0, 0.97), smooth(0.35, 0.65, hl))
+    bounce = np.exp(-(((s - 0.33) / 0.05) ** 2 + ((t + 0.38) / 0.04) ** 2))
+    col = mix(col, (1.0, 0.96, 0.85), 0.45 * smooth(0.3, 0.7, bounce))
+    return col
+
+
+def paint_nose(size=256):
+    """Black-cat nose leather: dusky pink-grey, lighter on top, two comma-shaped nostrils and a groove.
+    The texture covers the nose's bounding box: s -1..1 across, t -1 (bottom tip) .. 1 (top)."""
+    s, t = grid(size)
+    col = mix((0.26, 0.16, 0.18), (0.44, 0.31, 0.33), smooth(-0.6, 0.9, t))
+    rng = np.random.default_rng(3)
+    bumps = rng.normal(0, 1, (size // 8, size // 8))
+    bumps = np.kron(bumps, np.ones((8, 8)))[:size, :size]
+    col *= (1 + 0.04 * bumps)[..., None]                      # leather texture
+    for side in (-1, 1):
+        # Comma: a rounded opening on the lower side of the leather, with a tail that curls down
+        # towards the middle (cat nostrils open downwards and outwards).
+        cs, ct = side * 0.30, -0.02
+        a = np.radians(-30 * side)
+        u = (s - cs) * np.cos(a) + (t - ct) * np.sin(a)
+        v = -(s - cs) * np.sin(a) + (t - ct) * np.cos(a)
+        head = np.sqrt((u / 0.17) ** 2 + (v / 0.11) ** 2)
+        tail = np.sqrt(((s - side * 0.19) / 0.06) ** 2 + ((t + 0.17) / 0.11) ** 2)
+        hole = np.minimum(head, tail)
+        col *= (1 - 0.3 * (1 - smooth(1.0, 1.7, hole)))[..., None]        # rim shadow = depth
+        col = mix(col, (0.04, 0.02, 0.025), 1 - smooth(0.8, 1.05, hole))
+    groove = np.exp(-((s / 0.035) ** 2)) * smooth(-0.2, -0.45, t)
+    col = mix(col, (0.12, 0.07, 0.08), 0.8 * groove)
+    return col
+
+
+EYE_TEX = save_texture("CatEye", paint_eye())
+NOSE_TEX = save_texture("CatNose", paint_nose())
+use_texture(MATS["Eye"], EYE_TEX)
+use_texture(MATS["Nose"], NOSE_TEX)
+print(f"CHECK textures written to {TEX_DIR}")
 
 rest_mesh = body.data.copy()
 rest_obj = bpy.data.objects.new("RestProbe", rest_mesh)
@@ -467,9 +570,12 @@ def frame_at(normal, up_hint=UP):
     return x, y, z
 
 
-def part(name, mat, verts, faces, bone, closed=True):
+def part(name, mat, verts, faces, bone, closed=True, uvs=None):
     me = bpy.data.meshes.new(name)
     me.from_pydata([tuple(v) for v in verts], [], faces)
+    uv_layer = me.uv_layers.new(name="UVMap")  # same name as the body's, so the join keeps one map
+    for loop in me.loops:
+        uv_layer.data[loop.index].uv = uvs[loop.vertex_index] if uvs else (0.0, 0.0)
     if closed:  # Unity hides back faces: point every face outwards
         bm = bmesh.new()
         bm.from_mesh(me)
@@ -523,7 +629,7 @@ print(f"CHECK nose normal {tuple(round(c, 2) for c in tip_normal)}")
 # Eyes: flat almond shapes projected onto the head surface (like a decal), so they sit IN the face
 # instead of on it. Layers, from the bottom up: dark lid line, amber iris, pupil, highlight.
 # A cat's eye is mostly iris; the upper lid is flatter than the lower one; the outer corner is higher.
-EYE_W, EYE_H = 0.0088, 0.0066   # half width, half height (m): each eye about 1/5 of the head width
+EYE_W, EYE_H = 0.0115, 0.0085   # half width, half height (m)
 
 
 def almond(n, w, h, upper_power=0.9, lower_power=0.55):
@@ -538,22 +644,28 @@ def almond(n, w, h, upper_power=0.9, lower_power=0.55):
     return pts
 
 
-def decal(name, mat, outline, frame, origin, lift, bone, dome=0.0, rings=6):
+def decal(name, mat, outline, frame, origin, lift, bone, dome=0.0, rings=6, uv_box=None):
     """Projects a 2D outline (in the frame's x/y plane) onto the head surface. Concentric rings keep
     the shape close to the surface where it crosses a fold of the low-poly head."""
     x, y, z = frame
     n = len(outline)
     cu = sum(p[0] for p in outline) / n
     cv = sum(p[1] for p in outline) / n
-    verts = []
+    verts, uvs = [], []
+    # uv_box = (u0, v0, u1, v1): the outline area that the texture covers.
+    u0, v0, u1, v1 = uv_box or (min(p[0] for p in outline), min(p[1] for p in outline),
+                                max(p[0] for p in outline), max(p[1] for p in outline))
+
+    def add(uu, vv, height):
+        hit, hn = surface_hit(origin + x * uu + y * vv + z * 0.02, -z)
+        verts.append(hit + hn * height)
+        uvs.append(((uu - u0) / (u1 - u0), (vv - v0) / (v1 - v0)))
+
     for r in range(rings, 0, -1):            # outer ring first
         t = r / rings
         for u, v in outline:
-            uu, vv = cu + (u - cu) * t, cv + (v - cv) * t
-            hit, hn = surface_hit(origin + x * uu + y * vv + z * 0.02, -z)
-            verts.append(hit + hn * (lift + dome * (1 - t * t)))
-    hit, hn = surface_hit(origin + x * cu + y * cv + z * 0.02, -z)
-    verts.append(hit + hn * (lift + dome))
+            add(cu + (u - cu) * t, cv + (v - cv) * t, lift + dome * (1 - t * t))
+    add(cu, cv, lift + dome)
     centre = len(verts) - 1
     faces = []
     for r in range(rings - 1):
@@ -566,41 +678,56 @@ def decal(name, mat, outline, frame, origin, lift, bone, dome=0.0, rings=6):
     a, b, c = verts[0], verts[1], verts[centre]
     if (b - a).cross(c - a).dot(z) < 0:
         faces = [list(reversed(f)) for f in faces]
-    return part(name, mat, verts, faces, bone, closed=False)
+    return part(name, mat, verts, faces, bone, closed=False, uvs=uvs)
 
 
 for side in (-1, 1):
-    loc, n = surface_hit(Vector((side * 0.0215, tip.y + 0.2, tip.z + 0.022)), Vector((0, -1, 0)))
+    loc, n = surface_hit(Vector((side * 0.021, tip.y + 0.2, tip.z + 0.021)), Vector((0, -1, 0)))
     x, y, z = frame_at(n)
     # Outer corner up: rotate the outline in the surface plane (x points to the cat's right here).
     tilt = Matrix.Rotation(math.radians(12 * side), 3, z)
     fx, fy = tilt @ x, tilt @ y
     eye_frame = (fx, fy, z)
     parts.append(decal(f"Lid{side}", "Pupil", almond(28, EYE_W * 1.14, EYE_H * 1.18), eye_frame, loc, 0.0004, "Head"))
-    parts.append(decal(f"Eye{side}", "Eye", almond(28, EYE_W, EYE_H), eye_frame, loc, 0.0008, "Head", dome=0.0002))
-    slit = [(EYE_W * 0.2 * math.sin(a), EYE_H * 0.88 * math.cos(a)) for a in (2 * math.pi * k / 20 for k in range(20))]
-    parts.append(decal(f"Pupil{side}", "Pupil", slit, (x, y, z), loc, 0.0013, "Head", dome=0.0002))
-    glint = [(0.0009 * math.cos(a), 0.0009 * math.sin(a)) for a in (2 * math.pi * k / 6 for k in range(6))]
-    parts.append(decal(f"Glint{side}", "Glint", glint, (x, y, z), loc + y * EYE_H * 0.45 - x * side * EYE_W * 0.35,
-                       0.0017, "Head", dome=0.0001, rings=2))
+    # Iris, pupil and highlight are painted in one texture (CatEye.png): no stacked layers.
+    # The texture square covers the eye's bounding box; its "up" is the head's up, so the
+    # highlight is on the same side in both eyes (one light).
+    parts.append(decal(f"Eye{side}", "Eye", almond(28, EYE_W, EYE_H), eye_frame, loc, 0.0008, "Head", dome=0.0003,
+                       uv_box=(-EYE_W * 1.05, -EYE_H * 1.15, EYE_W * 1.05, EYE_H * 1.15)))
 
-# Nose: a small inverted triangle, slightly raised, on the nose tip.
+# Nose: a raised leather pad (a rounded, inverted triangle) with nostrils painted in CatNose.png.
+
+
+def rounded(points, iterations=3):
+    """Chaikin corner cutting: rounds the corners of a closed polygon."""
+    for _ in range(iterations):
+        out = []
+        for i, a in enumerate(points):
+            b = points[(i + 1) % len(points)]
+            out += [(0.75 * a[0] + 0.25 * b[0], 0.75 * a[1] + 0.25 * b[1]),
+                    (0.25 * a[0] + 0.75 * b[0], 0.25 * a[1] + 0.75 * b[1])]
+        points = out
+    return points
+
+
+NOSE_W, NOSE_TOP, NOSE_BOTTOM = 0.0095, 0.004, -0.0072
+nose_outline = rounded([(-NOSE_W, NOSE_TOP), (0.0, NOSE_BOTTOM), (NOSE_W, NOSE_TOP)])[::-1]
 loc, n = surface_hit(Vector((0, tip.y + 0.2, tip.z + 0.002)), Vector((0, -1, 0)))
-x, y, z = frame_at(n)
-base = loc - z * 0.0012
-nose_verts = [base - x * 0.0075 + y * 0.004, base + x * 0.0075 + y * 0.004, base - y * 0.0055,
-              base + y * 0.0005 + z * 0.0032]
-parts.append(part("Nose", "Nose", nose_verts, [[0, 1, 3], [1, 2, 3], [2, 0, 3], [0, 2, 1]], "Head"))
-nose_bottom = base - y * 0.0055
+# The snout tip faces mostly up; project the nose halfway between "up" and "forward", so it reads well
+# from the front and from above.
+x, y, z = frame_at((n + FWD).normalized())
+parts.append(decal("Nose", "Nose", nose_outline, (x, y, z), loc, 0.0003, "Head", dome=0.0016, rings=5,
+                   uv_box=(-NOSE_W, NOSE_BOTTOM, NOSE_W, NOSE_TOP)))
+nose_bottom = loc + y * (NOSE_BOTTOM + 0.0008)
 
 # Mouth: a thin dark line down from the nose that splits in two (the cat "Y").
-split = nose_bottom - y * 0.005
+split = nose_bottom - y * 0.0035
 for i, (a, b) in enumerate(((nose_bottom, split),
-                            (split, split - y * 0.004 - x * 0.0055),
-                            (split, split - y * 0.004 + x * 0.0055))):
+                            (split, split - y * 0.0025 - x * 0.004),
+                            (split, split - y * 0.0025 + x * 0.004))):
     pa, na = surface_hit(Vector((a.x, tip.y + 0.2, a.z)), -FWD)
     pb_, nb = surface_hit(Vector((b.x, tip.y + 0.2, b.z)), -FWD)
-    parts.append(prism(f"Mouth{i}", "Pupil", pa + na * 0.0004, pb_ + nb * 0.0004, 0.00045, 0.00035, "Head", sides=3))
+    parts.append(prism(f"Mouth{i}", "Pupil", pa + na * 0.0004, pb_ + nb * 0.0004, 0.0003, 0.00025, "Head", sides=3))
 
 # Whiskers: three per side from the muzzle, fanning out and drooping a little.
 for side in (-1, 1):

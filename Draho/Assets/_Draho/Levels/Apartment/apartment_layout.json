@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 11,
+  "version": 12,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -375,6 +375,19 @@
       "color": "#2F5A26",
       "top_color": "#3F7330",
       "standable": false
+    },
+    {
+      "id": "maple",
+      "type": "tree",
+      "label": "Maple (climbable to about fence height)",
+      "x": -22.0,
+      "z": 4.3,
+      "radius": 0.14,
+      "h": 2.4,
+      "climb_top": 1.9,
+      "color": "#5E5248",
+      "top_color": "#4E7A2E",
+      "standable": false
     }
   ],
   "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
@@ -411,6 +424,23 @@
       "id": "blackbird_3",
       "x": -16.0,
       "z": 3.6
+    }
+  ],
+  "garden_paths": [
+    {
+      "id": "stone_path",
+      "label": "Stone path (30 cm)",
+      "from": [
+        -5.0,
+        1.15
+      ],
+      "to": [
+        -24.0,
+        1.15
+      ],
+      "w": 0.3,
+      "slab": 0.6,
+      "color": "#A49E94"
     }
   ]
 }

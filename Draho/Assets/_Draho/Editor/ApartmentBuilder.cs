@@ -54,7 +54,9 @@ namespace Draho.EditorTools
             public ClimbableInfo[] climbables;
             public Zone[] garden_zones;
             public BirdSpot[] birds;
+            public GardenPath[] garden_paths;
         }
+        [Serializable] class GardenPath { public string id, color; public float[] from, to; public float w, slab; }
         [Serializable] class BirdSpot { public string id; public float x, z; }
         [Serializable] class Zone { public string id, material, color; public float x0, x1; }
         [Serializable] class FloorInfo { public float tile_size; public string color; }
@@ -106,6 +108,7 @@ namespace Draho.EditorTools
             foreach (var court in layout.courts ?? new Court[0]) BuildCourt(layout, court);
             foreach (var prop in layout.props) BuildProp(prop);
             BuildGarden(layout);
+            BuildPaths(layout);
             foreach (var c in layout.climbables ?? new ClimbableInfo[0]) BuildClimbable(c);
 
             var spawn = new GameObject("SpawnPoint").transform;
@@ -466,6 +469,32 @@ namespace Draho.EditorTools
             }
         }
 
+        /// <summary>Stone slabs in a line over the lawn, with a strip of grass between them.</summary>
+        static void BuildPaths(Layout layout)
+        {
+            var rng = new System.Random(3);
+            foreach (var pa in layout.garden_paths ?? new GardenPath[0])
+            {
+                var root = new GameObject(pa.id).transform;
+                root.SetParent(level, false);
+                var stone = Mat($"Apt_{pa.id}", Hex(pa.color), 0.15f);
+                var stoneDark = Mat($"Apt_{pa.id}_2", Hex(pa.color) * 0.88f, 0.15f);
+                Vector3 a = new Vector3(pa.from[0], 0f, pa.from[1]), b = new Vector3(pa.to[0], 0f, pa.to[1]);
+                float length = Vector3.Distance(a, b), slab = pa.slab > 0f ? pa.slab : 0.6f;
+                const float gap = 0.04f;
+                int count = Mathf.Max(1, Mathf.FloorToInt(length / (slab + gap)));
+                Quaternion along = Quaternion.LookRotation((b - a).normalized);
+                for (int i = 0; i < count; i++)
+                {
+                    // Flush with the lawn (its top is at -0.01); no collider: the lawn carries the cat.
+                    Vector3 c = a + (b - a) * ((i + 0.5f) / count) + Vector3.up * -0.012f;
+                    var go = Box("Slab", c, new Vector3(pa.w, 0.03f, slab), rng.Next(3) == 0 ? stoneDark : stone, collider: false);
+                    go.transform.rotation = along * Quaternion.Euler(0f, ((float)rng.NextDouble() - 0.5f) * 3f, 0f);
+                    go.transform.SetParent(root, true);
+                }
+            }
+        }
+
         /// <summary>Concrete posts with horizontal wooden planks between them.</summary>
         static void PostFence(Edge e, bool alongX, float line, float a, float b)
         {
@@ -575,24 +604,40 @@ namespace Draho.EditorTools
             }
             if (c.type == "tree")
             {
+                // A maple: a trunk the cat can climb to about fence height, a few branches, a wide crown.
                 var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 trunk.name = "Trunk";
                 trunk.transform.SetParent(root, false);
                 trunk.transform.localPosition = Vector3.up * c.h / 2;
                 trunk.transform.localScale = new Vector3(c.radius * 2, c.h / 2, c.radius * 2);
                 trunk.GetComponent<Renderer>().sharedMaterial = wood;
-                // Leaves: a few overlapping spheres, no colliders.
-                var leaves = new[] { new Vector3(0f, 0.2f, 0f), new Vector3(0.5f, 0f, 0.2f), new Vector3(-0.4f, 0.1f, -0.3f),
-                    new Vector3(0.1f, 0.5f, -0.4f), new Vector3(-0.2f, -0.1f, 0.5f) };
-                for (int i = 0; i < leaves.Length; i++)
+                var rng = new System.Random(5);
+                float Rand() => (float)rng.NextDouble();
+                for (int i = 0; i < 4; i++) // branches from the fork, no colliders
+                {
+                    var branch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    branch.name = "Branch";
+                    Object.DestroyImmediate(branch.GetComponent<Collider>());
+                    branch.transform.SetParent(root, false);
+                    Quaternion tilt = Quaternion.Euler(0f, i * 90f + 30f * Rand(), 0f) * Quaternion.Euler(30f + 15f * Rand(), 0f, 0f);
+                    float len = 1.1f + 0.4f * Rand();
+                    branch.transform.localRotation = tilt;
+                    branch.transform.localPosition = Vector3.up * (c.h - 0.2f) + tilt * Vector3.up * len / 2;
+                    branch.transform.localScale = new Vector3(c.radius, len / 2, c.radius);
+                    branch.GetComponent<Renderer>().sharedMaterial = wood;
+                }
+                var leafDark = Mat($"Apt_{c.id}_top2", Hex(c.top_color) * 0.78f, 0.1f);
+                for (int i = 0; i < 14; i++) // crown: flattened leaf clusters, no colliders
                 {
                     var crown = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     crown.name = "Leaves";
                     Object.DestroyImmediate(crown.GetComponent<Collider>());
                     crown.transform.SetParent(root, false);
-                    crown.transform.localPosition = Vector3.up * (c.h + 0.3f) + leaves[i];
-                    crown.transform.localScale = Vector3.one * (1.3f - 0.12f * i);
-                    crown.GetComponent<Renderer>().sharedMaterial = top;
+                    float angle = Rand() * Mathf.PI * 2f, r = 1.4f * Mathf.Sqrt(Rand());
+                    crown.transform.localPosition = new Vector3(Mathf.Cos(angle) * r, c.h + 0.8f + Rand() * 1.4f - r * 0.3f, Mathf.Sin(angle) * r);
+                    float size = 1.1f + 0.6f * Rand();
+                    crown.transform.localScale = new Vector3(size, size * 0.7f, size);
+                    crown.GetComponent<Renderer>().sharedMaterial = rng.Next(2) == 0 ? top : leafDark;
                 }
                 climbable.Configure(c.climb_top, false);
                 return;
@@ -817,6 +862,13 @@ namespace Draho.EditorTools
                 for (float t = a + step; t < b - 0.5f; t += step)
                     perches.Add(alongX ? new Vector3(t, top, line) : new Vector3(line, top, t));
             }
+            foreach (var c in layout.climbables ?? new ClimbableInfo[0]) // the outer branches of trees
+                if (c.type == "tree")
+                    for (int i = 0; i < 3; i++)
+                    {
+                        float angle = i * 2.1f + 0.4f;
+                        perches.Add(new Vector3(c.x + Mathf.Cos(angle) * 1.1f, c.h + 0.6f, c.z + Mathf.Sin(angle) * 0.6f));
+                    }
             var lawnZone = (layout.garden_zones ?? new Zone[0]).FirstOrDefault(z => z.material == "grass");
             var garden = layout.rooms.First(r => r.outdoor);
             var lawn = lawnZone != null

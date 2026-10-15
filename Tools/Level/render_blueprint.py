@@ -134,8 +134,19 @@ def main(src, dst):
         ax.text((ex0 + ex1) / 2, (ez0 + ez1) / 2 + (0.25 if ez0 >= 2.5 else -0.25), e["label"], ha="center",
                 va="center", fontsize=7, color="#5A4A3A", zorder=7)
 
+    # Garden paths (stone slabs).
+    for pa in lay.get("garden_paths", []):
+        (px0, pz0), (px1, pz1) = pa["from"], pa["to"]
+        ax.plot([px0, px1], [pz0, pz1], color=pa["color"], lw=4, zorder=4, solid_capstyle="butt")
+        ax.text((px0 + px1) / 2, pz0 + 0.25, pa["label"], ha="center", va="bottom", fontsize=7, color="#5A564E", zorder=5)
+
     # Climbable surfaces (ivy).
     for c in lay.get("climbables", []):
+        if c["type"] == "tree":  # trunk and crown seen from above
+            ax.add_patch(mp.Circle((c["x"], c["z"]), 1.6, facecolor=c["top_color"], alpha=0.3, edgecolor="none", zorder=9))
+            ax.add_patch(mp.Circle((c["x"], c["z"]), c["radius"], facecolor=c["color"], edgecolor="#1F3A18", zorder=10))
+            ax.text(c["x"], c["z"] - 0.45, c["label"], ha="center", va="top", fontsize=7.5, color="#1F3A18", zorder=13)
+            continue
         w, d = c.get("w", 2 * c.get("radius", 0.2)), c.get("d", 2 * c.get("radius", 0.2))
         ax.add_patch(mp.Rectangle((c["x"] - w / 2, c["z"]), w, max(d, 0.15), facecolor=c["color"],
                                   edgecolor="#1F3A18", lw=1, zorder=10))

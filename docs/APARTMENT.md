@@ -31,7 +31,7 @@ The photos are **not** in the repository, because they show people. Only the blu
 4. Where are the front door, the hallway and the stairs (if any)?
 5. Size of the garden and where the fence and the brick wall are.
 
-## Garden (blueprint v10)
+## Garden (blueprint v12)
 
 From the owner's description and open aerial data of Flanders (Digitaal Vlaanderen orthophotos and
 GRB parcel outlines, free reuse licence). The exact location is not stored in this repository.
@@ -45,4 +45,7 @@ GRB parcel outlines, free reuse licence). The exact location is not stored in th
   small **firewood stack** against it. At the far end **ivy** hangs down from the top: the cat can climb it.
 - **Game north (real south-east):** the fence to the neighbour's garden: **concrete posts with
   horizontal wooden planks** (guess: 1.8 m).
+- **Stone path:** 30 cm wide, 1 m from the building wall, from the terrace to the far end, over the lawn.
+- **Maple tree:** 2 m from the far end, close to the neighbour's fence. The cat can climb the trunk to
+  about fence height (1.9 m); the crown is higher. Blackbirds also perch in it.
 - **Far end:** not known yet (guess: wooden fence).

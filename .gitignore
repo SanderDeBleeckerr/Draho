@@ -1,0 +1,39 @@
+# Unity generated
+Draho/[Ll]ibrary/
+Draho/[Tt]emp/
+Draho/[Oo]bj/
+Draho/[Bb]uild/
+Draho/[Bb]uilds/
+Draho/[Ll]ogs/
+Draho/[Uu]ser[Ss]ettings/
+Draho/[Mm]emoryCaptures/
+Draho/[Rr]ecordings/
+
+# IDE and solution files (Unity regenerates them)
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.booproj
+*.userprefs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Builds
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Blender backups
+*.blend1
+*.blend2
+
+# Python
+__pycache__/

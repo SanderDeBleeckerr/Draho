@@ -3,6 +3,12 @@
 **Goal:** a black cat walks around one realistic room on an iPhone 11.
 **Time:** 2–4 weeks.
 
+> **Change (Oct 2026):** we start with a **playground**: one 20 × 20 m floor in empty space.
+> The cat falls when it walks off the edge, and it comes back at the start after a 10 m fall.
+> The cat is our own **placeholder model** that a Blender script makes
+> (`Tools/Blender/build_drahomil.py`). We buy assets later. The code does not depend on
+> the model, so we only swap the model.
+
 ## 1. Definition of done
 
 - [ ] The cat walks, runs and idles, and the animations blend smoothly by speed.
@@ -23,7 +29,7 @@
 | Engine | **Unity 6.3 LTS** | Unity supports it until December 2027. |
 | Render pipeline | **URP** (Universal Render Pipeline), mobile renderer | It is the only good choice for realistic graphics on mobile. |
 | Input | **Input System** package + `OnScreenStick` | This is the modern input system and it has touch support built in. |
-| Camera | **Cinemachine 3** (`CinemachineOrbitalFollow` + `CinemachineDeoccluder`) | Orbit and collision with no custom camera math. |
+| Camera | Own `OrbitCamera` (about 80 lines, sphere-cast collision) | No extra package. Easy to tune for a small cat. |
 | Character movement | `CharacterController` (kinematic) | It is predictable and cheap. Rigidbody movement is not necessary. |
 | Animation | Animator with a 1D blend tree on `Speed` and no root motion | Easy to tune. The code controls the speed. |
 | Audio | Unity Audio and animation events for paw steps | Simple. We can change to FMOD later if necessary. |
@@ -62,6 +68,7 @@ ICatInput  ──►  CatMotor  ──►  CharacterController
 ```
 Draho/                      ← git root
 ├── docs/
+├── Tools/Blender/          ← script that builds the placeholder cat
 ├── Draho/                  ← Unity project
 │   ├── Assets/
 │   │   ├── _Draho/         ← our own content (underscore keeps it at the top)
@@ -69,10 +76,13 @@ Draho/                      ← git root
 │   │   │   ├── Audio/
 │   │   │   ├── Prefabs/ (Cat, Camera, UI)
 │   │   │   ├── Scenes/ (Boot, Apartment_Room01)
+│   │   │   ├── Editor/ (PlaygroundBuilder, DrahomilModelPostprocessor)
 │   │   │   ├── Scripts/
-│   │   │   │   ├── Cat/ (CatMotor, CatAnimator, CatAudio, CatStats)
-│   │   │   │   ├── Input/ (ICatInput, TouchCatInput)
-│   │   │   │   └── Core/
+│   │   │   │   ├── Cat/ (CatMotor, CatAnimator, CatStats)
+│   │   │   │   ├── Controls/ (ICatInput, TouchCatInput)
+│   │   │   │   ├── CameraRig/ (OrbitCamera)
+│   │   │   │   ├── UI/ (VirtualJoystick, TouchLookArea)
+│   │   │   │   └── Core/ (FallRespawn, GameBootstrap)
 │   │   │   └── Settings/ (URP assets, Input Actions)
 │   │   └── ThirdParty/     ← bought assets, not changed by us
 │   ├── Packages/
@@ -110,11 +120,13 @@ Draho/                      ← git root
 ### Week 1: project foundation and movement
 - [ ] Create a Unity 6.3 LTS project with URP. Switch the platform to iOS. Lock the orientation to landscape.
 - [ ] Set up Git LFS, `.gitignore` and `.gitattributes`.
-- [ ] Install the packages: Input System, Cinemachine.
-- [ ] Use a placeholder cat (capsule) and a graybox room.
-- [ ] Write `ICatInput`, `TouchCatInput` (floating stick) and `CatMotor` + `CatStats`.
-- [ ] Add a Cinemachine orbit camera with a touch swipe and collision.
-- [ ] Use the mouse and keyboard as an extra input in the editor, for fast testing.
+- [x] Install the packages: URP, Input System, uGUI (`Packages/manifest.json`).
+- [x] Placeholder cat from Blender: mesh, 25-bone rig, Idle/Walk/Run (`Tools/Blender/build_drahomil.py`).
+- [x] Playground: a floor in empty space, fall and respawn (`FallRespawn`).
+- [x] Write `ICatInput`, `TouchCatInput` (floating stick) and `CatMotor` + `CatStats`.
+- [x] Orbit camera with touch swipe and collision (`OrbitCamera`).
+- [x] Mouse and keyboard as an extra input in the editor.
+- [ ] Open in Unity 6.3, run **Draho → Build Playground Scene**, test, commit the generated files.
 
 ### Week 2: assets
 - [ ] Buy and import the cat model and the apartment asset (see [ASSETS.md](ASSETS.md)).

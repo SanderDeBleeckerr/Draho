@@ -1,6 +1,6 @@
 # Draho: Asset Shortlist
 
-Status: **research only. Do not buy anything yet.** Check the price, the
+Status: **on hold.** Version 1 uses our own placeholder cat and an empty floor. Do not buy anything yet. Check the price, the
 Unity 6 / URP compatibility and the license on the store page before you buy.
 Prices and listings change.
 
@@ -56,4 +56,4 @@ Use only **one room** of the pack for version 1 (the living room). Keep the rest
 
 ## 4. Engine packages (free)
 
-- Universal RP, Input System and Cinemachine 3 come from the Unity Package Manager.
+- Universal RP, Input System and uGUI come from the Unity Package Manager (see `Draho/Packages/manifest.json`).

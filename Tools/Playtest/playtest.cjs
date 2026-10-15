@@ -117,7 +117,8 @@ const steps = {
   quay: [
     ['02_run_west', 'move', '0,1,1,2'],
     ['03_drop', 'move', '0,1,1,1.5'],
-    ['04_quay', 'wait', '1.5'],
+    ['04_off_shed', 'move', '0,1,1,1.5'],
+    ['05_quay', 'wait', '1.5'],
   ],
   // Start with ?beat=17&at=-34.78,-36,180 : on the quay; run along the narrow edge to the begijnhof wall.
   ledge: [
@@ -138,7 +139,7 @@ const steps = {
   begijnhof: [
     ['02_to_lindens', 'move', '0,1,0,9'],
     ['03_sit', 'wait', '2'],
-    ['04_to_church', 'move', '0,1,1,5'],
+    ['04_to_church', 'move', '0,1,1,6.5'],
     ['05_door', 'wait', '2'],
   ],
   // Start with ?beat=14&at=-16.5,7,90 : the hedgehog trusts the cat at once (test hook); follow it to its nest.

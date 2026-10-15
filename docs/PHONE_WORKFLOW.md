@@ -12,30 +12,30 @@ Phone (Claude app)  ──►  push to main  ──►  GitHub Actions (GameCI, 
 
 ## One-time setup
 
-### A. Unity license file (needs a computer one time, about 15 minutes)
+### A. Unity account (from the phone browser)
 
-Unity does not let you activate a free Personal license from the phone, so you need
-a computer for this step. A Mac or PC that you can borrow is enough. You do **not**
-need the Unity Editor or Xcode.
+The build server (a fresh GitHub VM for each build) activates the free Unity Personal
+license with your Unity email and password. You do not need a computer.
 
-1. Install **Unity Hub** from <https://unity.com/download>.
-2. Sign in with your Unity account. Make a free account if you do not have one.
-3. Go to **Preferences → Licenses → Add → Get a free personal license**.
-4. Open the license file and copy all the text in it:
-   - Mac: `/Library/Application Support/Unity/Unity_lic.ulf`
-   - Windows: `C:\ProgramData\Unity\Unity_lic.ulf`
-5. Send the text to your phone (for example, with a note to yourself). You need it in step B.
+1. Make a **new Unity account only for builds** on <https://id.unity.com>. Do not use your
+   main account. Sign in once on unity.com, so the account accepts the Unity terms.
+2. **Switch off two-step verification** for this account. A build server cannot type a code.
+3. Use a password with only letters and numbers. GameCI warns that special characters can cause problems.
+
+> This method is **experimental**. GameCI added it in September 2026 (game-ci/cli PR #246),
+> and it uses Unity licensing flags that Unity does not document. The build script always
+> returns the license seat at the end, also when the build fails.
 
 ### B. GitHub secrets (from the phone browser)
 
 Go to **github.com → Draho → Settings → Secrets and variables → Actions →
-New repository secret**. Add these three secrets:
+New repository secret**. Add these secrets:
 
 | Name | Value |
 |---|---|
-| `UNITY_LICENSE` | All the text of `Unity_lic.ulf` |
-| `UNITY_EMAIL` | The email of your Unity account |
-| `UNITY_PASSWORD` | The password of your Unity account. GameCI warns that special characters can cause problems. |
+| `UNITY_EMAIL` | The email of the build-only Unity account |
+| `UNITY_PASSWORD` | Its password |
+| `UNITY_LICENSE` | *Optional backup.* The text of a `Unity_lic.ulf` file. Use it only if the email + password method fails. You need a computer with Unity Hub one time to make this file (Preferences → Licenses → Add → free personal license). |
 
 Secrets are encrypted. Claude cannot read them, and other people cannot see them.
 

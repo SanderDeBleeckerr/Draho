@@ -21,19 +21,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      # With a .ulf license file we use the standard GameCI action. Without one, we activate
+      # the Personal license inside the container with email + password (experimental).
+      HAS_ULF: ${{ secrets.UNITY_LICENSE != '' }}
     steps:
       - name: Check Unity secrets
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
-          missing=""
-          [ -z "$UNITY_LICENSE" ] && missing="$missing UNITY_LICENSE"
-          [ -z "$UNITY_EMAIL" ] && missing="$missing UNITY_EMAIL"
-          [ -z "$UNITY_PASSWORD" ] && missing="$missing UNITY_PASSWORD"
-          if [ -n "$missing" ]; then
-            echo "::error::Missing repository secrets:$missing. See docs/PHONE_WORKFLOW.md."
+          if [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+            echo "::error::Add the repository secrets UNITY_EMAIL and UNITY_PASSWORD. See docs/PHONE_WORKFLOW.md."
             exit 1
           fi
 
@@ -45,7 +44,8 @@ jobs:
           key: Library-WebGL-${{ hashFiles('Draho/Assets/**', 'Draho/Packages/**', 'Draho/ProjectSettings/**') }}
           restore-keys: Library-WebGL-
 
-      - name: Build WebGL
+      - name: Build WebGL (license file)
+        if: env.HAS_ULF == 'true'
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -57,6 +57,22 @@ jobs:
           targetPlatform: WebGL
           buildMethod: Draho.EditorTools.CiBuild.BuildWebGL
           allowDirtyBuild: true
+
+      - name: Build WebGL (email + password, no license file)
+        if: env.HAS_ULF != 'true'
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          docker run --rm \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e WORKSPACE=/github/workspace \
+            -v "$GITHUB_WORKSPACE:/github/workspace" -w /github/workspace \
+            unityci/editor:ubuntu-6000.3.26f1-webgl-3 \
+            bash .github/scripts/unity-personal-build.sh
+          sudo chown -R "$(id -u):$(id -g)" build Draho/Library
+
+      - name: Check build output
+        run: test -f build/WebGL/WebGL/index.html || { echo "::error::No index.html in build/WebGL/WebGL"; ls -R build | head -50; exit 1; }
 
       - uses: actions/upload-pages-artifact@v3
         with:

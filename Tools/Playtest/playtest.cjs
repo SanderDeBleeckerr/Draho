@@ -138,16 +138,16 @@ const steps = {
   exit: [
     ['02_climb_shed', 'hold', '4.5'],
     ['03_on_shed', 'wait', '1'],
-    ['04_jump_wall', 'movejump', '0,1,0,1.6,0.5'],
+    ['04_jump_wall', 'movejump', '0,1,0,5,4.3'],
     ['05_on_wall', 'wait', '1'],
-    ['06_walk_west', 'move', '-1,0,0,3'],
+    ['06_walk_west', 'move', '-1,0,0,4'],
     ['07_drop_out', 'move', '0,1,0,1.5'],
     ['08_quay', 'wait', '1'],
   ],
   // Start with ?beat=22&at=-33,-93,270 : on the quay at the footbridge; cross it, find the bakery, hunt its mouse.
   bakery: [
-    ['02_cross', 'move', '0,1,1,8'],
-    ['03_to_shop', 'move', '-1,0,0,6'],
+    ['02_cross', 'move', '0,1,1,11'],
+    ['03_to_shop', 'move', '-1,0,0,9'],
     ['04_look', 'wait', '3'],
     ['05_duck', 'duck', ''],
     ['06_sneak', 'move', '0,1,0,3'],

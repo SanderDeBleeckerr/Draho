@@ -20,7 +20,7 @@ Drahomil is a real cat. He lives in Flanders, Belgium, and the first level of th
 | **Genre** | Cozy 3D adventure with stealth and hunting |
 | **Platform** | iPhone (landscape). A web test build runs in any modern browser |
 | **Engine** | Unity 6 |
-| **Developer** | Sander, a solo hobby developer from Flanders |
+| **Developer** | San, a solo hobby developer from Flanders |
 | **Started** | 14 October 2026 |
 | **Status** | Early development. Playable test build, free |
 | **Price model (plan)** | Free to play with cosmetic purchases only. No pay-to-win |

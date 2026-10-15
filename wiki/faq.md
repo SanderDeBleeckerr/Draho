@@ -32,7 +32,7 @@ The plan is free to play with cosmetic purchases only: collars, beds, fur patter
 
 ## Who makes it?
 
-Sander, a solo hobby developer from Flanders. See [The developer](behind-the-game/developer.md).
+San, a solo hobby developer from Flanders. See [The developer](behind-the-game/developer.md).
 
 ## How can I help?
 

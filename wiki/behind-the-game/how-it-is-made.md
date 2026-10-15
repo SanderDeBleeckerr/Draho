@@ -22,7 +22,7 @@ from Flanders (Digitaal Vlaanderen aerial photos and GRB parcel outlines). The e
 
 1. A change is saved to the project.
 2. GitHub builds the game for the web in about 6 to 10 minutes.
-3. Sander plays the new build on his iPhone.
+3. San plays the new build on his iPhone.
 4. His notes ("the cat is too small on screen", "the path looks white in the sun") become the next change.
 
 ## Assets and credits

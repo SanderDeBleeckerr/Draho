@@ -41,7 +41,7 @@ def main(src, dst):
     t = lay["wall"]["thickness"]
 
     span = max(r["x1"] for r in rooms) - min(min(r["x0"] for r in rooms), *(b["x0"] for b in lay.get("buildings", [])))
-    depth = max(r["z1"] for r in rooms) - min(min(r["z0"] for r in rooms), *(b["z0"] for b in lay.get("buildings", [])))
+    depth = max([r["z1"] for r in rooms] + [b["z1"] for b in lay.get("buildings", [])]) - min(min(r["z0"] for r in rooms), *(b["z0"] for b in lay.get("buildings", [])))
     fig, ax = plt.subplots(figsize=(max(14, span * 0.75), max(6.2, depth * 0.62)), dpi=120)
     ax.set_facecolor("#F7F5F0")
 
@@ -148,6 +148,23 @@ def main(src, dst):
         (ex0, ez0), (ex1, ez1) = e["from"], e["to"]
         ax.plot([ex0, ex1], [ez0, ez1], color="#C0392B", lw=1, ls=":", zorder=6)
 
+    # The neighbour's wild garden.
+    w = lay.get("wild_garden")
+    if w:
+        ax.add_patch(mp.Rectangle((w["x0"], w["z0"]), w["x1"] - w["x0"], w["z1"] - w["z0"], facecolor=w["color"], alpha=0.45,
+                                  edgecolor="none", zorder=1))
+        ax.text((w["x0"] + w["x1"]) / 2, w["z1"] - 0.4, w["label"], ha="center", va="center", fontsize=8, color="#2F3A18", zorder=5)
+        for b in w.get("bushes", []):
+            ax.add_patch(mp.Circle((b["x"], b["z"]), b["r"], facecolor="#2B3D1E", alpha=0.7, zorder=4))
+        for key in ("wheelbarrow", "chair", "barrel", "hedgehog"):
+            if key in w:
+                ax.plot(w[key]["x"], w[key]["z"], "o" if key != "hedgehog" else "*", color="#6B3A1E", markersize=7, zorder=8)
+                ax.text(w[key]["x"], w[key]["z"] - 0.3, key, ha="center", va="top", fontsize=7, color="#3A2A1A", zorder=8)
+    for e in lay.get("garden_edges", []):
+        if e.get("gap_w"):
+            ax.plot(e["gap_at"], e["from"][1], "s", color="#F5E663", markersize=8, zorder=9)
+            ax.text(e["gap_at"], e["from"][1] - 0.3, "loose plank", ha="center", va="top", fontsize=7, zorder=9)
+
     # Garden paths (stone slabs).
     for pa in lay.get("garden_paths", []):
         (px0, pz0), (px1, pz1) = pa["from"], pa["to"]
@@ -220,7 +237,8 @@ def main(src, dst):
     bx0 = min([gx0] + [b["x0"] for b in lay.get("buildings", [])])
     bz0 = min([z0] + [b["z0"] for b in lay.get("buildings", [])])
     ax.set_xlim(bx0 - 0.5, x1 + 1.1)
-    ax.set_ylim(bz0 - 1.2, z1 + 0.6)
+    bz1 = max([z1] + [b["z1"] for b in lay.get("buildings", [])])
+    ax.set_ylim(bz0 - 1.2, bz1 + 0.6)
     ax.axis("off")
     fig.tight_layout()
     fig.savefig(dst, facecolor=fig.get_facecolor())

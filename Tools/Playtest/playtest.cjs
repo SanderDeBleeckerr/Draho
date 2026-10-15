@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -101,6 +101,20 @@ const steps = {
     ['06_on_roof', 'wait', '1'],
     ['07_walk_roof', 'move', '0,1,0,3'],
     ['08_look', 'wait', '1'],
+  ],
+  // Start with ?beat=12&at=-18,7,90 : in the wild garden, the hedgehog ahead. Sit still, then follow it.
+  hedgehog: [
+    ['02_walk_close', 'move', '0,1,0,3.5'],
+    ['03_sit_still', 'wait', '6'],
+    ['04_trust', 'wait', '3'],
+    ['05_follow', 'move', '0,1,0,4'],
+    ['06_follow_more', 'move', '0,1,0,4'],
+    ['07_wait', 'wait', '8'],
+  ],
+  // Start with ?beat=11&at=-19.5,4.4,0 : in front of the loose plank in the fence; walk through it.
+  fence: [
+    ['02_through', 'move', '0,1,0,2.5'],
+    ['03_wild', 'wait', '1'],
   ],
   // Start with ?beat=9&at=-7,-4.15,180,5.8 : on the lower roof, in front of the drainpipe.
   pipe: [

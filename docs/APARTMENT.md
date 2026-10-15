@@ -31,7 +31,7 @@ The photos are **not** in the repository, because they show people. Only the blu
 4. Where are the front door, the hallway and the stairs (if any)?
 5. Size of the garden and where the fence and the brick wall are.
 
-## Garden (blueprint v13)
+## Garden (blueprint v14)
 
 From the owner's description and open aerial data of Flanders (Digitaal Vlaanderen orthophotos and
 GRB parcel outlines, free reuse licence). The exact location is not stored in this repository.
@@ -52,3 +52,11 @@ GRB parcel outlines, free reuse licence). The exact location is not stored in th
 - **Rooftops (chapter 2):** behind the ivy wall is a flat roof at about 6.5 m, about 13 m x 22 m. Next to it:
   a lower roof (5.8 m), a high block (8.6 m, with a drainpipe) and a low back roof (3.7 m). Heights come from
   the open Flemish height model (DHM II, surface minus terrain, 1 m grid).
+
+## The neighbour's garden (chapter 3)
+
+From the height model: a strip about 24 m x 4.5 m over the east fence, mostly low wild growth (no trees),
+closed at the back by the long wall of a workshop (about 5.5 m) and near the house by a low annex (about 3 m).
+The owner says the neighbour is almost never home and the garden is wild. In the game: a loose plank in the
+fence near the maple, tall grass, brambles, an upside-down wheelbarrow (hedgehog nest), a fallen chair, a barrel.
+

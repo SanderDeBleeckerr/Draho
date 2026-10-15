@@ -7,8 +7,8 @@ surface and terrain models). Only relative game metres go into this repository.
 | # | Chapter | Area | Main activities | Target time | Status |
 |---|---|---|---|---|---|
 | 1 | The scratching sound | Apartment and garden | Explore, jump, catch the mouse, stalk blackbirds, climb the maple and the ivy | 25 min | Playable |
-| 2 | The Rooftops | Flat roofs behind the ivy wall (3.7–8.6 m) | Climb the ivy to the roof, drainpipe to the high block, drop to the low roof | 30 min | First part playable |
-| 3 | Over the fence | The neighbour's garden and outbuilding (4.2 m) | A dog that sleeps (and wakes up), a pond, hiding under bushes | 30 min | Planned |
+| 2 | The Rooftops | Flat roofs behind the ivy wall (3.7–8.6 m) | Climb the ivy to the roof, drainpipe to the high block, drop to the low roof, a drainpipe back up | 30 min | First part playable |
+| 3 | Over the Fence | The neighbour's wild garden (nobody home for months), workshop wall | A loose plank in the fence, tall grass, brambles, a hedgehog that must learn to trust the cat, its nest | 30 min | First part playable |
 | 4 | The inner court | Round-stone court inside the apartment block | Pigeons, a cat flap, a lost toy | 25 min | Planned |
 | 5 | Night | All areas after sunset | Moths, a fox, the street light; find the way home | 35 min | Planned |
 | 6 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |

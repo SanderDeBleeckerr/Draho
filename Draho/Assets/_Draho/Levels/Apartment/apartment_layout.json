@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 13,
+  "version": 14,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -252,7 +252,10 @@
       "h": 1.8,
       "color": "#8A6E52",
       "post_color": "#B5B0A8",
-      "post_spacing": 2.0
+      "post_spacing": 2.0,
+      "gap_at": -19.5,
+      "gap_w": 0.4,
+      "gap_h": 0.4
     }
   ],
   "spawn": {
@@ -387,6 +390,21 @@
       "color": "#6E6E6A",
       "top_color": "#6E6E6A",
       "standable": true
+    },
+    {
+      "id": "drainpipe_back",
+      "type": "pipe",
+      "label": "Drainpipe from the low roof back up",
+      "x": -10.94,
+      "z": -16.0,
+      "radius": 0.05,
+      "h": 6.5,
+      "bottom": 3.7,
+      "climb_top": 6.5,
+      "color": "#6E6E6A",
+      "top_color": "#6E6E6A",
+      "standable": true,
+      "wall": "-x"
     }
   ],
   "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
@@ -498,6 +516,28 @@
       "h": 4.2,
       "color": "#9A8A78",
       "roof_color": "#5E5B56"
+    },
+    {
+      "id": "neighbour_workshop",
+      "label": "Neighbour's workshop (5.5 m)",
+      "x0": -28,
+      "x1": -8,
+      "z0": 9.5,
+      "z1": 17,
+      "h": 5.5,
+      "color": "#9C8C7E",
+      "roof_color": "#5E5B56"
+    },
+    {
+      "id": "neighbour_annex",
+      "label": "Neighbour's annex (3 m)",
+      "x0": -2,
+      "x1": 2,
+      "z0": 5.15,
+      "z1": 9,
+      "h": 3.0,
+      "color": "#C9BFB2",
+      "roof_color": "#5E5B56"
     }
   ],
   "roof_props": [
@@ -587,6 +627,28 @@
       "to": [
         -24,
         0
+      ]
+    },
+    {
+      "id": "wild_west",
+      "from": [
+        -26,
+        5
+      ],
+      "to": [
+        -26,
+        9.5
+      ]
+    },
+    {
+      "id": "wild_north",
+      "from": [
+        -8,
+        9.5
+      ],
+      "to": [
+        -2,
+        9.5
       ]
     }
   ],
@@ -880,5 +942,65 @@
       "yaw": -88.7,
       "h": 3.0
     }
-  ]
+  ],
+  "wild_garden": {
+    "label": "The neighbour's wild garden (nobody home for months)",
+    "x0": -26,
+    "x1": -2,
+    "z0": 5.06,
+    "z1": 9.5,
+    "color": "#5E6A34",
+    "grass_clumps": 26,
+    "bushes": [
+      {
+        "x": -25,
+        "z": 6.2,
+        "r": 0.6
+      },
+      {
+        "x": -24.6,
+        "z": 8.7,
+        "r": 0.7
+      },
+      {
+        "x": -14,
+        "z": 9.1,
+        "r": 0.5
+      },
+      {
+        "x": -9,
+        "z": 5.7,
+        "r": 0.4
+      },
+      {
+        "x": -4.5,
+        "z": 9.1,
+        "r": 0.6
+      },
+      {
+        "x": -3,
+        "z": 6,
+        "r": 0.45
+      }
+    ],
+    "wheelbarrow": {
+      "x": -6.5,
+      "z": 8.2,
+      "yaw": 80
+    },
+    "chair": {
+      "x": -17,
+      "z": 7.6,
+      "yaw": 30
+    },
+    "barrel": {
+      "x": -11.5,
+      "z": 8.9
+    },
+    "hedgehog": {
+      "x": -15,
+      "z": 7.0,
+      "yaw": 90
+    }
+  }
 }

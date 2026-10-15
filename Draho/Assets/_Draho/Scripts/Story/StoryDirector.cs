@@ -33,6 +33,7 @@ namespace Draho.Story
         SlidingDoor door;
         Bird[] birds;
         Climbable maple;
+        Hedgehog hedgehog;
         int index = -1;
         float beatTime;
         float walked;
@@ -50,6 +51,7 @@ namespace Draho.Story
             cat = FindAnyObjectByType<CatMotor>();
             door = FindAnyObjectByType<SlidingDoor>();
             birds = FindObjectsByType<Bird>(FindObjectsSortMode.None);
+            hedgehog = FindAnyObjectByType<Hedgehog>();
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
 
@@ -126,7 +128,32 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "End of chapter 2 for now. More of the block comes soon. Thank you for playing!",
+                    Story = "The low roof is warm and quiet. From here Drahomil sees over the fence: the neighbour's garden, wild and empty. Nobody has been there for months.",
+                    Goal = "Climb back up the drainpipe, jump down into your garden and look for a loose plank in the fence near the maple.",
+                    Done = () => cat.transform.position.z > 5.3f && cat.transform.position.y < 1f,
+                },
+                new Beat
+                {
+                    Story = "Chapter 3: Over the Fence. The grass is as high as a cat. Something snuffles in it.",
+                    Goal = "Find what is snuffling in the tall grass.",
+                    Done = () => hedgehog == null || Vector3.Distance(hedgehog.transform.position, cat.transform.position) < 1.2f,
+                },
+                new Beat
+                {
+                    Story = "A hedgehog! It rolls into a prickly ball. Hedgehogs need time to trust a cat.",
+                    Goal = "Sit still close to the hedgehog. Do not move.",
+                    Done = () => hedgehog == null || hedgehog.Trusts,
+                },
+                new Beat
+                {
+                    Story = "The hedgehog unrolls, sniffs Drahomil's nose, and trots off. It wants to show something.",
+                    Goal = "Follow the hedgehog. Go slowly.",
+                    Done = () => hedgehog == null || (hedgehog.AtNest
+                                 && Vector3.Distance(hedgehog.transform.position, cat.transform.position) < 1.6f),
+                },
+                new Beat
+                {
+                    Story = "Under the old wheelbarrow: a nest of leaves and moss, and three tiny hoglets. Drahomil will keep the secret. End of chapter 3 for now. Thank you for playing!",
                     Goal = "",
                     Done = () => false,
                 },

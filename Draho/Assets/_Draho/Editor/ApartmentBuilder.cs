@@ -59,7 +59,17 @@ namespace Draho.EditorTools
             public Prop[] roof_props;
             public Edge[] bounds;
             public ContextBuilding[] context_buildings;
+            public WildGarden wild_garden;
         }
+        [Serializable] class WildGarden
+        {
+            public float x0, x1, z0, z1;
+            public string color;
+            public int grass_clumps;
+            public Spot[] bushes;
+            public Spot wheelbarrow, chair, barrel, hedgehog;
+        }
+        [Serializable] class Spot { public float x, z, r, yaw; }
         [Serializable] class ContextBuilding { public float x, z, w, d, yaw, h; }
         [Serializable] class Building { public string id, color, roof_color; public float x0, x1, z0, z1, h; }
         [Serializable] class GardenPath { public string id, color; public float[] from, to; public float w, slab; }
@@ -87,12 +97,13 @@ namespace Draho.EditorTools
             public string id, color, style, post_color, material;
             public float[] from, to;
             public float h, post_spacing;
+            public float gap_at, gap_w, gap_h; // a hole at the bottom of a fence (a loose plank)
         }
         [Serializable] class Spawn { public float x, z; public string facing; }
         [Serializable] class Hole { public string id, facing; public float x, z; }
         [Serializable] class ClimbableInfo
         {
-            public string id, type, color, top_color;
+            public string id, type, color, top_color, wall; // wall: where the wall is, seen from a pipe ("-z" default, "-x")
             public float x, z, w, d, h, radius, climb_top, bottom;
             public bool standable;
         }
@@ -116,6 +127,7 @@ namespace Draho.EditorTools
             BuildGarden(layout);
             BuildPaths(layout);
             BuildBuildings(layout);
+            BuildWildGarden(layout.wild_garden);
             foreach (var c in layout.climbables ?? new ClimbableInfo[0]) BuildClimbable(c);
 
             var spawn = new GameObject("SpawnPoint").transform;
@@ -540,6 +552,188 @@ namespace Draho.EditorTools
             }
         }
 
+        /// <summary>
+        /// The neighbour's garden, left alone for months: long yellow-green grass, clumps of tall grass the
+        /// cat walks through, brambles, an old wheelbarrow (the hedgehog nest), a fallen chair, a rusty barrel.
+        /// </summary>
+        static void BuildWildGarden(WildGarden w)
+        {
+            if (w == null || w.x1 <= w.x0) return;
+            var root = new GameObject("WildGarden").transform;
+            root.SetParent(level, false);
+            float len = w.x1 - w.x0, depth = w.z1 - w.z0;
+            Box("WildGround", new Vector3((w.x0 + w.x1) / 2, -0.06f, (w.z0 + w.z1) / 2), new Vector3(len, 0.1f, depth),
+                Mat("Apt_WildGround", Hex(w.color), 0.05f, GrassTexture(), new Vector2(len, depth) / 1.2f)).transform.SetParent(root, true);
+
+            // Tall grass: one mesh of thin blades in clumps (no collider: the cat walks through it).
+            var rng = new System.Random(4);
+            float Rand() => (float)rng.NextDouble();
+            var verts = new List<Vector3>(); var normals = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
+            for (int c = 0; c < w.grass_clumps; c++)
+            {
+                var centre = new Vector3(w.x0 + 0.4f + Rand() * (len - 0.8f), 0f, w.z0 + 0.4f + Rand() * (depth - 0.8f));
+                int blades = 40 + rng.Next(30);
+                for (int i = 0; i < blades; i++)
+                {
+                    float a = Rand() * Mathf.PI * 2f, r = 0.35f * Mathf.Sqrt(Rand());
+                    var basePos = centre + new Vector3(Mathf.Cos(a) * r, -0.02f, Mathf.Sin(a) * r);
+                    float h = 0.25f + 0.3f * Rand(), half = 0.012f + 0.01f * Rand();
+                    var side = Quaternion.Euler(0f, Rand() * 180f, 0f) * Vector3.right;
+                    var lean = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * h * (0.15f + 0.35f * Rand());
+                    int b0 = verts.Count;
+                    verts.Add(basePos - side * half); verts.Add(basePos + side * half); verts.Add(basePos + Vector3.up * h + lean);
+                    var n = Vector3.Cross(side, Vector3.up).normalized;
+                    for (int k = 0; k < 3; k++) normals.Add(Vector3.Lerp(n, Vector3.up, 0.5f).normalized);
+                    float tone = (rng.Next(4) + 0.5f) / 4f;
+                    uvs.Add(new Vector2(tone, 0.5f)); uvs.Add(new Vector2(tone, 0.5f)); uvs.Add(new Vector2(tone, 0.5f));
+                    tris.AddRange(new[] { b0, b0 + 2, b0 + 1 });
+                }
+            }
+            var mesh = new Mesh { name = "WildGrass" };
+            mesh.SetVertices(verts); mesh.SetNormals(normals); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
+            string meshPath = $"{PlaygroundBuilder.ArtDir}/Meshes/WildGrass.asset";
+            Directory.CreateDirectory(Path.GetDirectoryName(meshPath));
+            AssetDatabase.DeleteAsset(meshPath);
+            AssetDatabase.CreateAsset(mesh, meshPath);
+            var grass = new GameObject("TallGrass");
+            grass.transform.SetParent(root, false);
+            grass.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var grassMat = PlaygroundBuilder.LitMaterial("Apt_TallGrass", Color.white, 0.2f, MakeTexture("WildGrassColours.png", 4, (x, y, size) => x switch
+            {
+                0 => new Color(0.36f, 0.42f, 0.18f),
+                1 => new Color(0.46f, 0.5f, 0.22f),
+                2 => new Color(0.6f, 0.58f, 0.3f), // dry blades
+                _ => new Color(0.3f, 0.38f, 0.16f),
+            }));
+            grassMat.SetFloat("_Cull", 0f);
+            grass.AddComponent<MeshRenderer>().sharedMaterial = grassMat;
+
+            // Brambles: dark, thorny clumps; low ones have no collider (the cat pushes through).
+            var bramble = Mat("Apt_Bramble", new Color(0.17f, 0.25f, 0.12f), 0.15f);
+            var bramble2 = Mat("Apt_Bramble2", new Color(0.24f, 0.3f, 0.14f), 0.15f);
+            foreach (var b in w.bushes ?? new Spot[0])
+                for (int i = 0; i < 4; i++)
+                {
+                    var blob = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    blob.name = "Bramble";
+                    Object.DestroyImmediate(blob.GetComponent<Collider>());
+                    blob.transform.SetParent(root, false);
+                    blob.transform.position = new Vector3(b.x + (Rand() - 0.5f) * b.r, b.r * (0.35f + 0.25f * Rand()), b.z + (Rand() - 0.5f) * b.r);
+                    blob.transform.localScale = new Vector3(b.r * 1.3f, b.r * (0.9f + 0.4f * Rand()), b.r * 1.3f);
+                    blob.GetComponent<Renderer>().sharedMaterial = i % 2 == 0 ? bramble : bramble2;
+                }
+
+            var rust = Mat("Apt_Rust", new Color(0.45f, 0.24f, 0.13f), 0.25f);
+            var oldWood = Mat("Apt_OldWood", new Color(0.42f, 0.36f, 0.28f), 0.1f);
+            Transform nest = null;
+            if (w.wheelbarrow != null)
+            {
+                // Upside down on two handles: the hedgehog nest is under it (leaves and moss).
+                var wb = new GameObject("Wheelbarrow").transform;
+                wb.SetParent(root, false);
+                wb.SetPositionAndRotation(new Vector3(w.wheelbarrow.x, 0f, w.wheelbarrow.z), Quaternion.Euler(0f, w.wheelbarrow.yaw, 0f));
+                Box("Tray", wb.TransformPoint(new Vector3(0f, 0.32f, 0f)), new Vector3(0.62f, 0.05f, 0.85f), rust).transform.SetParent(wb, true);
+                foreach (float sx in new[] { -1f, 1f })
+                {
+                    var wall = Box("TraySide", wb.TransformPoint(new Vector3(sx * 0.31f, 0.2f, 0f)), new Vector3(0.04f, 0.22f, 0.85f), rust, collider: false);
+                    wall.transform.SetParent(wb, true);
+                    Box("Handle", wb.TransformPoint(new Vector3(sx * 0.22f, 0.12f, -0.6f)), new Vector3(0.04f, 0.04f, 0.6f), oldWood, collider: false).transform.SetParent(wb, true);
+                }
+                var wheel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                wheel.name = "Wheel";
+                Object.DestroyImmediate(wheel.GetComponent<Collider>());
+                wheel.transform.SetParent(wb, false);
+                wheel.transform.localPosition = new Vector3(0f, 0.18f, 0.55f);
+                wheel.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                wheel.transform.localScale = new Vector3(0.36f, 0.03f, 0.36f);
+                wheel.GetComponent<Renderer>().sharedMaterial = Mat("Apt_Tyre", new Color(0.08f, 0.08f, 0.08f), 0.3f);
+                var leaves = Mat("Apt_NestLeaves", new Color(0.45f, 0.3f, 0.15f), 0.05f);
+                for (int i = 0; i < 6; i++)
+                {
+                    var pile = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.DestroyImmediate(pile.GetComponent<Collider>());
+                    pile.name = "Leaves";
+                    pile.transform.SetParent(wb, false);
+                    pile.transform.localPosition = new Vector3((Rand() - 0.5f) * 0.4f, 0.02f, (Rand() - 0.5f) * 0.5f);
+                    pile.transform.localScale = new Vector3(0.25f, 0.08f, 0.25f);
+                    pile.GetComponent<Renderer>().sharedMaterial = leaves;
+                }
+                for (int i = 0; i < 3; i++) // three hoglets
+                {
+                    var hog = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.DestroyImmediate(hog.GetComponent<Collider>());
+                    hog.name = "Hoglet";
+                    hog.transform.SetParent(wb, false);
+                    hog.transform.localPosition = new Vector3(-0.12f + i * 0.12f, 0.06f, 0.1f);
+                    hog.transform.localScale = new Vector3(0.06f, 0.045f, 0.08f);
+                    hog.GetComponent<Renderer>().sharedMaterial = Mat("Hedgehog_Spines", new Color(0.36f, 0.3f, 0.24f), 0.2f);
+                }
+                nest = new GameObject("Nest").transform;
+                nest.SetParent(wb, false);
+                nest.localPosition = new Vector3(0f, 0f, -0.15f);
+            }
+            if (w.chair != null) // a garden chair, fallen on its back
+            {
+                var ch = new GameObject("OldChair").transform;
+                ch.SetParent(root, false);
+                ch.SetPositionAndRotation(new Vector3(w.chair.x, 0f, w.chair.z), Quaternion.Euler(0f, w.chair.yaw, 0f));
+                var white = Mat("Apt_OldPlastic", new Color(0.78f, 0.77f, 0.72f), 0.3f);
+                Box("Seat", ch.TransformPoint(new Vector3(0f, 0.22f, 0f)), new Vector3(0.45f, 0.04f, 0.45f), white).transform.SetParent(ch, true);
+                var back = Box("Back", ch.TransformPoint(new Vector3(0f, 0.04f, -0.42f)), new Vector3(0.45f, 0.04f, 0.5f), white);
+                back.transform.SetParent(ch, true);
+                foreach (var leg in new[] { new Vector3(-0.2f, 0.1f, 0.2f), new Vector3(0.2f, 0.1f, 0.2f) })
+                    Box("Leg", ch.TransformPoint(leg), new Vector3(0.03f, 0.22f, 0.03f), white, collider: false).transform.SetParent(ch, true);
+            }
+            if (w.barrel != null)
+            {
+                var barrel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                barrel.name = "RustyBarrel";
+                barrel.transform.SetParent(root, false);
+                barrel.transform.position = new Vector3(w.barrel.x, 0.45f, w.barrel.z);
+                barrel.transform.localScale = new Vector3(0.58f, 0.45f, 0.58f);
+                barrel.GetComponent<Renderer>().sharedMaterial = rust;
+            }
+
+            if (w.hedgehog != null) HedgehogModel(root, w.hedgehog, nest);
+        }
+
+        static void HedgehogModel(Transform parent, Spot spot, Transform nest)
+        {
+            var root = new GameObject("Hedgehog");
+            root.transform.SetParent(parent, false);
+            root.transform.SetPositionAndRotation(new Vector3(spot.x, 0f, spot.z), Quaternion.Euler(0f, spot.yaw, 0f));
+            var spines = Mat("Hedgehog_Spines", new Color(0.36f, 0.3f, 0.24f), 0.2f);
+            var tips = Mat("Hedgehog_Tips", new Color(0.78f, 0.72f, 0.62f), 0.2f);
+            var face = Mat("Hedgehog_Face", new Color(0.62f, 0.5f, 0.38f), 0.3f);
+            var black = Mat("Mouse_Eye", new Color(0.02f, 0.02f, 0.02f), 0.9f);
+            var body = new GameObject("Body").transform;
+            body.SetParent(root.transform, false);
+            Transform Part(Transform p, Vector3 pos, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(p, false);
+                go.transform.localPosition = pos;
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                return go.transform;
+            }
+            Part(body, new Vector3(0f, 0.065f, 0f), new Vector3(0.17f, 0.12f, 0.22f), spines);
+            var rng = new System.Random(9);
+            for (int i = 0; i < 26; i++) // spine tufts: light tips over the back
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI, z = ((float)rng.NextDouble() - 0.5f) * 0.18f;
+                Part(body, new Vector3(Mathf.Cos(a) * 0.075f, 0.065f + Mathf.Sin(a) * 0.055f, z), new Vector3(0.03f, 0.03f, 0.05f), i % 3 == 0 ? tips : spines);
+            }
+            var snout = new GameObject("Snout").transform;
+            snout.SetParent(body, false);
+            Part(snout, new Vector3(0f, 0.045f, 0.11f), new Vector3(0.07f, 0.06f, 0.08f), face);
+            Part(snout, new Vector3(0f, 0.045f, 0.155f), Vector3.one * 0.018f, black);
+            foreach (float sx in new[] { -1f, 1f })
+                Part(snout, new Vector3(sx * 0.025f, 0.065f, 0.12f), Vector3.one * 0.012f, black);
+            root.AddComponent<Hedgehog>().Configure(body, snout, nest);
+        }
+
         /// <summary>Stone slabs in a line over the lawn, with a strip of grass between them.</summary>
         static void BuildPaths(Layout layout)
         {
@@ -583,11 +777,38 @@ namespace Draho.EditorTools
                     .transform.SetParent(root, true);
             const float board = 0.15f, gap = 0.035f;
             int rows = Mathf.FloorToInt(e.h / (board + gap));
+            bool hasGap = e.gap_w > 0f;
+            float g0 = e.gap_at - e.gap_w / 2, g1 = e.gap_at + e.gap_w / 2, holeTop = 0f;
+            void Plank(float from, float to, float y, Material m) =>
+                Box("Plank", At((from + to) / 2, y), Size(to - from, board, 0.03f), m, collider: false).transform.SetParent(root, true);
             for (int r = 0; r < rows; r++)
-                Box("Plank", At((a + b) / 2, 0.04f + r * (board + gap) + board / 2), Size(b - a, board, 0.03f),
-                    r % 2 == 0 ? plank : plankDark, collider: false).transform.SetParent(root, true);
-            Box("Collider", At((a + b) / 2, e.h / 2), Size(b - a, e.h, 0.12f), null).transform.SetParent(root, true);
-            Object.DestroyImmediate(root.Find("Collider").GetComponent<Renderer>());
+            {
+                float bottom = 0.04f + r * (board + gap), y = bottom + board / 2;
+                var m = r % 2 == 0 ? plank : plankDark;
+                if (hasGap && bottom < e.gap_h)
+                {
+                    // Loose planks: the bottom rows have a cat-sized hole.
+                    Plank(a, g0, y, m);
+                    Plank(g1, b, y, m);
+                    holeTop = bottom + board + gap;
+                }
+                else Plank(a, b, y, m);
+            }
+            void AddCollider(float from, float to, float y0, float y1)
+            {
+                var c = Box("Collider", At((from + to) / 2, (y0 + y1) / 2), Size(to - from, y1 - y0, 0.12f), null);
+                Object.DestroyImmediate(c.GetComponent<Renderer>());
+                c.transform.SetParent(root, true);
+            }
+            if (!hasGap) { AddCollider(a, b, 0f, e.h); return; }
+            AddCollider(a, g0, 0f, e.h);
+            AddCollider(g1, b, 0f, e.h);
+            AddCollider(g0, g1, holeTop, e.h);
+            // The loose plank lies in the grass on the far side.
+            var fallen = Box("FallenPlank", At(e.gap_at + 0.1f, 0.02f) + (alongX ? new Vector3(0f, 0f, 0.35f) : new Vector3(0.35f, 0f, 0f)),
+                Size(e.gap_w + 0.5f, 0.03f, board), plankDark, collider: false);
+            fallen.transform.rotation = Quaternion.Euler(0f, 25f, 0f);
+            fallen.transform.SetParent(root, true);
         }
 
         static void PicnicTable(Transform root, Prop p, Color color)
@@ -684,7 +905,8 @@ namespace Draho.EditorTools
                 pipe.transform.localScale = new Vector3(c.radius * 2, len / 2, c.radius * 2);
                 pipe.GetComponent<Renderer>().sharedMaterial = Mat($"Apt_{c.id}", Hex(c.color), 0.5f);
                 for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
-                    Box("Bracket", root.position + new Vector3(0f, y, -c.radius), new Vector3(c.radius * 2.6f, 0.03f, c.radius * 2.2f),
+                    Box("Bracket", root.position + Vector3.up * y + (c.wall == "-x" ? Vector3.left : Vector3.back) * c.radius,
+                        new Vector3(c.radius * 2.4f, 0.03f, c.radius * 2.4f),
                         Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
                 climbable.Configure(c.climb_top, c.standable);
                 return;

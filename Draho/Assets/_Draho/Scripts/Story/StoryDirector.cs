@@ -34,6 +34,7 @@ namespace Draho.Story
         Bird[] birds;
         Climbable maple;
         Hedgehog hedgehog;
+        bool visitedLindens;
         int index = -1;
         float beatTime;
         float walked;
@@ -153,7 +154,43 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Under the old wheelbarrow: a nest with three tiny hoglets. Drahomil keeps the secret. End of chapter 3 for now!",
+                    Story = "Under the old wheelbarrow: a nest with three tiny hoglets. Drahomil keeps the secret.",
+                    Goal = "Back up on the roofs, go west, past the end of the garden. Something glitters there.",
+                    Done = () => cat.transform.position.x < -26f && cat.transform.position.y > 5f,
+                },
+                new Beat
+                {
+                    Story = "Chapter 4: The Riverside. Water! Boats, ducks and old houses along the quay. Far down the river: a white wall.",
+                    Goal = "Get down to the quay: the shed by the water is a good step.",
+                    Done = () => cat.IsGrounded && cat.transform.position.y < 0.5f && cat.transform.position.x < -31f,
+                },
+                new Beat
+                {
+                    Story = "The quay becomes a narrow edge along a house, right above the water. Cats do not like swimming.",
+                    Goal = "Follow the river to the white wall. Walk on the edge, or take the rooftops.",
+                    Done = () => cat.transform.position.z < -104f,
+                },
+                new Beat
+                {
+                    Story = "Chapter 5: The Begijnhof. Behind this old wall live quiet people and very old trees. The gate is shut, but ivy grows up the wall.",
+                    Goal = "Climb the ivy over the begijnhof wall.",
+                    Done = () => cat.transform.position.z < -112.6f && cat.IsGrounded,
+                },
+                new Beat
+                {
+                    Story = "A lawn, a row of old lindens, little white houses with red doors and a church. Only the bells make a sound.",
+                    Goal = "Explore: sit under the lindens, then visit the church door.",
+                    Begin = () => { visitedLindens = false; },
+                    Done = () =>
+                    {
+                        Vector3 p = cat.transform.position;
+                        if (Mathf.Abs(p.z + 124f) < 2f && p.x > -26f && p.x < -4f) visitedLindens = true;
+                        return visitedLindens && Vector2.Distance(new Vector2(p.x, p.z), new Vector2(-15f, -137f)) < 2f;
+                    },
+                },
+                new Beat
+                {
+                    Story = "Drahomil found the oldest, quietest place of the neighbourhood. End of chapter 5 for now. Thank you for playing!",
                     Goal = "",
                     Done = () => false,
                 },

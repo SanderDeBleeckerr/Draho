@@ -60,6 +60,8 @@ namespace Draho.EditorTools
             public Edge[] bounds;
             public ContextBuilding[] context_buildings;
             public WildGarden wild_garden;
+            public Ground[] grounds;
+            public Water water;
         }
         [Serializable] class WildGarden
         {
@@ -71,7 +73,13 @@ namespace Draho.EditorTools
         }
         [Serializable] class Spot { public float x, z, r, yaw; }
         [Serializable] class ContextBuilding { public float x, z, w, d, yaw, h; }
-        [Serializable] class Building { public string id, color, roof_color; public float x0, x1, z0, z1, h; }
+        [Serializable] class Building
+        {
+            public string id, color, roof_color, material, roof, front; // material: brick | plaster; roof: flat | pitched
+            public float x0, x1, z0, z1, h, ridge;
+        }
+        [Serializable] class Ground { public string id, color, material; public float x0, x1, z0, z1, top; }
+        [Serializable] class Water { public string color; public float x0, x1, z0, z1, top; }
         [Serializable] class GardenPath { public string id, color; public float[] from, to; public float w, slab; }
         [Serializable] class BirdSpot { public string id; public float x, z; }
         [Serializable] class Zone { public string id, material, color; public float x0, x1; }
@@ -500,7 +508,10 @@ namespace Draho.EditorTools
                 root.SetParent(level, false);
                 float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
                 const float roofT = 0.12f, coping = 0.06f;
-                var brick = Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
+                if (b.roof == "pitched") { PitchedHouse(root, b); continue; }
+                var brick = b.material == "plaster"
+                    ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f)
+                    : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
                 var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 7f); // small stones
                 var stone = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
                 Box("Walls", new Vector3(cx, (b.h - roofT) / 2, cz), new Vector3(w, b.h - roofT, d), brick).transform.SetParent(root, true);
@@ -536,8 +547,26 @@ namespace Draho.EditorTools
                 roof.transform.rotation = body.transform.rotation;
                 n++;
             }
-            if (n > 0) // ground under the block (yards, streets), just below the garden
-                Box("Ground", new Vector3(0f, -0.13f, 0f), new Vector3(180f, 0.1f, 180f), Mat("Apt_Ground", new Color(0.42f, 0.41f, 0.38f), 0.1f), collider: false);
+            // Ground under the block (yards, streets), just below the garden; it has a hole for the river.
+            var groundMat = Mat("Apt_Ground", new Color(0.42f, 0.41f, 0.38f), 0.1f);
+            var river = layout.water;
+            if (river == null)
+                Box("Ground", new Vector3(0f, -0.13f, -50f), new Vector3(200f, 0.1f, 300f), groundMat);
+            else
+            {
+                Box("Ground_East", new Vector3((river.x1 + 100f) / 2, -0.13f, -50f), new Vector3(100f - river.x1, 0.1f, 300f), groundMat);
+                Box("Ground_West", new Vector3((river.x0 - 100f) / 2, -0.13f, -50f), new Vector3(river.x0 + 100f, 0.1f, 300f), groundMat);
+                BuildRiver(river);
+            }
+            foreach (var g in layout.grounds ?? new Ground[0])
+            {
+                float gw = g.x1 - g.x0, gd = g.z1 - g.z0;
+                var mat = g.material == "grass"
+                    ? Mat($"Apt_{g.id}", Hex(g.color), 0.05f, GrassTexture(), new Vector2(gw, gd) / 1.5f)
+                    : Mat($"Apt_{g.id}", Hex(g.color), 0.15f, TileTexture(), new Vector2(gw, gd) / 0.6f);
+                // Thick: a quay wall down to the water.
+                Box(g.id, new Vector3((g.x0 + g.x1) / 2, g.top - 0.9f, (g.z0 + g.z1) / 2), new Vector3(gw, 1.8f, gd), mat);
+            }
 
             foreach (var e in layout.bounds ?? new Edge[0])
             {
@@ -734,6 +763,69 @@ namespace Draho.EditorTools
             root.AddComponent<Hedgehog>().Configure(body, snout, nest);
         }
 
+        /// <summary>The river: a dark green water surface (no collider) and a respawn on the quay for a cat that falls in.</summary>
+        static void BuildRiver(Water w)
+        {
+            var water = Box("River", new Vector3((w.x0 + w.x1) / 2, w.top - 0.05f, (w.z0 + w.z1) / 2),
+                new Vector3(w.x1 - w.x0, 0.1f, w.z1 - w.z0), Mat("Apt_River", Hex(w.color), 0.92f), collider: false);
+            water.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            var respawn = water.AddComponent<WaterRespawn>();
+            respawn.Configure(new Rect(w.x0, w.z0, w.x1 - w.x0, w.z1 - w.z0), w.top);
+        }
+
+        /// <summary>A house with a pitched roof (ridge along the long side), gables, a door and windows on its front.</summary>
+        static void PitchedHouse(Transform root, Building b)
+        {
+            float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+            var wallMat = b.material == "plaster" ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f) : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
+            var tiles = Mat($"Apt_{b.id}_tiles", Hex(b.roof_color), 0.2f, TileTexture(), new Vector2(6f, 3f));
+            Box("Walls", new Vector3(cx, b.h / 2, cz), new Vector3(w, b.h, d), wallMat).transform.SetParent(root, true);
+            bool alongX = w >= d; // the ridge runs along the long side
+            float span = alongX ? d : w, length = alongX ? w : d, ridge = b.ridge > 0f ? b.ridge : span * 0.4f;
+            float slope = Mathf.Atan2(ridge, span / 2) * Mathf.Rad2Deg, slab = Mathf.Sqrt(span * span / 4 + ridge * ridge) + 0.3f;
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Vector3 across = alongX ? Vector3.forward : Vector3.right;
+                var roof = Box("RoofSide", new Vector3(cx, b.h + ridge / 2, cz) + across * side * span / 4,
+                    alongX ? new Vector3(length + 0.3f, 0.12f, slab) : new Vector3(slab, 0.12f, length + 0.3f), tiles);
+                roof.transform.rotation = alongX ? Quaternion.Euler(side * slope, 0f, 0f) : Quaternion.Euler(0f, 0f, -side * slope);
+                roof.transform.SetParent(root, true);
+            }
+            // Gables: a cube turned 45 degrees, squeezed to fit the roof slope (its lower half hides in the walls).
+            foreach (float end in new[] { -1f, 1f })
+            {
+                var gable = new GameObject("Gable").transform;
+                gable.SetParent(root, false);
+                Vector3 along = alongX ? Vector3.right : Vector3.forward;
+                gable.position = new Vector3(cx, b.h, cz) + along * end * (length / 2 - 0.06f);
+                gable.rotation = alongX ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.identity;
+                gable.localScale = new Vector3(span / 2 / ridge, 1f, 1f);
+                var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Object.DestroyImmediate(cube.GetComponent<Collider>());
+                cube.transform.SetParent(gable, false);
+                cube.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                cube.transform.localScale = new Vector3(ridge * Mathf.Sqrt(2f), ridge * Mathf.Sqrt(2f), 0.1f);
+                cube.GetComponent<Renderer>().sharedMaterial = wallMat;
+            }
+            if (string.IsNullOrEmpty(b.front)) return;
+            // Front: doors and windows along the face.
+            Vector3 n = b.front == "+x" ? Vector3.right : b.front == "-x" ? Vector3.left : b.front == "+z" ? Vector3.forward : Vector3.back;
+            bool faceAlongX = n.z != 0f;
+            float faceLen = faceAlongX ? w : d;
+            Vector3 faceCentre = new Vector3(cx, 0f, cz) + Vector3.Scale(n, new Vector3(w / 2, 0f, d / 2));
+            Vector3 tangent = faceAlongX ? Vector3.right : Vector3.forward;
+            var door = Mat("Apt_BegDoor", new Color(0.45f, 0.12f, 0.1f), 0.3f);
+            var glass = Mat("Apt_BegWindow", new Color(0.12f, 0.14f, 0.16f), 0.8f);
+            int bays = Mathf.Max(1, Mathf.FloorToInt(faceLen / 5f));
+            for (int i = 0; i < bays; i++)
+            {
+                float t = -faceLen / 2 + faceLen * (i + 0.5f) / bays;
+                Vector3 at = faceCentre + tangent * t + n * 0.03f;
+                Box("Door", at + Vector3.up * 1.0f + tangent * -0.9f, faceAlongX ? new Vector3(0.95f, 2f, 0.08f) : new Vector3(0.08f, 2f, 0.95f), door, collider: false).transform.SetParent(root, true);
+                Box("Window", at + Vector3.up * 1.5f + tangent * 0.8f, faceAlongX ? new Vector3(1.0f, 1.2f, 0.06f) : new Vector3(0.06f, 1.2f, 1.0f), glass, collider: false).transform.SetParent(root, true);
+            }
+        }
+
         /// <summary>Stone slabs in a line over the lawn, with a strip of grass between them.</summary>
         static void BuildPaths(Layout layout)
         {
@@ -909,6 +1001,26 @@ namespace Draho.EditorTools
                         new Vector3(c.radius * 2.4f, 0.03f, c.radius * 2.4f),
                         Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
                 climbable.Configure(c.climb_top, c.standable);
+                return;
+            }
+            if (c.type == "linden")
+            {
+                // A pollarded linden (begijnhof): a trunk, a few knobbly arms, a flat clipped crown.
+                var trunkL = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                trunkL.name = "Trunk";
+                trunkL.transform.SetParent(root, false);
+                trunkL.transform.localPosition = Vector3.up * c.h / 2;
+                trunkL.transform.localScale = new Vector3(c.radius * 2, c.h / 2, c.radius * 2);
+                trunkL.GetComponent<Renderer>().sharedMaterial = wood;
+                foreach (float a in new[] { 0f, 120f, 240f })
+                {
+                    var arm = Box("Arm", root.position + Vector3.up * (c.h + 0.25f) + Quaternion.Euler(0f, a, 0f) * Vector3.forward * 0.3f,
+                        new Vector3(0.12f, 0.6f, 0.12f), wood, collider: false);
+                    arm.transform.rotation = Quaternion.Euler(0f, a, 0f) * Quaternion.Euler(35f, 0f, 0f);
+                    arm.transform.SetParent(root, true);
+                }
+                Box("Crown", root.position + Vector3.up * (c.h + 1.1f), new Vector3(2.2f, 1.1f, 2.2f), top, collider: false).transform.SetParent(root, true);
+                climbable.Configure(c.climb_top, false);
                 return;
             }
             if (c.type == "tree")
@@ -1171,7 +1283,7 @@ namespace Draho.EditorTools
                 for (float t = a + step; t < b - 0.5f; t += step)
                     perches.Add(alongX ? new Vector3(t, top, line) : new Vector3(line, top, t));
             }
-            foreach (var bld in layout.buildings ?? new Building[0]) // the front edges of roofs
+            foreach (var bld in (layout.buildings ?? new Building[0]).Where(x => x.z1 >= -1f && x.x1 > -32f && x.roof != "pitched")) // roof edges by the garden
                 for (float x = bld.x0 + 1.5f; x < bld.x1 - 1f; x += 3.5f)
                     perches.Add(new Vector3(x, bld.h + 0.06f, bld.z1 - 0.06f));
             foreach (var c in layout.climbables ?? new ClimbableInfo[0]) // the outer branches of trees

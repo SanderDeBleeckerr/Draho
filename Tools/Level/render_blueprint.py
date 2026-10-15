@@ -135,6 +135,14 @@ def main(src, dst):
         ax.text((ex0 + ex1) / 2, (ez0 + ez1) / 2 + (0.25 if ez0 >= 2.5 else -0.25), e["label"], ha="center",
                 va="center", fontsize=7, color="#5A4A3A", zorder=7)
 
+    # River and walkable ground areas (quays, the begijnhof lawn).
+    wt = lay.get("water")
+    if wt:
+        ax.add_patch(mp.Rectangle((wt["x0"], wt["z0"]), wt["x1"] - wt["x0"], wt["z1"] - wt["z0"], facecolor="#6C9DB0", alpha=0.7, zorder=1))
+        ax.text((wt["x0"] + wt["x1"]) / 2, -60, "RIVER", rotation=90, ha="center", va="center", fontsize=12, color="white", weight="bold", zorder=5)
+    for g in lay.get("grounds", []):
+        ax.add_patch(mp.Rectangle((g["x0"], g["z0"]), g["x1"] - g["x0"], g["z1"] - g["z0"], facecolor=g["color"], alpha=0.6, zorder=1))
+
     # Neighbouring buildings with walkable flat roofs (height in metres).
     for b in lay.get("buildings", []):
         ax.add_patch(mp.Rectangle((b["x0"], b["z0"]), b["x1"] - b["x0"], b["z1"] - b["z0"], facecolor=b["roof_color"],
@@ -234,7 +242,7 @@ def main(src, dst):
                  fontsize=12, color="#2E2C29")
     ax.set_aspect("equal")
     gx0 = min(r["x0"] for r in rooms)
-    bx0 = min([gx0] + [b["x0"] for b in lay.get("buildings", [])])
+    bx0 = min([gx0] + [b["x0"] for b in lay.get("buildings", [])] + [g["x0"] for g in lay.get("grounds", [])])
     bz0 = min([z0] + [b["z0"] for b in lay.get("buildings", [])])
     ax.set_xlim(bx0 - 0.5, x1 + 1.1)
     bz1 = max([z1] + [b["z1"] for b in lay.get("buildings", [])])

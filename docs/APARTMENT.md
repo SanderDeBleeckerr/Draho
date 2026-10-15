@@ -60,3 +60,13 @@ closed at the back by the long wall of a workshop (about 5.5 m) and near the hou
 The owner says the neighbour is almost never home and the garden is wild. In the game: a loose plank in the
 fence near the maple, tall grass, brambles, an upside-down wheelbarrow (hedgehog nest), a fallen chair, a barrel.
 
+## The river and the begijnhof (chapters 4 and 5)
+
+Open data (Flemish VHA waterways, the heritage inventory, GRB and DHM II) shows a navigable river about
+15 m past the garden end, with a low quay on this side, and an old begijnhof further along the river.
+Near the block the game keeps real sizes: roofs of 6-9 m between the garden end and the quay, a quay about
+1 m above the water, a river about 12 m wide. The long stretch to the begijnhof is shortened and stylised
+on purpose: the repository stores no real distance or direction between the home and a public landmark.
+The begijnhof itself is stylised too: a white wall, small white houses with red doors and pitched roofs,
+a church and a row of pollarded lindens (the real one has listed pollarded lindens).
+

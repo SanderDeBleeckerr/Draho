@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|quay|ledge|begwall|begijnhof|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -112,6 +112,34 @@ const steps = {
     ['07_follow_on', 'move', '0,1,0,4'],
     ['08_follow_end', 'move', '0.3,1,0,3'],
     ['09_wait', 'wait', '6'],
+  ],
+  // Start with ?beat=16&at=-25,-12,270,6.5 : on the riverhouse roof; run west, drop onto the quay shed and the quay.
+  quay: [
+    ['02_run_west', 'move', '0,1,1,2'],
+    ['03_drop', 'move', '0,1,1,1.5'],
+    ['04_quay', 'wait', '1.5'],
+  ],
+  // Start with ?beat=17&at=-34.78,-36,180 : on the quay; run along the narrow edge to the begijnhof wall.
+  ledge: [
+    ['02_run', 'move', '0,1,1,8'],
+    ['03_ledge', 'move', '0,1,1,8'],
+    ['04_more', 'move', '0,1,1,8'],
+    ['05_wall', 'move', '0,1,1,9'],
+  ],
+  // Start with ?beat=18&at=-33,-111.55,180 : at the ivy on the begijnhof wall; climb over and drop in.
+  begwall: [
+    ['02_hold', 'hold', '3'],
+    ['03_hold', 'hold', '3'],
+    ['04_on_wall', 'wait', '1'],
+    ['05_drop_in', 'move', '0,1,0,1.5'],
+    ['06_inside', 'wait', '1.5'],
+  ],
+  // Start with ?beat=19&at=-15,-119,180 : inside the begijnhof; lindens, then the church door.
+  begijnhof: [
+    ['02_to_lindens', 'move', '0,1,0,9'],
+    ['03_sit', 'wait', '2'],
+    ['04_to_church', 'move', '0,1,1,5'],
+    ['05_door', 'wait', '2'],
   ],
   // Start with ?beat=14&at=-16.5,7,90 : the hedgehog trusts the cat at once (test hook); follow it to its nest.
   nest: [

@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 14,
+  "version": 15,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -405,6 +405,99 @@
       "top_color": "#6E6E6A",
       "standable": true,
       "wall": "-x"
+    },
+    {
+      "id": "beg_ivy",
+      "type": "ivy",
+      "label": "Ivy on the begijnhof wall",
+      "x": -33.0,
+      "z": -112.0,
+      "w": 2.4,
+      "d": 0.12,
+      "h": 2.6,
+      "climb_top": 2.6,
+      "bottom": 0.0,
+      "color": "#2F5A26",
+      "top_color": "#3F7330",
+      "standable": true
+    },
+    {
+      "id": "linden_1",
+      "type": "linden",
+      "label": "Pollarded linden",
+      "x": -25,
+      "z": -124.0,
+      "radius": 0.16,
+      "h": 2.6,
+      "climb_top": 2.2,
+      "color": "#5E5248",
+      "top_color": "#5C8A35",
+      "standable": false
+    },
+    {
+      "id": "linden_2",
+      "type": "linden",
+      "label": "",
+      "x": -21,
+      "z": -124.0,
+      "radius": 0.16,
+      "h": 2.6,
+      "climb_top": 2.2,
+      "color": "#5E5248",
+      "top_color": "#5C8A35",
+      "standable": false
+    },
+    {
+      "id": "linden_3",
+      "type": "linden",
+      "label": "",
+      "x": -17,
+      "z": -124.0,
+      "radius": 0.16,
+      "h": 2.6,
+      "climb_top": 2.2,
+      "color": "#5E5248",
+      "top_color": "#5C8A35",
+      "standable": false
+    },
+    {
+      "id": "linden_4",
+      "type": "linden",
+      "label": "",
+      "x": -13,
+      "z": -124.0,
+      "radius": 0.16,
+      "h": 2.6,
+      "climb_top": 2.2,
+      "color": "#5E5248",
+      "top_color": "#5C8A35",
+      "standable": false
+    },
+    {
+      "id": "linden_5",
+      "type": "linden",
+      "label": "",
+      "x": -9,
+      "z": -124.0,
+      "radius": 0.16,
+      "h": 2.6,
+      "climb_top": 2.2,
+      "color": "#5E5248",
+      "top_color": "#5C8A35",
+      "standable": false
+    },
+    {
+      "id": "linden_6",
+      "type": "linden",
+      "label": "",
+      "x": -5,
+      "z": -124.0,
+      "radius": 0.16,
+      "h": 2.6,
+      "climb_top": 2.2,
+      "color": "#5E5248",
+      "top_color": "#5C8A35",
+      "standable": false
     }
   ],
   "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
@@ -538,6 +631,173 @@
       "h": 3.0,
       "color": "#C9BFB2",
       "roof_color": "#5E5B56"
+    },
+    {
+      "id": "riverhouse",
+      "label": "House by the river (6.5 m)",
+      "x0": -31,
+      "x1": -24,
+      "z0": -16,
+      "z1": -1,
+      "h": 6.5,
+      "color": "#A8735C",
+      "roof_color": "#6B6862"
+    },
+    {
+      "id": "riverhouse_tower",
+      "label": "Tower (8.8 m)",
+      "x0": -30,
+      "x1": -26.5,
+      "z0": -10,
+      "z1": -5,
+      "h": 8.8,
+      "color": "#9E6B55",
+      "roof_color": "#5E5B56"
+    },
+    {
+      "id": "quay_shed",
+      "label": "Quay shed (3.2 m)",
+      "x0": -33.5,
+      "x1": -31,
+      "z0": -13,
+      "z1": -6,
+      "h": 3.2,
+      "color": "#8E8478",
+      "roof_color": "#55524E"
+    },
+    {
+      "id": "row_1",
+      "label": "Riverside row (6.0 m)",
+      "x0": -31,
+      "x1": -24,
+      "z0": -40,
+      "z1": -16,
+      "h": 6.0,
+      "color": "#B38F78",
+      "roof_color": "#6B6862"
+    },
+    {
+      "id": "row_ledge",
+      "label": "House on the water (6.6 m)",
+      "x0": -34.55,
+      "x1": -24,
+      "z0": -75,
+      "z1": -40,
+      "h": 6.6,
+      "color": "#A8826C",
+      "roof_color": "#5E5B56"
+    },
+    {
+      "id": "row_3",
+      "label": "Riverside row (6.0 m)",
+      "x0": -31,
+      "x1": -24,
+      "z0": -112,
+      "z1": -75,
+      "h": 6.0,
+      "color": "#B9A796",
+      "roof_color": "#6B6862"
+    },
+    {
+      "id": "beg_wall",
+      "label": "Begijnhof wall (2.6 m)",
+      "x0": -35,
+      "x1": 5,
+      "z0": -112.4,
+      "z1": -112,
+      "h": 2.6,
+      "color": "#E8E2D6",
+      "roof_color": "#B5ADA0",
+      "material": "plaster"
+    },
+    {
+      "id": "beg_house_w1",
+      "label": "Begijnhof house",
+      "x0": -35,
+      "x1": -29,
+      "z0": -130,
+      "z1": -115,
+      "h": 4.2,
+      "ridge": 2.6,
+      "color": "#EFEAE0",
+      "roof_color": "#9A4A32",
+      "material": "plaster",
+      "roof": "pitched",
+      "front": "+x"
+    },
+    {
+      "id": "beg_house_w2",
+      "label": "Begijnhof house",
+      "x0": -35,
+      "x1": -29,
+      "z0": -150,
+      "z1": -133,
+      "h": 4.2,
+      "ridge": 2.6,
+      "color": "#EDE6D8",
+      "roof_color": "#8F4530",
+      "material": "plaster",
+      "roof": "pitched",
+      "front": "+x"
+    },
+    {
+      "id": "beg_house_e1",
+      "label": "Begijnhof house",
+      "x0": -1,
+      "x1": 5,
+      "z0": -135,
+      "z1": -115,
+      "h": 4.2,
+      "ridge": 2.6,
+      "color": "#EFEAE0",
+      "roof_color": "#9A4A32",
+      "material": "plaster",
+      "roof": "pitched",
+      "front": "-x"
+    },
+    {
+      "id": "beg_house_e2",
+      "label": "Begijnhof house",
+      "x0": -1,
+      "x1": 5,
+      "z0": -160,
+      "z1": -138,
+      "h": 4.2,
+      "ridge": 2.6,
+      "color": "#E9E1D2",
+      "roof_color": "#8F4530",
+      "material": "plaster",
+      "roof": "pitched",
+      "front": "-x"
+    },
+    {
+      "id": "beg_house_s",
+      "label": "Begijnhof houses",
+      "x0": -29,
+      "x1": -1,
+      "z0": -170,
+      "z1": -164,
+      "h": 4.2,
+      "ridge": 2.6,
+      "color": "#EDE6D8",
+      "roof_color": "#9A4A32",
+      "material": "plaster",
+      "roof": "pitched",
+      "front": "+z"
+    },
+    {
+      "id": "beg_church",
+      "label": "Begijnhof church",
+      "x0": -20,
+      "x1": -10,
+      "z0": -155,
+      "z1": -138,
+      "h": 8.0,
+      "ridge": 5.0,
+      "color": "#B07A62",
+      "roof_color": "#5A4E48",
+      "roof": "pitched",
+      "front": "+z"
     }
   ],
   "roof_props": [
@@ -552,39 +812,6 @@
     }
   ],
   "bounds": [
-    {
-      "id": "west",
-      "from": [
-        -28,
-        -22
-      ],
-      "to": [
-        -28,
-        5
-      ]
-    },
-    {
-      "id": "west_roof",
-      "from": [
-        -24,
-        -22
-      ],
-      "to": [
-        -24,
-        0
-      ]
-    },
-    {
-      "id": "back",
-      "from": [
-        -28,
-        -22
-      ],
-      "to": [
-        -1,
-        -22
-      ]
-    },
     {
       "id": "east_back",
       "from": [
@@ -619,17 +846,6 @@
       ]
     },
     {
-      "id": "shed_south",
-      "from": [
-        -28,
-        0
-      ],
-      "to": [
-        -24,
-        0
-      ]
-    },
-    {
       "id": "wild_west",
       "from": [
         -26,
@@ -649,6 +865,83 @@
       "to": [
         -2,
         9.5
+      ]
+    },
+    {
+      "id": "back",
+      "from": [
+        -24,
+        -22
+      ],
+      "to": [
+        -1,
+        -22
+      ]
+    },
+    {
+      "id": "rows_east",
+      "from": [
+        -24,
+        -112
+      ],
+      "to": [
+        -24,
+        -22
+      ]
+    },
+    {
+      "id": "quay_north_end",
+      "from": [
+        -35,
+        5
+      ],
+      "to": [
+        -28,
+        5
+      ]
+    },
+    {
+      "id": "beg_north_outside",
+      "from": [
+        -24,
+        -111.95
+      ],
+      "to": [
+        5,
+        -111.95
+      ]
+    },
+    {
+      "id": "beg_east",
+      "from": [
+        5,
+        -170
+      ],
+      "to": [
+        5,
+        -112
+      ]
+    },
+    {
+      "id": "beg_south",
+      "from": [
+        -35,
+        -170
+      ],
+      "to": [
+        5,
+        -170
+      ]
+    },
+    {
+      "id": "beg_west",
+      "from": [
+        -35,
+        -170
+      ],
+      "to": [
+        -35,
+        -112.4
       ]
     }
   ],
@@ -717,14 +1010,6 @@
       "d": 3.1,
       "yaw": 157.4,
       "h": 3.9
-    },
-    {
-      "x": 7.5,
-      "z": -48.2,
-      "w": 59.2,
-      "d": 14.0,
-      "yaw": -10.4,
-      "h": 11.9
     },
     {
       "x": 47.8,
@@ -839,28 +1124,12 @@
       "h": 11.4
     },
     {
-      "x": -63.4,
-      "z": -18.7,
-      "w": 36.9,
-      "d": 13.9,
-      "yaw": -98.6,
-      "h": 7.8
-    },
-    {
       "x": 64.5,
       "z": 5.8,
       "w": 15.3,
       "d": 20.7,
       "yaw": 102.0,
       "h": 16.4
-    },
-    {
-      "x": 16.6,
-      "z": -65.3,
-      "w": 44.7,
-      "d": 25.4,
-      "yaw": -177.4,
-      "h": 17.0
     },
     {
       "x": 62.6,
@@ -927,20 +1196,124 @@
       "h": 12.4
     },
     {
-      "x": 15.6,
-      "z": -80.0,
-      "w": 34.5,
-      "d": 4.3,
-      "yaw": -178.0,
-      "h": 5.7
-    },
-    {
       "x": -92.5,
       "z": -12.2,
       "w": 26.4,
       "d": 17.9,
       "yaw": -88.7,
       "h": 3.0
+    },
+    {
+      "x": -63,
+      "z": 9,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 7.5
+    },
+    {
+      "x": -63,
+      "z": -5,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 9
+    },
+    {
+      "x": -63,
+      "z": -19,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 6.5
+    },
+    {
+      "x": -63,
+      "z": -33,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 10
+    },
+    {
+      "x": -63,
+      "z": -47,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 8
+    },
+    {
+      "x": -63,
+      "z": -61,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 7.5
+    },
+    {
+      "x": -63,
+      "z": -75,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 9
+    },
+    {
+      "x": -63,
+      "z": -89,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 6.5
+    },
+    {
+      "x": -63,
+      "z": -103,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 10
+    },
+    {
+      "x": -63,
+      "z": -117,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 8
+    },
+    {
+      "x": -63,
+      "z": -131,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 7.5
+    },
+    {
+      "x": -63,
+      "z": -145,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 9
+    },
+    {
+      "x": -63,
+      "z": -159,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 6.5
+    },
+    {
+      "x": -63,
+      "z": -173,
+      "w": 10,
+      "d": 12.5,
+      "yaw": 0,
+      "h": 10
     }
   ],
   "wild_garden": {
@@ -1002,5 +1375,76 @@
       "z": 7.0,
       "yaw": 90
     }
+  },
+  "riverside_note": "Chapter 4-5: the river and the quay beside the block are at real scale (open VHA waterways, GRB, DHM II); the long stretch to the begijnhof is shortened and stylised, so it does not give a real distance.",
+  "grounds": [
+    {
+      "id": "quay_north",
+      "x0": -35,
+      "x1": -31,
+      "z0": -40,
+      "z1": 5,
+      "top": 0.0,
+      "color": "#8C877E",
+      "material": "stone"
+    },
+    {
+      "id": "quay_ledge",
+      "x0": -35,
+      "x1": -34.55,
+      "z0": -75,
+      "z1": -40,
+      "top": 0.0,
+      "color": "#8C877E",
+      "material": "stone"
+    },
+    {
+      "id": "quay_south",
+      "x0": -35,
+      "x1": -31,
+      "z0": -112,
+      "z1": -75,
+      "top": 0.0,
+      "color": "#8C877E",
+      "material": "stone"
+    },
+    {
+      "id": "beg_lawn",
+      "x0": -29,
+      "x1": -1,
+      "z0": -164,
+      "z1": -112.4,
+      "top": 0.0,
+      "color": "#5B7A3A",
+      "material": "grass"
+    },
+    {
+      "id": "beg_path",
+      "x0": -29,
+      "x1": -1,
+      "z0": -137,
+      "z1": -135,
+      "top": 0.01,
+      "color": "#9C958A",
+      "material": "stone"
+    },
+    {
+      "id": "far_bank",
+      "x0": -58,
+      "x1": -48,
+      "z0": -175,
+      "z1": 20,
+      "top": 0.0,
+      "color": "#8C877E",
+      "material": "stone"
+    }
+  ],
+  "water": {
+    "x0": -48,
+    "x1": -35,
+    "z0": -175,
+    "z1": 20,
+    "top": -1.0,
+    "color": "#2E4A48"
   }
 }

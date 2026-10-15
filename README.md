@@ -16,7 +16,7 @@ walks off the edge, it falls. After 10 m, it comes back at the start.
 
 ## Open the project
 
-1. Install **Git LFS**, then clone the repository. The FBX and PNG files are in LFS.
+1. Clone the repository. (Git LFS is prepared in `.gitattributes`, but it is off for now.)
 2. Install **Unity 6.3 LTS** with **iOS Build Support** from Unity Hub.
 3. In Unity Hub, click **Add → Add project from disk** and select the `Draho/` folder in this repository.
 4. Unity asks *"enable the new Input System backends?"*. Click **Yes**. The editor restarts.

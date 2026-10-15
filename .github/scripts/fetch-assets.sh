@@ -52,6 +52,9 @@ done
 for pair in ${SKETCHFAB_MODELS:-}; do
   folder="${pair%%=*}"; uid="${pair#*=}"
   echo "::group::Sketchfab $folder ($uid)"
+  if [ -f "$RAW_DIR/Sketchfab/$folder/LICENSE.txt" ] && [ -z "${FORCE:-}" ]; then
+    echo "Already in the repo; skipped (set FORCE=1 to fetch again)."; echo "::endgroup::"; continue
+  fi
   info="$TMP/$uid.json"
   curl -fsSL "https://api.sketchfab.com/v3/models/$uid" -o "$info"
   python3 - "$info" <<'PY'

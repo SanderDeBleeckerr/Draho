@@ -1,0 +1,36 @@
+{
+  "name": "Drahomil's apartment",
+  "version": 1,
+  "units": "metres",
+  "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
+  "note": "Draft from 2 photos and 1 video. Every size is a GUESS until the owner measures it. Change numbers here; the blueprint image and (later) the level are made from this file.",
+  "floor": { "material": "tile", "tile_size": 0.6, "color": "#6E6A64" },
+  "wall": { "height": 2.6, "thickness": 0.2, "color": "#E4E2DC" },
+  "rooms": [
+    { "id": "living",  "label": "Living room", "x0": 0.0, "z0": 0.0, "x1": 4.6, "z1": 5.0 },
+    { "id": "kitchen", "label": "Kitchen",     "x0": 4.6, "z0": 0.0, "x1": 9.0, "z1": 5.0 },
+    { "id": "garden",  "label": "Garden (terrace)", "x0": -4.5, "z0": 0.0, "x1": 0.0, "z1": 5.0, "outdoor": true }
+  ],
+  "openings": [
+    { "id": "sliding_door", "label": "Sliding glass door", "wall": "west", "from": 1.4, "to": 4.4, "height": 2.4, "kenney": "wallWindowSlide", "note": "Opens to the garden. Cat can go out when it is open." },
+    { "id": "kitchen_window", "label": "Kitchen window?", "wall": "north", "from": 6.4, "to": 7.8, "sill": 0.9, "height": 1.3, "note": "Seen behind the island in the kitchen photo. Position unknown." }
+  ],
+  "props": [
+    { "id": "sofa",         "label": "Green sofa",       "room": "living",  "x": 2.6, "z": 4.5,  "w": 2.2, "d": 0.9,  "h": 0.85, "facing": "south", "kenney": "loungeSofa",          "color": "#1F5E57" },
+    { "id": "coffee_table", "label": "Coffee table",     "room": "living",  "x": 2.6, "z": 3.0,  "w": 1.0, "d": 1.0,  "h": 0.45, "facing": "south", "kenney": "tableCoffeeSquare",   "color": "#6B4A2E" },
+    { "id": "rug",          "label": "Red rug",          "room": "living",  "x": 2.6, "z": 2.9,  "w": 2.4, "d": 1.7,  "h": 0.01, "facing": "south", "kenney": "rugRectangle",        "color": "#9E2A2B" },
+    { "id": "radiator",     "label": "Radiator + plants","room": "living",  "x": 1.1, "z": 4.92, "w": 0.9, "d": 0.12, "h": 0.6,  "y": 0.15, "facing": "south", "kenney": null, "color": "#F2F2F2" },
+    { "id": "plant_stand",  "label": "Plant stand",      "room": "living",  "x": 0.45,"z": 4.3,  "w": 0.4, "d": 0.4,  "h": 0.7,  "facing": "south", "kenney": "pottedPlant",         "color": "#3E7A3A" },
+    { "id": "cat_tree",     "label": "Cat tree",         "room": "living",  "x": 4.1, "z": 4.35, "w": 0.45,"d": 0.45, "h": 0.75, "facing": "south", "kenney": null, "color": "#3A3D4A", "note": "Drahomil's own. Custom model (Kenney has none)." },
+    { "id": "poster",       "label": "Puzzle poster",    "room": "living",  "x": 3.3, "z": 4.98, "w": 1.0, "d": 0.03, "h": 0.7,  "y": 1.3,  "facing": "south", "kenney": null, "color": "#7A3F6B" },
+    { "id": "island",       "label": "Kitchen island (drawers + hob)", "room": "kitchen", "x": 6.6, "z": 2.4, "w": 2.6, "d": 0.95, "h": 0.9, "facing": "south", "kenney": "kitchenCabinetDrawer + kitchenStove", "color": "#F4F4F2", "top_color": "#5A5856", "note": "White handle-less drawers, dark grey top. Drawers can be open (see video)." },
+    { "id": "back_counter", "label": "Back counter (coffee machine)",  "room": "kitchen", "x": 8.7, "z": 2.3, "w": 0.6, "d": 3.2, "h": 0.9, "facing": "west", "kenney": "kitchenCabinet + kitchenSink + kitchenCoffeeMachine", "color": "#F4F4F2", "top_color": "#5A5856", "note": "Wood wall panel behind it." },
+    { "id": "fridge",       "label": "Fridge column",    "room": "kitchen", "x": 8.7, "z": 4.4,  "w": 0.6, "d": 0.6,  "h": 2.1,  "facing": "west",  "kenney": "kitchenFridgeLarge",  "color": "#F4F4F2" },
+    { "id": "picnic_bench", "label": "Picnic bench",     "room": "garden",  "x": -1.8,"z": 2.6,  "w": 1.8, "d": 1.5,  "h": 0.75, "facing": "east",  "kenney": "bench",               "color": "#9C8A70" }
+  ],
+  "garden_edges": [
+    { "id": "fence", "label": "Wooden fence", "from": [-4.5, 5.0], "to": [-4.5, 0.0], "h": 1.8, "color": "#8A7A66" },
+    { "id": "brick", "label": "Brick wall",   "from": [-4.5, 5.0], "to": [0.0, 5.0],  "h": 2.0, "color": "#8C6E5A" }
+  ],
+  "spawn": { "x": 5.4, "z": 1.4, "facing": "north", "note": "Next to the island, like in the video." }
+}

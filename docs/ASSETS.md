@@ -1,8 +1,28 @@
-# Draho: Asset Shortlist
+# Draho: Assets
 
-Status: **on hold.** Version 1 uses our own placeholder cat and an empty floor. Do not buy anything yet. Check the price, the
-Unity 6 / URP compatibility and the license on the store page before you buy.
-Prices and listings change.
+## Chosen (October 2026)
+
+| Use | Asset | License | How it gets into the repo |
+|---|---|---|---|
+| Cat | [Lowpoly Cat Rig + Run Animation](https://sketchfab.com/3d-models/lowpoly-cat-rig-run-animation-c36df576c9ae4ed28e89069b1a2f427a) (Sketchfab) | Checked by the workflow. Only CC0, CC BY or Standard pass. | `Fetch assets` workflow → `ThirdParty/Sketchfab/lowpoly-cat/` (raw glTF) |
+| Furniture | [Kenney Furniture Kit](https://kenney.nl/assets/furniture-kit) | CC0 (no credit needed) | `Fetch assets` workflow → `Draho/Assets/_Draho/ThirdParty/Kenney/FurnitureKit/` (FBX) |
+
+The level is built from [APARTMENT.md](APARTMENT.md) (the blueprint). The look moves from "realistic" to
+**low-poly** for now, because both packs are low-poly.
+
+**The cat has only a run animation.** We still need idle and walk. Plan: convert the glTF to FBX in Blender
+and add procedural idle/walk clips for its rig, as we did for our own cat in `Tools/Blender/build_drahomil.py`.
+
+### How to fetch
+
+1. Sketchfab only: make a free account on sketchfab.com, go to **Settings → Password & API**, copy the API token,
+   and add it as the repository secret `SKETCHFAB_API_TOKEN`.
+2. GitHub app → **Actions → Fetch assets → Run workflow**. The workflow commits the files to that branch.
+   Kenney still works without the Sketchfab token.
+
+---
+
+## Old shortlist (realistic, paid — on hold)
 
 ## Purchase checklist
 

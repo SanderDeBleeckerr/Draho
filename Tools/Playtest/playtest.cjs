@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -109,7 +109,18 @@ const steps = {
     ['04_trust', 'wait', '3'],
     ['05_follow', 'move', '0,1,0,4'],
     ['06_follow_more', 'move', '0,1,0,4'],
-    ['07_wait', 'wait', '8'],
+    ['07_follow_on', 'move', '0,1,0,4'],
+    ['08_follow_end', 'move', '0.3,1,0,3'],
+    ['09_wait', 'wait', '6'],
+  ],
+  // Start with ?beat=14&at=-16.5,7,90 : the hedgehog trusts the cat at once (test hook); follow it to its nest.
+  nest: [
+    ['02_trust', 'call', 'Hedgehog.TestTrust'],
+    ['03_follow', 'move', '0,1,0,4'],
+    ['04_follow', 'move', '0,1,0,4'],
+    ['05_follow', 'move', '0,1,0,4'],
+    ['06_follow', 'move', '0.3,1,0,3'],
+    ['07_wait', 'wait', '5'],
   ],
   // Start with ?beat=11&at=-19.5,4.4,0 : in front of the loose plank in the fence; walk through it.
   fence: [
@@ -159,6 +170,7 @@ for (const [name, action, arg] of steps) {
   if (action === 'tap') await tapStick();
   else if (action === 'jump') await send('TestJump', '');
   else if (action === 'duck') await send('TestCrouch', '');
+  else if (action === 'call') { const [o, m] = arg.split('.'); await page.evaluate(([o, m]) => window.unityInstance.SendMessage(o, m), [o, m]); }
   else if (action === 'hold') { await send('TestHold', arg); await page.waitForTimeout(+arg * 1000); }
   else if (action === 'runjump') { await send('TestMove', arg); await page.waitForTimeout(1200); await send('TestJump', ''); await page.waitForTimeout(800); }
   else if (action === 'move') { await send('TestMove', arg); await page.waitForTimeout(+arg.split(',')[3] * 1000); }

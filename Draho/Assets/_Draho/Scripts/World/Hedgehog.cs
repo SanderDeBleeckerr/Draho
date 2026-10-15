@@ -91,10 +91,13 @@ namespace Draho.World
             }
         }
 
+        /// <summary>Test hook: unityInstance.SendMessage('Hedgehog', 'TestTrust') from the playtest.</summary>
+        public void TestTrust() => trust = trustTime;
+
         void UpdateTrust(float d, bool catMoves, float dt)
         {
             if (Trusts) return;
-            trust = d < trustDistance && !catMoves ? trust + dt : Mathf.Max(0f, trust - dt * 0.5f);
+            if (trust < trustTime) trust = d < trustDistance && !catMoves ? trust + dt : Mathf.Max(0f, trust - dt * 0.5f);
             if (trust < trustTime) return;
             Trusts = true;
             Debug.Log("STORY hedgehog trusts the cat");

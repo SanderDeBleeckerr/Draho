@@ -219,7 +219,9 @@ namespace Draho.Story
                 if (b.OnGround) down++;
                 nearest = Mathf.Min(nearest, Vector3.Distance(b.transform.position, cat.transform.position));
             }
-            return $"birds {down}/{birds.Length} on ground, nearest {nearest:0.0} m";
+            string hog = hedgehog == null ? "" : $" hedgehog ({hedgehog.transform.position.x:0.0}, {hedgehog.transform.position.z:0.0})" +
+                (hedgehog.AtNest ? " at nest" : hedgehog.Trusts ? " leads" : hedgehog.IsCurled ? " curled" : "");
+            return $"birds {down}/{birds.Length} on ground, nearest {nearest:0.0} m{hog}";
         }
 
         void ApplyUrlArguments(out int startBeat)

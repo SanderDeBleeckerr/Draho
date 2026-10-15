@@ -1,0 +1,6 @@
+# GitBook Git Sync: the public wiki lives in wiki/ (the docs/ folder is for developers).
+root: ./wiki/
+
+structure:
+  readme: README.md
+  summary: SUMMARY.md

@@ -63,6 +63,29 @@ def main(src, dst):
     for r in inside[1:]:
         ax.plot([r["x0"], r["x0"]], [r["z0"], r["z1"]], ls="--", color="#8E8A82", lw=1, zorder=2)
 
+    # Open-air courts inside the building: stones, glass walls on the listed sides.
+    for c in lay.get("courts", []):
+        cw, cd = c["x1"] - c["x0"], c["z1"] - c["z0"]
+        ax.add_patch(mp.Rectangle((c["x0"], c["z0"]), cw, cd, facecolor=c["color"], edgecolor="none", zorder=3))
+        n = 0
+        zz = c["z0"] + 0.12
+        while zz < c["z1"] - 0.05:
+            xx = c["x0"] + 0.12 + (0.09 if n % 2 else 0)
+            while xx < c["x1"] - 0.05:
+                ax.add_patch(mp.Circle((xx, zz), 0.045, facecolor="#9C9488", edgecolor="none", zorder=4))
+                xx += 0.18
+            zz += 0.16
+            n += 1
+        sides = {"south": ((c["x0"], c["z0"]), (c["x1"], c["z0"])), "north": ((c["x0"], c["z1"]), (c["x1"], c["z1"])),
+                 "west": ((c["x0"], c["z0"]), (c["x0"], c["z1"])), "east": ((c["x1"], c["z0"]), (c["x1"], c["z1"]))}
+        for side, ((sx0, sz0), (sx1, sz1)) in sides.items():
+            glass = side in c.get("glass", [])
+            ax.plot([sx0, sx1], [sz0, sz1], color="#4BA3C7" if glass else "#2E2C29", lw=3 if glass else 7,
+                    zorder=8, solid_capstyle="butt")
+        ax.text((c["x0"] + c["x1"]) / 2, (c["z0"] + c["z1"]) / 2, c["label"], ha="center", va="center",
+                fontsize=8, zorder=9, color="#2E2C29",
+                bbox=dict(boxstyle="round,pad=0.2", facecolor="#F7F5F0", edgecolor="none", alpha=0.85))
+
     # Outer walls.
     ax.add_patch(mp.Rectangle((x0 - t, z0 - t), x1 - x0 + 2 * t, z1 - z0 + 2 * t, fill=False,
                               edgecolor="#2E2C29", lw=7, zorder=6))

@@ -8,7 +8,7 @@ Claude improves the game in rounds. Each round has the same steps:
 3. **Play.** `NODE_PATH=$(npm root -g) node Tools/Playtest/playtest.cjs <url> <out-dir>` opens the
    game in headless Chromium as an iPhone in landscape, plays a short input script (walk, run, jump,
    duck, wait at the door) and saves screenshots and the browser console (`console.log`).
-   - Third argument: scenario `tour` (default), `climb` (use with `?beat=5&at=-3.75,3.62`) or `mouse`
+   - Third argument: scenario `tour` (default), `climb` (use with `?beat=5&at=-22,0.45,180`), `garden` (`?beat=4&at=-1,2.6,90`) or `mouse`
      (use with `?beat=2&at=5.9,1.05,90`).
    - `?beat=N` starts the story at beat N. `?at=x,z[,yaw]` puts the cat at a point of the blueprint (yaw: 0 = north, 90 = east).
    - The steps send input into the game (`TouchCatInput.TestMove/TestJump/TestCrouch` through
@@ -30,3 +30,4 @@ Claude improves the game in rounds. Each round has the same steps:
 | 4 | — | Tap also counts within 2 frames (slow devices); fix: cat faced backwards after the new clips | — |
 | 5 | — | Playtest input sent into the game (reliable); climb + pull-up verified | — |
 | 6 | Afternoon sun from the south-west, procedural gradient sky | Mouse first appears at the fridge hole | Roof line matches the scene |
+| 7 | Real garden: 24 m strip, terrace + lawn, post-and-plank fence, building wall, picnic table, firewood, ivy | Ivy is the climbing object (rays at two heights: ivy does not reach the ground); firewood to jump on | Climb beat moves to the ivy |

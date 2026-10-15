@@ -52,7 +52,9 @@ namespace Draho.EditorTools
             public Hole[] mouse_holes;
             public Lamp[] lamps;
             public ClimbableInfo[] climbables;
+            public Zone[] garden_zones;
         }
+        [Serializable] class Zone { public string id, material, color; public float x0, x1; }
         [Serializable] class FloorInfo { public float tile_size; public string color; }
         [Serializable] class WallInfo { public float height; public float thickness; public string color; }
         [Serializable] class Room { public string id; public float x0, z0, x1, z1; public bool outdoor; }
@@ -70,13 +72,18 @@ namespace Draho.EditorTools
             public Door[] doors;
         }
         [Serializable] class Door { public string id, side; public float from, to, open_gap; }
-        [Serializable] class Edge { public string id, color; public float[] from, to; public float h; }
+        [Serializable] class Edge
+        {
+            public string id, color, style, post_color;
+            public float[] from, to;
+            public float h, post_spacing;
+        }
         [Serializable] class Spawn { public float x, z; public string facing; }
         [Serializable] class Hole { public string id, facing; public float x, z; }
         [Serializable] class ClimbableInfo
         {
             public string id, type, color, top_color;
-            public float x, z, w, d, h, radius, climb_top;
+            public float x, z, w, d, h, radius, climb_top, bottom;
             public bool standable;
         }
         [Serializable] class Lamp { public string id, color; public float x, y, z, intensity, range; }
@@ -88,7 +95,7 @@ namespace Draho.EditorTools
             var layout = JsonUtility.FromJson<Layout>(File.ReadAllText(LayoutPath));
             materials.Clear();
 
-            Scene scene = PlaygroundBuilder.NewLitScene(Quaternion.Euler(42f, 35f, 0f)); // afternoon sun from the south-west
+            Scene scene = PlaygroundBuilder.NewLitScene(Quaternion.Euler(45f, 240f, 0f)); // real afternoon sun (see garden_note)
             level = new GameObject("Apartment").transform;
 
             Rect inside = InsideRect(layout);
@@ -291,6 +298,8 @@ namespace Draho.EditorTools
             Color color = Hex(p.color);
 
             if (p.id == "cat_tree") { CatTree(root, p, color); return; }
+            if (p.id == "picnic_table") { PicnicTable(root, p, color); return; }
+            if (p.id == "firewood") { Firewood(root, p, color); return; }
 
             var parts = string.IsNullOrEmpty(p.kenney)
                 ? new List<string>()
@@ -421,26 +430,115 @@ namespace Draho.EditorTools
         {
             var garden = layout.rooms.FirstOrDefault(r => r.outdoor);
             if (garden == null) return;
-            var terrace = Mat("Apt_Terrace", new Color(0.55f, 0.53f, 0.5f), 0.2f, TileTexture(),
-                new Vector2(garden.x1 - garden.x0, garden.z1 - garden.z0) / 0.5f);
-            Box("Terrace", new Vector3((garden.x0 + garden.x1) / 2, -0.06f, (garden.z0 + garden.z1) / 2),
-                new Vector3(garden.x1 - garden.x0, 0.1f, garden.z1 - garden.z0), terrace);
-            var edges = (layout.garden_edges ?? new Edge[0]).ToList();
-            // Close the south side too, so the garden is a closed space.
-            edges.Add(new Edge { id = "fence_south", color = "#8A7A66", from = new[] { garden.x0, garden.z0 }, to = new[] { garden.x1, garden.z0 }, h = 1.8f });
-            foreach (var e in edges)
+            float depth = garden.z1 - garden.z0, midZ = (garden.z0 + garden.z1) / 2;
+            var zones = layout.garden_zones ?? new[] { new Zone { id = "terrace", material = "tiles", color = "#8E8A84", x0 = garden.x0, x1 = garden.x1 } };
+            foreach (var zone in zones)
+            {
+                float len = zone.x1 - zone.x0;
+                var mat = zone.material == "grass"
+                    ? Mat($"Apt_{zone.id}", Hex(zone.color), 0.05f, GrassTexture(), new Vector2(len, depth) / 1.5f)
+                    : Mat($"Apt_{zone.id}", Hex(zone.color), 0.2f, TileTexture(), new Vector2(len, depth) / 0.5f);
+                Box(zone.id, new Vector3((zone.x0 + zone.x1) / 2, -0.06f, midZ), new Vector3(len, 0.1f, depth), mat);
+            }
+
+            foreach (var e in layout.garden_edges ?? new Edge[0])
             {
                 bool alongX = Mathf.Approximately(e.from[1], e.to[1]);
                 float line = alongX ? e.from[1] : e.from[0];
                 float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
                 float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
-                WallSegment(e.id, alongX, line, a, b, 0f, e.h, 0.08f, Mat($"Apt_{e.id}", Hex(e.color), 0.1f));
-                // An invisible wall above the fence: the cat cannot jump out from the shed roof.
+                if (e.style == "posts") PostFence(e, alongX, line, a, b);
+                else WallSegment(e.id, alongX, line, a, b, 0f, e.h, 0.08f, Mat($"Apt_{e.id}", Hex(e.color), 0.1f));
+                // An invisible wall above low edges: the cat cannot jump out of the garden.
+                if (e.h > 3f) continue;
                 float mid = (a + b) / 2, len = b - a;
                 var block = Box($"{e.id}_block", alongX ? new Vector3(mid, e.h + 2f, line) : new Vector3(line, e.h + 2f, mid),
                     alongX ? new Vector3(len, 4f, 0.1f) : new Vector3(0.1f, 4f, len), null);
                 Object.DestroyImmediate(block.GetComponent<Renderer>());
             }
+        }
+
+        /// <summary>Concrete posts with horizontal wooden planks between them.</summary>
+        static void PostFence(Edge e, bool alongX, float line, float a, float b)
+        {
+            var root = new GameObject(e.id).transform;
+            root.SetParent(level, false);
+            var post = Mat($"Apt_{e.id}_post", Hex(e.post_color), 0.15f);
+            var plank = Mat($"Apt_{e.id}_plank", Hex(e.color), 0.1f);
+            var plankDark = Mat($"Apt_{e.id}_plank2", Hex(e.color) * 0.85f, 0.1f);
+            Vector3 At(float along, float y) => alongX ? new Vector3(along, y, line) : new Vector3(line, y, along);
+            Vector3 Size(float along, float y, float across) => alongX ? new Vector3(along, y, across) : new Vector3(across, y, along);
+            float spacing = e.post_spacing > 0f ? e.post_spacing : 2f;
+            int posts = Mathf.Max(1, Mathf.RoundToInt((b - a) / spacing));
+            for (int i = 0; i <= posts; i++)
+                Box("Post", At(a + (b - a) * i / posts, (e.h + 0.1f) / 2), Size(0.12f, e.h + 0.1f, 0.12f), post, collider: false)
+                    .transform.SetParent(root, true);
+            const float board = 0.15f, gap = 0.035f;
+            int rows = Mathf.FloorToInt(e.h / (board + gap));
+            for (int r = 0; r < rows; r++)
+                Box("Plank", At((a + b) / 2, 0.04f + r * (board + gap) + board / 2), Size(b - a, board, 0.03f),
+                    r % 2 == 0 ? plank : plankDark, collider: false).transform.SetParent(root, true);
+            Box("Collider", At((a + b) / 2, e.h / 2), Size(b - a, e.h, 0.12f), null).transform.SetParent(root, true);
+            Object.DestroyImmediate(root.Find("Collider").GetComponent<Renderer>());
+        }
+
+        static void PicnicTable(Transform root, Prop p, Color color)
+        {
+            var wood = Mat("Apt_PicnicWood", color, 0.15f);
+            var dark = Mat("Apt_PicnicWoodDark", color * 0.75f, 0.15f);
+            Vector3 o = root.position;
+            float topD = p.d * 0.5f, benchD = 0.26f, benchZ = p.d / 2 - benchD / 2;
+            // Top and benches carry colliders (the cat can jump bench -> table); under the table is free.
+            for (int i = 0; i < 5; i++) // top planks
+                Box("TopPlank", o + new Vector3(0f, p.h - 0.02f, -topD / 2 + topD * (i + 0.5f) / 5), new Vector3(p.w, 0.04f, topD / 5 - 0.01f),
+                    i % 2 == 0 ? wood : dark, collider: false).transform.SetParent(root, true);
+            Box("TopCollider", o + new Vector3(0f, p.h - 0.02f, 0f), new Vector3(p.w, 0.04f, topD), null).transform.SetParent(root, true);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Box("Bench", o + new Vector3(0f, 0.43f, side * benchZ), new Vector3(p.w, 0.04f, benchD), wood).transform.SetParent(root, true);
+                foreach (float end in new[] { -1f, 1f }) // A-frame legs
+                {
+                    var leg = Box("Leg", o + new Vector3(end * (p.w / 2 - 0.2f), p.h / 2, side * topD * 0.45f),
+                        new Vector3(0.06f, p.h * 1.08f, 0.06f), dark, collider: false);
+                    leg.transform.rotation = Quaternion.Euler(side * 22f, 0f, 0f);
+                    leg.transform.SetParent(root, true);
+                }
+            }
+            foreach (var r in root.GetComponentsInChildren<Renderer>()) if (r.sharedMaterial == null) Object.DestroyImmediate(r);
+        }
+
+        static void Firewood(Transform root, Prop p, Color color)
+        {
+            var bark = Mat("Apt_Bark", color, 0.05f);
+            var barkDark = Mat("Apt_BarkDark", color * 0.7f, 0.05f);
+            var cut = Mat("Apt_LogEnd", new Color(0.76f, 0.62f, 0.42f), 0.05f);
+            Vector3 o = root.position;
+            const float r = 0.065f;
+            int rows = Mathf.FloorToInt(p.h / (2 * r * 0.9f)), perRow = Mathf.FloorToInt(p.d / (2 * r));
+            var rng = new System.Random(7);
+            for (int row = 0; row < rows; row++)
+            for (int i = 0; i < perRow; i++)
+            {
+                float y = r + row * 2 * r * 0.9f;
+                float z = -p.d / 2 + r + i * 2 * r + (row % 2) * r * 0.5f;
+                float len = p.w * (0.85f + 0.15f * (float)rng.NextDouble());
+                var log = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                log.name = "Log";
+                Object.DestroyImmediate(log.GetComponent<Collider>());
+                log.transform.SetParent(root, false);
+                log.transform.localPosition = new Vector3(((float)rng.NextDouble() - 0.5f) * 0.1f, y, z);
+                log.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                float rr = r * (0.8f + 0.3f * (float)rng.NextDouble());
+                log.transform.localScale = new Vector3(rr * 2, len / 2, rr * 2);
+                log.GetComponent<Renderer>().sharedMaterials = new[] { rng.Next(2) == 0 ? bark : barkDark };
+            }
+            // Cut ends: thin light discs on the visible ends of the stack.
+            foreach (float end in new[] { -1f, 1f })
+                Box("Ends", o + new Vector3(end * (p.w * 0.47f), p.h / 2, 0f), new Vector3(0.01f, p.h * 0.95f, p.d * 0.95f), cut, collider: false)
+                    .transform.SetParent(root, true);
+            var col = root.gameObject.AddComponent<BoxCollider>();
+            col.center = new Vector3(0f, p.h / 2, 0f);
+            col.size = new Vector3(p.w, p.h, p.d);
         }
 
         static void BuildClimbable(ClimbableInfo c)
@@ -451,6 +549,33 @@ namespace Draho.EditorTools
             var wood = Mat($"Apt_{c.id}", Hex(c.color), 0.15f);
             var top = Mat($"Apt_{c.id}_top", Hex(c.top_color), 0.1f);
             var climbable = root.gameObject.AddComponent<Climbable>();
+            if (c.type == "ivy")
+            {
+                // Ivy on a wall that runs along X; it hangs from the top down to c.bottom.
+                float h = c.h - c.bottom, z = c.z + 0.04f + c.d / 2; // in front of the wall face
+                var slab = Box("IvyBody", new Vector3(c.x, c.bottom + h / 2, z), new Vector3(c.w, h, c.d), wood);
+                slab.transform.SetParent(root, true);
+                var rng = new System.Random(11);
+                int leaves = Mathf.RoundToInt(c.w * h * 14f);
+                for (int i = 0; i < leaves; i++)
+                {
+                    float u = (float)rng.NextDouble(), v = (float)rng.NextDouble();
+                    // Thinner and more ragged towards the bottom.
+                    float y = c.bottom - 0.15f + Mathf.Pow(v, 0.7f) * (h + 0.15f);
+                    float x = c.x + (u - 0.5f) * c.w * (0.75f + 0.25f * (y - c.bottom) / h);
+                    var leaf = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    leaf.name = "Leaves";
+                    Object.DestroyImmediate(leaf.GetComponent<Collider>());
+                    leaf.transform.SetParent(root, false);
+                    leaf.transform.position = new Vector3(x, y, z + c.d / 2 + 0.01f + 0.04f * (float)rng.NextDouble());
+                    float size = 0.12f + 0.22f * (float)rng.NextDouble();
+                    leaf.transform.localScale = new Vector3(size, size * 0.8f, 0.06f);
+                    leaf.transform.rotation = Quaternion.Euler(0f, 0f, (float)rng.NextDouble() * 180f);
+                    leaf.GetComponent<Renderer>().sharedMaterial = rng.Next(3) == 0 ? wood : top;
+                }
+                climbable.Configure(c.climb_top, false);
+                return;
+            }
             if (c.type == "tree")
             {
                 var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -731,6 +856,16 @@ namespace Draho.EditorTools
             if (best > 1f) return new Color(0.35f, 0.33f, 0.3f);
             float light = Mathf.Lerp(1.05f, 0.75f, best * best) * shade;
             return new Color(light, light * 0.97f, light * 0.92f);
+        });
+
+        static Texture2D GrassTexture() => MakeTexture("Grass.png", 256, (x, y, size) =>
+        {
+            // Blades: hashed streaks of lighter and darker green.
+            int h1 = (x * 73856093) ^ (y / 3 * 19349663);
+            int h2 = ((x / 2) * 83492791) ^ ((y / 5) * 1640531527);
+            float n = ((h1 >> 4) & 255) / 255f * 0.5f + ((h2 >> 6) & 255) / 255f * 0.5f;
+            float v = 0.8f + 0.35f * n;
+            return new Color(0.55f * v, 0.75f * v, 0.42f * v);
         });
 
         static float Repeat(float p, int pixel, int size)

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|mouse]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|mouse|garden]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -72,14 +72,22 @@ const steps = {
     ['10_tap_still', 'tap', ''],
     ['11_wait', 'wait', '3'],
   ],
-  // Start with ?beat=5&at=-3.75,3.62 : in front of the shed, facing it.
+  // Start with ?beat=5&at=-22,0.45,180 : in front of the ivy at the end of the garden, facing it.
   climb: [
     ['02_tap_still', 'tap', ''],
     ['03_rear_climb', 'wait', '0.8'],
     ['04_climb_up', 'move', '0,1,0,2.5'],
     ['05_climb_more', 'move', '0,1,0,2.5'],
-    ['06_on_roof', 'move', '0,1,0,1.5'],
-    ['07_walk_roof', 'move', '0,1,0,1'],
+    ['06_climb_top', 'move', '0,1,0,2.5'],
+    ['07_leap_off', 'jump', ''],
+    ['08_landed', 'wait', '1.5'],
+  ],
+  // Start with ?beat=4&at=-1,2.6,90 : on the terrace, looking down the garden.
+  garden: [
+    ['02_walk', 'move', '0,1,0,3'],
+    ['03_run', 'move', '0,1,1,3'],
+    ['04_run_more', 'move', '0,1,1,3'],
+    ['05_look_back', 'move', '0,-1,0,1'],
   ],
   // Start with ?beat=2&at=5.9,1.05,90 : in the kitchen, facing the mouse hole by the fridge.
   mouse: [

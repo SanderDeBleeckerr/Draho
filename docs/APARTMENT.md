@@ -30,3 +30,19 @@ The photos are **not** in the repository, because they show people. Only the blu
 3. Size and position of the kitchen island, and which side the drawers face.
 4. Where are the front door, the hallway and the stairs (if any)?
 5. Size of the garden and where the fence and the brick wall are.
+
+## Garden (blueprint v10)
+
+From the owner's description and open aerial data of Flanders (Digitaal Vlaanderen orthophotos and
+GRB parcel outlines, free reuse licence). The exact location is not stored in this repository.
+
+- A strip about **4.2 m wide and 24 m long** behind the sliding door (the game keeps 5 m, the width
+  of the apartment).
+- In real life the garden runs north-east from the house. In the blueprint it runs west:
+  game west = real north-east, game south = real north-west, game north = real south-east.
+- **Terrace** (pavers) for the first 5 m, with the **picnic table** close to the house; **lawn** after it.
+- **Game south (real north-west):** the side wall of the neighbouring building (guess: 6 m high), with a
+  small **firewood stack** against it. At the far end **ivy** hangs down from the top: the cat can climb it.
+- **Game north (real south-east):** the fence to the neighbour's garden: **concrete posts with
+  horizontal wooden planks** (guess: 1.8 m).
+- **Far end:** not known yet (guess: wooden fence).

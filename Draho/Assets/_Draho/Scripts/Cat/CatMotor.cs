@@ -18,7 +18,9 @@ namespace Draho.Cat
         enum Mode { Normal, Rearing, Climbing, Mantling }
 
         const float AirborneDelay = 0.08f; // short drops (steps) do not count as a fall
-        const float WallProbeHeight = 0.12f;
+        // Rays for climbable surfaces: low, and at the height a cat reaches when it stands up (ivy that
+        // does not reach the ground).
+        static readonly float[] WallProbeHeights = { 0.12f, 0.38f };
 
         [SerializeField] CatStats stats;
         [Tooltip("Any component that implements ICatInput.")]
@@ -153,15 +155,20 @@ namespace Draho.Cat
         {
             wall = null;
             normal = Vector3.zero;
-            Vector3 origin = transform.position + Vector3.up * WallProbeHeight;
             int mask = ~(1 << gameObject.layer);
-            if (!Physics.Raycast(origin, transform.forward, out RaycastHit hit, controller.radius + stats.climbReach,
-                    mask, QueryTriggerInteraction.Ignore))
-                return false;
-            if (Mathf.Abs(hit.normal.y) > 0.4f) return false; // not a wall
-            wall = hit.collider.GetComponentInParent<Climbable>();
-            normal = Vector3.ProjectOnPlane(hit.normal, Vector3.up).normalized;
-            return wall != null;
+            foreach (float height in WallProbeHeights)
+            {
+                Vector3 origin = transform.position + Vector3.up * height;
+                if (!Physics.Raycast(origin, transform.forward, out RaycastHit hit, controller.radius + stats.climbReach,
+                        mask, QueryTriggerInteraction.Ignore))
+                    continue;
+                if (Mathf.Abs(hit.normal.y) > 0.4f) continue; // not a wall
+                wall = hit.collider.GetComponentInParent<Climbable>();
+                if (wall == null) continue;
+                normal = Vector3.ProjectOnPlane(hit.normal, Vector3.up).normalized;
+                return true;
+            }
+            return false;
         }
 
         void StartClimb(Climbable wall, Vector3 normal)

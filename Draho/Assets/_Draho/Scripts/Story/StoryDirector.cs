@@ -84,9 +84,9 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The shed roof: the best place in the garden to watch the birds.",
-                    Goal = "Stand still at the shed, tap the stick: stand up and climb. Push up to climb.",
-                    Done = () => cat.IsGrounded && cat.transform.position.y > 1.5f,
+                    Story = "At the end of the garden, ivy hangs down the old wall. A ladder for cats.",
+                    Goal = "Stand still at the ivy, tap the stick to stand up, then push up to climb.",
+                    Done = () => cat.IsClimbing && cat.transform.position.y > 1.5f,
                 },
                 new Beat
                 {

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Draho.World
 {
     /// <summary>
-    /// A surface the cat can climb (tree trunk, wooden shed wall). The cat stands still in front of it
+    /// A surface the cat can climb (ivy on a wall, a tree trunk, a shed wall). The cat stands still in front of it
     /// and taps the stick: it stands up on its hind legs, then starts to climb.
     /// </summary>
     public class Climbable : MonoBehaviour

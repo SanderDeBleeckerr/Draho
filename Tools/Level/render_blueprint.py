@@ -40,7 +40,8 @@ def main(src, dst):
     z1 = max(r["z1"] for r in inside)
     t = lay["wall"]["thickness"]
 
-    fig, ax = plt.subplots(figsize=(14, 6.2), dpi=120)
+    span = max(r["x1"] for r in rooms) - min(r["x0"] for r in rooms)
+    fig, ax = plt.subplots(figsize=(max(14, span * 0.75), 6.2), dpi=120)
     ax.set_facecolor("#F7F5F0")
 
     # Rooms and floor tiles.
@@ -113,10 +114,32 @@ def main(src, dst):
         ax.text(tx + off[0], tz + off[1], o["label"], rotation=rot, ha="center", va="center",
                 fontsize=8, color="#2C6E8A", zorder=9)
 
-    # Garden edges.
+    # Garden ground zones (terrace, lawn).
+    for zn in lay.get("garden_zones", []):
+        g = next(r for r in rooms if r.get("outdoor"))
+        ax.add_patch(mp.Rectangle((zn["x0"], g["z0"]), zn["x1"] - zn["x0"], g["z1"] - g["z0"],
+                                  facecolor=zn["color"], edgecolor="none", alpha=0.35, zorder=1))
+        ax.text((zn["x0"] + zn["x1"]) / 2, g["z1"] - 0.3, zn["label"], ha="center", va="center",
+                fontsize=8, color="#3F4A35", zorder=5)
+
+    # Garden edges (posts drawn as dots on the fence line).
     for e in lay.get("garden_edges", []):
         (ex0, ez0), (ex1, ez1) = e["from"], e["to"]
-        ax.plot([ex0, ex1], [ez0, ez1], color=e["color"], lw=5, zorder=6)
+        ax.plot([ex0, ex1], [ez0, ez1], color=e["color"], lw=5 if e["h"] < 3 else 9, zorder=6)
+        if e.get("style") == "posts":
+            n = max(1, round(abs(ex1 - ex0 + ez1 - ez0) / e.get("post_spacing", 2.0)))
+            for i in range(n + 1):
+                ax.plot(ex0 + (ex1 - ex0) * i / n, ez0 + (ez1 - ez0) * i / n, "s", color=e["post_color"],
+                        markersize=5, zorder=7)
+        ax.text((ex0 + ex1) / 2, (ez0 + ez1) / 2 + (0.25 if ez0 >= 2.5 else -0.25), e["label"], ha="center",
+                va="center", fontsize=7, color="#5A4A3A", zorder=7)
+
+    # Climbable surfaces (ivy).
+    for c in lay.get("climbables", []):
+        w, d = c.get("w", 2 * c.get("radius", 0.2)), c.get("d", 2 * c.get("radius", 0.2))
+        ax.add_patch(mp.Rectangle((c["x"] - w / 2, c["z"]), w, max(d, 0.15), facecolor=c["color"],
+                                  edgecolor="#1F3A18", lw=1, zorder=10))
+        ax.text(c["x"], c["z"] + 0.35, c["label"], ha="center", va="bottom", fontsize=7.5, color="#1F3A18", zorder=13)
 
     # Props.
     # Low props first, so a rug stays under its table.

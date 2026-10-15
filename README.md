@@ -13,7 +13,8 @@ The game uses Unity.
 
 ## Current state: the apartment
 
-The game opens in **Drahomil's apartment** (kitchen, living room, inner court, closed garden door).
+The game opens in **Drahomil's apartment** (kitchen, living room, inner court, garden). Drahomil can
+jump onto furniture and duck. Wait in front of the sliding garden door and it opens.
 The level is built from the blueprint file `Draho/Assets/_Draho/Levels/Apartment/apartment_layout.json`
 with Kenney furniture. The old test playground (a floor in empty space) is the second scene.
 
@@ -33,13 +34,15 @@ with Kenney furniture. The old test playground (a floor in empty space) is the s
 |---|---|---|
 | Move | WASD / arrow keys | Left thumb (floating joystick) |
 | Run | Hold Shift | Push the joystick to the edge |
+| Jump | Space | **JUMP** button (bottom right) |
+| Duck / sneak (on/off) | C or Ctrl | **DUCK** button |
 | Orbit the camera | Drag with the right mouse button | Swipe with the right thumb |
 
 ## Rebuild the cat model
 
 The cat is the Sketchfab model ["Lowpoly Cat Rig + Run Animation"](https://sketchfab.com/3d-models/lowpoly-cat-rig-run-animation-c36df576c9ae4ed28e89069b1a2f427a)
 by Daily Lowpoly (CC BY 4.0). [`Tools/Blender/convert_lowpoly_cat.py`](Tools/Blender/convert_lowpoly_cat.py) cleans it up,
-adds Idle and Walk clips and a face, and exports `Drahomil.fbx`:
+adds Idle, Walk, CrouchIdle, CrouchWalk, Jump and Fall clips and a low-poly face, and exports `Drahomil.fbx`:
 
 ```bash
 pip install bpy            # Blender as a Python module (Python 3.13 for bpy 5.x)
@@ -47,7 +50,10 @@ python Tools/Blender/convert_lowpoly_cat.py -- --glb ThirdParty/Sketchfab/lowpol
   --out Draho/Assets/_Draho/Art/Cat/Drahomil.fbx --renders /tmp/cat_renders
 ```
 
-The script prints the measured clip speeds. Put them in `CatStats.cs` (`walkClipSpeed`, `runClipSpeed`)
+The script prints the measured clip speeds. Put them in `CatStats.cs` (`walkClipSpeed`, `runClipSpeed`, `crouchClipSpeed`)
 so the paws do not slide.
+
+The garden door comes from [`Tools/Blender/convert_sliding_door.py`](Tools/Blender/convert_sliding_door.py)
+(Sketchfab model by faiyaz5yaz, CC BY 4.0).
 
 The first placeholder cat (made fully by code) is still in [`Tools/Blender/build_drahomil.py`](Tools/Blender/build_drahomil.py).

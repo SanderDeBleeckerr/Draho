@@ -71,6 +71,7 @@ namespace Draho.EditorTools
             var defaults = ScriptableObject.CreateInstance<CatStats>();
             stats.walkClipSpeed = defaults.walkClipSpeed;
             stats.runClipSpeed = defaults.runClipSpeed;
+            stats.crouchClipSpeed = defaults.crouchClipSpeed;
             Object.DestroyImmediate(defaults);
             EditorUtility.SetDirty(stats);
             AnimatorController controller = BuildAnimator(stats);
@@ -179,19 +180,57 @@ namespace Draho.EditorTools
             var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
             controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
             controller.AddParameter("Grounded", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("Airborne", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("Crouch", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("VerticalSpeed", AnimatorControllerParameterType.Float);
 
-            controller.CreateBlendTreeInController("Locomotion", out BlendTree tree, 0);
+            // Standing: Idle / Walk / Run on Speed. Walk and Run play faster so the paws match the speed.
+            AnimatorState locomotion = controller.CreateBlendTreeInController("Locomotion", out BlendTree tree, 0);
             tree.blendType = BlendTreeType.Simple1D;
             tree.blendParameter = "Speed";
             tree.useAutomaticThresholds = false;
             tree.AddChild(Clip("Idle"), 0f);
             tree.AddChild(Clip("Walk"), stats.walkSpeed);
             tree.AddChild(Clip("Run"), stats.runSpeed);
-            // Play Walk/Run faster so the paws match the movement speed.
             var children = tree.children;
             children[1].timeScale = stats.walkSpeed / stats.walkClipSpeed;
             children[2].timeScale = stats.runSpeed / stats.runClipSpeed;
             tree.children = children;
+
+            // Crouched: CrouchIdle / CrouchWalk on Speed.
+            AnimatorState crouch = controller.CreateBlendTreeInController("Crouch", out BlendTree crouchTree, 0);
+            crouchTree.blendType = BlendTreeType.Simple1D;
+            crouchTree.blendParameter = "Speed";
+            crouchTree.useAutomaticThresholds = false;
+            crouchTree.AddChild(Clip("CrouchIdle"), 0f);
+            crouchTree.AddChild(Clip("CrouchWalk"), stats.crouchSpeed);
+            children = crouchTree.children;
+            children[1].timeScale = stats.crouchSpeed / stats.crouchClipSpeed;
+            crouchTree.children = children;
+
+            // In the air: Jump pose while rising, Fall pose (paws reaching down) while falling.
+            AnimatorState air = controller.CreateBlendTreeInController("Air", out BlendTree airTree, 0);
+            airTree.blendType = BlendTreeType.Simple1D;
+            airTree.blendParameter = "VerticalSpeed";
+            airTree.useAutomaticThresholds = false;
+            airTree.AddChild(Clip("Fall"), -2.5f);
+            airTree.AddChild(Clip("Jump"), 1.5f);
+
+            AnimatorStateTransition Link(AnimatorState from, AnimatorState to, float duration,
+                params (AnimatorConditionMode mode, string parameter)[] conditions)
+            {
+                var t = from.AddTransition(to);
+                t.hasExitTime = false;
+                t.duration = duration;
+                foreach (var (mode, parameter) in conditions) t.AddCondition(mode, 0f, parameter);
+                return t;
+            }
+            Link(locomotion, crouch, 0.15f, (AnimatorConditionMode.If, "Crouch"), (AnimatorConditionMode.IfNot, "Airborne"));
+            Link(crouch, locomotion, 0.15f, (AnimatorConditionMode.IfNot, "Crouch"));
+            Link(locomotion, air, 0.1f, (AnimatorConditionMode.If, "Airborne"));
+            Link(crouch, air, 0.1f, (AnimatorConditionMode.If, "Airborne"));
+            Link(air, locomotion, 0.12f, (AnimatorConditionMode.IfNot, "Airborne"), (AnimatorConditionMode.IfNot, "Crouch"));
+            Link(air, crouch, 0.12f, (AnimatorConditionMode.IfNot, "Airborne"), (AnimatorConditionMode.If, "Crouch"));
             return controller;
         }
 
@@ -220,10 +259,12 @@ namespace Draho.EditorTools
             var materials = new[]
             {
                 LitMaterial("Fur", new Color(0.12f, 0.12f, 0.135f), 0.35f),
-                LitMaterial("Eye", new Color(0.78f, 0.82f, 0.12f), 0.9f),
+                LitMaterial("Eye", new Color(0.86f, 0.66f, 0.1f), 0.85f),
                 LitMaterial("Pupil", Color.black, 0.9f),
-                LitMaterial("Nose", new Color(0.16f, 0.11f, 0.12f), 0.5f),
-                LitMaterial("InnerEar", new Color(0.38f, 0.22f, 0.22f), 0.2f),
+                LitMaterial("Glint", Color.white, 0.9f),
+                LitMaterial("Nose", new Color(0.3f, 0.19f, 0.21f), 0.5f),
+                LitMaterial("InnerEar", new Color(0.36f, 0.22f, 0.25f), 0.2f),
+                LitMaterial("Whisker", new Color(0.82f, 0.82f, 0.8f), 0.4f),
             }.ToDictionary(m => m.name);
             foreach (var r in model.GetComponentsInChildren<Renderer>())
             {
@@ -337,11 +378,17 @@ namespace Draho.EditorTools
             var lookArea = UiRect("LookArea", canvasGo.transform, new Vector2(0.5f, 0f), Vector2.one)
                 .gameObject.AddComponent<TouchLookArea>();
 
+            // Buttons after the look area, so they get the touch first. Bottom-right, under the right thumb.
+            TouchButton jumpButton = HudButton(canvasGo.transform, "JumpButton", "JUMP", new Vector2(-230f, 230f), 200f, false, circle);
+            TouchButton crouchButton = HudButton(canvasGo.transform, "CrouchButton", "DUCK", new Vector2(-450f, 140f), 150f, true, circle);
+
             var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
 
             var inputGo = new GameObject("PlayerInput");
             var input = inputGo.AddComponent<TouchCatInput>();
             SetField(input, "joystick", joystick);
+            SetField(input, "jumpButton", jumpButton);
+            SetField(input, "crouchButton", crouchButton);
 
             var camGo = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
             camGo.tag = "MainCamera";
@@ -363,6 +410,32 @@ namespace Draho.EditorTools
             var respawn = new GameObject("FallRespawn").AddComponent<FallRespawn>();
             SetField(respawn, "motor", motor);
             SetField(respawn, "spawnPoint", spawn);
+        }
+
+        static TouchButton HudButton(Transform canvas, string name, string label, Vector2 fromBottomRight, float size,
+            bool toggle, Sprite circle)
+        {
+            var rt = UiRect(name, canvas, Vector2.right, Vector2.right, circle, new Color(1f, 1f, 1f, 0.35f));
+            rt.sizeDelta = Vector2.one * size;
+            rt.anchoredPosition = fromBottomRight;
+            var text = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            var textRt = (RectTransform)text.transform;
+            textRt.SetParent(rt, false);
+            textRt.anchorMin = Vector2.zero;
+            textRt.anchorMax = Vector2.one;
+            textRt.offsetMin = textRt.offsetMax = Vector2.zero;
+            var t = text.GetComponent<Text>();
+            t.text = label;
+            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.fontSize = Mathf.RoundToInt(size * 0.2f);
+            t.fontStyle = FontStyle.Bold;
+            t.alignment = TextAnchor.MiddleCenter;
+            t.color = new Color(0.1f, 0.1f, 0.12f, 0.85f);
+            t.raycastTarget = false;
+            var button = rt.gameObject.AddComponent<TouchButton>();
+            SetField(button, "toggle", toggle);
+            SetField(button, "icon", rt.GetComponent<Image>());
+            return button;
         }
 
         static RectTransform UiRect(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax,
@@ -389,6 +462,7 @@ namespace Draho.EditorTools
                 case Object o: prop.objectReferenceValue = o; break;
                 case float f: prop.floatValue = f; break;
                 case int i: prop.intValue = i; break;
+                case bool b: prop.boolValue = b; break;
                 default: throw new System.ArgumentException(value?.GetType().Name);
             }
             so.ApplyModifiedPropertiesWithoutUndo();

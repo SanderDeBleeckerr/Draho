@@ -7,6 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using Draho.World;
 using Object = UnityEngine.Object;
 
 namespace Draho.EditorTools
@@ -21,6 +22,7 @@ namespace Draho.EditorTools
         const string Root = "Assets/_Draho";
         const string LayoutPath = Root + "/Levels/Apartment/apartment_layout.json";
         const string KenneyDir = Root + "/ThirdParty/Kenney/FurnitureKit";
+        const string SlidingDoorFbx = Root + "/Art/Props/SlidingDoor.fbx";
         public const string ScenePath = Root + "/Scenes/Apartment.unity";
 
         // The cat's CharacterController is 0.22 m wide. The real door is open a crack; in the game
@@ -48,7 +50,7 @@ namespace Draho.EditorTools
         [Serializable] class FloorInfo { public float tile_size; public string color; }
         [Serializable] class WallInfo { public float height; public float thickness; public string color; }
         [Serializable] class Room { public string id; public float x0, z0, x1, z1; public bool outdoor; }
-        [Serializable] class Opening { public string id; public string wall; public float from, to, height; }
+        [Serializable] class Opening { public string id, wall, model; public float from, to, height; }
         [Serializable] class Prop
         {
             public string id, label, kenney, color, top_color, facing;
@@ -130,7 +132,10 @@ namespace Draho.EditorTools
                 {
                     WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, o.from, 0f, h, t, wall);
                     WallSegment($"Wall_{side}_above_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height, h, t, wall);
-                    GlassPanel($"Glass_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height);
+                    if (o.model == "SlidingDoor")
+                        SlidingDoorAt(o, alongX, alongX ? a.y : a.x, side);
+                    else
+                        GlassPanel($"Glass_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height);
                     cursor = o.to;
                 }
                 WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, end, 0f, h, t, wall);
@@ -156,6 +161,77 @@ namespace Draho.EditorTools
             WallSegment(name + "_sill", alongX, line, from, to, 0f, 0.02f, 0.06f, frame);
             WallSegment(name + "_head", alongX, line, from, to, height - 0.04f, height, 0.06f, frame);
         }
+
+        /// <summary>
+        /// The Sketchfab sliding door (Tools/Blender/convert_sliding_door.py), fitted into the opening.
+        /// Its "Slider" child moves sideways behind the fixed pane when the cat waits in front of it.
+        /// </summary>
+        static void SlidingDoorAt(Opening o, bool alongX, float line, string side)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(SlidingDoorFbx);
+            if (asset == null)
+            {
+                Debug.LogWarning($"Draho: {SlidingDoorFbx} not found; using a fixed glass panel.");
+                GlassPanel($"Glass_{o.id}", alongX, line, o.from, o.to, o.height);
+                return;
+            }
+            float width = o.to - o.from, mid = (o.from + o.to) / 2;
+            var root = new GameObject($"SlidingDoor_{o.id}").transform;
+            root.SetParent(level, false);
+            root.position = alongX ? new Vector3(mid, 0f, line) : new Vector3(line, 0f, mid);
+
+            var door = (GameObject)PrefabUtility.InstantiatePrefab(asset, root);
+            door.transform.localPosition = Vector3.zero;
+            door.transform.localRotation = Quaternion.identity;
+            door.transform.localScale = Vector3.one;
+            Bounds b = WorldBounds(door);
+            // Turn the door so its width runs along the wall.
+            bool doorAlongX = b.size.x >= b.size.z;
+            if (doorAlongX != alongX) door.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            b = WorldBounds(door);
+            float doorWidth = alongX ? b.size.x : b.size.z;
+            float s = width / doorWidth;
+            door.transform.localScale = new Vector3(s, o.height / b.size.y, s);
+            b = WorldBounds(door);
+            door.transform.position += root.position - new Vector3(b.center.x, b.min.y, b.center.z);
+
+            foreach (var r in door.GetComponentsInChildren<Renderer>())
+                r.sharedMaterials = r.sharedMaterials.Select(m =>
+                    m != null && m.name.Contains("Glass") ? GlassMat() : Mat("Apt_DoorFrame", new Color(0.93f, 0.93f, 0.92f), 0.4f)).ToArray();
+
+            Transform slider = door.GetComponentsInChildren<Transform>().First(t => t.name == "Slider");
+            Transform fixedGlass = door.GetComponentsInChildren<Transform>().First(t => t.name == "FixedGlass");
+            Bounds sb = WorldBounds(slider.gameObject), fb = WorldBounds(fixedGlass.gameObject);
+
+            // Colliders: the sliding panel moves with its collider; the fixed half has its own box.
+            var sliderCol = slider.gameObject.AddComponent<BoxCollider>();
+            sliderCol.center = slider.InverseTransformPoint(sb.center);
+            sliderCol.size = Abs(slider.InverseTransformVector(sb.size));
+            var body = slider.gameObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            var fixedCol = new GameObject("FixedPaneCollider").AddComponent<BoxCollider>();
+            fixedCol.transform.SetParent(root, false);
+            fixedCol.transform.position = fb.center;
+            fixedCol.size = new Vector3(Mathf.Max(fb.size.x, 0.12f), b.size.y, Mathf.Max(fb.size.z, 0.12f));
+
+            // Open: the slider moves over the fixed pane.
+            Vector3 along = alongX ? Vector3.right : Vector3.forward;
+            float direction = Mathf.Sign(Vector3.Dot(fb.center - sb.center, along));
+            float travel = (alongX ? sb.size.x : sb.size.z) * 0.92f;
+
+            // Waiting areas in front of the door, on both sides, including the doorway itself.
+            Vector3 inward = side == "west" ? Vector3.right : side == "east" ? Vector3.left
+                : side == "south" ? Vector3.forward : Vector3.back;
+            var zones = new[] { 1f, -1f }.Select(sign =>
+            {
+                Vector3 c = root.position + inward * sign * 0.35f + Vector3.up * 0.5f;
+                Vector3 size = alongX ? new Vector3(width, 1f, 0.9f) : new Vector3(0.9f, 1f, width);
+                return new Bounds(c, size);
+            }).ToArray();
+            root.gameObject.AddComponent<SlidingDoor>().Configure(slider, along * direction * travel, zones);
+        }
+
+        static Vector3 Abs(Vector3 v) => new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
 
         // ------------------------------------------------------------------ inner court
         static void BuildCourt(Layout layout, Court c)

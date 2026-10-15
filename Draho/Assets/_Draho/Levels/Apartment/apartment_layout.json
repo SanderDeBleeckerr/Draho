@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 6,
+  "version": 7,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -50,7 +50,8 @@
       "to": 4.4,
       "height": 2.4,
       "kenney": "wallWindowSlide",
-      "note": "Opens to the garden. Cat can go out when it is open."
+      "note": "Sketchfab 'Pro Line Contemporary Sliding Door' (CC BY). Opens when the cat waits in front of it, inside or in the garden.",
+      "model": "SlidingDoor"
     }
   ],
   "props": [

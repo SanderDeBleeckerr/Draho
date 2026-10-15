@@ -16,6 +16,21 @@ namespace Draho.Cat
         [Tooltip("Degrees per second.")]
         public float turnSpeed = 480f;
 
+        [Header("Jump")]
+        [Tooltip("How high the paws rise, in metres. The kitchen counter is 0.9 m.")]
+        public float jumpHeight = 1.05f;
+        [Tooltip("Part of the ground speed the cat can still steer in the air (0..1).")]
+        public float airControl = 0.5f;
+        [Tooltip("A jump press this long before landing still counts (seconds).")]
+        public float jumpBuffer = 0.15f;
+        [Tooltip("A jump just after walking off an edge still counts (seconds).")]
+        public float coyoteTime = 0.1f;
+
+        [Header("Crouch")]
+        public float crouchSpeed = 0.28f;
+        [Tooltip("Height of the collider while crouched (standing is 0.26 m).")]
+        public float crouchHeight = 0.16f;
+
         [Header("Gravity")]
         public float gravity = -20f;
         public float maxFallSpeed = 30f;
@@ -25,5 +40,7 @@ namespace Draho.Cat
         public float walkClipSpeed = 0.315f; // measured by Tools/Blender/convert_lowpoly_cat.py
         [Tooltip("Speed at which the Run clip's paws do not slide, at playback speed 1.")]
         public float runClipSpeed = 0.666f;
+        [Tooltip("Speed at which the CrouchWalk clip's paws do not slide, at playback speed 1.")]
+        public float crouchClipSpeed = 0.194f;
     }
 }

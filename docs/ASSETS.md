@@ -5,13 +5,17 @@
 | Use | Asset | License | How it gets into the repo |
 |---|---|---|---|
 | Cat | [Lowpoly Cat Rig + Run Animation](https://sketchfab.com/3d-models/lowpoly-cat-rig-run-animation-c36df576c9ae4ed28e89069b1a2f427a) (Sketchfab) | **CC BY 4.0** — credit Daily Lowpoly (see [CREDITS.md](../CREDITS.md)). 794 faces, 1 animation (run). | `Fetch assets` workflow → `ThirdParty/Sketchfab/lowpoly-cat/` (raw glTF) |
+| Garden door | [Pro Line Contemporary Sliding Door new](https://sketchfab.com/3d-models/pro-line-contemporary-sliding-door-new-a699c070dc864bdd89e9f3accc1f0c0e) (Sketchfab, faiyaz5yaz) | **CC BY 4.0** — credit in [CREDITS.md](../CREDITS.md) | `ThirdParty/Sketchfab/sliding-door/` → `Tools/Blender/convert_sliding_door.py` → `Art/Props/SlidingDoor.fbx` |
 | Furniture | [Kenney Furniture Kit](https://kenney.nl/assets/furniture-kit) | CC0 (no credit needed) | **Done:** 140 FBX models in `Draho/Assets/_Draho/ThirdParty/Kenney/FurnitureKit/` |
 
 The level is built from [APARTMENT.md](APARTMENT.md) (the blueprint). The look moves from "realistic" to
 **low-poly** for now, because both packs are low-poly.
 
-**The cat has only a run animation.** We still need idle and walk. Plan: convert the glTF to FBX in Blender
-and add procedural idle/walk clips for its rig, as we did for our own cat in `Tools/Blender/build_drahomil.py`.
+The cat came with only a run animation. `Tools/Blender/convert_lowpoly_cat.py` adds Idle, Walk, CrouchIdle,
+CrouchWalk, Jump and Fall, and a new low-poly face (eyes with slit pupils, nose, mouth, whiskers, inner ears).
+
+To find more models, edit `QUERIES` in `.github/workflows/sketchfab-search.yml` and push it: the log lists
+downloadable CC0 / CC BY models.
 
 ### How to fetch
 

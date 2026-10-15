@@ -12,5 +12,14 @@ namespace Draho.Controls
 
         /// <summary>True when the cat should run instead of walk.</summary>
         bool Run { get; }
+
+        /// <summary>True while the cat should stay low (duck / sneak).</summary>
+        bool Crouch { get; }
+
+        /// <summary>True once per jump press. Reading it clears it.</summary>
+        bool ConsumeJump();
+
+        /// <summary>Tells the input that the crouch ended (for example because the cat jumped).</summary>
+        void CancelCrouch();
     }
 }

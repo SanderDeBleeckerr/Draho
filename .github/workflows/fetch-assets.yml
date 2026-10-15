@@ -14,7 +14,7 @@ on:
         default: "furniture-kit"
       sketchfab_models:
         description: "Sketchfab models as folder=uid (space-separated)"
-        default: "lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a sliding-door=a699c070dc864bdd89e9f3accc1f0c0e sliding-door-alt=a060a47a7a354367968888cb6f3c706c"
+        default: "lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a sliding-door=a699c070dc864bdd89e9f3accc1f0c0e"
 
 permissions:
   contents: write
@@ -35,7 +35,7 @@ jobs:
         # Kenney files are still committed when this step fails (no token, bad license, ...).
         continue-on-error: true
         env:
-          SKETCHFAB_MODELS: ${{ inputs.sketchfab_models || 'lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a sliding-door=a699c070dc864bdd89e9f3accc1f0c0e sliding-door-alt=a060a47a7a354367968888cb6f3c706c' }}
+          SKETCHFAB_MODELS: ${{ inputs.sketchfab_models || 'lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a sliding-door=a699c070dc864bdd89e9f3accc1f0c0e' }}
           SKETCHFAB_API_TOKEN: ${{ secrets.SKETCHFAB_API_TOKEN }}
         run: bash .github/scripts/fetch-assets.sh
 
@@ -45,6 +45,6 @@ jobs:
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Fetch third-party assets" -m "Kenney: ${{ inputs.kenney_packs || 'furniture-kit' }}" -m "Sketchfab: ${{ inputs.sketchfab_models || 'lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a sliding-door=a699c070dc864bdd89e9f3accc1f0c0e sliding-door-alt=a060a47a7a354367968888cb6f3c706c' }}"
+          git commit -m "Fetch third-party assets" -m "Kenney: ${{ inputs.kenney_packs || 'furniture-kit' }}" -m "Sketchfab: ${{ inputs.sketchfab_models || 'lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a sliding-door=a699c070dc864bdd89e9f3accc1f0c0e' }}"
           git push
           git show --stat HEAD | tail -30

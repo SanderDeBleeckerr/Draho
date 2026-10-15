@@ -1,7 +1,0 @@
-"Sliding Door / Sliding Window" by Designed By Jonathan (https://sketchfab.com/designedbyjonathan)
-Source:  https://sketchfab.com/3d-models/sliding-door-sliding-window-a060a47a7a354367968888cb6f3c706c
-License: CC Attribution http://creativecommons.org/licenses/by/4.0/
-Fetched: 2026-10-15T07:33:19Z
-
-This model is NOT covered by the Draho code license. Do not reuse it outside this project
-except as its own license allows. CC BY requires credit to the author (see CREDITS.md).

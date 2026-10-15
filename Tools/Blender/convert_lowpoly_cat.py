@@ -274,31 +274,42 @@ def bake_clip(name, frames, pose_fn, use_ik):
 
 
 WALK_FRAMES, WALK_DUTY, WALK_STRIDE, WALK_LIFT = 24, 0.62, 0.16, 0.035
+CROUCH_FRAMES, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT = 28, 0.7, 0.12, 0.02
+CROUCH_DROP = 0.065  # how far the body sinks when the cat ducks
+TAILS = ("Tail1", "Tail2", "Tail3", "Tail4")
+# Sign guide (world axes, the cat faces +Y): rotating about SIDE (+X) by a positive angle swings a
+# downward leg forward, pitches the body nose-up, and lowers a backward-pointing tail.
+
+
+def move_world(pb, offset):
+    bpy.context.view_layer.update()
+    pb.matrix = Matrix.Translation(offset) @ pb.matrix
+
+
+def set_legs(t, phases, duty, stride, lift, f):
+    for owner, phase in phases.items():
+        e, base = targets[owner]
+        e.location = base + (leg_offset((t + phase) % 1.0, duty, stride, lift) if duty else Vector())
+        e.keyframe_insert("location", frame=f)
 
 
 def walk_pose(t, f):
-    for owner, phase in LEGS.items():
-        e, base = targets[owner]
-        e.location = base + leg_offset((t + phase) % 1.0, WALK_DUTY, WALK_STRIDE, WALK_LIFT)
-        e.keyframe_insert("location", frame=f)
+    set_legs(t, LEGS, WALK_DUTY, WALK_STRIDE, WALK_LIFT, f)
     pb = arm.pose.bones
     w = 2 * math.pi * t
-    pb["Hips"].location = Vector((0, 0, 0))
     rot_world(pb["Hips"], FWD, 0.05 * math.sin(w))          # hip roll
     rot_world(pb["Chest"], FWD, -0.05 * math.sin(w + 0.8))  # shoulder roll
     rot_world(pb["Neck"], SIDE, 0.04 * math.sin(2 * w))    # slight nod
-    for i, name in enumerate(("Tail1", "Tail2", "Tail3", "Tail4")):
+    for i, name in enumerate(TAILS):
         rot_world(pb[name], UP, 0.12 * math.sin(w - 0.5 * i))
-        rot_world(pb[name], SIDE, 0.06 + 0.03 * i)            # tail held up a little
+        rot_world(pb[name], SIDE, -(0.10 + 0.06 * i))         # tail up in a soft curve
 
 
 IDLE_FRAMES = 120
 
 
 def idle_pose(t, f):
-    for owner, (e, base) in targets.items():
-        e.location = base
-        e.keyframe_insert("location", frame=f)
+    set_legs(t, LEGS, 0, 0, 0, f)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     rot_world(pb["Chest"], SIDE, 0.015 * math.sin(4 * w))   # breathing
@@ -306,23 +317,93 @@ def idle_pose(t, f):
     rot_world(pb["Head"], SIDE, 0.06 * math.sin(2 * w + 1))
     twitch = max(0.0, math.sin(6 * w)) ** 8
     rot_world(pb["Ear.L"], FWD, -0.3 * twitch)
-    for i, name in enumerate(("Tail1", "Tail2", "Tail3", "Tail4")):
+    for i, name in enumerate(TAILS):
         rot_world(pb[name], UP, 0.18 * math.sin(2 * w - 0.6 * i))
+        rot_world(pb[name], SIDE, -(0.05 + 0.05 * i))
+
+
+def crouch_body(pb, w):
+    """Low, stretched stalking body: hips and chest down, head low and level, tail low."""
+    move_world(pb["Root"], -UP * CROUCH_DROP)
+    rot_world(pb["Neck"], SIDE, -0.25)                      # neck forward and down
+    rot_world(pb["Head"], SIDE, 0.3)                        # eyes stay level
+    for ear in ("Ear.L", "Ear.R"):
+        rot_world(pb[ear], SIDE, 0.25)                      # ears a little back
+    for i, name in enumerate(TAILS):
+        rot_world(pb[name], SIDE, 0.06)                     # tail low, almost on the floor
+        rot_world(pb[name], UP, 0.06 * math.sin(w - 0.7 * i))
+
+
+def crouch_idle_pose(t, f):
+    set_legs(t, LEGS, 0, 0, 0, f)
+    pb = arm.pose.bones
+    w = 2 * math.pi * t
+    crouch_body(pb, 2 * w)
+    rot_world(pb["Chest"], SIDE, 0.012 * math.sin(4 * w))   # breathing
+    wiggle = max(0.0, math.sin(3 * w)) ** 6                  # bum wiggle before a pounce
+    rot_world(pb["Hips"], FWD, 0.08 * wiggle * math.sin(24 * w))
+
+
+def crouch_walk_pose(t, f):
+    set_legs(t, LEGS, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT, f)
+    pb = arm.pose.bones
+    w = 2 * math.pi * t
+    crouch_body(pb, w)
+    rot_world(pb["Hips"], FWD, 0.04 * math.sin(w))
+    rot_world(pb["Chest"], FWD, -0.04 * math.sin(w + 0.8))
+
+
+AIR_FRAMES = 12
+
+
+def jump_pose(t, f):
+    """Rising: front paws reach forward, hind legs push out behind, tail streams back."""
+    pb = arm.pose.bones
+    w = 2 * math.pi * t
+    rot_world(pb["Root"], SIDE, 0.18)                       # nose up
+    for side in ("L", "R"):
+        rot_world(pb[f"UpperArm.{side}"], SIDE, 1.0)
+        rot_world(pb[f"Forearm.{side}"], SIDE, -0.5)
+        rot_world(pb[f"Thigh.{side}"], SIDE, -0.9)
+        rot_world(pb[f"Shin.{side}"], SIDE, -0.3)
+    rot_world(pb["Neck"], SIDE, -0.15)
+    for i, name in enumerate(TAILS):
+        rot_world(pb[name], SIDE, 0.05 + 0.03 * math.sin(w - 0.6 * i))
+
+
+def fall_pose(t, f):
+    """Falling: front paws reach down for the landing, hind legs tucked under, tail up for balance."""
+    pb = arm.pose.bones
+    w = 2 * math.pi * t
+    rot_world(pb["Root"], SIDE, -0.12)                      # nose down
+    for side in ("L", "R"):
+        rot_world(pb[f"UpperArm.{side}"], SIDE, 0.45)
+        rot_world(pb[f"Forearm.{side}"], SIDE, -0.15)
+        rot_world(pb[f"Thigh.{side}"], SIDE, 0.55)
+        rot_world(pb[f"Shin.{side}"], SIDE, -0.5)
+    rot_world(pb["Neck"], SIDE, 0.2)
+    for i, name in enumerate(TAILS):
+        rot_world(pb[name], SIDE, -(0.1 + 0.06 * i) + 0.04 * math.sin(w - 0.6 * i))
 
 
 walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True)
 idle = bake_clip("Idle", IDLE_FRAMES, idle_pose, use_ik=True)
+crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True)
+crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True)
+jump = bake_clip("Jump", AIR_FRAMES, jump_pose, use_ik=False)
+fall = bake_clip("Fall", AIR_FRAMES, fall_pose, use_ik=False)
 bpy.ops.object.mode_set(mode="OBJECT")
 for owner, (e, base) in targets.items():
     bpy.data.objects.remove(e, do_unlink=True)
 run = bpy.data.actions["Run"]
+CLIPS = ("Run", "Walk", "Idle", "CrouchIdle", "CrouchWalk", "Jump", "Fall")
 for a in list(bpy.data.actions):
-    if a.name not in ("Run", "Walk", "Idle"):
+    if a.name not in CLIPS:
         bpy.data.actions.remove(a)
 
 
 # ---------------------------------------------------------------------------
-# Measure the natural ground speed of each clip (for CatStats walk/runClipSpeed).
+# Measure the natural ground speed of each clip (for CatStats walk/run/crouchClipSpeed).
 # ---------------------------------------------------------------------------
 def ground_speed(action, frames):
     arm.animation_data.action = action
@@ -342,20 +423,34 @@ def ground_speed(action, frames):
 
 print(f"CHECK walk clip speed {ground_speed(walk, WALK_FRAMES):.3f} m/s")
 print(f"CHECK run clip speed {ground_speed(run, run_frames):.3f} m/s")
-arm.animation_data.action = idle
-scene.frame_set(0)
+print(f"CHECK crouch clip speed {ground_speed(crouch_walk, CROUCH_FRAMES):.3f} m/s")
 
 # ---------------------------------------------------------------------------
-# 5. Face parts and materials
+# 5. Face: low-poly, flat-shaded parts in the same style as the body
 # ---------------------------------------------------------------------------
+# Work in the rest pose: the parts are placed on the rest mesh and skinned to the Head/Ear bones.
+arm.animation_data.action = None
+reset_pose()
+bpy.context.view_layer.update()
+
 body.data.materials.clear()
 body.data.materials.append(material("Fur", (0.03, 0.03, 0.035), 0.6))
-mat_eye = material("Eye", (0.78, 0.82, 0.12), 0.1)
-mat_pupil = material("Pupil", (0.0, 0.0, 0.0), 0.1)
-mat_nose = material("Nose", (0.16, 0.11, 0.12), 0.4)
+MATS = {
+    "Eye": material("Eye", (0.86, 0.66, 0.1), 0.15),      # amber
+    "Pupil": material("Pupil", (0.0, 0.0, 0.0), 0.1),
+    "Glint": material("Glint", (1.0, 1.0, 1.0), 0.1),
+    "Nose": material("Nose", (0.3, 0.19, 0.21), 0.45),     # dusky pink-grey
+    "InnerEar": material("InnerEar", (0.36, 0.22, 0.25), 0.6),
+    "Whisker": material("Whisker", (0.82, 0.82, 0.8), 0.4),
+}
 
-deps = bpy.context.evaluated_depsgraph_get()
-bvh = BVHTree.FromObject(body, deps)
+import bmesh  # noqa: E402  (after bpy, see build_drahomil.py)
+
+rest_mesh = body.data.copy()
+rest_obj = bpy.data.objects.new("RestProbe", rest_mesh)
+scene.collection.objects.link(rest_obj)
+rest_obj.matrix_world = body.matrix_world
+bvh = BVHTree.FromObject(rest_obj, bpy.context.evaluated_depsgraph_get())
 
 
 def surface_hit(start, direction):
@@ -364,40 +459,146 @@ def surface_hit(start, direction):
     return loc, normal
 
 
-def add_part(name, mat, loc, radius, scale, normal, embed):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, radius=radius,
-                                         location=loc - normal * radius * embed)
-    o = bpy.context.object
-    o.name = name
-    o.scale = scale
-    o.rotation_mode = "QUATERNION"
-    o.rotation_quaternion = normal.to_track_quat("Z", "Y")
-    o.data.materials.append(mat)
+def frame_at(normal, up_hint=UP):
+    """Local axes on the surface: x = sideways, y = up along the surface, z = out of the surface."""
+    z = normal.normalized()
+    x = up_hint.cross(z).normalized()
+    y = z.cross(x).normalized()
+    return x, y, z
+
+
+def part(name, mat, verts, faces, bone, closed=True):
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(v) for v in verts], [], faces)
+    if closed:  # Unity hides back faces: point every face outwards
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        bm.to_mesh(me)
+        bm.free()
+    me.update()
+    o = bpy.data.objects.new(name, me)
+    scene.collection.objects.link(o)
+    o.data.materials.append(MATS[mat])
+    for poly in o.data.polygons:
+        poly.use_smooth = False
+    vg = o.vertex_groups.new(name=bone)
+    vg.add(list(range(len(verts))), 1.0, "REPLACE")
     return o
 
 
-# The nose tip is the front-most vertex of the head; the eyes sit above and beside it.
-tip = max(body.data.vertices, key=lambda v: v.co.y)
-tip_co = tip.co.copy()
-print(f"CHECK nose tip at {tuple(round(c, 3) for c in tip_co)}")
-parts = []
-for side in (-1, 1):
-    loc, n = surface_hit(Vector((side * 0.02, tip_co.y + 0.2, tip_co.z + 0.022)), Vector((0, -1, 0)))
-    eye = add_part(f"Eye{side}", mat_eye, loc, 0.0085, (1, 1, 0.7), n, 0.45)
-    pupil = add_part(f"Pupil{side}", mat_pupil, loc + n * 0.0035, 0.004, (0.35, 1.0, 0.5), n, 0.3)
-    parts += [eye, pupil]
-loc, n = surface_hit(Vector((0, tip_co.y + 0.2, tip_co.z)), Vector((0, -1, 0)))
-parts.append(add_part("Nose", mat_nose, loc, 0.006, (1.3, 1, 0.8), n, 0.5))
+def gem(name, mat, center, axes, radii, bone, subdiv=1):
+    """Faceted ellipsoid (an icosphere, scaled along the given axes)."""
+    bm = bmesh.new()
+    bmesh.ops.create_icosphere(bm, subdivisions=subdiv, radius=1.0)
+    x, y, z = axes
+    verts = [center + x * (v.co.x * radii[0]) + y * (v.co.y * radii[1]) + z * (v.co.z * radii[2]) for v in bm.verts]
+    faces = [[v.index for v in f.verts] for f in bm.faces]
+    bm.free()
+    return part(name, mat, verts, faces, bone)
 
-for p in parts:
-    vg = p.vertex_groups.new(name="Head")
-    vg.add(list(range(len(p.data.vertices))), 1.0, "REPLACE")
+
+def prism(name, mat, a, b, radius_a, radius_b, bone, sides=3):
+    """Thin tapered prism from a to b (whiskers)."""
+    d = (b - a).normalized()
+    ref = UP if abs(d.dot(UP)) < 0.9 else FWD
+    u = d.cross(ref).normalized()
+    v = d.cross(u).normalized()
+    verts = []
+    for p, r in ((a, radius_a), (b, radius_b)):
+        for k in range(sides):
+            ang = 2 * math.pi * k / sides
+            verts.append(p + (u * math.cos(ang) + v * math.sin(ang)) * r)
+    faces = [[k, (k + 1) % sides, sides + (k + 1) % sides, sides + k] for k in range(sides)]
+    faces += [list(range(sides))[::-1], list(range(sides, 2 * sides))]
+    return part(name, mat, verts, faces, bone)
+
+
+parts = []
+tip = max(body.data.vertices, key=lambda v: v.co.y).co.copy()
+print(f"CHECK nose tip at {tuple(round(c, 3) for c in tip)}")
+_, tip_normal = surface_hit(Vector((0, tip.y + 0.2, tip.z)), -FWD)
+print(f"CHECK nose normal {tuple(round(c, 2) for c in tip_normal)}")
+
+# Eyes: almond-shaped, slightly tilted (outer corner up), with a slit pupil and a small glint.
+EYE_W, EYE_H, EYE_D = 0.0125, 0.0085, 0.0045
+for side in (-1, 1):
+    loc, n = surface_hit(Vector((side * 0.021, tip.y + 0.2, tip.z + 0.021)), Vector((0, -1, 0)))
+    x, y, z = frame_at(n)
+    tilt = Matrix.Rotation(math.radians(-14 * side), 3, z)
+    x, y = tilt @ x, tilt @ y
+    centre = loc - z * EYE_D * 0.35
+    parts.append(gem(f"Eye{side}", "Eye", centre, (x, y, z), (EYE_W, EYE_H, EYE_D), "Head", subdiv=2))
+
+    def on_eye(u, v, lift):
+        """Point on the eye's ellipsoid surface at (u, v) in eye units (-1..1), raised by lift."""
+        h = max(0.0, 1.0 - u * u - v * v)
+        return centre + x * (u * EYE_W) + y * (v * EYE_H) + z * (EYE_D * math.sqrt(h) + lift)
+
+    # Slit pupil: a thin vertical lens that follows the curve of the eye.
+    ring = [(0.19 * math.sin(a), 0.86 * math.cos(a)) for a in (2 * math.pi * k / 10 for k in range(10))]
+    pupil_verts = [on_eye(u, v, 0.0004) for u, v in ring] + [on_eye(0, 0, 0.0008)]
+    parts.append(part(f"Pupil{side}", "Pupil", pupil_verts, [[(k + 1) % 10, k, 10] for k in range(10)], "Head",
+                      closed=False))
+    parts.append(gem(f"Glint{side}", "Glint", on_eye(-0.3 * side, 0.4, 0.0004), (x, y, z),
+                     (0.0012, 0.0012, 0.0006), "Head", subdiv=1))
+
+# Nose: a small inverted triangle, slightly raised, on the nose tip.
+loc, n = surface_hit(Vector((0, tip.y + 0.2, tip.z + 0.002)), Vector((0, -1, 0)))
+x, y, z = frame_at(n)
+base = loc - z * 0.0012
+nose_verts = [base - x * 0.0075 + y * 0.004, base + x * 0.0075 + y * 0.004, base - y * 0.0055,
+              base + y * 0.0005 + z * 0.0032]
+parts.append(part("Nose", "Nose", nose_verts, [[0, 1, 3], [1, 2, 3], [2, 0, 3], [0, 2, 1]], "Head"))
+nose_bottom = base - y * 0.0055
+
+# Mouth: a thin dark line down from the nose that splits in two (the cat "Y").
+split = nose_bottom - y * 0.005
+for i, (a, b) in enumerate(((nose_bottom, split),
+                            (split, split - y * 0.004 - x * 0.0055),
+                            (split, split - y * 0.004 + x * 0.0055))):
+    pa, na = surface_hit(Vector((a.x, tip.y + 0.2, a.z)), -FWD)
+    pb_, nb = surface_hit(Vector((b.x, tip.y + 0.2, b.z)), -FWD)
+    parts.append(prism(f"Mouth{i}", "Pupil", pa + na * 0.0004, pb_ + nb * 0.0004, 0.00045, 0.00035, "Head", sides=3))
+
+# Whiskers: three per side from the muzzle, fanning out and drooping a little.
+for side in (-1, 1):
+    root, n = surface_hit(Vector((side * 0.08, tip.y - 0.012, tip.z - 0.006)), Vector((-side, 0, 0)))
+    for k, (rise, sweep) in enumerate(((0.22, 0.25), (0.0, 0.3), (-0.2, 0.35))):
+        d = Vector((side, sweep, rise)).normalized()
+        a = root - n * 0.001 + UP * (0.0035 * (1 - k))
+        b = a + d * 0.045 - UP * 0.004
+        parts.append(prism(f"Whisker{side}_{k}", "Whisker", a, b, 0.00045, 0.00015, "Head"))
+
+# Inner ears: a pink triangle on the front of each ear.
+for side, ear in ((-1, "Ear.R"), (1, "Ear.L")):
+    gi = body.vertex_groups[ear].index
+    ear_vs = [v.co.copy() for v in body.data.vertices
+              if any(g.group == gi and g.weight > 0.5 for g in v.groups) and v.normal.y > 0.25]
+    if len(ear_vs) < 3:
+        print(f"WARNING no front faces found for {ear}")
+        continue
+    top = max(ear_vs, key=lambda c: c.z)
+    low = sorted(ear_vs, key=lambda c: c.z)[: max(3, len(ear_vs) // 3)]
+    inner = min(low, key=lambda c: abs(c.x))
+    outer = max(low, key=lambda c: abs(c.x))
+    centre = (top + inner + outer) / 3
+    tri = []
+    for c in (inner, outer, top):
+        q = centre + (c - centre) * 0.62
+        hit, nn = surface_hit(q + Vector((0, 0.05, 0)), Vector((0, -1, 0)))
+        tri.append(hit + nn * 0.0008)
+    parts.append(part(f"InnerEar{side}", "InnerEar", tri, [[0, 1, 2], [0, 2, 1]], ear, closed=False))
+
+bpy.data.objects.remove(rest_obj, do_unlink=True)
+bpy.data.meshes.remove(rest_mesh)
 select_only(body, *parts)
 bpy.ops.object.join()
 body = bpy.context.object
 
 print(f"CHECK triangles {sum(len(p.vertices) - 2 for p in body.data.polygons)}")
 print(f"CHECK bones {len(arm.data.bones)} materials {[m.name for m in body.data.materials]}")
+print(f"CHECK clips {sorted(a.name for a in bpy.data.actions)}")
 size = [max(v.co[i] for v in body.data.vertices) - min(v.co[i] for v in body.data.vertices) for i in range(3)]
 print(f"CHECK size x {size[0]:.3f} y {size[1]:.3f} z {size[2]:.3f} m (y = nose to tail tip)")
 
@@ -451,7 +652,17 @@ if args.renders:
     scene.frame_set(0)
     shoot(os.path.join(args.renders, "lowpoly_cat.png"), (0.75, 0.75, 0.4), (0, 0, 0.12))
     shoot(os.path.join(args.renders, "lowpoly_cat_face.png"), (0.12, 0.6, 0.24), (0, 0.2, 0.19), lens=70)
-    for name, action, frames in (("walk", walk, WALK_FRAMES), ("run", run, run_frames)):
+    shoot(os.path.join(args.renders, "lowpoly_cat_face_front.png"), (0.0, 0.55, 0.22), (0, 0.25, 0.205), lens=120,
+          res=(700, 600))
+    shoot(os.path.join(args.renders, "lowpoly_cat_face_side.png"), (0.3, 0.45, 0.24), (0, 0.25, 0.205), lens=110,
+          res=(700, 600))
+    for name, action in (("crouchidle", crouch_idle), ("jump", jump), ("fall", fall)):
+        arm.animation_data.action = action
+        scene.frame_set(0)
+        shoot(os.path.join(args.renders, f"lowpoly_cat_pose_{name}.png"), (0.9, 0.0, 0.2), (0, 0, 0.14),
+              res=(500, 330))
+    for name, action, frames in (("walk", walk, WALK_FRAMES), ("run", run, run_frames),
+                                 ("crouchwalk", crouch_walk, CROUCH_FRAMES)):
         arm.animation_data.action = action
         for i, f in enumerate((0, frames // 4, frames // 2, 3 * frames // 4)):
             scene.frame_set(f)

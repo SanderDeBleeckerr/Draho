@@ -9,6 +9,7 @@ namespace Draho.UI
     /// must both be bottom-left.
     /// A short tap without a push is the jump button (<see cref="Taps"/>). So that a tap does not also
     /// move the cat, a small push only counts as movement after <see cref="tapTime"/>.
+    /// A touch that stays in the middle for longer than a tap is a hold (<see cref="HeldCenter"/>): climb up.
     /// </summary>
     public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
     {
@@ -40,6 +41,10 @@ namespace Draho.UI
                 return maybeTap ? Vector2.zero : raw;
             }
         }
+
+        /// <summary>True while the thumb rests in the middle of the stick for longer than a tap.</summary>
+        public bool HeldCenter => pointerId != NoPointer && maxOffset < tapMaxOffset && Time.unscaledTime - pressTime >= tapTime
+                                  && Time.frameCount - pressFrame > 2;
 
         /// <summary>Counts taps on the stick; the input reads a change as a jump.</summary>
         public int Taps { get; private set; }

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -59,7 +59,7 @@ const tapStick = async () => {
 };
 const scenario = process.argv[4] || 'tour';
 // Steps: [name, action, arg]. 'move' = stick x,y,run,seconds (sent into the game, see TouchCatInput.TestMove);
-// 'jump' / 'duck' = game hooks; 'tap' = a real touch tap on the joystick; 'wait' = seconds.
+// 'jump' / 'duck' / 'hold' (seconds) = game hooks; 'tap' = a real touch tap on the joystick; 'wait' = seconds.
 const steps = {
   tour: [
     ['02_walk_north', 'move', '0,1,0,2.5'],
@@ -82,6 +82,15 @@ const steps = {
     ['06_climb_top', 'move', '0,1,0,2.5'],
     ['07_leap_off', 'jump', ''],
     ['08_landed', 'wait', '1.5'],
+  ],
+  // Same start as climb, but only the hold gesture: hold the middle of the stick to stand up and climb.
+  climbhold: [
+    ['02_hold', 'hold', '2'],
+    ['03_hold_more', 'hold', '3'],
+    ['04_hold_top', 'hold', '3'],
+    ['05_let_go', 'wait', '1.5'],
+    ['06_leap_off', 'jump', ''],
+    ['07_landed', 'wait', '1.5'],
   ],
   // Start with ?beat=4&at=-0.5,1.2,270 : on the terrace by the door, looking down the garden.
   garden: [
@@ -118,6 +127,7 @@ for (const [name, action, arg] of steps) {
   if (action === 'tap') await tapStick();
   else if (action === 'jump') await send('TestJump', '');
   else if (action === 'duck') await send('TestCrouch', '');
+  else if (action === 'hold') { await send('TestHold', arg); await page.waitForTimeout(+arg * 1000); }
   else if (action === 'runjump') { await send('TestMove', arg); await page.waitForTimeout(1200); await send('TestJump', ''); await page.waitForTimeout(800); }
   else if (action === 'move') { await send('TestMove', arg); await page.waitForTimeout(+arg.split(',')[3] * 1000); }
   else if (action === 'wait') await page.waitForTimeout(+arg * 1000);

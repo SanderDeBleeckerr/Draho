@@ -508,10 +508,10 @@ namespace Draho.EditorTools
             var hintRt = (RectTransform)hint.transform;
             hintRt.SetParent(stickArea, false);
             hintRt.anchorMin = hintRt.anchorMax = Vector2.zero;
-            hintRt.sizeDelta = new Vector2(320f, 50f);
+            hintRt.sizeDelta = new Vector2(440f, 50f);
             hintRt.anchoredPosition = new Vector2(260f, 115f);
             var hintText = hint.GetComponent<Text>();
-            hintText.text = "tap = jump";
+            hintText.text = "tap = jump · hold = climb";
             hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             hintText.fontSize = 30;
             hintText.alignment = TextAnchor.MiddleCenter;

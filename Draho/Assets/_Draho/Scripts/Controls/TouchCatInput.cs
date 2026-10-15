@@ -7,7 +7,8 @@ namespace Draho.Controls
     /// <summary>
     /// Player input: on-screen joystick and buttons on the phone, keyboard in the editor.
     /// Pushing the joystick past <see cref="runThreshold"/> makes the cat run.
-    /// A tap on the joystick jumps (or rears up when the cat stands still).
+    /// A tap on the joystick jumps (or rears up when the cat stands still). Holding the middle of the
+    /// joystick stands the cat up and climbs up a climbable wall.
     /// Keyboard: WASD/arrows move, Shift runs, Space jumps, C or Ctrl switches crouch on/off.
     /// </summary>
     public class TouchCatInput : MonoBehaviour, ICatInput
@@ -22,9 +23,11 @@ namespace Draho.Controls
         Vector2 testMove;
         bool testRun;
         float testUntil;
+        float testHoldUntil;
 
         public Vector2 Move { get; private set; }
         public bool Run { get; private set; }
+        public bool HoldUp => (joystick != null && joystick.HeldCenter) || Time.time < testHoldUntil;
         public bool Crouch => keyboardCrouch || (crouchButton != null && crouchButton.IsOn);
 
         public bool ConsumeJump()
@@ -54,6 +57,9 @@ namespace Draho.Controls
         }
 
         public void TestJump() => jumpQueued = true;
+        /// <summary>Hold the middle of the stick for some seconds, for example "3".</summary>
+        public void TestHold(string seconds) =>
+            testHoldUntil = Time.time + float.Parse(seconds, System.Globalization.CultureInfo.InvariantCulture);
         public void TestCrouch() => keyboardCrouch = !keyboardCrouch;
 
         void Update()

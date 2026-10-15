@@ -36,7 +36,7 @@ with Kenney furniture. The old test playground (a floor in empty space) is the s
 | Run | Hold Shift | Push the joystick to the edge |
 | Jump (keeps the running speed) | Space | **Tap the stick** (a short touch, no push) |
 | Stand up on the hind legs (when standing still) | Space | **Tap the stick** |
-| Climb (stand up in front of the ivy at the end of the garden) | Space, then W / S | Tap the stick, then push up / down; tap again to leap off |
+| Climb (in front of the ivy at the end of the garden) | Space, then W / S | **Hold the middle of the stick** to stand up and climb (or tap, then push up / down); tap to leap off |
 | Duck / sneak (on/off) | C or Ctrl | **DUCK** button (bottom right) |
 | Orbit the camera | Drag with the right mouse button | Swipe with the right thumb |
 

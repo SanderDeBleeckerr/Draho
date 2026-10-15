@@ -58,6 +58,7 @@ namespace Draho.Cat
         public string ModeName => mode.ToString();
         /// <summary>Up (+) or down (-) speed on the wall, in m/s.</summary>
         public float ClimbVelocity { get; private set; }
+        bool holdUpBefore;
 
         void Awake()
         {
@@ -84,6 +85,18 @@ namespace Draho.Cat
 
             if (input != null && input.ConsumeJump()) jumpBufferTimer = stats.jumpBuffer;
             else jumpBufferTimer -= dt;
+
+            // Holding the middle of the stick: a slow cat on the ground stands up (and climbs, at a wall).
+            bool hold = input != null && input.HoldUp;
+            if (hold && !holdUpBefore && mode == Mode.Normal && grounded && speed < stats.rearSpeedThreshold
+                && !IsCrouching)
+            {
+                mode = Mode.Rearing;
+                modeTimer = 0f;
+                speed = 0f;
+                Debug.Log("CAT rear (hold)");
+            }
+            holdUpBefore = hold;
 
             Vector3 wish = WishDirection();
             float wishMagnitude = Mathf.Clamp01(wish.magnitude);
@@ -199,6 +212,8 @@ namespace Draho.Cat
             }
 
             Vector2 move = input != null ? input.Move : Vector2.zero;
+            if (input != null && input.HoldUp) move.y = Mathf.Max(move.y, 1f); // hold the middle: climb up
+            holdUpBefore = input != null && input.HoldUp;
             float feet = transform.position.y;
             ClimbVelocity = move.y * stats.climbSpeed;
 

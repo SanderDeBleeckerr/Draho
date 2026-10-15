@@ -19,6 +19,9 @@ namespace Draho.Controls
         /// <summary>True once per jump press. Reading it clears it.</summary>
         bool ConsumeJump();
 
+        /// <summary>True while the player holds the middle of the stick: stand up, and climb up on a wall.</summary>
+        bool HoldUp { get; }
+
         /// <summary>Tells the input that the crouch ended (for example because the cat jumped).</summary>
         void CancelCrouch();
     }

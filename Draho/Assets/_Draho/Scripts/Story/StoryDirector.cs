@@ -93,7 +93,7 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "Almost! But birds escape up high. At the end of the garden, ivy hangs down the old wall. A ladder for cats.",
-                    Goal = "Stand still at the ivy, tap the stick to stand up, then push up to climb.",
+                    Goal = "Walk up to the ivy, then hold your thumb in the middle of the stick to climb.",
                     // At the top, not halfway: the end text must not cover the climb.
                     Done = () => cat.IsClimbing && cat.transform.position.y > 2.6f,
                 },

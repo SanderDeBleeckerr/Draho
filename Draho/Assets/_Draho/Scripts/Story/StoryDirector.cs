@@ -149,7 +149,7 @@ namespace Draho.Story
                     Story = "The hedgehog sniffs Drahomil's nose and trots off. It wants to show something.",
                     Goal = "Follow the hedgehog. Go slowly.",
                     Done = () => hedgehog == null || (hedgehog.AtNest
-                                 && Vector3.Distance(hedgehog.transform.position, cat.transform.position) < 1.6f),
+                                 && Vector3.Distance(hedgehog.transform.position, cat.transform.position) < 2.5f),
                 },
                 new Beat
                 {

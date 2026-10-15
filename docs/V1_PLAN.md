@@ -126,7 +126,7 @@ Draho/                      ← git root
 - [x] Write `ICatInput`, `TouchCatInput` (floating stick) and `CatMotor` + `CatStats`.
 - [x] Orbit camera with touch swipe and collision (`OrbitCamera`).
 - [x] Mouse and keyboard as an extra input in the editor.
-- [ ] Open in Unity 6.3, run **Draho → Build Playground Scene**, test, commit the generated files.
+- [ ] Open in Unity 6.3, run **Draho → Build Scenes**, test, commit the generated files.
 
 ### Week 2: assets
 - [ ] Buy and import the cat model and the apartment asset (see [ASSETS.md](ASSETS.md)).

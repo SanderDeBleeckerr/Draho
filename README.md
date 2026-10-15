@@ -3,17 +3,19 @@
 A mobile iPhone game about **Drahomil**, a black cat and mouse bounty hunter.
 The game uses Unity.
 
-![Drahomil placeholder model](docs/images/drahomil.png)
+![Drahomil, low-poly](docs/images/lowpoly_cat_sheet.png)
 
 - [Game Design Document](docs/GDD.md)
 - [Version 1 Technical Plan](docs/V1_PLAN.md)
-- [Asset Shortlist](docs/ASSETS.md) (on hold: we use our own placeholder cat for now)
+- [Assets](docs/ASSETS.md): Sketchfab low-poly cat (CC BY) and Kenney Furniture Kit (CC0); see [CREDITS.md](CREDITS.md)
+- [Level 1: the apartment](docs/APARTMENT.md): blueprint and layout file
 - [Working from a phone](docs/PHONE_WORKFLOW.md): GitHub builds the game, you play it in Safari
 
-## Current state: playground
+## Current state: the apartment
 
-The cat walks, runs and idles on a 20 × 20 m floor in empty space. If the cat
-walks off the edge, it falls. After 10 m, it comes back at the start.
+The game opens in **Drahomil's apartment** (kitchen, living room, inner court, closed garden door).
+The level is built from the blueprint file `Draho/Assets/_Draho/Levels/Apartment/apartment_layout.json`
+with Kenney furniture. The old test playground (a floor in empty space) is the second scene.
 
 ## Open the project
 
@@ -21,8 +23,8 @@ walks off the edge, it falls. After 10 m, it comes back at the start.
 2. Install **Unity 6000.3.26f1** (6.3 LTS) with **iOS Build Support** from Unity Hub.
 3. In Unity Hub, click **Add → Add project from disk** and select the `Draho/` folder in this repository.
 4. Unity asks *"enable the new Input System backends?"*. Click **Yes**. The editor restarts.
-5. In the menu bar, click **Draho → Build Playground Scene**. The script creates the URP settings, the
-   materials, the animator, the cat prefab and `Assets/_Draho/Scenes/Playground.unity`.
+5. In the menu bar, click **Draho → Build Scenes**. The script creates the URP settings, the
+   materials, the animator, the cat prefab, `Assets/_Draho/Scenes/Apartment.unity` and `Playground.unity`.
 6. Press **Play**.
 7. Commit the files that Unity made: `ProjectSettings/`, `Packages/packages-lock.json`,
    all `.meta` files, and the generated assets.
@@ -35,13 +37,17 @@ walks off the edge, it falls. After 10 m, it comes back at the start.
 
 ## Rebuild the cat model
 
-The cat is made by code: [`Tools/Blender/build_drahomil.py`](Tools/Blender/build_drahomil.py).
+The cat is the Sketchfab model ["Lowpoly Cat Rig + Run Animation"](https://sketchfab.com/3d-models/lowpoly-cat-rig-run-animation-c36df576c9ae4ed28e89069b1a2f427a)
+by Daily Lowpoly (CC BY 4.0). [`Tools/Blender/convert_lowpoly_cat.py`](Tools/Blender/convert_lowpoly_cat.py) cleans it up,
+adds Idle and Walk clips and a face, and exports `Drahomil.fbx`:
 
 ```bash
 pip install bpy            # Blender as a Python module (Python 3.13 for bpy 5.x)
-python Tools/Blender/build_drahomil.py -- \
+python Tools/Blender/convert_lowpoly_cat.py -- --glb ThirdParty/Sketchfab/lowpoly-cat/model.glb \
   --out Draho/Assets/_Draho/Art/Cat/Drahomil.fbx --renders /tmp/cat_renders
 ```
 
-The script checks that the nose and the eyes touch the face. It stops with an
-error if a part floats.
+The script prints the measured clip speeds. Put them in `CatStats.cs` (`walkClipSpeed`, `runClipSpeed`)
+so the paws do not slide.
+
+The first placeholder cat (made fully by code) is still in [`Tools/Blender/build_drahomil.py`](Tools/Blender/build_drahomil.py).

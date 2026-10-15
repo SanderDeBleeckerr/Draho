@@ -19,29 +19,45 @@ using UnityEngine.UI;
 namespace Draho.EditorTools
 {
     /// <summary>
-    /// Menu "Draho/Build Playground Scene": creates every asset and the test scene from code,
-    /// so the repository does not need hand-made scene files. Safe to run again (it rebuilds).
+    /// Menu "Draho/Build Scenes": creates every asset, the apartment level and the playground test scene
+    /// from code, so the repository does not need hand-made scene files. Safe to run again (it rebuilds).
     /// </summary>
     public static class PlaygroundBuilder
     {
         const string Root = "Assets/_Draho";
         const string CatFbx = Root + "/Art/Cat/Drahomil.fbx";
-        const string ArtDir = Root + "/Art";
-        const string MaterialDir = Root + "/Art/Materials";
+        internal const string ArtDir = Root + "/Art";
+        internal const string MaterialDir = Root + "/Art/Materials";
         const string SettingsDir = Root + "/Settings";
         const string PrefabDir = Root + "/Prefabs";
         public const string ScenePath = Root + "/Scenes/Playground.unity";
         const int IgnoreRaycastLayer = 2;
         const float FloorSize = 20f; // meters; walk past the edge to fall off the world
 
-        [MenuItem("Draho/Build Playground Scene")]
+        [MenuItem("Draho/Build Scenes")]
         static void BuildFromMenu()
         {
             if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) Build();
         }
 
-        /// <summary>Creates all assets and the scene. Also called by the CI build (no dialogs).</summary>
+        /// <summary>Creates all assets and both scenes. Also called by the CI build (no dialogs).</summary>
         public static void Build()
+        {
+            GameObject catPrefab = PrepareCat();
+            BuildScene(catPrefab);
+            ApartmentBuilder.Build(catPrefab);
+            // The apartment is the first scene, so the web build opens it.
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(ApartmentBuilder.ScenePath, true),
+                new EditorBuildSettingsScene(ScenePath, true),
+            };
+            AssetDatabase.SaveAssets();
+            Debug.Log("Draho: scenes ready. Press Play. WASD/arrows + Shift, right mouse to orbit.");
+        }
+
+        /// <summary>Project settings, cat stats, animator and the cat prefab.</summary>
+        static GameObject PrepareCat()
         {
             foreach (var dir in new[] { MaterialDir, SettingsDir, PrefabDir, ArtDir + "/Textures", Path.GetDirectoryName(ScenePath) })
                 Directory.CreateDirectory(dir);
@@ -51,10 +67,14 @@ namespace Draho.EditorTools
             EnsureInputSystemActive();
             ConfigurePlayer();
             CatStats stats = LoadOrCreate<CatStats>(SettingsDir + "/CatStats.asset");
+            // The clip speeds belong to the cat model; keep them in sync with the code defaults.
+            var defaults = ScriptableObject.CreateInstance<CatStats>();
+            stats.walkClipSpeed = defaults.walkClipSpeed;
+            stats.runClipSpeed = defaults.runClipSpeed;
+            Object.DestroyImmediate(defaults);
+            EditorUtility.SetDirty(stats);
             AnimatorController controller = BuildAnimator(stats);
-            GameObject catPrefab = BuildCatPrefab(stats, controller);
-            BuildScene(catPrefab);
-            Debug.Log("Draho: playground ready. Press Play. WASD/arrows + Shift, right mouse to orbit.");
+            return BuildCatPrefab(stats, controller);
         }
 
         // ------------------------------------------------------------------ project
@@ -106,7 +126,7 @@ namespace Draho.EditorTools
             return asset;
         }
 
-        static Material LitMaterial(string name, Color color, float smoothness, Texture texture = null,
+        internal static Material LitMaterial(string name, Color color, float smoothness, Texture texture = null,
             Vector2? tiling = null)
         {
             string path = $"{MaterialDir}/{name}.mat";
@@ -249,6 +269,24 @@ namespace Draho.EditorTools
         // ------------------------------------------------------------------ scene
         static void BuildScene(GameObject catPrefab)
         {
+            Scene scene = NewLitScene(Quaternion.Euler(50f, -30f, 0f));
+
+            var floor = GameObject.CreatePrimitive(PrimitiveType.Plane); // 10 x 10 m at scale 1
+            floor.name = "Floor";
+            floor.transform.localScale = new Vector3(FloorSize / 10f, 1f, FloorSize / 10f);
+            floor.GetComponent<Renderer>().sharedMaterial =
+                LitMaterial("Floor", Color.white, 0.15f, CheckerTexture(), Vector2.one * FloorSize / 2f);
+
+            var spawn = new GameObject("SpawnPoint").transform;
+            spawn.position = new Vector3(0f, 0.02f, 0f);
+            AddPlayerRig(scene, catPrefab, spawn, new Color(0.55f, 0.65f, 0.8f));
+
+            EditorSceneManager.SaveScene(scene, ScenePath);
+        }
+
+        /// <summary>New empty scene with ambient light, a sun and the game bootstrap.</summary>
+        internal static Scene NewLitScene(Quaternion sunRotation)
+        {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
@@ -263,17 +301,13 @@ namespace Draho.EditorTools
             sun.intensity = 1.3f;
             sun.color = new Color(1f, 0.96f, 0.9f);
             sun.shadows = LightShadows.Soft;
-            sun.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            sun.transform.rotation = sunRotation;
+            return scene;
+        }
 
-            var floor = GameObject.CreatePrimitive(PrimitiveType.Plane); // 10 x 10 m at scale 1
-            floor.name = "Floor";
-            floor.transform.localScale = new Vector3(FloorSize / 10f, 1f, FloorSize / 10f);
-            floor.GetComponent<Renderer>().sharedMaterial =
-                LitMaterial("Floor", Color.white, 0.15f, CheckerTexture(), Vector2.one * FloorSize / 2f);
-
-            var spawn = new GameObject("SpawnPoint").transform;
-            spawn.position = new Vector3(0f, 0.02f, 0f);
-
+        /// <summary>The cat at the spawn point, touch controls, the orbit camera and the fall respawn.</summary>
+        internal static void AddPlayerRig(Scene scene, GameObject catPrefab, Transform spawn, Color background)
+        {
             var cat = (GameObject)PrefabUtility.InstantiatePrefab(catPrefab, scene);
             cat.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
 
@@ -316,7 +350,7 @@ namespace Draho.EditorTools
             cam.farClipPlane = 200f;
             cam.fieldOfView = 55f;
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.55f, 0.65f, 0.8f);
+            cam.backgroundColor = background;
             camGo.transform.position = spawn.position + new Vector3(0f, 0.6f, -1.2f);
             var orbit = camGo.AddComponent<OrbitCamera>();
             SetField(orbit, "target", cat.transform);
@@ -329,10 +363,6 @@ namespace Draho.EditorTools
             var respawn = new GameObject("FallRespawn").AddComponent<FallRespawn>();
             SetField(respawn, "motor", motor);
             SetField(respawn, "spawnPoint", spawn);
-
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
-            AssetDatabase.SaveAssets();
         }
 
         static RectTransform UiRect(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax,

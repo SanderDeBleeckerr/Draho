@@ -7,7 +7,7 @@ namespace Draho.EditorTools
 {
     /// <summary>
     /// Entry points for headless builds (GameCI: buildMethod: Draho.EditorTools.CiBuild.BuildWebGL).
-    /// The repository has no hand-made scene, so the build first runs the playground builder.
+    /// The repository has no hand-made scene, so the build first runs the scene builders.
     /// </summary>
     public static class CiBuild
     {
@@ -29,7 +29,7 @@ namespace Draho.EditorTools
 
             var options = new BuildPlayerOptions
             {
-                scenes = new[] { PlaygroundBuilder.ScenePath },
+                scenes = System.Array.ConvertAll(EditorBuildSettings.scenes, s => s.path), // apartment first
                 locationPathName = Argument("-customBuildPath") ?? "build/WebGL/WebGL",
                 target = BuildTarget.WebGL,
                 options = BuildOptions.None,

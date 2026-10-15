@@ -22,8 +22,8 @@ namespace Draho.Cat
 
         [Header("Animation")]
         [Tooltip("Speed at which the Walk clip's paws do not slide, at playback speed 1.")]
-        public float walkClipSpeed = 0.30f;
+        public float walkClipSpeed = 0.315f; // measured by Tools/Blender/convert_lowpoly_cat.py
         [Tooltip("Speed at which the Run clip's paws do not slide, at playback speed 1.")]
-        public float runClipSpeed = 1.35f;
+        public float runClipSpeed = 0.666f;
     }
 }

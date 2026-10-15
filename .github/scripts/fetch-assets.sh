@@ -18,6 +18,10 @@ mkdir -p "$UNITY_DIR" "$RAW_DIR"
 # ---------------------------------------------------------------- Kenney (CC0)
 for slug in ${KENNEY_PACKS:-}; do
   echo "::group::Kenney $slug"
+  name="$(echo "$slug" | sed -E 's/(^|-)([a-z])/\U\2/g')"   # furniture-kit -> FurnitureKit
+  if [ -f "$UNITY_DIR/Kenney/$name/SOURCE.txt" ] && [ -z "${FORCE:-}" ]; then
+    echo "Already in the repo; skipped (set FORCE=1 to fetch again)."; echo "::endgroup::"; continue
+  fi
   page="$TMP/$slug.html"
   curl -fsSL -A "$UA" "https://kenney.nl/assets/$slug" -o "$page"
   zip_url="$(grep -oE "https://kenney\.nl/media/pages/assets/$slug/[^\"' ]+\.zip" "$page" | head -1 || true)"
@@ -29,7 +33,6 @@ for slug in ${KENNEY_PACKS:-}; do
   rm -rf "$TMP/$slug" && mkdir -p "$TMP/$slug"
   unzip -q "$TMP/$slug.zip" -d "$TMP/$slug"
 
-  name="$(echo "$slug" | sed -E 's/(^|-)([a-z])/\U\2/g')"   # furniture-kit -> FurnitureKit
   dest="$UNITY_DIR/Kenney/$name"
   rm -rf "$dest" && mkdir -p "$dest"
   # Keep only the FBX models and their textures; skip OBJ/GLB/previews to keep the repo small.

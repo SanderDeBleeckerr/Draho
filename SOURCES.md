@@ -1,0 +1,26 @@
+# Reference images (temporary, for review only)
+
+- model_01.jpg: "Summer Afternoon - Animated Short Film" by @zalefairytale — https://sketchfab.com/3d-models/none-bc3af4cd7d394d4b8fa22fc78c26abb6
+- model_02.jpg: "Toon Cat FREE" by @omabuarts — https://sketchfab.com/3d-models/none-b2bd1ee7858444bda366110a2d960386
+- model_03.jpg: "Cat dispenser🐱" by @CuteLeaf — https://sketchfab.com/3d-models/none-a48ec772fe3a43b8998836f5fafc4087
+- model_04.jpg: "Magic Merchant Cat" by @letimvila — https://sketchfab.com/3d-models/none-6bf54e8e09984ea3a2d266f53dd69442
+- model_05.jpg: "Musketeer Cat" by @letimvila — https://sketchfab.com/3d-models/none-0b72b340ebc74712be24bfcd36fcf9d6
+- model_06.jpg: "Cat-sudon" by @cyaleys — https://sketchfab.com/3d-models/none-afb3b44b58364336920e28e8eb3597f4
+- model_07.jpg: "Ghost cat and girl" by @cerura_vinula — https://sketchfab.com/3d-models/none-cbc4bfbcdb3b4c06a9c2fb2910a6327c
+- model_08.jpg: "Course asset I Курсовой ассет" by @naserus93 — https://sketchfab.com/3d-models/none-f54b19379a394fe098dfb21bbb73efcb
+- model_09.jpg: "Stylized Anime Female Head" by @rodesqa — https://sketchfab.com/3d-models/none-e8d04325a74e46a98a6494abe721a8b2
+- model_10.jpg: "Android Remake" by @Ida..Faber — https://sketchfab.com/3d-models/none-a12f1a5e401444dca9053df9efaa2ea2
+- model_11.jpg: "SuperSushi! - Lowpoly Stylized Food Cart" by @pasco295 — https://sketchfab.com/3d-models/none-9a1da5e235914ab8892360fec1df02af
+- model_12.jpg: "Ashline (2021)" by @masslove — https://sketchfab.com/3d-models/none-6193b2d30f064d629be96924e1630a1c
+- model_13.jpg: "12 Real-time woman Hairstyles collection 09" by @VincentFreelance — https://sketchfab.com/3d-models/none-a2464050ef6f447dbff9ecde1fdb36ca
+- model_14.jpg: "Poison" by @luisservin89 — https://sketchfab.com/3d-models/none-2abb5e07da8e4ff68da31f595d7a7921
+- model_15.jpg: "Cyril's Shack" by @robindao — https://sketchfab.com/3d-models/none-6111dab24941436ab067de9fc15e977d
+- model_16.jpg: "Raphtalia" by @Ida..Faber — https://sketchfab.com/3d-models/none-5e129bface8945f5b692f54cb4753e97
+- model_17.jpg: "Black Rat ( Free download )" by @Nestaeric — https://sketchfab.com/3d-models/none-3db3acb4140d4de8bd62a171212bad9c
+- model_18.jpg: "happy pumpkin head" by @alisapozzz — https://sketchfab.com/3d-models/none-a0a59c35886145dda38b541a77c59af5
+- model_19.jpg: "Cat Simple" by @billl90 — https://sketchfab.com/3d-models/none-edde53a14d3142ecba1a146c5b08cbd2
+- model_20.jpg: "The Traveler's Broomstick" by @harrisondorn — https://sketchfab.com/3d-models/none-995c407724b14bfdb8f4025f4a27a41b
+- model_21.jpg: "Cheetah" by @Nestaeric — https://sketchfab.com/3d-models/none-7ab852bab0cd48c28c2cb5b4a8090ac8
+- model_22.jpg: "BeegSmol Halloween Costumes! - Hololive EN" by @seafoam — https://sketchfab.com/3d-models/none-c74fd24b9c7b4d939c24e1123077b33e
+- model_23.jpg: "Black cat magician" by @veerle_zandstra — https://sketchfab.com/3d-models/none-ee32282219ab40dbbad42b6134fb26ff
+- model_24.jpg: "Black Knight" by @jyk3d — https://sketchfab.com/3d-models/none-cd9f6a407ba6487cb86c17332c2e6e9f

@@ -27,6 +27,7 @@ namespace Draho.UI
         int pointerId = NoPointer;
         Vector2 raw;
         float pressTime;
+        int pressFrame;
         float maxOffset;
 
         /// <summary>Stick value, magnitude 0..1.</summary>
@@ -56,6 +57,7 @@ namespace Draho.UI
             if (pointerId != NoPointer) return;
             pointerId = eventData.pointerId;
             pressTime = Time.unscaledTime;
+            pressFrame = Time.frameCount;
             maxOffset = 0f;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     area, eventData.position, eventData.pressEventCamera, out var local))
@@ -80,7 +82,9 @@ namespace Draho.UI
         public void OnPointerUp(PointerEventData eventData)
         {
             if (eventData.pointerId != pointerId) return;
-            if (Time.unscaledTime - pressTime < tapTime && maxOffset < tapMaxOffset) Taps++;
+            // Short in time, or within two frames on a slow device, and no real push: a tap.
+            bool quick = Time.unscaledTime - pressTime < tapTime || Time.frameCount - pressFrame <= 2;
+            if (quick && maxOffset < tapMaxOffset) Taps++;
             Release();
         }
 

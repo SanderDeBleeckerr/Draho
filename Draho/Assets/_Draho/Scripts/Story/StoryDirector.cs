@@ -124,6 +124,16 @@ namespace Draho.Story
             Debug.Log($"STORY beat {index}: {beat.Story}");
         }
 
+        /// <summary>Test hook: unityInstance.SendMessage('StoryDirector', 'LogState') from the playtest.</summary>
+        public void LogState()
+        {
+            Vector3 p = cat.transform.position;
+            Debug.Log($"STATE beat {index} cat ({p.x:0.00}, {p.y:0.00}, {p.z:0.00}) yaw {cat.transform.eulerAngles.y:0} " +
+                      $"mode {cat.ModeName} speed {cat.Speed:0.00} grounded {cat.IsGrounded} " +
+                      $"mouse {(mouse == null ? "none" : mouse.IsCaught ? "caught" : mouse.IsVisible ? "visible" : "hidden")} " +
+                      $"fps {1f / Mathf.Max(0.001f, Time.smoothDeltaTime):0}");
+        }
+
         void ApplyUrlArguments(out int startBeat)
         {
             startBeat = 0;

@@ -1,3 +1,4 @@
+using Draho.Cat;
 using Draho.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -44,6 +45,15 @@ namespace Draho.CameraRig
             yaw = target != null ? target.eulerAngles.y : transform.eulerAngles.y;
             if (target != null) focus = target.position + Vector3.up * focusHeight;
             currentDistance = distance;
+            var motor = target != null ? target.GetComponent<CatMotor>() : null;
+            if (motor != null) motor.Teleported += SnapBehindTarget;
+        }
+
+        /// <summary>Puts the camera straight behind the cat (after a teleport or a respawn).</summary>
+        public void SnapBehindTarget()
+        {
+            yaw = target.eulerAngles.y;
+            focus = target.position + Vector3.up * focusHeight;
         }
 
         void LateUpdate()

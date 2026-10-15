@@ -24,7 +24,11 @@ page.on('console', m => log.push(`${stamp()} [${m.type()}] ${m.text()}`));
 page.on('pageerror', e => log.push(`${stamp()} [pageerror] ${e.message}`));
 page.on('requestfailed', r => log.push(`${stamp()} [requestfailed] ${r.url()} ${r.failure()?.errorText}`));
 
-const shot = async name => { await page.screenshot({ path: `${out}/${name}.png` }); log.push(`${stamp()} [shot] ${name}`); };
+const shot = async name => {
+  await page.evaluate(() => window.unityInstance && window.unityInstance.SendMessage('StoryDirector', 'LogState'));
+  await page.screenshot({ path: `${out}/${name}.png` });
+  log.push(`${stamp()} [shot] ${name}`);
+};
 const hold = async (keys, ms) => {
   for (const k of keys) await page.keyboard.down(k);
   await page.waitForTimeout(ms);
@@ -95,5 +99,5 @@ await shot('99_end');
 
 fs.writeFileSync(`${out}/console.log`, log.join('\n') + '\n');
 await browser.close();
-console.log(log.filter(l => /error|warn|info\]|exception/i.test(l)).slice(-40).join('\n'));
+console.log(log.filter(l => /STORY|STATE|CAT|shot|input|exception/i.test(l)).join('\n'));
 })();

@@ -50,6 +50,9 @@ namespace Draho.Cat
         public bool IsCrouching { get; private set; }
         public bool IsRearing => mode == Mode.Rearing;
         public bool IsClimbing => mode == Mode.Climbing || mode == Mode.Mantling;
+        /// <summary>Raised after <see cref="Teleport"/> (the camera jumps behind the cat).</summary>
+        public event System.Action Teleported;
+        public string ModeName => mode.ToString();
         /// <summary>Up (+) or down (-) speed on the wall, in m/s.</summary>
         public float ClimbVelocity { get; private set; }
 
@@ -314,6 +317,7 @@ namespace Draho.Cat
             controller.enabled = true;
             LeaveClimb();
             timeSinceGrounded = 0f;
+            Teleported?.Invoke();
         }
     }
 }

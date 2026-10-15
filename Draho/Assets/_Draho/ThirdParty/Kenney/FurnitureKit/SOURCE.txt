@@ -1,0 +1,4 @@
+source: https://kenney.nl/assets/furniture-kit
+zip: https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip
+fetched: 2026-10-15T06:01:52Z
+license: CC0 1.0

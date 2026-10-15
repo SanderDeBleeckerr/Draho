@@ -1,9 +1,9 @@
 {
   "name": "Drahomil's apartment",
-  "version": 4,
+  "version": 5,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
-  "note": "Draft from 2 photos and 1 video. Every size is a GUESS until the owner measures it. Change numbers here; the blueprint image and (later) the level are made from this file.",
+  "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
   "floor": {
     "material": "tile",
     "tile_size": 0.6,
@@ -28,7 +28,7 @@
       "label": "Kitchen",
       "x0": 4.6,
       "z0": 0.0,
-      "x1": 9.0,
+      "x1": 7.6,
       "z1": 5.0
     },
     {
@@ -132,7 +132,7 @@
       "facing": "south",
       "kenney": null,
       "color": "#3A3D4A",
-      "note": "Drahomil's own. Custom model (Kenney has none)."
+      "note": "Drahomil's own. Stands next to the court door. Custom model (Kenney has none)."
     },
     {
       "id": "poster",
@@ -152,9 +152,9 @@
       "id": "island",
       "label": "Kitchen island (drawers + hob)",
       "room": "kitchen",
-      "x": 6.6,
+      "x": 6.1,
       "z": 1.9,
-      "w": 2.6,
+      "w": 2.0,
       "d": 0.95,
       "h": 0.9,
       "facing": "south",
@@ -167,22 +167,22 @@
       "id": "back_counter",
       "label": "Back counter (coffee machine)",
       "room": "kitchen",
-      "x": 7.15,
+      "x": 5.95,
       "z": 0.3,
-      "w": 2.5,
+      "w": 2.1,
       "d": 0.6,
       "h": 0.9,
       "facing": "north",
       "kenney": "kitchenCabinet + kitchenSink + kitchenCoffeeMachine",
       "color": "#F4F4F2",
       "top_color": "#5A5856",
-      "note": "Against the south wall, west of the fridge. Wood wall panel behind it. (Confirmed by owner.)"
+      "note": "Against the south wall, west of the fridge. Wood wall panel behind it."
     },
     {
       "id": "fridge",
       "label": "Fridge column",
       "room": "kitchen",
-      "x": 8.7,
+      "x": 7.3,
       "z": 0.3,
       "w": 0.6,
       "d": 0.6,
@@ -237,8 +237,8 @@
     }
   ],
   "spawn": {
-    "x": 5.0,
-    "z": 0.95,
+    "x": 4.95,
+    "z": 1.2,
     "facing": "north",
     "note": "Next to the island, like in the video."
   },
@@ -246,9 +246,9 @@
     {
       "id": "inner_court",
       "label": "Inner court (round stones)",
-      "x0": 6.0,
+      "x0": 4.6,
       "z0": 3.2,
-      "x1": 9.0,
+      "x1": 7.6,
       "z1": 5.0,
       "surface": "pebbles",
       "color": "#B9B2A6",
@@ -259,7 +259,18 @@
         "east"
       ],
       "glass_height": 2.6,
-      "note": "1.8 m deep x 3 m wide, in the north-east corner. North wall in line with the living room north wall; east side on the kitchen east wall line. Wall-high glass on south, west and east (owner: 'except in the north')."
+      "note": "1.8 m deep x 3 m wide, same width as the kitchen. North wall = living room north wall, east side = kitchen east wall. Wall-high glass on south, west and east. Entered through the narrowly open west glass door next to the cat tree.",
+      "doors": [
+        {
+          "id": "court_door",
+          "side": "west",
+          "from": 3.4,
+          "to": 4.2,
+          "open_gap": 0.15,
+          "label": "Door",
+          "note": "Right of the cat tree. Open just wide enough for Drahomil to squeeze through."
+        }
+      ]
     }
   ]
 }

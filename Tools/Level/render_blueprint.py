@@ -82,6 +82,16 @@ def main(src, dst):
             glass = side in c.get("glass", [])
             ax.plot([sx0, sx1], [sz0, sz1], color="#4BA3C7" if glass else "#2E2C29", lw=3 if glass else 7,
                     zorder=8, solid_capstyle="butt")
+        for door in c.get("doors", []):
+            (sx0, sz0), (sx1, sz1) = sides[door["side"]]
+            vertical = sx0 == sx1
+            a, b = door["from"], door["to"]
+            seg = ((sx0, a), (sx0, b)) if vertical else ((a, sz0), (b, sz0))
+            gap = ((sx0, b - door["open_gap"]), (sx0, b)) if vertical else ((b - door["open_gap"], sz0), (b, sz0))
+            ax.plot(*zip(*seg), color="#E08A1E", lw=4, zorder=8.5, solid_capstyle="butt")
+            ax.plot(*zip(*gap), color="#F7F5F0", lw=6, zorder=8.6, solid_capstyle="butt")
+            ax.text(sx0 - 0.1 if vertical else (a + b) / 2, (a + b) / 2 if vertical else sz0 - 0.12, door["label"],
+                    rotation=90 if vertical else 0, ha="center", va="center", fontsize=7, color="#A85F0A", zorder=9)
         ax.text((c["x0"] + c["x1"]) / 2, (c["z0"] + c["z1"]) / 2, c["label"], ha="center", va="center",
                 fontsize=8, zorder=9, color="#2E2C29",
                 bbox=dict(boxstyle="round,pad=0.2", facecolor="#F7F5F0", edgecolor="none", alpha=0.85))
@@ -149,7 +159,7 @@ def main(src, dst):
     ax.annotate("N", xy=(x1 + 0.6, z1), xytext=(x1 + 0.6, z1 - 0.8), ha="center",
                 arrowprops=dict(arrowstyle="->", lw=1.5), fontsize=10, weight="bold")
 
-    ax.set_title(f"{lay['name']} — blueprint v{lay['version']} (all sizes are guesses)", loc="left",
+    ax.set_title(f"{lay['name']} — blueprint v{lay['version']} (rough sizes)", loc="left",
                  fontsize=12, color="#2E2C29")
     ax.set_aspect("equal")
     gx0 = min(r["x0"] for r in rooms)

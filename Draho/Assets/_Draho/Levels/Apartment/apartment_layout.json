@@ -1,6 +1,6 @@
 {
  "name": "Drahomil's apartment",
- "version": 16,
+ "version": 17,
  "units": "metres",
  "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
  "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -420,6 +420,20 @@
    "color": "#2F5A26",
    "top_color": "#3F7330",
    "standable": true
+  },
+  {
+   "id": "beg_shed",
+   "type": "shed",
+   "label": "Garden shed by the begijnhof wall (the way out)",
+   "x": -30.5,
+   "z": -113.3,
+   "w": 1.8,
+   "d": 2.4,
+   "h": 2.0,
+   "climb_top": 2.0,
+   "color": "#6B5440",
+   "top_color": "#4A4642",
+   "standable": true
   }
  ],
  "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
@@ -619,6 +633,20 @@
    "h": 6.0,
    "color": "#B9A796",
    "roof_color": "#6B6862"
+  },
+  {
+   "id": "bakery",
+   "label": "The bakery (far bank)",
+   "x0": -63,
+   "x1": -58,
+   "z0": -108,
+   "z1": -90,
+   "h": 7.0,
+   "ridge": 3.0,
+   "color": "#C9A27E",
+   "roof_color": "#7A3A2A",
+   "roof": "pitched",
+   "front": "+x"
   }
  ],
  "roof_props": [
@@ -719,6 +747,39 @@
    "to": [
     -28,
     5
+   ]
+  },
+  {
+   "id": "far_west",
+   "from": [
+    -57.9,
+    -420
+   ],
+   "to": [
+    -57.9,
+    20
+   ]
+  },
+  {
+   "id": "far_north",
+   "from": [
+    -58,
+    20
+   ],
+   "to": [
+    -48,
+    20
+   ]
+  },
+  {
+   "id": "far_south",
+   "from": [
+    -58,
+    -420
+   ],
+   "to": [
+    -48,
+    -420
    ]
   }
  ],
@@ -1035,22 +1096,6 @@
    "d": 12.5,
    "yaw": 0,
    "h": 9
-  },
-  {
-   "x": -63,
-   "z": -89,
-   "w": 10,
-   "d": 12.5,
-   "yaw": 0,
-   "h": 6.5
-  },
-  {
-   "x": -63,
-   "z": -103,
-   "w": 10,
-   "d": 12.5,
-   "yaw": 0,
-   "h": 10
   },
   {
    "x": -63,
@@ -3186,7 +3231,21 @@
     "x1": 170.34,
     "z1": -222.16
    }
-  ]
+  ],
+  "cat": {
+   "x": 52.6,
+   "z": -209.4,
+   "yaw": 200,
+   "step": 0.35
+  },
+  "exit": {
+   "barrel": {
+    "x": -28.9,
+    "z": -112.6,
+    "r": 0.33,
+    "h": 0.9
+   }
+  }
  },
  "ducks": [
   {
@@ -3204,5 +3263,66 @@
    "z": -140,
    "count": 3
   }
- ]
+ ],
+ "bridges": [
+  {
+   "id": "footbridge",
+   "x0": -48,
+   "x1": -35,
+   "z0": -94.6,
+   "z1": -91.4,
+   "top": 0.0,
+   "color": "#7E7A72"
+  }
+ ],
+ "bakery": {
+  "x": -58.0,
+  "z0": -108,
+  "z1": -90,
+  "awning_color": "#B8402E",
+  "mouse_holes": [
+   {
+    "id": "bakery_hole_1",
+    "x": -58.0,
+    "z": -95.5,
+    "facing": "east"
+   },
+   {
+    "id": "bakery_hole_2",
+    "x": -58.0,
+    "z": -104.0,
+    "facing": "east"
+   },
+   {
+    "id": "bakery_hole_3",
+    "x": -58.0,
+    "z": -99.8,
+    "facing": "east"
+   }
+  ],
+  "crates": [
+   {
+    "x": -57.2,
+    "z": -97.0
+   },
+   {
+    "x": -57.2,
+    "z": -102.4
+   },
+   {
+    "x": -56.6,
+    "z": -102.4
+   }
+  ],
+  "bins": [
+   {
+    "x": -57.3,
+    "z": -106.6
+   }
+  ],
+  "marker": [
+   -56.5,
+   -99.0
+  ]
+ }
 }

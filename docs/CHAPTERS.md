@@ -11,10 +11,11 @@ surface and terrain models). Only relative game metres go into this repository.
 | 3 | Over the Fence | The neighbour's wild garden (nobody home for months), workshop wall | A loose plank in the fence, tall grass, brambles, a hedgehog that must learn to trust the cat, its nest | 30 min | First part playable |
 | 4 | The Riverside | Roofs west of the garden, the quay, a narrow edge above the river | Drop to the quay, walk the edge or the rooftops, do not fall in (the cat climbs out wet) | 25 min | First part playable |
 | 5 | The Begijnhof | An old walled court of white houses, lindens and a church, down the river | Ivy over the wall, explore the court | 25 min | First part playable |
-| 6 | The inner court | Round-stone court inside the apartment block | Pigeons, a cat flap, a lost toy | 25 min | Planned |
-| 7 | Night | All areas after sunset | Moths, a fox, the street light; find the way home | 35 min | Planned |
-| 8 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |
-| 9 | Home | Back to the apartment | The humans come home; a gift for them | 15 min | Planned |
+| 6 | The Bakery | Across a footbridge, on the far bank of the river | Leave the begijnhof over its wall, cross the bridge, catch the bakery mouse | 20 min | First part playable |
+| 7 | The inner court | Round-stone court inside the apartment block | Pigeons, a cat flap, a lost toy | 25 min | Planned |
+| 8 | Night | All areas after sunset | Moths, a fox, the street light; find the way home | 35 min | Planned |
+| 9 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |
+| 10 | Home | Back to the apartment | The humans come home; a gift for them | 15 min | Planned |
 |   | Side activities | Everywhere | Collectables (feathers, lost socks), naps in sunny spots, rewards | 40 min | Planned |
 
 Rules for each chapter:

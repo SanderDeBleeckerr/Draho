@@ -37,7 +37,9 @@ namespace Draho.Story
         bool visitedLindens;
         Duck[] ducks;
         Climbable[] lindens;
-        Transform churchDoor;
+        Transform churchDoor, bakery;
+        NpcCat greyCat;
+        Mouse bakeryMouse;
 
         static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
         int index = -1;
@@ -61,6 +63,9 @@ namespace Draho.Story
             ducks = FindObjectsByType<Duck>(FindObjectsSortMode.None);
             lindens = Array.FindAll(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name.StartsWith("linden"));
             churchDoor = GameObject.Find("Marker_ChurchDoor")?.transform;
+            bakery = GameObject.Find("Marker_Bakery")?.transform;
+            greyCat = FindAnyObjectByType<NpcCat>();
+            bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
 
@@ -208,7 +213,25 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Drahomil found the oldest, quietest place of the neighbourhood. End of chapter 5 for now. Thank you for playing!",
+                    Story = "Someone watches from the church step: an old grey cat. This is her begijnhof.",
+                    Goal = "Walk slowly to the grey cat. Do not run: she does not like that.",
+                    Done = () => greyCat == null || greyCat.Welcomed,
+                },
+                new Beat
+                {
+                    Story = "She blinks slowly: you may stay. Then she sniffs the air. Across the river: fresh bread!",
+                    Goal = "Leave over the wall (rain barrel, shed, wall), cross the footbridge and find the bakery.",
+                    Done = () => bakery == null || Vector3.Distance(Flat(bakery.position), Flat(cat.transform.position)) < 5f,
+                },
+                new Beat
+                {
+                    Story = "Chapter 6: The Bakery. The baker sweeps flour and mutters about a mouse in the bread crates. A job for a mouse hunter!",
+                    Goal = "Catch the bakery mouse. Use DUCK to sneak up on it.",
+                    Done = () => bakeryMouse == null || bakeryMouse.IsCaught,
+                },
+                new Beat
+                {
+                    Story = "The baker smiles and puts a saucer of milk by the door. Drahomil, mouse hunter of the riverside. End of chapter 6 for now!",
                     Goal = "",
                     Done = () => false,
                 },

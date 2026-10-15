@@ -388,6 +388,31 @@ namespace Draho.EditorTools
         }
 
         /// <summary>Safety net: the cat must face +Z and be about 0.3 m high.</summary>
+        /// <summary>
+        /// Another cat (a character, not the player): the Drahomil model with its own fur colour and size,
+        /// the same animator (it idles), no motor. Used by the level builder.
+        /// </summary>
+        internal static GameObject NpcCatModel(string name, Transform parent, Color fur, float scale)
+        {
+            var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(CatFbx);
+            var root = new GameObject(name);
+            root.transform.SetParent(parent, false);
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(fbx, root.transform);
+            PrefabUtility.UnpackPrefabInstance(model, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            model.name = "Model";
+            FixModelOrientationAndScale(model);
+            model.transform.localScale *= scale;
+            var animator = model.GetComponent<Animator>();
+            if (animator == null) animator = model.AddComponent<Animator>();
+            animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ArtDir + "/Cat/Drahomil.controller");
+            animator.applyRootMotion = false;
+            var furMat = LitMaterial($"Fur_{name}", fur, 0.3f);
+            foreach (var r in model.GetComponentsInChildren<Renderer>())
+                r.sharedMaterials = r.sharedMaterials.Select(m =>
+                    m == null ? m : m.name == "Fur" ? furMat : AssetDatabase.LoadAssetAtPath<Material>($"{MaterialDir}/{m.name}.mat") ?? m).ToArray();
+            return root;
+        }
+
         static void FixModelOrientationAndScale(GameObject model)
         {
             var bones = model.GetComponentsInChildren<Transform>();

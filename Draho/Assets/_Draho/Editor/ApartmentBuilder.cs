@@ -64,13 +64,28 @@ namespace Draho.EditorTools
             public Water water;
             public Begijnhof begijnhof;
             public DuckSpot[] ducks;
+            public Ground[] bridges;
+            public Bakery bakery;
         }
+        [Serializable] class Bakery
+        {
+            public float x, z0, z1;
+            public string awning_color;
+            public Hole[] mouse_holes;
+            public Spot[] crates, bins;
+            public float[] marker;
+        }
+        [Serializable] class BegCat { public float x, z, yaw, step; }
+        [Serializable] class BegExit { public BegBarrel barrel; }
+        [Serializable] class BegBarrel { public float x, z, r, h; }
         [Serializable] class Begijnhof
         {
             public BegHouse[] houses;
             public Seg[] walls, blocks;
             public BegTree[] lindens, trees;
             public float[] church_door;
+            public BegCat cat;
+            public BegExit exit;
         }
         [Serializable] class BegHouse { public float x, z, w, d, yaw, h, ridge; public string front; public bool church; }
         [Serializable] class BegTree { public float x, z, h; public string kind; }
@@ -151,6 +166,8 @@ namespace Draho.EditorTools
             BuildWildGarden(layout.wild_garden);
             BuildBegijnhof(layout.begijnhof);
             BuildDucks(layout);
+            BuildBridges(layout);
+            BuildBakery(layout.bakery);
             foreach (var c in layout.climbables ?? new ClimbableInfo[0]) BuildClimbable(c);
 
             var spawn = new GameObject("SpawnPoint").transform;
@@ -782,10 +799,106 @@ namespace Draho.EditorTools
         static void BuildRiver(Water w)
         {
             var water = Box("River", new Vector3((w.x0 + w.x1) / 2, w.top - 0.05f, (w.z0 + w.z1) / 2),
-                new Vector3(w.x1 - w.x0, 0.1f, w.z1 - w.z0), Mat("Apt_River", Hex(w.color), 0.92f), collider: false);
+                new Vector3(w.x1 - w.x0, 0.1f, w.z1 - w.z0),
+                Mat("Apt_River", Hex(w.color), 0.62f, RippleTexture(), new Vector2((w.x1 - w.x0) / 4f, (w.z1 - w.z0) / 4f)), collider: false);
+            water.AddComponent<WaterRipples>();
             water.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
             var respawn = water.AddComponent<WaterRespawn>();
             respawn.Configure(new Rect(w.x0, w.z0, w.x1 - w.x0, w.z1 - w.z0), w.top);
+        }
+
+        /// <summary>Footbridges over the river: a stone deck with an arch below and railings.</summary>
+        static void BuildBridges(Layout layout)
+        {
+            foreach (var b in layout.bridges ?? new Ground[0])
+            {
+                var root = new GameObject(b.id).transform;
+                root.SetParent(level, false);
+                float len = b.x1 - b.x0, wid = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+                var stone = Mat($"Apt_{b.id}", Hex(b.color), 0.2f, TileTexture(), new Vector2(len, wid) / 0.8f);
+                var iron = Mat("Apt_Railing", new Color(0.16f, 0.2f, 0.18f), 0.5f);
+                Box("Deck", new Vector3(cx, b.top - 0.15f, cz), new Vector3(len + 1f, 0.3f, wid), stone).transform.SetParent(root, true);
+                var arch = Box("Arch", new Vector3(cx, b.top - 0.75f, cz), new Vector3(len * 0.75f, 0.9f, wid - 0.2f), stone, collider: false);
+                arch.transform.SetParent(root, true);
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    float z = cz + side * (wid / 2 - 0.05f);
+                    Box("Rail", new Vector3(cx, b.top + 0.85f, z), new Vector3(len + 1f, 0.06f, 0.06f), iron).transform.SetParent(root, true);
+                    Box("RailCollider", new Vector3(cx, b.top + 0.45f, z), new Vector3(len + 1f, 0.9f, 0.1f), null).transform.SetParent(root, true);
+                    for (float x = b.x0; x <= b.x1 + 0.01f; x += 1.3f)
+                        Box("Baluster", new Vector3(x, b.top + 0.42f, z), new Vector3(0.04f, 0.84f, 0.04f), iron, collider: false).transform.SetParent(root, true);
+                }
+                foreach (var r in root.GetComponentsInChildren<Renderer>()) if (r.sharedMaterial == null) Object.DestroyImmediate(r);
+            }
+        }
+
+        /// <summary>
+        /// The bakery on the far bank: a shopfront with a striped awning, bread crates, a bin, mouse holes
+        /// in the wall and the bakery mouse (chapter 6).
+        /// </summary>
+        static void BuildBakery(Bakery b)
+        {
+            if (b == null) return;
+            var root = new GameObject("BakeryFront").transform;
+            root.SetParent(level, false);
+            float cz = (b.z0 + b.z1) / 2, len = b.z1 - b.z0;
+            var red = Mat("Apt_Awning", Hex(b.awning_color), 0.2f);
+            var cream = Mat("Apt_AwningCream", new Color(0.93f, 0.9f, 0.82f), 0.2f);
+            for (int i = 0; i < 12; i++) // striped awning, sloping out over the pavement
+            {
+                float z = b.z0 + 2f + (len - 4f) * (i + 0.5f) / 12;
+                var stripe = Box("Awning", new Vector3(b.x + 0.7f, 3.0f, z), new Vector3(1.5f, 0.04f, (len - 4f) / 12), i % 2 == 0 ? red : cream, collider: false);
+                stripe.transform.rotation = Quaternion.Euler(0f, 0f, -18f);
+                stripe.transform.SetParent(root, true);
+            }
+            var window = Mat("Apt_ShopWindow", new Color(0.55f, 0.62f, 0.62f), 0.9f);
+            Box("ShopWindow", new Vector3(b.x + 0.03f, 1.5f, cz + 3f), new Vector3(0.05f, 1.6f, 5f), window, collider: false).transform.SetParent(root, true);
+            var bread = Mat("Apt_Bread", new Color(0.78f, 0.55f, 0.28f), 0.3f);
+            for (int i = 0; i < 6; i++) // loaves in the window
+            {
+                var loaf = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.DestroyImmediate(loaf.GetComponent<Collider>());
+                loaf.transform.SetParent(root, false);
+                loaf.transform.position = new Vector3(b.x - 0.15f, 1.0f, cz + 1f + i * 0.75f);
+                loaf.transform.localScale = new Vector3(0.22f, 0.14f, 0.4f);
+                loaf.GetComponent<Renderer>().sharedMaterial = bread;
+            }
+            var sign = GameObject.CreatePrimitive(PrimitiveType.Sphere); // a golden pretzel-like sign above the door
+            Object.DestroyImmediate(sign.GetComponent<Collider>());
+            sign.transform.SetParent(root, false);
+            sign.transform.position = new Vector3(b.x + 0.5f, 3.6f, cz - 3f);
+            sign.transform.localScale = new Vector3(0.1f, 0.6f, 0.8f);
+            sign.GetComponent<Renderer>().sharedMaterial = Mat("Apt_Gold", new Color(0.85f, 0.65f, 0.2f), 0.7f);
+            var wood = Mat("Apt_CrateWood", new Color(0.62f, 0.48f, 0.3f), 0.15f);
+            foreach (var c in b.crates ?? new Spot[0])
+                Box("BreadCrate", new Vector3(c.x, 0.2f, c.z), new Vector3(0.5f, 0.4f, 0.7f), wood).transform.SetParent(root, true);
+            var binMat = Mat("Apt_Bin", new Color(0.18f, 0.3f, 0.22f), 0.3f);
+            foreach (var c in b.bins ?? new Spot[0])
+                Box("Bin", new Vector3(c.x, 0.55f, c.z), new Vector3(0.6f, 1.1f, 0.7f), binMat).transform.SetParent(root, true);
+            if (b.marker != null && b.marker.Length == 2)
+            {
+                var m = new GameObject("Marker_Bakery");
+                m.transform.SetParent(level, false);
+                m.transform.position = new Vector3(b.marker[0], 0f, b.marker[1]);
+            }
+            if (b.mouse_holes == null || b.mouse_holes.Length == 0) return;
+            var holes = new List<Transform>();
+            var dark = Mat("Apt_MouseHole", new Color(0.03f, 0.025f, 0.02f), 0f);
+            foreach (var h in b.mouse_holes)
+            {
+                var hole = new GameObject(h.id).transform;
+                hole.SetParent(level, false);
+                hole.SetPositionAndRotation(new Vector3(h.x, 0f, h.z), Quaternion.Euler(0f, FacingYaw(h.facing) + 180f, 0f));
+                var arch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                Object.DestroyImmediate(arch.GetComponent<Collider>());
+                arch.transform.SetParent(hole, false);
+                arch.transform.localPosition = new Vector3(0f, 0f, 0.004f);
+                arch.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                arch.transform.localScale = new Vector3(0.09f, 0.003f, 0.11f);
+                arch.GetComponent<Renderer>().sharedMaterial = dark;
+                holes.Add(hole);
+            }
+            MouseModel(holes).name = "BakeryMouse";
         }
 
         /// <summary>Mallards on the river: drakes (green head) and brown ducks, in small groups.</summary>
@@ -929,8 +1042,34 @@ namespace Draho.EditorTools
                 marker.transform.SetParent(level, false);
                 marker.transform.position = new Vector3(bg.church_door[0], 0f, bg.church_door[1]);
             }
+            if (bg.exit != null && bg.exit.barrel != null && bg.exit.barrel.h > 0f) // a rain barrel by the garden shed (the shed is a climbable)
+            {
+                var barrel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                barrel.name = "RainBarrel";
+                barrel.transform.SetParent(root, false);
+                barrel.transform.position = new Vector3(bg.exit.barrel.x, bg.exit.barrel.h / 2, bg.exit.barrel.z);
+                barrel.transform.localScale = new Vector3(bg.exit.barrel.r * 2, bg.exit.barrel.h / 2, bg.exit.barrel.r * 2);
+                barrel.GetComponent<Renderer>().sharedMaterial = Mat("Beg_Barrel", new Color(0.2f, 0.28f, 0.22f), 0.35f);
+            }
             foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
                 GameObjectUtility.SetStaticEditorFlags(child.gameObject, StaticEditorFlags.BatchingStatic);
+
+            var church = bg.houses.FirstOrDefault(x => x.church);
+            if (church != null)
+            {
+                var bells = new GameObject("ChurchBells");
+                bells.transform.SetParent(level, false);
+                bells.transform.position = new Vector3(church.x, church.h + church.ridge, church.z);
+                bells.AddComponent<AudioSource>().playOnAwake = false;
+                bells.AddComponent<ChurchBells>();
+            }
+            if (bg.cat != null) // the old grey cat of the begijnhof, on a stone step
+            {
+                Box("CatStep", new Vector3(bg.cat.x, bg.cat.step / 2, bg.cat.z), new Vector3(0.9f, bg.cat.step, 0.7f), copingMat).transform.SetParent(root, true);
+                var npc = PlaygroundBuilder.NpcCatModel("GreyCat", level, new Color(0.46f, 0.47f, 0.5f), 1.05f);
+                npc.transform.SetPositionAndRotation(new Vector3(bg.cat.x, bg.cat.step, bg.cat.z), Quaternion.Euler(0f, bg.cat.yaw, 0f));
+                npc.AddComponent<NpcCat>().Configure(npc.GetComponentInChildren<Animator>());
+            }
 
             int n = 0;
             foreach (var l in bg.lindens ?? new BegTree[0]) // pollarded lindens: climbable, not static
@@ -1655,6 +1794,15 @@ namespace Draho.EditorTools
             if (best > 1f) return new Color(0.35f, 0.33f, 0.3f);
             float light = Mathf.Lerp(1.05f, 0.75f, best * best) * shade;
             return new Color(light, light * 0.97f, light * 0.92f);
+        });
+
+        static Texture2D RippleTexture() => MakeTexture("Ripples.png", 128, (x, y, size) =>
+        {
+            // Soft long ripples across the flow, darker troughs; tiles seamlessly.
+            float u = x * 2f * Mathf.PI / size, v = y * 2f * Mathf.PI / size;
+            float r = 0.5f + 0.25f * Mathf.Sin(v * 3f + Mathf.Sin(u * 2f) * 1.5f) + 0.15f * Mathf.Sin(u * 5f + v * 7f) + 0.1f * Mathf.Sin(v * 11f - u * 3f);
+            float t = 0.75f + 0.35f * r;
+            return new Color(t, t, t);
         });
 
         static Texture2D GrassTexture() => MakeTexture("Grass.png", 256, (x, y, size) =>

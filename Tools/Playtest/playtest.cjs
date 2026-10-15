@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -129,6 +129,32 @@ const steps = {
     ['05b_over', 'move', '0,1,1,2'],
     ['06_inside', 'wait', '2'],
   ],
+  // Start with ?beat=21&at=52.6,-205.6,180 : in front of the grey cat on the church step; walk slowly to her.
+  greycat: [
+    ['02_walk', 'move', '0,1,0,4'],
+    ['03_welcome', 'wait', '2'],
+  ],
+  // Start with ?beat=22&at=-30.5,-114.85,0 : inside the begijnhof, at the garden shed; climb it, jump onto the wall, out to the quay.
+  exit: [
+    ['02_climb_shed', 'hold', '4.5'],
+    ['03_on_shed', 'wait', '1'],
+    ['04_jump_wall', 'movejump', '0,1,0,1.6,0.5'],
+    ['05_on_wall', 'wait', '1'],
+    ['06_walk_west', 'move', '-1,0,0,3'],
+    ['07_drop_out', 'move', '0,1,0,1.5'],
+    ['08_quay', 'wait', '1'],
+  ],
+  // Start with ?beat=22&at=-33,-93,270 : on the quay at the footbridge; cross it, find the bakery, hunt its mouse.
+  bakery: [
+    ['02_cross', 'move', '0,1,1,8'],
+    ['03_to_shop', 'move', '-1,0,0,6'],
+    ['04_look', 'wait', '3'],
+    ['05_duck', 'duck', ''],
+    ['06_sneak', 'move', '0,1,0,3'],
+    ['07_wait', 'wait', '4'],
+    ['08_sneak', 'move', '0.5,1,0,3'],
+    ['09_wait', 'wait', '3'],
+  ],
   // Start with ?beat=16&at=-25,-12,270,6.5 : on the riverhouse roof; run west, drop onto the quay shed and the quay.
   quay: [
     ['02_run_west', 'move', '0,1,1,2'],
@@ -219,6 +245,10 @@ for (const [name, action, arg] of steps) {
   else if (action === 'call') {
     const [target, value] = arg.split(':'); const [o, m] = target.split('.');
     await page.evaluate(([o, m, v]) => v === undefined ? window.unityInstance.SendMessage(o, m) : window.unityInstance.SendMessage(o, m, v), [o, m, value]);
+  }
+  else if (action === 'movejump') { // 'x,y,run,seconds,jumpAfter': push the stick, jump while it is still pushed
+    const v = arg.split(','); await send('TestMove', v.slice(0, 4).join(',')); await page.waitForTimeout(+v[4] * 1000);
+    await send('TestJump', ''); await page.waitForTimeout(Math.max(0, (+v[3] - +v[4])) * 1000);
   }
   else if (action === 'hold') { await send('TestHold', arg); await page.waitForTimeout(+arg * 1000); }
   else if (action === 'runjump') { await send('TestMove', arg); await page.waitForTimeout(1200); await send('TestJump', ''); await page.waitForTimeout(800); }

@@ -10,6 +10,7 @@ The game uses Unity.
 - [Assets](docs/ASSETS.md): Sketchfab low-poly cat (CC BY) and Kenney Furniture Kit (CC0); see [CREDITS.md](CREDITS.md)
 - [Level 1: the apartment](docs/APARTMENT.md): blueprint and layout file
 - [Working from a phone](docs/PHONE_WORKFLOW.md): GitHub builds the game, you play it in Safari
+- [Wiki](wiki/README.md): the public wiki about the game and its characters (published with GitBook Git Sync, see `.gitbook.yaml`)
 - [Funding page](https://sanderdebleeckerr.github.io/Draho/funding/): funding strategy and milestones (source in [`site/funding/`](site/funding/index.html); the game stays at the site root)
 
 ## Current state: the apartment

@@ -17,7 +17,7 @@ namespace Draho.CameraRig
         [SerializeField] TouchLookArea lookArea;
 
         [Header("Framing")]
-        [SerializeField] float distance = 0.85f;
+        [SerializeField] float distance = 0.6f;
         [SerializeField] float focusHeight = 0.22f;
         [SerializeField] float followSharpness = 12f;
 
@@ -26,7 +26,7 @@ namespace Draho.CameraRig
         [SerializeField] float touchSensitivity = 220f;
         [Tooltip("Degrees per pixel of mouse movement.")]
         [SerializeField] float mouseSensitivity = 0.25f;
-        [SerializeField] float pitch = 12f;
+        [SerializeField] float pitch = 10f;
         [SerializeField] float minPitch = -5f;
         [SerializeField] float maxPitch = 70f;
 
@@ -38,7 +38,7 @@ namespace Draho.CameraRig
 
         [Header("Climbing")]
         [Tooltip("While the cat climbs, the camera moves back and looks more level, so the wall does not fill the view.")]
-        [SerializeField] float climbDistance = 1.15f;
+        [SerializeField] float climbDistance = 0.95f;
         [SerializeField] float climbPitch = 6f;
         [SerializeField] float climbFocusHeight = 0.35f;
 

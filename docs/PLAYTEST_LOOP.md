@@ -36,4 +36,4 @@ Claude improves the game in rounds. Each round has the same steps:
 | 10 | Climb camera closer (1.7 m), darker young ivy leaves | **Hold the middle of the stick to stand up and climb** (owner's request); birds: stalk radius 1.3 m, no false scare when the cat stands up | Climb goal explains the hold |
 | 11 | Stone path (30 cm slabs, 1 m from the building wall), maple tree with branches and a wide crown (owner's description) | Maple trunk climbable to 1.9 m; blackbirds perch in the maple | — |
 | 12 | — | Round 11 test: the cat did not start to climb the maple (trunk 0.31 m away, reach 0.30 m, one thin ray). Now a sphere probe and a 0.3 m reach beyond the body | — |
-| 13 | Camera closer and lower (0.85 m, 12° instead of 1.3 m, 18°; climbing 1.15 m) so Drahomil fills more of the screen (owner's request); darker stone path | Maple climb verified (to 1.6 m, hold, leap off) | — |
+| 13 | Camera closer and lower (0.6 m, 10° instead of 1.3 m, 18°; climbing 0.95 m) so Drahomil fills more of the screen (owner's request); darker stone path | Maple climb verified (to 1.6 m, hold, leap off) | — |

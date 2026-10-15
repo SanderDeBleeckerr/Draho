@@ -41,6 +41,7 @@ namespace Draho.World
         Vector3 from, to;
         float moveTime, moveDuration, arc;
         bool landing;
+        bool stayLong;
         float phase;
 
         public bool OnGround => state == State.Ground;
@@ -57,7 +58,7 @@ namespace Draho.World
             lawn = lawnRect;
         }
 
-        void Start()
+        void Awake() // not Start: the story may send the bird somewhere in its own Start
         {
             cat = FindAnyObjectByType<CatMotor>();
             home = transform.position;
@@ -146,7 +147,8 @@ namespace Draho.World
             else
             {
                 state = State.Perched;
-                timer = Random.Range(5f, 9f);
+                timer = stayLong ? 40f : Random.Range(5f, 9f);
+                stayLong = false;
             }
         }
 
@@ -167,6 +169,13 @@ namespace Draho.World
             }
             if (cat != null && Flat(best - cat.transform.position).magnitude < 3f) { timer = 2f; return; }
             FlyTo(best, landing: true);
+        }
+
+        /// <summary>The story sends a bird to a perch (for example a branch the cat must climb to).</summary>
+        public void FlyToPerch(Vector3 perch)
+        {
+            FlyTo(perch, landing: false);
+            stayLong = true; // wait there for the cat
         }
 
         bool Scared(float distance)

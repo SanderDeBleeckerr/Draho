@@ -32,6 +32,7 @@ namespace Draho.Story
         CatMotor cat;
         SlidingDoor door;
         Bird[] birds;
+        Climbable maple;
         int index = -1;
         float beatTime;
         float walked;
@@ -49,6 +50,7 @@ namespace Draho.Story
             cat = FindAnyObjectByType<CatMotor>();
             door = FindAnyObjectByType<SlidingDoor>();
             birds = FindObjectsByType<Bird>(FindObjectsSortMode.None);
+            maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
 
             beats = new[]
@@ -92,7 +94,14 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Almost! But birds escape up high. At the end of the garden, ivy hangs down the old wall. A ladder for cats.",
+                    Story = "Almost! The blackbird escapes to the maple by the fence. It sings at Drahomil from a branch.",
+                    Goal = "Climb the maple: walk up to the trunk and hold the middle of the stick.",
+                    Begin = SendBirdToMaple,
+                    Done = () => maple == null || (cat.CurrentClimbable == maple && cat.transform.position.y > 1.2f),
+                },
+                new Beat
+                {
+                    Story = "The trunk is too thin higher up. But at the end of the garden, ivy hangs down the old wall. A ladder for cats.",
                     Goal = "Walk up to the ivy, then hold your thumb in the middle of the stick to climb.",
                     // At the top, not halfway: the end text must not cover the climb.
                     Done = () => cat.IsClimbing && cat.transform.position.y > 2.6f,
@@ -110,6 +119,17 @@ namespace Draho.Story
             for (int i = 0; i < startBeat && i < beats.Length - 1; i++) beats[i].Begin?.Invoke();
             index = Mathf.Clamp(startBeat, 0, beats.Length - 1) - 1;
             Next();
+        }
+
+        void SendBirdToMaple()
+        {
+            if (maple == null || birds.Length == 0) return;
+            // The bird nearest to the maple flies to a branch just above the cat's reach.
+            Vector3 branch = maple.transform.position + new Vector3(0.8f, 2.9f, -0.3f);
+            Bird nearest = birds[0];
+            foreach (var b in birds)
+                if (Vector3.Distance(b.transform.position, branch) < Vector3.Distance(nearest.transform.position, branch)) nearest = b;
+            nearest.FlyToPerch(branch);
         }
 
         void Update()

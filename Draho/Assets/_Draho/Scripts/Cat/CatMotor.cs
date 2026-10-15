@@ -58,6 +58,8 @@ namespace Draho.Cat
         public string ModeName => mode.ToString();
         /// <summary>Up (+) or down (-) speed on the wall, in m/s.</summary>
         public float ClimbVelocity { get; private set; }
+        /// <summary>The surface the cat climbs now, or null.</summary>
+        public Climbable CurrentClimbable => IsClimbing ? climbable : null;
         bool holdUpBefore;
 
         void Awake()

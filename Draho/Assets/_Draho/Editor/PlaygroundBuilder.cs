@@ -541,6 +541,16 @@ namespace Draho.EditorTools
             var volume = new GameObject("PostProcess").AddComponent<Volume>();
             volume.isGlobal = true;
             volume.sharedProfile = PostProfile();
+            // A soft fill light that moves with the camera: the black fur stays readable on dark ivy
+            // and in shade. Short range, so walls further away hardly change.
+            var fill = new GameObject("CatFillLight").AddComponent<Light>();
+            fill.transform.SetParent(camGo.transform, false);
+            fill.transform.localPosition = new Vector3(0.15f, 0.25f, 0f);
+            fill.type = LightType.Point;
+            fill.color = new Color(0.85f, 0.9f, 1f);
+            fill.intensity = 0.45f;
+            fill.range = 1.6f;
+            fill.shadows = LightShadows.None;
             var orbit = camGo.AddComponent<OrbitCamera>();
             SetField(orbit, "target", cat.transform);
             SetField(orbit, "lookArea", lookArea);

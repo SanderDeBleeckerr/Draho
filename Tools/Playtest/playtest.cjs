@@ -73,7 +73,7 @@ const steps = {
     ['10_tap_still', 'tap', ''],
     ['11_wait', 'wait', '3'],
   ],
-  // Start with ?beat=6&at=-22,0.45,180 : in front of the ivy at the end of the garden, facing it.
+  // Start with ?beat=7&at=-22,0.45,180 : in front of the ivy at the end of the garden, facing it.
   climb: [
     ['02_tap_still', 'tap', ''],
     ['03_rear_climb', 'wait', '0.8'],

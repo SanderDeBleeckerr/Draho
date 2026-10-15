@@ -8,7 +8,7 @@ Claude improves the game in rounds. Each round has the same steps:
 3. **Play.** `NODE_PATH=$(npm root -g) node Tools/Playtest/playtest.cjs <url> <out-dir>` opens the
    game in headless Chromium as an iPhone in landscape, plays a short input script (walk, run, jump,
    duck, wait at the door) and saves screenshots and the browser console (`console.log`).
-   - Third argument: scenario `tour` (default), `climb` (use with `?beat=6&at=-22,0.45,180`), `garden` (`?beat=4&at=-0.5,1.2,270`),
+   - Third argument: scenario `tour` (default), `climb` / `climbhold` (ivy: `?beat=7&at=-22,0.45,180`; maple: `?beat=6&at=-22,3.9,0`), `garden` (`?beat=4&at=-0.5,1.2,270`),
      `birds` (`?beat=5&at=-3,3.3,270`) or `mouse` (use with `?beat=2&at=5.9,1.05,90`).
    - `?beat=N` starts the story at beat N. `?at=x,z[,yaw]` puts the cat at a point of the blueprint (yaw: 0 = north, 90 = east).
    - The steps send input into the game (`TouchCatInput.TestMove/TestJump/TestCrouch` through
@@ -37,3 +37,4 @@ Claude improves the game in rounds. Each round has the same steps:
 | 11 | Stone path (30 cm slabs, 1 m from the building wall), maple tree with branches and a wide crown (owner's description) | Maple trunk climbable to 1.9 m; blackbirds perch in the maple | — |
 | 12 | — | Round 11 test: the cat did not start to climb the maple (trunk 0.31 m away, reach 0.30 m, one thin ray). Now a sphere probe and a 0.3 m reach beyond the body | — |
 | 13 | Camera closer and lower (0.6 m, 10° instead of 1.3 m, 18°; climbing 0.95 m) so Drahomil fills more of the screen (owner's request); darker stone path | Maple climb verified (to 1.6 m, hold, leap off) | — |
+| 14 | Soft fill light on the camera (1.6 m range): the black cat is readable on the dark ivy and in shade | A blackbird waits in the maple for the cat | New beat 6: climb the maple after the blackbird; then the ivy (beat 7), end (beat 8) |

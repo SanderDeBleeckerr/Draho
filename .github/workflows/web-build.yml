@@ -1,11 +1,14 @@
 # Builds the game for the web and publishes it on GitHub Pages,
 # so it can be played in Safari on an iPhone. See docs/PHONE_WORKFLOW.md.
+# The game stays at the site root. The static pages in site/ (for example the funding page)
+# are added next to it, at /Draho/funding/. funding-page.yml updates only those pages.
 name: Web build (play on phone)
 
 on:
   push:
     branches: [main]
     paths: ["Draho/**", ".github/workflows/web-build.yml"]
+  # site/** is not here: funding-page.yml publishes those changes without a Unity build.
   workflow_dispatch:
 
 permissions:
@@ -76,6 +79,16 @@ jobs:
 
       - name: Stamp the build with the commit (Tools/Playtest waits for it)
         run: echo "$GITHUB_SHA" | sudo tee build/WebGL/WebGL/version.txt
+
+      # The game alone, so funding-page.yml can publish site/ changes without a new Unity build.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: webgl-game
+          path: build/WebGL/WebGL
+          retention-days: 90
+
+      - name: Add the static pages (site/) next to the game
+        run: sudo cp -r site/. build/WebGL/WebGL/
 
       - uses: actions/upload-pages-artifact@v3
         with:

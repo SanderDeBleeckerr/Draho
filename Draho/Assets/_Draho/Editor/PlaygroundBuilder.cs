@@ -72,6 +72,7 @@ namespace Draho.EditorTools
             stats.walkClipSpeed = defaults.walkClipSpeed;
             stats.runClipSpeed = defaults.runClipSpeed;
             stats.crouchClipSpeed = defaults.crouchClipSpeed;
+            stats.climbClipSpeed = defaults.climbClipSpeed;
             Object.DestroyImmediate(defaults);
             EditorUtility.SetDirty(stats);
             AnimatorController controller = BuildAnimator(stats);
@@ -250,6 +251,9 @@ namespace Draho.EditorTools
             controller.AddParameter("Airborne", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Crouch", AnimatorControllerParameterType.Bool);
             controller.AddParameter("VerticalSpeed", AnimatorControllerParameterType.Float);
+            controller.AddParameter("Rear", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("Climb", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("ClimbSpeed", AnimatorControllerParameterType.Float);
 
             // Standing: Idle / Walk / Run on Speed. Walk and Run play faster so the paws match the speed.
             AnimatorState locomotion = controller.CreateBlendTreeInController("Locomotion", out BlendTree tree, 0);
@@ -298,6 +302,24 @@ namespace Draho.EditorTools
             Link(crouch, air, 0.1f, (AnimatorConditionMode.If, "Airborne"));
             Link(air, locomotion, 0.12f, (AnimatorConditionMode.IfNot, "Airborne"), (AnimatorConditionMode.IfNot, "Crouch"));
             Link(air, crouch, 0.12f, (AnimatorConditionMode.IfNot, "Airborne"), (AnimatorConditionMode.If, "Crouch"));
+
+            // Standing up on the hind legs, and climbing (from any state; the clip speed follows the climb speed).
+            AnimatorStateMachine machine = controller.layers[0].stateMachine;
+            AnimatorState rear = machine.AddState("Rear");
+            rear.motion = Clip("Rear");
+            AnimatorState climb = machine.AddState("Climb");
+            climb.motion = Clip("Climb");
+            climb.speedParameter = "ClimbSpeed";
+            climb.speedParameterActive = true;
+            Link(locomotion, rear, 0.25f, (AnimatorConditionMode.If, "Rear"));
+            Link(rear, locomotion, 0.3f, (AnimatorConditionMode.IfNot, "Rear"), (AnimatorConditionMode.IfNot, "Climb"));
+            var toClimb = machine.AddAnyStateTransition(climb);
+            toClimb.hasExitTime = false;
+            toClimb.duration = 0.2f;
+            toClimb.canTransitionToSelf = false;
+            toClimb.AddCondition(AnimatorConditionMode.If, 0f, "Climb");
+            Link(climb, locomotion, 0.2f, (AnimatorConditionMode.IfNot, "Climb"), (AnimatorConditionMode.IfNot, "Airborne"));
+            Link(climb, air, 0.1f, (AnimatorConditionMode.IfNot, "Climb"), (AnimatorConditionMode.If, "Airborne"));
             return controller;
         }
 
@@ -457,16 +479,29 @@ namespace Draho.EditorTools
             var lookArea = UiRect("LookArea", canvasGo.transform, new Vector2(0.5f, 0f), Vector2.one)
                 .gameObject.AddComponent<TouchLookArea>();
 
+            // A tap on the stick jumps. A hint under the stick says so.
+            var hint = new GameObject("TapHint", typeof(RectTransform), typeof(Text));
+            var hintRt = (RectTransform)hint.transform;
+            hintRt.SetParent(stickArea, false);
+            hintRt.anchorMin = hintRt.anchorMax = Vector2.zero;
+            hintRt.sizeDelta = new Vector2(320f, 50f);
+            hintRt.anchoredPosition = new Vector2(260f, 115f);
+            var hintText = hint.GetComponent<Text>();
+            hintText.text = "tap = jump";
+            hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            hintText.fontSize = 30;
+            hintText.alignment = TextAnchor.MiddleCenter;
+            hintText.color = new Color(1f, 1f, 1f, 0.45f);
+            hintText.raycastTarget = false;
+
             // Buttons after the look area, so they get the touch first. Bottom-right, under the right thumb.
-            TouchButton jumpButton = HudButton(canvasGo.transform, "JumpButton", "JUMP", new Vector2(-230f, 230f), 200f, false, circle);
-            TouchButton crouchButton = HudButton(canvasGo.transform, "CrouchButton", "DUCK", new Vector2(-450f, 140f), 150f, true, circle);
+            TouchButton crouchButton = HudButton(canvasGo.transform, "CrouchButton", "DUCK", new Vector2(-230f, 210f), 180f, true, circle);
 
             var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
 
             var inputGo = new GameObject("PlayerInput");
             var input = inputGo.AddComponent<TouchCatInput>();
             SetField(input, "joystick", joystick);
-            SetField(input, "jumpButton", jumpButton);
             SetField(input, "crouchButton", crouchButton);
 
             var camGo = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));

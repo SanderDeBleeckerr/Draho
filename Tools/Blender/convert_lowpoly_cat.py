@@ -387,17 +387,101 @@ def fall_pose(t, f):
         rot_world(pb[name], SIDE, -(0.1 + 0.06 * i) + 0.04 * math.sin(w - 0.6 * i))
 
 
+# Rear and Climb: the whole body turns nose-up about a line through the hips (Rear) or the hind
+# paws (Climb). IK keeps the paws where they belong: on the floor (Rear) or on the wall (Climb).
+HIP_PIVOT = sum((arm.matrix_world @ arm.data.bones[f"Thigh.{s}"].head_local for s in "LR"), Vector()) / 2
+PAW_PIVOT = (targets["Shin.L"][1] + targets["Shin.R"][1]) / 2
+REAR_ANGLE, CLIMB_ANGLE = 1.0, 1.42   # radians nose-up (57 and 81 degrees)
+CAT_RADIUS = 0.11                      # Unity CharacterController radius: the wall is this far ahead
+CLIMB_FRAMES, CLIMB_STRIDE, CLIMB_LIFT = 20, 0.11, 0.035
+
+
+def rot_about(pb, axis, angle, pivot):
+    bpy.context.view_layer.update()
+    r = Matrix.Rotation(angle, 4, axis)
+    pb.matrix = Matrix.Translation(pivot) @ r @ Matrix.Translation(-pivot) @ pb.matrix
+
+
+def turned(point, angle, pivot, shift=Vector()):
+    return pivot + Matrix.Rotation(angle, 3, SIDE) @ (point - pivot) + shift
+
+
+def rear_pose(t, f):
+    """Standing up on the hind legs to look or sniff: chest high, front paws loose, tail on the floor."""
+    pb = arm.pose.bones
+    w = 2 * math.pi * t
+    lift = UP * 0.03                                         # hind legs a little straighter
+    sway = 0.04 * math.sin(w)
+    for owner, (e, base) in targets.items():
+        if owner.startswith("Shin"):
+            e.location = base                                # hind paws stay on the floor
+        else:                                                # front paws hang in front of the chest
+            e.location = turned(base, REAR_ANGLE, HIP_PIVOT, lift) - FWD * 0.09 - UP * 0.06
+        e.keyframe_insert("location", frame=f)
+    move_world(pb["Root"], lift)
+    rot_about(pb["Root"], SIDE, REAR_ANGLE + sway * 0.5, HIP_PIVOT + lift)
+    rot_world(pb["Root"], FWD, sway)
+    rot_world(pb["Neck"], SIDE, -0.55)                       # head back to level
+    rot_world(pb["Head"], SIDE, -0.35 + 0.08 * math.sin(3 * w))  # sniffing
+    for ear in ("Ear.L", "Ear.R"):
+        rot_world(pb[ear], SIDE, -0.15)                      # ears forward, curious
+    for i, name in enumerate(TAILS):
+        rot_world(pb[name], SIDE, 0.25 if i == 0 else -0.12)  # tail down to the floor, tip curls
+        rot_world(pb[name], UP, 0.1 * math.sin(w - 0.6 * i))
+
+
+def climb_pose(t, f):
+    """On a vertical surface: body nose-up, the paws walk up the wall in a walk gait."""
+    pb = arm.pose.bones
+    w = 2 * math.pi * t
+    r = Matrix.Rotation(CLIMB_ANGLE, 3, SIDE)
+    # Move the turned body forward until the paws touch the wall at y = CAT_RADIUS.
+    shift = FWD * (CAT_RADIUS - 0.075 - PAW_PIVOT.y) + UP * 0.02   # paw tips touch the wall (measured below)
+    for owner, phase in LEGS.items():
+        e, base = targets[owner]
+        u = (t + phase) % 1.0
+        e.location = turned(base, CLIMB_ANGLE, PAW_PIVOT, shift) + r @ leg_offset(u, 0.55, CLIMB_STRIDE, CLIMB_LIFT)
+        e.keyframe_insert("location", frame=f)
+    move_world(pb["Root"], shift)
+    rot_about(pb["Root"], SIDE, CLIMB_ANGLE, PAW_PIVOT + shift)
+    rot_world(pb["Hips"], UP, 0.06 * math.sin(w))
+    rot_world(pb["Chest"], UP, -0.06 * math.sin(w + 0.8))
+    rot_world(pb["Neck"], SIDE, -0.5)                        # looks up the wall
+    for i, name in enumerate(TAILS):
+        rot_world(pb[name], SIDE, 0.12)                      # tail hangs down
+        rot_world(pb[name], UP, 0.15 * math.sin(w - 0.6 * i))
+
+
 walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True)
 idle = bake_clip("Idle", IDLE_FRAMES, idle_pose, use_ik=True)
 crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True)
 crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True)
 jump = bake_clip("Jump", AIR_FRAMES, jump_pose, use_ik=False)
 fall = bake_clip("Fall", AIR_FRAMES, fall_pose, use_ik=False)
+rear = bake_clip("Rear", IDLE_FRAMES // 2, rear_pose, use_ik=True)
+# While climbing the paws lie flat on the wall, toes up: track a point high up, just off the wall.
+up_target = bpy.data.objects.new("PawsUp", None)
+scene.collection.objects.link(up_target)
+up_target.location = (0.0, CAT_RADIUS - 0.01, 6.0)
+paw_tracks = []
+for n in ("Fingers.L", "Fingers.R", "Toe.L", "Toe.R"):
+    c = arm.pose.bones[n].constraints.new("DAMPED_TRACK")
+    c.target = up_target
+    paw_tracks.append((n, c))
+climb = bake_clip("Climb", CLIMB_FRAMES, climb_pose, use_ik=True)
+for n, c in paw_tracks:
+    arm.pose.bones[n].constraints.remove(c)
+bpy.data.objects.remove(up_target, do_unlink=True)
+arm.animation_data.action = climb
+for fr in (0, 5, 10):
+    scene.frame_set(fr)
+    tips = {n: (arm.matrix_world @ arm.pose.bones[n].tail).y for n in ("Fingers.L", "Fingers.R", "Toe.L", "Toe.R")}
+    print(f"CHECK climb frame {fr} paw tips y (wall at {CAT_RADIUS}): " + " ".join(f"{k}={v:.3f}" for k, v in tips.items()))
 bpy.ops.object.mode_set(mode="OBJECT")
 for owner, (e, base) in targets.items():
     bpy.data.objects.remove(e, do_unlink=True)
 run = bpy.data.actions["Run"]
-CLIPS = ("Run", "Walk", "Idle", "CrouchIdle", "CrouchWalk", "Jump", "Fall")
+CLIPS = ("Run", "Walk", "Idle", "CrouchIdle", "CrouchWalk", "Jump", "Fall", "Rear", "Climb")
 for a in list(bpy.data.actions):
     if a.name not in CLIPS:
         bpy.data.actions.remove(a)
@@ -425,6 +509,8 @@ def ground_speed(action, frames):
 print(f"CHECK walk clip speed {ground_speed(walk, WALK_FRAMES):.3f} m/s")
 print(f"CHECK run clip speed {ground_speed(run, run_frames):.3f} m/s")
 print(f"CHECK crouch clip speed {ground_speed(crouch_walk, CROUCH_FRAMES):.3f} m/s")
+# Climbing speed: how fast the paws move up the wall while planted.
+print(f"CHECK climb clip speed {CLIMB_STRIDE / (0.55 * CLIMB_FRAMES / FPS):.3f} m/s")
 
 # ---------------------------------------------------------------------------
 # 5. Face: low-poly, flat-shaded parts in the same style as the body
@@ -824,6 +910,20 @@ if args.renders:
           res=(700, 600))
     shoot(os.path.join(args.renders, "lowpoly_cat_face_side.png"), (0.3, 0.45, 0.24), (0, 0.25, 0.205), lens=110,
           res=(700, 600))
+    wall = bpy.data.objects.new("Wall", bpy.data.meshes.new("Wall"))
+    wall.data.from_pydata([(-0.4, CAT_RADIUS + 0.004, 0), (0.4, CAT_RADIUS + 0.004, 0), (0.4, CAT_RADIUS + 0.004, 0.8),
+                           (-0.4, CAT_RADIUS + 0.004, 0.8)], [], [(0, 1, 2, 3)])
+    wall.data.materials.append(material("WallMat", (0.5, 0.35, 0.22), 0.8))
+    for name, action in (("rear", rear), ("climb", climb)):
+        arm.animation_data.action = action
+        for i, fr in enumerate((0, 5)):
+            scene.frame_set(fr)
+            if name == "climb":
+                scene.collection.objects.link(wall)
+            shoot(os.path.join(args.renders, f"lowpoly_cat_pose_{name}_{i}.png"), (1.1, 0.05, 0.3), (0, 0.05, 0.25),
+                  res=(500, 400))
+            if name == "climb":
+                scene.collection.objects.unlink(wall)
     for name, action in (("crouchidle", crouch_idle), ("jump", jump), ("fall", fall)):
         arm.animation_data.action = action
         scene.frame_set(0)

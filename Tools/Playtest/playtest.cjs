@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -42,23 +42,38 @@ await page.waitForTimeout(6000);
 await page.mouse.click(426, 196); // focus the canvas
 await shot('01_spawn');
 
-const script = [
-  ['02_walk_north', ['KeyW'], 2500],
-  ['03_run_north', ['ShiftLeft', 'KeyW'], 1500],
-  ['04_turn_west', ['KeyA'], 1500],
-  ['05_run_west', ['ShiftLeft', 'KeyW'], 2500],
-  ['06_jump', ['Space'], 120],
-  ['07_crouch', ['KeyC'], 120],
-  ['08_crouch_walk', ['KeyW'], 1500],
-];
-for (const [name, keys, ms] of script) {
-  await hold(keys, ms);
-  await page.waitForTimeout(name === '06_jump' ? 250 : 400);
+// A short touch on the joystick area is a tap (jump, or stand up when the cat stands still).
+const tapStick = async () => { await page.touchscreen.tap(140, 300); log.push(`${stamp()} [input] tap stick`); };
+const scenario = process.argv[4] || 'tour';
+const steps = {
+  tour: [
+    ['02_walk_north', ['KeyW'], 2500],
+    ['03_run_north', ['ShiftLeft', 'KeyW'], 1500],
+    ['04_turn_west', ['KeyA'], 1500],
+    ['05_run_west', ['ShiftLeft', 'KeyW'], 2500],
+    ['06_jump_space', ['Space'], 120],
+    ['07_crouch', ['KeyC'], 120],
+    ['08_crouch_walk', ['KeyW'], 1500],
+    ['09_stand', ['KeyC'], 120],
+    ['10_tap_still', 'tap', 700],
+    ['11_wait', [], 3000],
+  ],
+  // Start with ?beat=6&at=-3.75,3.62 : in front of the shed, facing it.
+  climb: [
+    ['02_tap_still', 'tap', 500],
+    ['03_rear_climb', [], 600],
+    ['04_climb_up', ['KeyW'], 2500],
+    ['05_climb_more', ['KeyW'], 2500],
+    ['06_on_roof', ['KeyW'], 1000],
+  ],
+}[scenario];
+for (const [name, keys, ms] of steps) {
+  if (keys === 'tap') { await tapStick(); await page.waitForTimeout(ms); }
+  else { await hold(keys, ms); await page.waitForTimeout(250); }
   await shot(name);
 }
-await page.keyboard.press('KeyC');
-await page.waitForTimeout(3000);
-await shot('09_wait_at_door');
+await page.waitForTimeout(1500);
+await shot('99_end');
 
 fs.writeFileSync(`${out}/console.log`, log.join('\n') + '\n');
 await browser.close();

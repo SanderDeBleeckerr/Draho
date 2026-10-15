@@ -34,15 +34,17 @@ with Kenney furniture. The old test playground (a floor in empty space) is the s
 |---|---|---|
 | Move | WASD / arrow keys | Left thumb (floating joystick) |
 | Run | Hold Shift | Push the joystick to the edge |
-| Jump | Space | **JUMP** button (bottom right) |
-| Duck / sneak (on/off) | C or Ctrl | **DUCK** button |
+| Jump (keeps the running speed) | Space | **Tap the stick** (a short touch, no push) |
+| Stand up on the hind legs (when standing still) | Space | **Tap the stick** |
+| Climb (stand up in front of the shed or the tree) | Space, then W / S | Tap the stick, then push up / down; tap again to leap off |
+| Duck / sneak (on/off) | C or Ctrl | **DUCK** button (bottom right) |
 | Orbit the camera | Drag with the right mouse button | Swipe with the right thumb |
 
 ## Rebuild the cat model
 
 The cat is the Sketchfab model ["Lowpoly Cat Rig + Run Animation"](https://sketchfab.com/3d-models/lowpoly-cat-rig-run-animation-c36df576c9ae4ed28e89069b1a2f427a)
 by Daily Lowpoly (CC BY 4.0). [`Tools/Blender/convert_lowpoly_cat.py`](Tools/Blender/convert_lowpoly_cat.py) cleans it up,
-adds Idle, Walk, CrouchIdle, CrouchWalk, Jump and Fall clips and a low-poly face, and exports `Drahomil.fbx`:
+adds Idle, Walk, CrouchIdle, CrouchWalk, Jump, Fall, Rear and Climb clips and a low-poly face, and exports `Drahomil.fbx`:
 
 ```bash
 pip install bpy            # Blender as a Python module (Python 3.13 for bpy 5.x)

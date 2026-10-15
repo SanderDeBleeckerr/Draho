@@ -7,16 +7,16 @@ namespace Draho.Controls
     /// <summary>
     /// Player input: on-screen joystick and buttons on the phone, keyboard in the editor.
     /// Pushing the joystick past <see cref="runThreshold"/> makes the cat run.
+    /// A tap on the joystick jumps (or rears up when the cat stands still).
     /// Keyboard: WASD/arrows move, Shift runs, Space jumps, C or Ctrl switches crouch on/off.
     /// </summary>
     public class TouchCatInput : MonoBehaviour, ICatInput
     {
         [SerializeField] VirtualJoystick joystick;
-        [SerializeField] TouchButton jumpButton;
         [SerializeField] TouchButton crouchButton;
         [SerializeField, Range(0.5f, 1f)] float runThreshold = 0.85f;
 
-        int seenJumpPresses;
+        int seenTaps;
         bool jumpQueued;
         bool keyboardCrouch;
 
@@ -41,9 +41,9 @@ namespace Draho.Controls
         {
             var keyboard = Keyboard.current;
 
-            if (jumpButton != null && jumpButton.Presses != seenJumpPresses)
+            if (joystick != null && joystick.Taps != seenTaps)
             {
-                seenJumpPresses = jumpButton.Presses;
+                seenTaps = joystick.Taps;
                 jumpQueued = true;
             }
             if (keyboard != null)

@@ -8,6 +8,7 @@ Claude improves the game in rounds. Each round has the same steps:
 3. **Play.** `NODE_PATH=$(npm root -g) node Tools/Playtest/playtest.cjs <url> <out-dir>` opens the
    game in headless Chromium as an iPhone in landscape, plays a short input script (walk, run, jump,
    duck, wait at the door) and saves screenshots and the browser console (`console.log`).
+   - Third argument: scenario `tour` (default) or `climb` (use with `?beat=6&at=-3.75,3.62`).
    - `?beat=N` starts the story at beat N. `?at=x,z` puts the cat at a point of the blueprint.
    - Lines that start with `STORY` in the console show the story progress.
 4. **Review.** Look at the screenshots and the log. Write down problems on three axes:
@@ -19,3 +20,4 @@ Claude improves the game in rounds. Each round has the same steps:
 | Round | Graphics | Gameplay | Story |
 |---|---|---|---|
 | 1 | Soft shadows (2048, 2 cascades), post-processing (tone mapping, bloom, vignette), 2 warm lamps, full-screen web page with a loading screen, render at max 2× pixel ratio | A mouse with hearing (run = loud, duck = quiet), 4 mouse holes, catch by touch | Chapter 1 "The scratching sound": 6 beats with a story line and a goal at the top of the screen |
+| 2 | Rear and Climb clips (paws flat on the wall), garden shed and tree | Tap the stick to jump; a jump keeps the speed of the last 0.45 s; standing still, the cat rears up; rearing in front of a climbable starts a climb, with a pull-up onto the shed roof; JUMP button removed | New beat: climb the shed roof |

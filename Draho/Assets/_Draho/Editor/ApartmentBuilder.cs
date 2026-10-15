@@ -51,6 +51,7 @@ namespace Draho.EditorTools
             public Spawn spawn;
             public Hole[] mouse_holes;
             public Lamp[] lamps;
+            public ClimbableInfo[] climbables;
         }
         [Serializable] class FloorInfo { public float tile_size; public string color; }
         [Serializable] class WallInfo { public float height; public float thickness; public string color; }
@@ -72,6 +73,12 @@ namespace Draho.EditorTools
         [Serializable] class Edge { public string id, color; public float[] from, to; public float h; }
         [Serializable] class Spawn { public float x, z; public string facing; }
         [Serializable] class Hole { public string id, facing; public float x, z; }
+        [Serializable] class ClimbableInfo
+        {
+            public string id, type, color, top_color;
+            public float x, z, w, d, h, radius, climb_top;
+            public bool standable;
+        }
         [Serializable] class Lamp { public string id, color; public float x, y, z, intensity, range; }
 #pragma warning restore 0649
 
@@ -90,6 +97,7 @@ namespace Draho.EditorTools
             foreach (var court in layout.courts ?? new Court[0]) BuildCourt(layout, court);
             foreach (var prop in layout.props) BuildProp(prop);
             BuildGarden(layout);
+            foreach (var c in layout.climbables ?? new ClimbableInfo[0]) BuildClimbable(c);
 
             var spawn = new GameObject("SpawnPoint").transform;
             spawn.SetParent(level, false);
@@ -427,7 +435,58 @@ namespace Draho.EditorTools
                 float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
                 float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
                 WallSegment(e.id, alongX, line, a, b, 0f, e.h, 0.08f, Mat($"Apt_{e.id}", Hex(e.color), 0.1f));
+                // An invisible wall above the fence: the cat cannot jump out from the shed roof.
+                float mid = (a + b) / 2, len = b - a;
+                var block = Box($"{e.id}_block", alongX ? new Vector3(mid, e.h + 2f, line) : new Vector3(line, e.h + 2f, mid),
+                    alongX ? new Vector3(len, 4f, 0.1f) : new Vector3(0.1f, 4f, len), null);
+                Object.DestroyImmediate(block.GetComponent<Renderer>());
             }
+        }
+
+        static void BuildClimbable(ClimbableInfo c)
+        {
+            var root = new GameObject(c.id).transform;
+            root.SetParent(level, false);
+            root.position = new Vector3(c.x, 0f, c.z);
+            var wood = Mat($"Apt_{c.id}", Hex(c.color), 0.15f);
+            var top = Mat($"Apt_{c.id}_top", Hex(c.top_color), 0.1f);
+            var climbable = root.gameObject.AddComponent<Climbable>();
+            if (c.type == "tree")
+            {
+                var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                trunk.name = "Trunk";
+                trunk.transform.SetParent(root, false);
+                trunk.transform.localPosition = Vector3.up * c.h / 2;
+                trunk.transform.localScale = new Vector3(c.radius * 2, c.h / 2, c.radius * 2);
+                trunk.GetComponent<Renderer>().sharedMaterial = wood;
+                // Leaves: a few overlapping spheres, no colliders.
+                var leaves = new[] { new Vector3(0f, 0.2f, 0f), new Vector3(0.5f, 0f, 0.2f), new Vector3(-0.4f, 0.1f, -0.3f),
+                    new Vector3(0.1f, 0.5f, -0.4f), new Vector3(-0.2f, -0.1f, 0.5f) };
+                for (int i = 0; i < leaves.Length; i++)
+                {
+                    var crown = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    crown.name = "Leaves";
+                    Object.DestroyImmediate(crown.GetComponent<Collider>());
+                    crown.transform.SetParent(root, false);
+                    crown.transform.localPosition = Vector3.up * (c.h + 0.3f) + leaves[i];
+                    crown.transform.localScale = Vector3.one * (1.3f - 0.12f * i);
+                    crown.GetComponent<Renderer>().sharedMaterial = top;
+                }
+                climbable.Configure(c.climb_top, false);
+                return;
+            }
+
+            // Shed: wooden body, a flat roof the cat can stand on, a door on the south side.
+            Box("Body", root.position + Vector3.up * (c.h - 0.06f) / 2, new Vector3(c.w, c.h - 0.06f, c.d), wood)
+                .transform.SetParent(root, true);
+            Box("Roof", root.position + Vector3.up * (c.h - 0.03f), new Vector3(c.w, 0.06f, c.d), top)
+                .transform.SetParent(root, true);
+            Box("Door", root.position + new Vector3(0f, 0.8f, -c.d / 2 - 0.01f), new Vector3(0.7f, 1.55f, 0.02f),
+                Mat("Apt_ShedDoor", Hex(c.color) * 0.7f, 0.2f), collider: false).transform.SetParent(root, true);
+            for (int i = 1; i < 6; i++) // planks
+                Box("Plank", root.position + new Vector3(0f, i * c.h / 6, -c.d / 2 - 0.005f), new Vector3(c.w, 0.015f, 0.01f),
+                    Mat("Apt_ShedPlank", Hex(c.color) * 0.55f, 0.2f), collider: false).transform.SetParent(root, true);
+            climbable.Configure(c.h, c.standable);
         }
 
         // ------------------------------------------------------------------ light

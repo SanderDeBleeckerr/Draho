@@ -59,13 +59,13 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "A good cat checks everything from up high.",
-                    Goal = "JUMP onto the sofa or the cat tree.",
+                    Goal = "Run at the sofa or the cat tree, then tap the stick to jump.",
                     Done = () => cat.IsGrounded && cat.transform.position.y > 0.3f,
                 },
                 new Beat
                 {
                     Story = "Scritch... scritch... Something moves in the kitchen!",
-                    Goal = "Catch the mouse. DUCK to sneak up on it, it hears running paws.",
+                    Goal = "Catch the mouse. It hears running paws: DUCK to sneak up on it.",
                     Begin = () => { if (mouse != null) mouse.gameObject.SetActive(true); },
                     Done = () => mouse == null || mouse.IsCaught,
                 },
@@ -80,6 +80,12 @@ namespace Draho.Story
                     Story = "The door slides open. Fresh air, birds, and new smells.",
                     Goal = "Go out into the garden.",
                     Done = () => cat.transform.position.x < gardenEdgeX - 0.4f,
+                },
+                new Beat
+                {
+                    Story = "From the shed roof a cat can see the whole street.",
+                    Goal = "Stand still at the shed, tap the stick: stand up and climb. Push up to climb.",
+                    Done = () => cat.IsGrounded && cat.transform.position.y > 1.5f,
                 },
                 new Beat
                 {

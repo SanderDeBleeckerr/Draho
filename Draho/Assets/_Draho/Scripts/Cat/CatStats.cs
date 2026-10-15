@@ -31,6 +31,21 @@ namespace Draho.Cat
         [Tooltip("Height of the collider while crouched (standing is 0.26 m).")]
         public float crouchHeight = 0.16f;
 
+        [Header("Jump, rear up and climb")]
+        [Tooltip("A jump keeps the speed the cat had this long after the stick was released.")]
+        public float jumpMomentumTime = 0.45f;
+        [Tooltip("Slower than this, a jump becomes 'stand up on the hind legs'.")]
+        public float rearSpeedThreshold = 0.2f;
+        public float rearTime = 1.1f;
+        public float climbSpeed = 0.45f;
+        [Tooltip("How far in front of the body a climbable surface can be.")]
+        public float climbReach = 0.2f;
+        [Tooltip("Climb onto the top when the paws are this close to it.")]
+        public float mantleReach = 0.35f;
+        public float mantleTime = 0.5f;
+        [Tooltip("Speed of the jump away from a wall.")]
+        public float climbLeapSpeed = 1.2f;
+
         [Header("Gravity")]
         public float gravity = -20f;
         public float maxFallSpeed = 30f;
@@ -42,5 +57,6 @@ namespace Draho.Cat
         public float runClipSpeed = 0.666f;
         [Tooltip("Speed at which the CrouchWalk clip's paws do not slide, at playback speed 1.")]
         public float crouchClipSpeed = 0.194f;
+        public float climbClipSpeed = 0.24f;
     }
 }

@@ -64,8 +64,8 @@ const steps = {
     ['02_walk_north', 'move', '0,1,0,2.5'],
     ['03_run_north', 'move', '0,1,1,1.5'],
     ['04_turn_west', 'move', '-1,0,0,1.2'],
-    ['05_run_west', 'move', '-1,0,1,2'],
-    ['06_run_jump', 'jump', ''],
+    ['05_run_jump_west', 'runjump', '-1,0,1,2'],
+    ['06_land', 'wait', '1'],
     ['07_duck', 'duck', ''],
     ['08_sneak', 'move', '0,1,0,1.5'],
     ['09_stand', 'duck', ''],
@@ -97,6 +97,7 @@ for (const [name, action, arg] of steps) {
   if (action === 'tap') await tapStick();
   else if (action === 'jump') await send('TestJump', '');
   else if (action === 'duck') await send('TestCrouch', '');
+  else if (action === 'runjump') { await send('TestMove', arg); await page.waitForTimeout(1200); await send('TestJump', ''); await page.waitForTimeout(800); }
   else if (action === 'move') { await send('TestMove', arg); await page.waitForTimeout(+arg.split(',')[3] * 1000); }
   else if (action === 'wait') await page.waitForTimeout(+arg * 1000);
   log.push(`${stamp()} [input] ${action} ${arg}`);

@@ -441,6 +441,26 @@ namespace Draho.EditorTools
 
             new GameObject("Game").AddComponent<GameBootstrap>();
 
+            // A soft gradient sky (Unity's procedural skybox), also used for the ambient light colour.
+            string skyPath = MaterialDir + "/Sky.mat";
+            var sky = AssetDatabase.LoadAssetAtPath<Material>(skyPath);
+            var skyShader = Shader.Find("Skybox/Procedural");
+            if (sky == null && skyShader != null)
+            {
+                sky = new Material(skyShader);
+                AssetDatabase.CreateAsset(sky, skyPath);
+            }
+            if (sky != null)
+            {
+                sky.SetFloat("_SunSize", 0.03f);
+                sky.SetFloat("_AtmosphereThickness", 0.8f);
+                sky.SetColor("_SkyTint", new Color(0.55f, 0.65f, 0.8f));
+                sky.SetColor("_GroundColor", new Color(0.42f, 0.4f, 0.38f));
+                sky.SetFloat("_Exposure", 1.15f);
+                EditorUtility.SetDirty(sky);
+                RenderSettings.skybox = sky;
+            }
+
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type = LightType.Directional;
             sun.intensity = 1.3f;
@@ -514,7 +534,7 @@ namespace Draho.EditorTools
             cam.nearClipPlane = 0.03f;
             cam.farClipPlane = 200f;
             cam.fieldOfView = 55f;
-            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.clearFlags = RenderSettings.skybox != null ? CameraClearFlags.Skybox : CameraClearFlags.SolidColor;
             cam.backgroundColor = background;
             camGo.transform.position = spawn.position + new Vector3(0f, 0.6f, -1.2f);
             cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;

@@ -28,3 +28,5 @@ Claude improves the game in rounds. Each round has the same steps:
 | 2 | Rear and Climb clips (paws flat on the wall), garden shed and tree | Tap the stick to jump; a jump keeps the speed of the last 0.45 s; standing still, the cat rears up; rearing in front of a climbable starts a climb, with a pull-up onto the shed roof; JUMP button removed | New beat: climb the shed roof |
 | 3 | — | Camera follows a teleport or respawn | Larger story text |
 | 4 | — | Tap also counts within 2 frames (slow devices); fix: cat faced backwards after the new clips | — |
+| 5 | — | Playtest input sent into the game (reliable); climb + pull-up verified | — |
+| 6 | Afternoon sun from the south-west, procedural gradient sky | Mouse first appears at the fridge hole | Roof line matches the scene |

@@ -36,6 +36,7 @@ namespace Draho.World
         float stuckTimer;
         float verticalVelocity;
         float phase;
+        bool firstAppearance = true;
 
         public bool IsCaught => state == State.Caught;
         public bool IsVisible => state == State.Wander || state == State.Flee;
@@ -70,7 +71,12 @@ namespace Draho.World
             {
                 case State.Hidden:
                     timer -= dt;
-                    if (timer <= 0f) ComeOut(PickHole(exclude: hole));
+                    if (timer <= 0f)
+                    {
+                        // The first time at its home hole (the story says where); later at another one.
+                        ComeOut(firstAppearance ? hole : PickHole(exclude: hole));
+                        firstAppearance = false;
+                    }
                     return;
                 case State.Caught:
                     return;

@@ -84,7 +84,7 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "From the shed roof a cat can see the whole street.",
+                    Story = "The shed roof: the best place in the garden to watch the birds.",
                     Goal = "Stand still at the shed, tap the stick: stand up and climb. Push up to climb.",
                     Done = () => cat.IsGrounded && cat.transform.position.y > 1.5f,
                 },
@@ -130,7 +130,8 @@ namespace Draho.Story
             Vector3 p = cat.transform.position;
             Debug.Log($"STATE beat {index} cat ({p.x:0.00}, {p.y:0.00}, {p.z:0.00}) yaw {cat.transform.eulerAngles.y:0} " +
                       $"mode {cat.ModeName} speed {cat.Speed:0.00} grounded {cat.IsGrounded} " +
-                      $"mouse {(mouse == null ? "none" : mouse.IsCaught ? "caught" : mouse.IsVisible ? "visible" : "hidden")} " +
+                      $"mouse {(mouse == null ? "none" : mouse.IsCaught ? "caught" : mouse.IsVisible ? "visible" : "hidden")}" +
+                      $"{(mouse != null ? $" at ({mouse.transform.position.x:0.00}, {mouse.transform.position.z:0.00})" : "")} " +
                       $"fps {1f / Mathf.Max(0.001f, Time.smoothDeltaTime):0}");
         }
 

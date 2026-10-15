@@ -88,7 +88,7 @@ namespace Draho.EditorTools
             var layout = JsonUtility.FromJson<Layout>(File.ReadAllText(LayoutPath));
             materials.Clear();
 
-            Scene scene = PlaygroundBuilder.NewLitScene(Quaternion.Euler(55f, 150f, 0f));
+            Scene scene = PlaygroundBuilder.NewLitScene(Quaternion.Euler(42f, 35f, 0f)); // afternoon sun from the south-west
             level = new GameObject("Apartment").transform;
 
             Rect inside = InsideRect(layout);

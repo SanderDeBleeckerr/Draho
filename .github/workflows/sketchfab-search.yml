@@ -1,0 +1,40 @@
+# Searches Sketchfab for downloadable models with a license that is safe for the game
+# (CC0 or CC BY) and prints them in the log. Claude reads the log to choose a model.
+# Runs when this file changes on main; edit QUERIES to search for something else.
+name: Sketchfab search
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/sketchfab-search.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      QUERIES: "sliding glass door|sliding door|patio door|glass door low poly"
+    steps:
+      - name: Search
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          seen = set()
+          for q in os.environ["QUERIES"].split("|"):
+              for lic in ("cc0", "by"):
+                  url = ("https://api.sketchfab.com/v3/search?type=models&downloadable=true&count=24"
+                         f"&license={lic}&q={urllib.parse.quote(q)}")
+                  data = json.load(urllib.request.urlopen(url))
+                  print(f"## {q} [{lic}]")
+                  for m in data.get("results", []):
+                      if m["uid"] in seen:
+                          continue
+                      seen.add(m["uid"])
+                      print(f"{m['uid']} | {m['name'][:60]} | {m['license']['label'] if m.get('license') else lic}"
+                            f" | faces {m.get('faceCount')} | anim {m.get('animationCount')} | likes {m.get('likeCount')}"
+                            f" | @{m['user']['username']}")
+          PY

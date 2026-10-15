@@ -1,0 +1,54 @@
+{
+  "uid": "c36df576c9ae4ed28e89069b1a2f427a",
+  "name": "Lowpoly Cat Rig + Run Animation",
+  "viewerUrl": "https://sketchfab.com/3d-models/lowpoly-cat-rig-run-animation-c36df576c9ae4ed28e89069b1a2f427a",
+  "faceCount": 794,
+  "vertexCount": 398,
+  "animationCount": 1,
+  "license": {
+    "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+    "label": "CC Attribution",
+    "fullName": "Creative Commons Attribution",
+    "requirements": "Author must be credited. Commercial use is allowed.",
+    "url": "http://creativecommons.org/licenses/by/4.0/",
+    "slug": "by"
+  },
+  "user": {
+    "uid": "f4019e7c1c544727bb1e3a614d638ce6",
+    "username": "dailyfree3d",
+    "displayName": "Daily Lowpoly",
+    "account": "basic",
+    "profileUrl": "https://sketchfab.com/dailyfree3d",
+    "avatar": {
+      "uid": "71d3698364d049c4b50c9479fa164060",
+      "uri": "https://api.sketchfab.com/v3/avatars/71d3698364d049c4b50c9479fa164060",
+      "images": [
+        {
+          "width": 32,
+          "height": 32,
+          "size": 1348,
+          "url": "https://media.sketchfab.com/avatars/71d3698364d049c4b50c9479fa164060/ccdd70505fb648f38fdb2882c93a98e0.png"
+        },
+        {
+          "width": 48,
+          "height": 48,
+          "size": 2540,
+          "url": "https://media.sketchfab.com/avatars/71d3698364d049c4b50c9479fa164060/a40df8e6d8594e3880e862baf05e1029.png"
+        },
+        {
+          "width": 90,
+          "height": 90,
+          "size": 6948,
+          "url": "https://media.sketchfab.com/avatars/71d3698364d049c4b50c9479fa164060/2750690fe9eb453d90d6c2ec71327e5d.png"
+        },
+        {
+          "width": 100,
+          "height": 100,
+          "size": 8348,
+          "url": "https://media.sketchfab.com/avatars/71d3698364d049c4b50c9479fa164060/b84ed005d14d4a8ca2804485b5cb9e6c.png"
+        }
+      ]
+    },
+    "uri": "https://api.sketchfab.com/v3/users/f4019e7c1c544727bb1e3a614d638ce6"
+  }
+}

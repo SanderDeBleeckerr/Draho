@@ -352,14 +352,14 @@
   {
    "id": "ivy",
    "type": "ivy",
-   "label": "Ivy up the wall to the flat roof (climbable)",
+   "label": "Ivy from the ground up the wall to the flat roof (climbable)",
    "x": -22.0,
    "z": 0.0,
    "w": 4.0,
    "d": 0.12,
    "h": 6.5,
    "climb_top": 6.5,
-   "bottom": 0.35,
+   "bottom": 0.0,
    "color": "#2F5A26",
    "top_color": "#3F7330",
    "standable": true

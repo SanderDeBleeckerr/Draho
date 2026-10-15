@@ -61,6 +61,7 @@ namespace Draho.Cat
         /// <summary>The surface the cat climbs now, or null.</summary>
         public Climbable CurrentClimbable => IsClimbing ? climbable : null;
         bool holdUpBefore;
+        float stickCooldown; // no grabbing a wall right after letting go of one
 
         void Awake()
         {
@@ -87,6 +88,17 @@ namespace Draho.Cat
 
             if (input != null && input.ConsumeJump()) jumpBufferTimer = stats.jumpBuffer;
             else jumpBufferTimer -= dt;
+
+            // A jump against something climbable: grab it and hang on (then push up to climb, tap to drop off).
+            stickCooldown -= dt;
+            if (mode == Mode.Normal && !grounded && timeSinceGrounded > 0.08f && stickCooldown <= 0f
+                && TryFindWall(out Climbable grab, out Vector3 grabNormal)
+                && Vector3.Dot(transform.forward, -grabNormal) > 0.5f && transform.position.y < grab.TopY - 0.1f)
+            {
+                StartClimb(grab, grabNormal);
+                Debug.Log($"CAT grabs {grab.name} in the air");
+                return;
+            }
 
             // Holding the middle of the stick: a slow cat on the ground stands up (and climbs, at a wall).
             bool hold = input != null && input.HoldUp;
@@ -295,6 +307,7 @@ namespace Draho.Cat
         {
             mode = Mode.Normal;
             climbable = null;
+            stickCooldown = 0.6f;
             ClimbVelocity = 0f;
             speed = 0f;
             verticalVelocity = 0f;

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -205,6 +205,14 @@ const steps = {
     ['03_hold_more', 'hold', '3'],
     ['04_on_top', 'wait', '1.5'],
     ['05_walk', 'move', '0,1,0,2'],
+  ],
+  // Start with ?beat=7&at=-22,0.9,180 : close to the ivy; jump at it, hang on, climb a bit, tap to drop off.
+  grab: [
+    ['02_jump_at_ivy', 'movejump', '0,1,0,1.2,0.2'],
+    ['03_hanging', 'wait', '1.5'],
+    ['04_climb_up', 'move', '0,1,0,2'],
+    ['05_drop_off', 'jump', ''],
+    ['06_landed', 'wait', '1.5'],
   ],
   // Start with ?beat=6&at=-22,3.9,0 : in front of the maple trunk (use with climbhold).
   // Start with ?beat=4&at=-0.5,1.2,270 : on the terrace by the door, looking down the garden.

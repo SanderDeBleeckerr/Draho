@@ -1,6 +1,6 @@
 {
   "name": "Drahomil's apartment",
-  "version": 10,
+  "version": 11,
   "units": "metres",
   "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
   "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -223,7 +223,7 @@
   "garden_edges": [
     {
       "id": "building_wall",
-      "label": "Side wall of the neighbouring building (real north-west)",
+      "label": "Side wall of the neighbouring building, old brick (real north-west)",
       "style": "wall",
       "from": [
         -24.0,
@@ -234,7 +234,8 @@
         0.0
       ],
       "h": 6.0,
-      "color": "#9A8F84"
+      "color": "#C48E74",
+      "material": "brick"
     },
     {
       "id": "neighbour_fence",
@@ -393,6 +394,23 @@
       "x1": -5.0,
       "material": "grass",
       "color": "#4A6332"
+    }
+  ],
+  "birds": [
+    {
+      "id": "blackbird_1",
+      "x": -6.5,
+      "z": 3.3
+    },
+    {
+      "id": "blackbird_2",
+      "x": -11.0,
+      "z": 2.0
+    },
+    {
+      "id": "blackbird_3",
+      "x": -16.0,
+      "z": 3.6
     }
   ]
 }

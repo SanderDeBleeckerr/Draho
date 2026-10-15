@@ -53,7 +53,9 @@ namespace Draho.EditorTools
             public Lamp[] lamps;
             public ClimbableInfo[] climbables;
             public Zone[] garden_zones;
+            public BirdSpot[] birds;
         }
+        [Serializable] class BirdSpot { public string id; public float x, z; }
         [Serializable] class Zone { public string id, material, color; public float x0, x1; }
         [Serializable] class FloorInfo { public float tile_size; public string color; }
         [Serializable] class WallInfo { public float height; public float thickness; public string color; }
@@ -74,7 +76,7 @@ namespace Draho.EditorTools
         [Serializable] class Door { public string id, side; public float from, to, open_gap; }
         [Serializable] class Edge
         {
-            public string id, color, style, post_color;
+            public string id, color, style, post_color, material;
             public float[] from, to;
             public float h, post_spacing;
         }
@@ -448,7 +450,13 @@ namespace Draho.EditorTools
                 float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
                 float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
                 if (e.style == "posts") PostFence(e, alongX, line, a, b);
-                else WallSegment(e.id, alongX, line, a, b, 0f, e.h, 0.08f, Mat($"Apt_{e.id}", Hex(e.color), 0.1f));
+                else
+                {
+                    var mat = e.material == "brick"
+                        ? Mat($"Apt_{e.id}", Hex(e.color), 0.08f, BrickTexture(), new Vector2(b - a, e.h)) // texture = 1 m
+                        : Mat($"Apt_{e.id}", Hex(e.color), 0.1f);
+                    WallSegment(e.id, alongX, line, a, b, 0f, e.h, 0.08f, mat);
+                }
                 // An invisible wall above low edges: the cat cannot jump out of the garden.
                 if (e.h > 3f) continue;
                 float mid = (a + b) / 2, len = b - a;
@@ -555,24 +563,13 @@ namespace Draho.EditorTools
                 float h = c.h - c.bottom, z = c.z + 0.04f + c.d / 2; // in front of the wall face
                 var slab = Box("IvyBody", new Vector3(c.x, c.bottom + h / 2, z), new Vector3(c.w, h, c.d), wood);
                 slab.transform.SetParent(root, true);
-                var rng = new System.Random(11);
-                int leaves = Mathf.RoundToInt(c.w * h * 14f);
-                for (int i = 0; i < leaves; i++)
-                {
-                    float u = (float)rng.NextDouble(), v = (float)rng.NextDouble();
-                    // Thinner and more ragged towards the bottom.
-                    float y = c.bottom - 0.15f + Mathf.Pow(v, 0.7f) * (h + 0.15f);
-                    float x = c.x + (u - 0.5f) * c.w * (0.75f + 0.25f * (y - c.bottom) / h);
-                    var leaf = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    leaf.name = "Leaves";
-                    Object.DestroyImmediate(leaf.GetComponent<Collider>());
-                    leaf.transform.SetParent(root, false);
-                    leaf.transform.position = new Vector3(x, y, z + c.d / 2 + 0.01f + 0.04f * (float)rng.NextDouble());
-                    float size = 0.12f + 0.22f * (float)rng.NextDouble();
-                    leaf.transform.localScale = new Vector3(size, size * 0.8f, 0.06f);
-                    leaf.transform.rotation = Quaternion.Euler(0f, 0f, (float)rng.NextDouble() * 180f);
-                    leaf.GetComponent<Renderer>().sharedMaterial = rng.Next(3) == 0 ? wood : top;
-                }
+                // The leaves: one mesh of small flat leaves (one draw call), facing out of the wall and a bit down.
+                var leaves = new GameObject("Leaves");
+                leaves.transform.SetParent(root, false);
+                leaves.transform.position = new Vector3(c.x, 0f, z + c.d / 2);
+                leaves.AddComponent<MeshFilter>().sharedMesh = IvyLeafMesh(c, h);
+                var leafRenderer = leaves.AddComponent<MeshRenderer>();
+                leafRenderer.sharedMaterial = IvyLeafMat();
                 climbable.Configure(c.climb_top, false);
                 return;
             }
@@ -614,6 +611,93 @@ namespace Draho.EditorTools
             climbable.Configure(c.h, c.standable);
         }
 
+        /// <summary>
+        /// Ivy leaves as one mesh: many small pointed leaves, denser at the top, ragged at the bottom.
+        /// Local space: x along the wall, y up, +z out of the wall. The colour comes from a 4-pixel strip.
+        /// </summary>
+        static Mesh IvyLeafMesh(ClimbableInfo c, float h)
+        {
+            var rng = new System.Random(11);
+            float Rand() => (float)rng.NextDouble();
+            var verts = new List<Vector3>();
+            var normals = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var tris = new List<int>();
+            int count = Mathf.RoundToInt(c.w * h * 70f);
+            for (int i = 0; i < count; i++)
+            {
+                float v = Mathf.Pow(Rand(), 0.75f); // more leaves high up
+                float y = c.bottom - 0.12f + v * (h + 0.2f);
+                float spread = c.w * (0.7f + 0.3f * (y - c.bottom) / h);
+                float x = (Rand() - 0.5f) * spread;
+                float size = 0.06f + 0.07f * Rand();
+                // Turn in the wall plane (Unity applies z first), then tilt the face up a little to catch the sun.
+                float tilt = 15f + 30f * Rand();
+                Quaternion rot = Quaternion.Euler(-tilt, 0f, (Rand() - 0.5f) * 140f);
+                // Far enough from the wall that the tilted tip stays in front of it.
+                Vector3 o = new Vector3(x, y, size * Mathf.Sin(tilt * Mathf.Deg2Rad) + 0.005f + 0.05f * Rand());
+                Vector3 n = rot * Vector3.forward;
+                float colour = (rng.Next(4) + 0.5f) / 4f;
+                int b = verts.Count;
+                // A pointed leaf: stem, two wide sides, tip.
+                foreach (var p in new[] { new Vector3(0f, -0.15f, 0f), new Vector3(-0.5f, 0.35f, 0f), new Vector3(0f, 1f, 0f), new Vector3(0.5f, 0.35f, 0f) })
+                {
+                    Vector3 q = rot * (p * size);
+                    verts.Add(o + q);
+                    normals.Add(n);
+                    uvs.Add(new Vector2(colour, 0.5f));
+                }
+                tris.AddRange(new[] { b, b + 1, b + 2, b, b + 2, b + 3 });
+            }
+            var mesh = new Mesh { name = $"Ivy_{c.id}" };
+            mesh.SetVertices(verts);
+            mesh.SetNormals(normals);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateBounds();
+            string path = $"{PlaygroundBuilder.ArtDir}/Meshes/Ivy_{c.id}.asset";
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(mesh, path);
+            return mesh;
+        }
+
+        static Material IvyLeafMat()
+        {
+            if (materials.TryGetValue("Apt_IvyLeaves", out var m)) return m;
+            m = PlaygroundBuilder.LitMaterial("Apt_IvyLeaves", Color.white, 0.35f, IvyColours());
+            m.SetFloat("_Cull", 0f); // both faces: thin leaves
+            m.doubleSidedGI = true;
+            EditorUtility.SetDirty(m);
+            materials["Apt_IvyLeaves"] = m;
+            return m;
+        }
+
+        static Texture2D IvyColours() => MakeTexture("IvyColours.png", 4, (x, y, size) => x switch
+        {
+            0 => new Color(0.13f, 0.27f, 0.11f),
+            1 => new Color(0.18f, 0.34f, 0.13f),
+            2 => new Color(0.24f, 0.42f, 0.16f),
+            _ => new Color(0.33f, 0.48f, 0.2f), // young leaves
+        });
+
+        static Texture2D BrickTexture() => MakeTexture("Bricks.png", 256, (x, y, size) =>
+        {
+            // 1 m square: 16 rows of 4 bricks (25 x 6.25 cm), every second row shifted by half a brick.
+            const int rowH = 16, brickW = 64, mortar = 2;
+            int row = y / rowH;
+            int shifted = x + (row % 2) * brickW / 2;
+            int col = (shifted / brickW) % (size / brickW);
+            bool joint = y % rowH < mortar || shifted % brickW < mortar;
+            if (joint) return new Color(0.78f, 0.76f, 0.72f);
+            int hash = (row * 73856093) ^ (col * 19349663);
+            float tone = 0.78f + 0.22f * (((hash >> 4) & 15) / 15f);
+            float grain = 0.95f + 0.05f * (((x * 7919 + y * 104729) >> 3 & 7) / 7f);
+            float soot = Mathf.Lerp(1f, 0.85f, Mathf.PerlinNoise(x * 0.02f, y * 0.02f)); // old, uneven wall
+            float t = tone * grain * soot;
+            return new Color(t, t * 0.93f, t * 0.88f);
+        });
+
         // ------------------------------------------------------------------ light
         static void BuildLamps(Layout layout)
         {
@@ -654,6 +738,7 @@ namespace Draho.EditorTools
             }
             if (holes.Count == 0) return;
 
+            BuildBirds(layout);
             Mouse mouse = MouseModel(holes);
             var hudComp = StoryPanel(hud);
             var director = new GameObject("StoryDirector").AddComponent<StoryDirector>();
@@ -714,6 +799,76 @@ namespace Draho.EditorTools
             var mouse = root.AddComponent<Mouse>();
             mouse.Configure(holes.ToArray(), body, tailPivot);
             return mouse;
+        }
+
+        /// <summary>Blackbirds on the lawn; they perch on the fence posts and on top of the walls.</summary>
+        static void BuildBirds(Layout layout)
+        {
+            if (layout.birds == null || layout.birds.Length == 0) return;
+            var perches = new List<Vector3>();
+            foreach (var e in layout.garden_edges ?? new Edge[0])
+            {
+                bool alongX = Mathf.Approximately(e.from[1], e.to[1]);
+                float line = alongX ? e.from[1] : e.from[0];
+                float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
+                float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
+                float step = e.style == "posts" && e.post_spacing > 0f ? e.post_spacing : 3f;
+                float top = e.style == "posts" ? e.h + 0.1f : e.h;
+                for (float t = a + step; t < b - 0.5f; t += step)
+                    perches.Add(alongX ? new Vector3(t, top, line) : new Vector3(line, top, t));
+            }
+            var lawnZone = (layout.garden_zones ?? new Zone[0]).FirstOrDefault(z => z.material == "grass");
+            var garden = layout.rooms.First(r => r.outdoor);
+            var lawn = lawnZone != null
+                ? new Vector4(lawnZone.x0 + 1.5f, garden.z0 + 0.8f, lawnZone.x1 - 0.5f, garden.z1 - 0.8f)
+                : new Vector4(garden.x0 + 1.5f, garden.z0 + 0.8f, garden.x1 - 1.5f, garden.z1 - 0.8f);
+
+            var black = Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f);
+            var orange = Mat("Bird_Beak", new Color(0.95f, 0.6f, 0.08f), 0.5f);
+            foreach (var spot in layout.birds)
+            {
+                var root = new GameObject(spot.id);
+                root.transform.SetParent(level, false);
+                root.transform.SetPositionAndRotation(new Vector3(spot.x, 0f, spot.z), Quaternion.Euler(0f, (spot.x * 37f) % 360f, 0f));
+                Transform Part(PrimitiveType type, Transform parent, Vector3 pos, Vector3 euler, Vector3 scale, Material m)
+                {
+                    var go = GameObject.CreatePrimitive(type);
+                    Object.DestroyImmediate(go.GetComponent<Collider>());
+                    go.transform.SetParent(parent, false);
+                    go.transform.localPosition = pos;
+                    go.transform.localRotation = Quaternion.Euler(euler);
+                    go.transform.localScale = scale;
+                    go.GetComponent<Renderer>().sharedMaterial = m;
+                    return go.transform;
+                }
+                Transform Pivot(string name, Transform parent, Vector3 pos)
+                {
+                    var t = new GameObject(name).transform;
+                    t.SetParent(parent, false);
+                    t.localPosition = pos;
+                    return t;
+                }
+                // About 25 cm from beak to tail, like a real blackbird. +Z is forward.
+                var body = Pivot("Body", root.transform, Vector3.zero);
+                Part(PrimitiveType.Sphere, body, new Vector3(0f, 0.08f, 0f), new Vector3(-12f, 0f, 0f), new Vector3(0.085f, 0.08f, 0.15f), black);
+                Part(PrimitiveType.Cube, body, new Vector3(0f, 0.1f, -0.11f), new Vector3(-20f, 0f, 0f), new Vector3(0.045f, 0.01f, 0.1f), black);
+                foreach (float side in new[] { -1f, 1f })
+                    Part(PrimitiveType.Cylinder, body, new Vector3(side * 0.015f, 0.022f, 0.005f), Vector3.zero, new Vector3(0.007f, 0.022f, 0.007f), orange);
+                var head = Pivot("Head", body, new Vector3(0f, 0.11f, 0.05f));
+                Part(PrimitiveType.Sphere, head, new Vector3(0f, 0.02f, 0.02f), Vector3.zero, Vector3.one * 0.06f, black);
+                Part(PrimitiveType.Cube, head, new Vector3(0f, 0.015f, 0.062f), new Vector3(8f, 0f, 0f), new Vector3(0.013f, 0.012f, 0.04f), orange);
+                foreach (float side in new[] { -1f, 1f })
+                    Part(PrimitiveType.Sphere, head, new Vector3(side * 0.024f, 0.028f, 0.035f), Vector3.zero, Vector3.one * 0.013f, orange); // eye ring
+                Transform Wing(string name, float side)
+                {
+                    var pivot = Pivot(name, body, new Vector3(side * 0.04f, 0.105f, 0f));
+                    Part(PrimitiveType.Cube, pivot, new Vector3(side * 0.006f, -0.03f, -0.01f), Vector3.zero, new Vector3(0.01f, 0.065f, 0.12f), black);
+                    return pivot;
+                }
+                var left = Wing("WingL", -1f);
+                var right = Wing("WingR", 1f);
+                root.AddComponent<Bird>().Configure(body, head, left, right, perches.ToArray(), lawn);
+            }
         }
 
         static StoryHud StoryPanel(Transform canvas)

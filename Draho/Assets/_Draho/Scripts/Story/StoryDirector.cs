@@ -31,6 +31,7 @@ namespace Draho.Story
         Beat[] beats;
         CatMotor cat;
         SlidingDoor door;
+        Bird[] birds;
         int index = -1;
         float beatTime;
         float walked;
@@ -47,6 +48,7 @@ namespace Draho.Story
         {
             cat = FindAnyObjectByType<CatMotor>();
             door = FindAnyObjectByType<SlidingDoor>();
+            birds = FindObjectsByType<Bird>(FindObjectsSortMode.None);
             if (mouse != null) mouse.gameObject.SetActive(false);
 
             beats = new[]
@@ -84,13 +86,20 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "At the end of the garden, ivy hangs down the old wall. A ladder for cats.",
-                    Goal = "Stand still at the ivy, tap the stick to stand up, then push up to climb.",
-                    Done = () => cat.IsClimbing && cat.transform.position.y > 1.5f,
+                    Story = "Blackbirds hop on the lawn. They look for worms, and they watch for cats.",
+                    Goal = "Sneak up on a blackbird: switch DUCK on and creep close.",
+                    Done = () => birds.Length == 0 || Array.Exists(birds, b => b.WasStalked),
                 },
                 new Beat
                 {
-                    Story = "End of chapter 1. More jobs for Drahomil soon. Thank you for playing!",
+                    Story = "Almost! But birds escape up high. At the end of the garden, ivy hangs down the old wall. A ladder for cats.",
+                    Goal = "Stand still at the ivy, tap the stick to stand up, then push up to climb.",
+                    // At the top, not halfway: the end text must not cover the climb.
+                    Done = () => cat.IsClimbing && cat.transform.position.y > 2.6f,
+                },
+                new Beat
+                {
+                    Story = "From up here Drahomil sees the whole garden. End of chapter 1. Thank you for playing!",
                     Goal = "",
                     Done = () => false,
                 },
@@ -132,7 +141,20 @@ namespace Draho.Story
                       $"mode {cat.ModeName} speed {cat.Speed:0.00} grounded {cat.IsGrounded} " +
                       $"mouse {(mouse == null ? "none" : mouse.IsCaught ? "caught" : mouse.IsVisible ? "visible" : "hidden")}" +
                       $"{(mouse != null ? $" at ({mouse.transform.position.x:0.00}, {mouse.transform.position.z:0.00})" : "")} " +
-                      $"fps {1f / Mathf.Max(0.001f, Time.smoothDeltaTime):0}");
+                      $"{BirdState()} fps {1f / Mathf.Max(0.001f, Time.smoothDeltaTime):0}");
+        }
+
+        string BirdState()
+        {
+            if (birds == null || birds.Length == 0) return "birds none";
+            float nearest = float.MaxValue;
+            int down = 0;
+            foreach (var b in birds)
+            {
+                if (b.OnGround) down++;
+                nearest = Mathf.Min(nearest, Vector3.Distance(b.transform.position, cat.transform.position));
+            }
+            return $"birds {down}/{birds.Length} on ground, nearest {nearest:0.0} m";
         }
 
         void ApplyUrlArguments(out int startBeat)

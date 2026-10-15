@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|mouse|garden]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -17,7 +17,8 @@ const browser = await chromium.launch({
 });
 // iPhone 15 in landscape.
 const page = await browser.newPage({
-    viewport: { width: 852, height: 393 }, deviceScaleFactor: 1, // 1x: software WebGL is slow isMobile: true, hasTouch: true,
+    viewport: { width: 852, height: 393 }, deviceScaleFactor: 1, // 1x: software WebGL is slow
+    isMobile: true, hasTouch: true,
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
   });
 page.on('console', m => log.push(`${stamp()} [${m.type()}] ${m.text()}`));
@@ -72,7 +73,7 @@ const steps = {
     ['10_tap_still', 'tap', ''],
     ['11_wait', 'wait', '3'],
   ],
-  // Start with ?beat=5&at=-22,0.45,180 : in front of the ivy at the end of the garden, facing it.
+  // Start with ?beat=6&at=-22,0.45,180 : in front of the ivy at the end of the garden, facing it.
   climb: [
     ['02_tap_still', 'tap', ''],
     ['03_rear_climb', 'wait', '0.8'],
@@ -82,12 +83,24 @@ const steps = {
     ['07_leap_off', 'jump', ''],
     ['08_landed', 'wait', '1.5'],
   ],
-  // Start with ?beat=4&at=-1,2.6,270 : on the terrace, looking down the garden.
+  // Start with ?beat=4&at=-0.5,1.2,270 : on the terrace by the door, looking down the garden.
   garden: [
     ['02_walk', 'move', '0,1,0,3'],
     ['03_run', 'move', '0,1,1,3'],
     ['04_run_more', 'move', '0,1,1,3'],
     ['05_look_back', 'move', '0,-1,0,1'],
+  ],
+  // Start with ?beat=5&at=-3,3.3,270 : on the terrace edge, a blackbird about 3.5 m ahead.
+  birds: [
+    ['02_look', 'wait', '1.5'],
+    ['03_duck', 'duck', ''],
+    ['04_sneak', 'move', '0,1,0,3'],
+    ['05_sneak_more', 'move', '0,1,0,3'],
+    ['06_sneak_close', 'move', '0,1,0,2'],
+    ['07_stand', 'duck', ''],
+    ['08_run_at_birds', 'move', '0,1,1,1.5'],
+    ['09_birds_up', 'wait', '1.5'],
+    ['10_wait', 'wait', '4'],
   ],
   // Start with ?beat=2&at=5.9,1.05,90 : in the kitchen, facing the mouse hole by the fridge.
   mouse: [

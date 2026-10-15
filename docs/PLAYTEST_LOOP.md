@@ -8,8 +8,8 @@ Claude improves the game in rounds. Each round has the same steps:
 3. **Play.** `NODE_PATH=$(npm root -g) node Tools/Playtest/playtest.cjs <url> <out-dir>` opens the
    game in headless Chromium as an iPhone in landscape, plays a short input script (walk, run, jump,
    duck, wait at the door) and saves screenshots and the browser console (`console.log`).
-   - Third argument: scenario `tour` (default), `climb` (use with `?beat=5&at=-22,0.45,180`), `garden` (`?beat=4&at=-1,2.6,270`) or `mouse`
-     (use with `?beat=2&at=5.9,1.05,90`).
+   - Third argument: scenario `tour` (default), `climb` (use with `?beat=6&at=-22,0.45,180`), `garden` (`?beat=4&at=-0.5,1.2,270`),
+     `birds` (`?beat=5&at=-3,3.3,270`) or `mouse` (use with `?beat=2&at=5.9,1.05,90`).
    - `?beat=N` starts the story at beat N. `?at=x,z[,yaw]` puts the cat at a point of the blueprint (yaw: 0 = north, 90 = east).
    - The steps send input into the game (`TouchCatInput.TestMove/TestJump/TestCrouch` through
      `unityInstance.SendMessage`), so they do not depend on browser focus or the slow software frame
@@ -31,3 +31,5 @@ Claude improves the game in rounds. Each round has the same steps:
 | 5 | — | Playtest input sent into the game (reliable); climb + pull-up verified | — |
 | 6 | Afternoon sun from the south-west, procedural gradient sky | Mouse first appears at the fridge hole | Roof line matches the scene |
 | 7 | Real garden: 24 m strip, terrace + lawn, post-and-plank fence, building wall, picnic table, firewood, ivy | Ivy is the climbing object (rays at two heights: ivy does not reach the ground); firewood to jump on | Climb beat moves to the ivy |
+| 8 | Calmer lawn texture | Cat keeps a small gap to the climbing surface (it no longer pushes itself under the ivy); verified: rear → climb to 2.96 m → hold → leap off → land | — |
+| 9 | Ivy as one mesh of ~1600 small flat leaves (was big spheres); brick texture on the building wall; camera moves back and looks level while the cat climbs | Blackbirds on the lawn: hop, peck, hear the cat (run 4 m, walk 2.2 m, sneak 0.7 m), fly to a fence post or the wall top, come back far from the cat | New beat: sneak up on a blackbird; end text waits until the cat is at the top of the ivy |

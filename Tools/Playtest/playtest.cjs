@@ -102,7 +102,7 @@ const steps = {
     ['07_walk_roof', 'move', '0,1,0,3'],
     ['08_look', 'wait', '1'],
   ],
-  // Start with ?beat=9&at=-7,-3.9,180,5.8 : on the lower roof, in front of the drainpipe.
+  // Start with ?beat=9&at=-7,-4.15,180,5.8 : on the lower roof, in front of the drainpipe.
   pipe: [
     ['02_hold', 'hold', '3'],
     ['03_hold_more', 'hold', '3'],

@@ -58,7 +58,9 @@ namespace Draho.EditorTools
             public Building[] buildings;
             public Prop[] roof_props;
             public Edge[] bounds;
+            public ContextBuilding[] context_buildings;
         }
+        [Serializable] class ContextBuilding { public float x, z, w, d, yaw, h; }
         [Serializable] class Building { public string id, color, roof_color; public float x0, x1, z0, z1, h; }
         [Serializable] class GardenPath { public string id, color; public float[] from, to; public float w, slab; }
         [Serializable] class BirdSpot { public string id; public float x, z; }
@@ -487,7 +489,7 @@ namespace Draho.EditorTools
                 float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
                 const float roofT = 0.12f, coping = 0.06f;
                 var brick = Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
-                var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 2f);
+                var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 7f); // small stones
                 var stone = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
                 Box("Walls", new Vector3(cx, (b.h - roofT) / 2, cz), new Vector3(w, b.h - roofT, d), brick).transform.SetParent(root, true);
                 Box("Roof", new Vector3(cx, b.h - roofT / 2, cz), new Vector3(w, roofT, d), gravel).transform.SetParent(root, true);
@@ -507,6 +509,23 @@ namespace Draho.EditorTools
                 Box(p.id + "_cap", new Vector3(p.x, baseY + p.h + 0.03f, p.z), new Vector3(p.w + 0.08f, 0.06f, p.d + 0.08f), Mat("Apt_Coping", Color.gray, 0.2f), collider: false)
                     .transform.SetParent(go.transform, true);
             }
+
+            // The rest of the block as scenery: plain boxes, muted plaster and brick colours, no colliders.
+            var tones = new[] { "#B9A796", "#A8826C", "#C9BFB2", "#9C8C7E", "#B38F78" };
+            int n = 0;
+            foreach (var c in layout.context_buildings ?? new ContextBuilding[0])
+            {
+                var tone = Hex(tones[n % tones.Length]);
+                var body = Box($"Context_{n}", new Vector3(c.x, c.h / 2, c.z), new Vector3(c.w, c.h, c.d),
+                    Mat($"Apt_Context_{n % tones.Length}", tone, 0.08f, BrickTexture(), new Vector2(6f, 6f)), collider: false);
+                body.transform.rotation = Quaternion.Euler(0f, c.yaw, 0f);
+                var roof = Box($"Context_{n}_roof", new Vector3(c.x, c.h + 0.05f, c.z), new Vector3(c.w + 0.2f, 0.1f, c.d + 0.2f),
+                    Mat("Apt_ContextRoof", new Color(0.33f, 0.31f, 0.3f), 0.1f), collider: false);
+                roof.transform.rotation = body.transform.rotation;
+                n++;
+            }
+            if (n > 0) // ground under the block (yards, streets), just below the garden
+                Box("Ground", new Vector3(0f, -0.13f, 0f), new Vector3(180f, 0.1f, 180f), Mat("Apt_Ground", new Color(0.42f, 0.41f, 0.38f), 0.1f), collider: false);
 
             foreach (var e in layout.bounds ?? new Edge[0])
             {

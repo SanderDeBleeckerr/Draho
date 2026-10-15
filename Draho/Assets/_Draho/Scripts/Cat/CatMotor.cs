@@ -196,12 +196,15 @@ namespace Draho.Cat
             if (ClimbVelocity > 0f && feet >= climbable.TopY - stats.mantleReach)
             {
                 if (climbable.CanStandOnTop && TryStartMantle()) return;
+                if (Time.frameCount % 30 == 0) Debug.Log($"CAT hold at top {climbable.TopY:0.00} (feet {feet:0.00})");
                 ClimbVelocity = 0f; // the top of a tree trunk: hold on
             }
 
             Vector3 right = Vector3.Cross(Vector3.up, -wallNormal);
             Vector3 motion = Vector3.up * ClimbVelocity + right * (move.x * stats.climbSpeed * 0.5f) - wallNormal * 0.1f;
-            controller.Move(motion * dt);
+            CollisionFlags flags = controller.Move(motion * dt);
+            if ((flags & CollisionFlags.Above) != 0 && Time.frameCount % 30 == 0)
+                Debug.Log($"CAT climb blocked above at {transform.position.y:0.00}");
 
             if (ClimbVelocity < 0f && controller.isGrounded)
             {

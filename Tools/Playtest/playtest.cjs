@@ -17,7 +17,7 @@ const browser = await chromium.launch({
 });
 // iPhone 15 in landscape.
 const page = await browser.newPage({
-    viewport: { width: 852, height: 393 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
+    viewport: { width: 852, height: 393 }, deviceScaleFactor: 1, // 1x: software WebGL is slow isMobile: true, hasTouch: true,
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
   });
 page.on('console', m => log.push(`${stamp()} [${m.type()}] ${m.text()}`));
@@ -57,41 +57,50 @@ const tapStick = async () => {
   log.push(`${stamp()} [input] tap stick`);
 };
 const scenario = process.argv[4] || 'tour';
+// Steps: [name, action, arg]. 'move' = stick x,y,run,seconds (sent into the game, see TouchCatInput.TestMove);
+// 'jump' / 'duck' = game hooks; 'tap' = a real touch tap on the joystick; 'wait' = seconds.
 const steps = {
   tour: [
-    ['02_walk_north', ['KeyW'], 2500],
-    ['03_run_north', ['ShiftLeft', 'KeyW'], 1500],
-    ['04_turn_west', ['KeyA'], 1500],
-    ['05_run_west', ['ShiftLeft', 'KeyW'], 2500],
-    ['06_jump_space', ['Space'], 120],
-    ['07_crouch', ['KeyC'], 120],
-    ['08_crouch_walk', ['KeyW'], 1500],
-    ['09_stand', ['KeyC'], 120],
-    ['10_tap_still', 'tap', 700],
-    ['11_wait', [], 3000],
-  ],
-  // Start with ?beat=2&at=5.9,1.05,90 : in the kitchen, facing the mouse hole by the fridge.
-  mouse: [
-    ['02_watch', [], 2500],
-    ['03_duck', ['KeyC'], 120],
-    ['04_sneak', ['KeyW'], 2500],
-    ['05_sneak_more', ['KeyW'], 2500],
-    ['06_stand', ['KeyC'], 120],
-    ['07_run', ['ShiftLeft', 'KeyW'], 800],
-    ['08_wait', [], 4000],
+    ['02_walk_north', 'move', '0,1,0,2.5'],
+    ['03_run_north', 'move', '0,1,1,1.5'],
+    ['04_turn_west', 'move', '-1,0,0,1.2'],
+    ['05_run_west', 'move', '-1,0,1,2'],
+    ['06_run_jump', 'jump', ''],
+    ['07_duck', 'duck', ''],
+    ['08_sneak', 'move', '0,1,0,1.5'],
+    ['09_stand', 'duck', ''],
+    ['10_tap_still', 'tap', ''],
+    ['11_wait', 'wait', '3'],
   ],
   // Start with ?beat=5&at=-3.75,3.62 : in front of the shed, facing it.
   climb: [
-    ['02_tap_still', 'tap', 500],
-    ['03_rear_climb', [], 600],
-    ['04_climb_up', ['KeyW'], 2500],
-    ['05_climb_more', ['KeyW'], 2500],
-    ['06_on_roof', ['KeyW'], 1000],
+    ['02_tap_still', 'tap', ''],
+    ['03_rear_climb', 'wait', '0.8'],
+    ['04_climb_up', 'move', '0,1,0,2.5'],
+    ['05_climb_more', 'move', '0,1,0,2.5'],
+    ['06_on_roof', 'move', '0,1,0,1.5'],
+    ['07_walk_roof', 'move', '0,1,0,1'],
+  ],
+  // Start with ?beat=2&at=5.9,1.05,90 : in the kitchen, facing the mouse hole by the fridge.
+  mouse: [
+    ['02_watch', 'wait', '2.5'],
+    ['03_duck', 'duck', ''],
+    ['04_sneak', 'move', '0,1,0,2.5'],
+    ['05_sneak_more', 'move', '0,1,0,2.5'],
+    ['06_stand', 'duck', ''],
+    ['07_run', 'move', '0,1,1,1'],
+    ['08_wait', 'wait', '4'],
   ],
 }[scenario];
-for (const [name, keys, ms] of steps) {
-  if (keys === 'tap') { await tapStick(); await page.waitForTimeout(ms); }
-  else { await hold(keys, ms); await page.waitForTimeout(250); }
+const send = (method, arg) => page.evaluate(([m, a]) => window.unityInstance.SendMessage('PlayerInput', m, a), [method, arg]);
+for (const [name, action, arg] of steps) {
+  if (action === 'tap') await tapStick();
+  else if (action === 'jump') await send('TestJump', '');
+  else if (action === 'duck') await send('TestCrouch', '');
+  else if (action === 'move') { await send('TestMove', arg); await page.waitForTimeout(+arg.split(',')[3] * 1000); }
+  else if (action === 'wait') await page.waitForTimeout(+arg * 1000);
+  log.push(`${stamp()} [input] ${action} ${arg}`);
+  await page.waitForTimeout(400);
   await shot(name);
 }
 await page.waitForTimeout(1500);

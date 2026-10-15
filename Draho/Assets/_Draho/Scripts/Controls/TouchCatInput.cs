@@ -19,6 +19,9 @@ namespace Draho.Controls
         int seenTaps;
         bool jumpQueued;
         bool keyboardCrouch;
+        Vector2 testMove;
+        bool testRun;
+        float testUntil;
 
         public Vector2 Move { get; private set; }
         public bool Run { get; private set; }
@@ -37,6 +40,22 @@ namespace Draho.Controls
             if (crouchButton != null) crouchButton.SetOn(false);
         }
 
+        // ------------------------------------------------------------------ test hooks
+        // The playtest (Tools/Playtest) calls these with unityInstance.SendMessage('PlayerInput', ...),
+        // so its input does not depend on browser focus or frame rate.
+
+        /// <summary>"x,y,run,seconds": push the stick for some seconds, for example "0,1,0,2.5".</summary>
+        public void TestMove(string args)
+        {
+            var v = System.Array.ConvertAll(args.Split(','), s => float.Parse(s, System.Globalization.CultureInfo.InvariantCulture));
+            testMove = new Vector2(v[0], v[1]);
+            testRun = v[2] > 0.5f;
+            testUntil = Time.time + v[3];
+        }
+
+        public void TestJump() => jumpQueued = true;
+        public void TestCrouch() => keyboardCrouch = !keyboardCrouch;
+
         void Update()
         {
             var keyboard = Keyboard.current;
@@ -51,6 +70,13 @@ namespace Draho.Controls
                 if (keyboard.spaceKey.wasPressedThisFrame) jumpQueued = true;
                 if (keyboard.cKey.wasPressedThisFrame || keyboard.leftCtrlKey.wasPressedThisFrame)
                     keyboardCrouch = !keyboardCrouch;
+            }
+
+            if (Time.time < testUntil)
+            {
+                Move = testMove;
+                Run = testRun;
+                return;
             }
 
             Vector2 stick = joystick != null ? joystick.Value : Vector2.zero;

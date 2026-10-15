@@ -11,6 +11,14 @@ namespace Draho.EditorTools
     /// </summary>
     public static class CiBuild
     {
+        /// <summary>Pass 1: create assets and save project settings. The editor must restart after it.</summary>
+        public static void Prepare()
+        {
+            PlaygroundBuilder.Build();
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Pass 2: build the player with the settings that pass 1 saved.</summary>
         public static void BuildWebGL()
         {
             PlaygroundBuilder.Build();

@@ -82,6 +82,7 @@ namespace Draho.EditorTools
             if (handler == null || handler.intValue == 1) return;
             handler.intValue = 1;
             so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(settings); // so AssetDatabase.SaveAssets writes ProjectSettings.asset
             Debug.LogWarning("Draho: switched Active Input Handling to the Input System. Restart the editor.");
         }
 

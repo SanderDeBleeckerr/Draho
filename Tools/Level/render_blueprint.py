@@ -48,7 +48,7 @@ def main(src, dst):
         color = "#E3EBD8" if r.get("outdoor") else "#DDD9D2"
         ax.add_patch(mp.Rectangle((r["x0"], r["z0"]), r["x1"] - r["x0"], r["z1"] - r["z0"],
                                   facecolor=color, edgecolor="none", zorder=0))
-        ax.text((r["x0"] + r["x1"]) / 2, r["z0"] + 0.25, r["label"].upper(), ha="center",
+        ax.text((r["x0"] + r["x1"]) / 2, r["z0"] - 0.45, r["label"].upper(), ha="center", va="center",
                 fontsize=11, color="#6A665F", weight="bold", zorder=5)
     tile = lay["floor"]["tile_size"]
     x = x0

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|mouse]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -57,6 +57,16 @@ const steps = {
     ['09_stand', ['KeyC'], 120],
     ['10_tap_still', 'tap', 700],
     ['11_wait', [], 3000],
+  ],
+  // Start with ?beat=2&at=5.9,1.05,90 : in the kitchen, facing the mouse hole by the fridge.
+  mouse: [
+    ['02_watch', [], 2500],
+    ['03_duck', ['KeyC'], 120],
+    ['04_sneak', ['KeyW'], 2500],
+    ['05_sneak_more', ['KeyW'], 2500],
+    ['06_stand', ['KeyC'], 120],
+    ['07_run', ['ShiftLeft', 'KeyW'], 800],
+    ['08_wait', [], 4000],
   ],
   // Start with ?beat=6&at=-3.75,3.62 : in front of the shed, facing it.
   climb: [

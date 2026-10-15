@@ -6,7 +6,9 @@ namespace Draho.CameraRig
 {
     /// <summary>
     /// Third-person camera that orbits the cat. Swipe on the look area (phone) or drag with the
-    /// right mouse button (editor). The camera moves closer when a wall is between it and the cat.
+    /// right mouse button (editor). The camera moves closer when a wall is between it and the cat:
+    /// at once when something blocks the view, slowly when the view is free again (no popping when
+    /// the cat jumps over low furniture).
     /// </summary>
     public class OrbitCamera : MonoBehaviour
     {
@@ -30,14 +32,18 @@ namespace Draho.CameraRig
         [Header("Collision")]
         [SerializeField] float collisionRadius = 0.06f;
         [SerializeField] LayerMask collisionMask = ~(1 << 2); // everything except Ignore Raycast
+        [Tooltip("Metres per second at which the camera moves back out after a collision.")]
+        [SerializeField] float returnSpeed = 1.2f;
 
         float yaw;
         Vector3 focus;
+        float currentDistance;
 
         void Start()
         {
             yaw = target != null ? target.eulerAngles.y : transform.eulerAngles.y;
             if (target != null) focus = target.position + Vector3.up * focusHeight;
+            currentDistance = distance;
         }
 
         void LateUpdate()
@@ -67,7 +73,10 @@ namespace Draho.CameraRig
                 allowed = Mathf.Max(0.1f, hit.distance);
             }
 
-            transform.SetPositionAndRotation(focus + back * allowed, rotation);
+            currentDistance = allowed < currentDistance
+                ? allowed
+                : Mathf.MoveTowards(currentDistance, allowed, returnSpeed * dt);
+            transform.SetPositionAndRotation(focus + back * currentDistance, rotation);
         }
     }
 }

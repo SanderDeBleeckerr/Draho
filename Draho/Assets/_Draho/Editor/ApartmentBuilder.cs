@@ -598,7 +598,7 @@ namespace Draho.EditorTools
             rt.SetParent(canvas, false);
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
-            rt.sizeDelta = new Vector2(1400f, 170f);
+            rt.sizeDelta = new Vector2(1500f, 200f);
             rt.anchoredPosition = new Vector2(0f, -24f);
             var bg = panel.GetComponent<Image>();
             bg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
@@ -630,8 +630,8 @@ namespace Draho.EditorTools
                 t.raycastTarget = false;
                 return t;
             }
-            Text story = Line("Story", 14f, 84f, 40, FontStyle.Italic, new Color(1f, 1f, 1f, 0.95f));
-            Text goal = Line("Goal", 100f, 56f, 34, FontStyle.Bold, new Color(1f, 0.82f, 0.4f));
+            Text story = Line("Story", 12f, 104f, 48, FontStyle.Italic, new Color(1f, 1f, 1f, 0.95f));
+            Text goal = Line("Goal", 120f, 70f, 42, FontStyle.Bold, new Color(1f, 0.82f, 0.4f));
 
             var hud = panel.AddComponent<StoryHud>();
             var so = new SerializedObject(hud);

@@ -9,7 +9,8 @@ namespace Draho.Story
     /// <summary>
     /// Chapter 1, "The scratching sound": a list of story beats. Each beat shows a line and a goal,
     /// and ends when its goal is done.
-    /// Test hooks in the web build URL: ?beat=2 starts at beat 2, ?at=6.5,1.2 puts the cat at x,z.
+    /// Test hooks in the web build URL: ?beat=2 starts at beat 2, ?at=6.5,1.2 puts the cat at x,z,
+    /// ?at=6.5,1.2,90 also turns it (degrees, 0 = north, 90 = east).
     /// </summary>
     public class StoryDirector : MonoBehaviour
     {
@@ -137,11 +138,13 @@ namespace Draho.Story
                 if (kv[0] == "at")
                 {
                     string[] xz = Uri.UnescapeDataString(kv[1]).Split(',');
-                    if (xz.Length == 2 && float.TryParse(xz[0], System.Globalization.NumberStyles.Float,
-                            System.Globalization.CultureInfo.InvariantCulture, out float x)
-                        && float.TryParse(xz[1], System.Globalization.NumberStyles.Float,
-                            System.Globalization.CultureInfo.InvariantCulture, out float z))
-                        cat.Teleport(new Vector3(x, 0.05f, z), cat.transform.rotation);
+                    float[] v = Array.ConvertAll(xz, n => float.TryParse(n, System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out float f) ? f : 0f);
+                    if (v.Length >= 2)
+                    {
+                        Quaternion turn = v.Length >= 3 ? Quaternion.Euler(0f, v[2], 0f) : cat.transform.rotation;
+                        cat.Teleport(new Vector3(v[0], 0.05f, v[1]), turn);
+                    }
                 }
             }
         }

@@ -3,6 +3,10 @@
 name: Fetch assets
 
 on:
+  # Also runs when this workflow or its script changes on main (Claude cannot press "Run workflow").
+  push:
+    branches: [main]
+    paths: [".github/workflows/fetch-assets.yml", ".github/scripts/fetch-assets.sh"]
   workflow_dispatch:
     inputs:
       kenney_packs:
@@ -24,14 +28,14 @@ jobs:
 
       - name: Kenney packs
         env:
-          KENNEY_PACKS: ${{ inputs.kenney_packs }}
+          KENNEY_PACKS: ${{ inputs.kenney_packs || 'furniture-kit' }}
         run: bash .github/scripts/fetch-assets.sh
 
       - name: Sketchfab models
         # Kenney files are still committed when this step fails (no token, bad license, ...).
         continue-on-error: true
         env:
-          SKETCHFAB_MODELS: ${{ inputs.sketchfab_models }}
+          SKETCHFAB_MODELS: ${{ inputs.sketchfab_models || 'lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a' }}
           SKETCHFAB_API_TOKEN: ${{ secrets.SKETCHFAB_API_TOKEN }}
         run: bash .github/scripts/fetch-assets.sh
 
@@ -41,6 +45,6 @@ jobs:
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Fetch third-party assets" -m "Kenney: ${{ inputs.kenney_packs }}" -m "Sketchfab: ${{ inputs.sketchfab_models }}"
+          git commit -m "Fetch third-party assets" -m "Kenney: ${{ inputs.kenney_packs || 'furniture-kit' }}" -m "Sketchfab: ${{ inputs.sketchfab_models || 'lowpoly-cat=c36df576c9ae4ed28e89069b1a2f427a' }}"
           git push
           git show --stat HEAD | tail -30

@@ -12,7 +12,8 @@ The level is built from [APARTMENT.md](APARTMENT.md) (the blueprint). The look m
 **low-poly** for now, because both packs are low-poly.
 
 The cat came with only a run animation. `Tools/Blender/convert_lowpoly_cat.py` adds Idle, Walk, CrouchIdle,
-CrouchWalk, Jump and Fall, and a new low-poly face (eyes with slit pupils, nose, mouth, whiskers, inner ears).
+CrouchWalk, Jump and Fall, and a new low-poly face: the eyes are flat almond shapes projected onto the head (lid line, amber iris,
+slit pupil, highlight), about one fifth of the head width like a real cat; plus nose, mouth, whiskers and inner ears.
 
 To find more models, edit `QUERIES` in `.github/workflows/sketchfab-search.yml` and push it: the log lists
 downloadable CC0 / CC BY models.

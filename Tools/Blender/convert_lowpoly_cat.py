@@ -520,28 +520,69 @@ print(f"CHECK nose tip at {tuple(round(c, 3) for c in tip)}")
 _, tip_normal = surface_hit(Vector((0, tip.y + 0.2, tip.z)), -FWD)
 print(f"CHECK nose normal {tuple(round(c, 2) for c in tip_normal)}")
 
-# Eyes: almond-shaped, slightly tilted (outer corner up), with a slit pupil and a small glint.
-EYE_W, EYE_H, EYE_D = 0.0125, 0.0085, 0.0045
+# Eyes: flat almond shapes projected onto the head surface (like a decal), so they sit IN the face
+# instead of on it. Layers, from the bottom up: dark lid line, amber iris, pupil, highlight.
+# A cat's eye is mostly iris; the upper lid is flatter than the lower one; the outer corner is higher.
+EYE_W, EYE_H = 0.0088, 0.0066   # half width, half height (m): each eye about 1/5 of the head width
+
+
+def almond(n, w, h, upper_power=0.9, lower_power=0.55):
+    """Outline points (u, v) of an almond: flatter upper lid, rounder lower lid."""
+    pts = []
+    for k in range(n):
+        a = 2 * math.pi * k / n
+        u = math.cos(a)
+        top = math.sin(a) >= 0
+        v = (1 - u * u) ** ((upper_power if top else lower_power) / 2) * (1 if top else -1)
+        pts.append((u * w, v * h * (0.85 if top else 1.0)))
+    return pts
+
+
+def decal(name, mat, outline, frame, origin, lift, bone, dome=0.0, rings=6):
+    """Projects a 2D outline (in the frame's x/y plane) onto the head surface. Concentric rings keep
+    the shape close to the surface where it crosses a fold of the low-poly head."""
+    x, y, z = frame
+    n = len(outline)
+    cu = sum(p[0] for p in outline) / n
+    cv = sum(p[1] for p in outline) / n
+    verts = []
+    for r in range(rings, 0, -1):            # outer ring first
+        t = r / rings
+        for u, v in outline:
+            uu, vv = cu + (u - cu) * t, cv + (v - cv) * t
+            hit, hn = surface_hit(origin + x * uu + y * vv + z * 0.02, -z)
+            verts.append(hit + hn * (lift + dome * (1 - t * t)))
+    hit, hn = surface_hit(origin + x * cu + y * cv + z * 0.02, -z)
+    verts.append(hit + hn * (lift + dome))
+    centre = len(verts) - 1
+    faces = []
+    for r in range(rings - 1):
+        a0, b0 = r * n, (r + 1) * n
+        for k in range(n):
+            faces.append([a0 + k, a0 + (k + 1) % n, b0 + (k + 1) % n, b0 + k])
+    last = (rings - 1) * n
+    faces += [[last + k, last + (k + 1) % n, centre] for k in range(n)]
+    # Face the camera: make the normals point out of the head.
+    a, b, c = verts[0], verts[1], verts[centre]
+    if (b - a).cross(c - a).dot(z) < 0:
+        faces = [list(reversed(f)) for f in faces]
+    return part(name, mat, verts, faces, bone, closed=False)
+
+
 for side in (-1, 1):
-    loc, n = surface_hit(Vector((side * 0.021, tip.y + 0.2, tip.z + 0.021)), Vector((0, -1, 0)))
+    loc, n = surface_hit(Vector((side * 0.0215, tip.y + 0.2, tip.z + 0.022)), Vector((0, -1, 0)))
     x, y, z = frame_at(n)
-    tilt = Matrix.Rotation(math.radians(-14 * side), 3, z)
-    x, y = tilt @ x, tilt @ y
-    centre = loc - z * EYE_D * 0.35
-    parts.append(gem(f"Eye{side}", "Eye", centre, (x, y, z), (EYE_W, EYE_H, EYE_D), "Head", subdiv=2))
-
-    def on_eye(u, v, lift):
-        """Point on the eye's ellipsoid surface at (u, v) in eye units (-1..1), raised by lift."""
-        h = max(0.0, 1.0 - u * u - v * v)
-        return centre + x * (u * EYE_W) + y * (v * EYE_H) + z * (EYE_D * math.sqrt(h) + lift)
-
-    # Slit pupil: a thin vertical lens that follows the curve of the eye.
-    ring = [(0.19 * math.sin(a), 0.86 * math.cos(a)) for a in (2 * math.pi * k / 10 for k in range(10))]
-    pupil_verts = [on_eye(u, v, 0.0004) for u, v in ring] + [on_eye(0, 0, 0.0008)]
-    parts.append(part(f"Pupil{side}", "Pupil", pupil_verts, [[(k + 1) % 10, k, 10] for k in range(10)], "Head",
-                      closed=False))
-    parts.append(gem(f"Glint{side}", "Glint", on_eye(-0.3 * side, 0.4, 0.0004), (x, y, z),
-                     (0.0012, 0.0012, 0.0006), "Head", subdiv=1))
+    # Outer corner up: rotate the outline in the surface plane (x points to the cat's right here).
+    tilt = Matrix.Rotation(math.radians(12 * side), 3, z)
+    fx, fy = tilt @ x, tilt @ y
+    eye_frame = (fx, fy, z)
+    parts.append(decal(f"Lid{side}", "Pupil", almond(28, EYE_W * 1.14, EYE_H * 1.18), eye_frame, loc, 0.0004, "Head"))
+    parts.append(decal(f"Eye{side}", "Eye", almond(28, EYE_W, EYE_H), eye_frame, loc, 0.0008, "Head", dome=0.0002))
+    slit = [(EYE_W * 0.2 * math.sin(a), EYE_H * 0.88 * math.cos(a)) for a in (2 * math.pi * k / 20 for k in range(20))]
+    parts.append(decal(f"Pupil{side}", "Pupil", slit, (x, y, z), loc, 0.0013, "Head", dome=0.0002))
+    glint = [(0.0009 * math.cos(a), 0.0009 * math.sin(a)) for a in (2 * math.pi * k / 6 for k in range(6))]
+    parts.append(decal(f"Glint{side}", "Glint", glint, (x, y, z), loc + y * EYE_H * 0.45 - x * side * EYE_W * 0.35,
+                       0.0017, "Head", dome=0.0001, rings=2))
 
 # Nose: a small inverted triangle, slightly raised, on the nose tip.
 loc, n = surface_hit(Vector((0, tip.y + 0.2, tip.z + 0.002)), Vector((0, -1, 0)))

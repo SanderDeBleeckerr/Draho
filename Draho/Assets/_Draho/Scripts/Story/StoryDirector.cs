@@ -248,7 +248,7 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Hrozna, the corgi next door, sleeps in her basket. On her cushion: Drahomil's toy mouse!",
+                    Story = "Hrozna, the corgi next door, sleeps in her basket. Right by her nose: Drahomil's toy mouse!",
                     Goal = "Sneak to the basket (DUCK) and take the toy mouse back. If Hrozna wakes up, she chases you out.",
                     Done = () => toyMouse == null || toyMouse.Taken,
                 },

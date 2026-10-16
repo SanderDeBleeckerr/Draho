@@ -1808,7 +1808,7 @@ namespace Draho.EditorTools
             cushion.GetComponent<Renderer>().sharedMaterial = Mat("Flat_Cushion", new Color(0.82f, 0.74f, 0.6f), 0.1f);
             var toy = new GameObject("ToyMouse");
             toy.transform.SetParent(level, false);
-            toy.transform.position = basketSpot.position + new Vector3(0.28f, 0.14f, -0.12f);
+            toy.transform.position = basketSpot.position + new Vector3(-0.45f, 0.06f, -0.3f); // dropped by the basket, close to Hrozna's nose
             var toyBody = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             Object.DestroyImmediate(toyBody.GetComponent<Collider>());
             toyBody.transform.SetParent(toy.transform, false);

@@ -228,11 +228,11 @@ const steps = {
   flat: [
     ['02_jump_in', 'movejump', '0,1,0,5,3.4'],
     ['03_inside', 'wait', '1'],
-    ['04_duck', 'duck', ''],
-    ['05_sneak', 'move', '0.16,1,0,10'],
-    ['06_sneak', 'move', '0.16,1,0,10'],
-    ['07_sneak', 'move', '0.16,1,0,9'],
-    ['08_wait', 'wait', '2'],
+    ['04_near_basket', 'call', 'StoryDirector.TestTeleport:4.6,5.9,90'],
+    ['05_duck', 'duck', ''],
+    ['06_sneak', 'move', '0,1,0,6'],
+    ['07_got_it', 'wait', '2'],
+    ['08_sneak_out', 'move', '0,-1,0,6'],
   ],
   // Start with ?beat=26&at=0,6.8,90 : inside the flat; run at the basket: Hrozna wakes and throws the cat out.
   flatloud: [

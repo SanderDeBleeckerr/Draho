@@ -223,7 +223,7 @@ const steps = {
     ['03_garden', 'call', 'StoryDirector.TestTeleport:-3,2.5,270'], ['03b', 'wait', '6'],
     ['04_roofs', 'call', 'StoryDirector.TestTeleport:-18,-10,200,6.5'], ['04b', 'wait', '6'],
     ['05_quay', 'call', 'StoryDirector.TestTeleport:-33,-50,180'], ['05b', 'wait', '6'],
-    ['06_begijnhof', 'call', 'StoryDirector.TestTeleport:20,-150,180'], ['06b', 'wait', '6'],
+    ['06_begijnhof', 'call', 'StoryDirector.TestTeleport:60,-235,180'], ['06b', 'wait', '6'],
     ['07_far_bank', 'call', 'StoryDirector.TestTeleport:-53,-60,180'], ['07b', 'wait', '6'],
   ],
   // Start with ?beat=2&at=5.9,1.05,90 : the kitchen mouse comes out; the test hook catches it; then read the board.

@@ -17,7 +17,7 @@ namespace Draho.World
         [SerializeField] float paddleSpeed = 0.35f;
         [SerializeField] float fleeSpeed = 1.6f;
         [SerializeField] float scareDistance = 3.5f;
-        [SerializeField] float curiousDistance = 6f;
+        [SerializeField] float curiousDistance = 9f; // about the width of the river
         [SerializeField] float curiousTime = 2.5f;
 
         CatMotor cat;

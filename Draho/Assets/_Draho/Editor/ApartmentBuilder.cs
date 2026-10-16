@@ -1773,6 +1773,12 @@ namespace Draho.EditorTools
             WallSegment("FlatWall_N", true, z1 + t / 2, x0 - t, x1 + t, 0f, h, t, plaster);
             WallSegment("FlatWall_E", false, x1 + t / 2, z0, z1, 0f, h, t, plaster);
             WallSegment("FlatWall_S", true, z0 - t / 2, x0 - t, 0f, 0f, h, t, plaster); // the apartment wall covers x 0..7.6
+            var frameMat = Mat("Flat_WindowFrame", new Color(0.28f, 0.2f, 0.13f), 0.3f);
+            Box("WindowSill", new Vector3(x0 - t / 2, sill + 0.015f, (w0 + w1) / 2), new Vector3(t + 0.12f, 0.03f, w1 - w0 + 0.1f),
+                Mat("Flat_Sill", new Color(0.88f, 0.86f, 0.8f), 0.3f)).transform.SetParent(root, true);
+            foreach (var z in new[] { w0, w1 })
+                Box("WindowFrame", new Vector3(x0 - t / 2, (sill + top) / 2, z), new Vector3(t + 0.04f, top - sill, 0.06f), frameMat, collider: false).transform.SetParent(root, true);
+            Box("WindowFrame", new Vector3(x0 - t / 2, top, (w0 + w1) / 2), new Vector3(t + 0.04f, 0.06f, w1 - w0 + 0.06f), frameMat, collider: false).transform.SetParent(root, true);
             foreach (var shutter in new[] { w0 - 0.3f, w1 + 0.3f }) // open green shutters
                 Box("Shutter", new Vector3(x0 - 0.2f, (sill + top) / 2, shutter), new Vector3(0.04f, top - sill, 0.5f),
                     Mat("Flat_Shutter", new Color(0.2f, 0.36f, 0.26f), 0.3f), collider: false).transform.SetParent(root, true);
@@ -1843,8 +1849,8 @@ namespace Draho.EditorTools
             Part(body, new Vector3(0f, 0.3f, 0.51f), Vector3.one * 0.035f, dark);                     // nose
             foreach (float sx in new[] { -1f, 1f })
             {
-                var ear = Part(body, new Vector3(sx * 0.07f, 0.47f, 0.31f), new Vector3(0.08f, 0.16f, 0.04f), red);
-                ear.localRotation = Quaternion.Euler(0f, 0f, sx * -15f);
+                var ear = Part(body, new Vector3(sx * 0.075f, 0.44f, 0.31f), new Vector3(0.09f, 0.11f, 0.035f), red); // big, but corgi-sized
+                ear.localRotation = Quaternion.Euler(0f, 0f, sx * -22f);
                 Part(body, new Vector3(sx * 0.055f, 0.36f, 0.43f), Vector3.one * 0.03f, dark);       // eyes
                 foreach (float fz in new[] { 0.18f, -0.18f })
                     Part(body, new Vector3(sx * 0.08f, 0.06f, fz), new Vector3(0.07f, 0.12f, 0.07f), white, PrimitiveType.Cylinder);
@@ -1854,6 +1860,7 @@ namespace Draho.EditorTools
             tail.localPosition = new Vector3(0f, 0.22f, -0.3f);
             var tailPart = Part(tail, new Vector3(0f, -0.02f, -0.16f), new Vector3(0.09f, 0.09f, 0.34f), red);
             tailPart.localRotation = Quaternion.Euler(20f, 0f, 0f);
+            dog.transform.localScale = Vector3.one * 0.85f;
             dog.AddComponent<AudioSource>().playOnAwake = false;
             dog.AddComponent<Hrozna>().Configure(body, tail, basketSpot);
         }

@@ -1,6 +1,6 @@
 {
  "name": "Drahomil's apartment",
- "version": 17,
+ "version": 18,
  "units": "metres",
  "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
  "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -3324,5 +3324,209 @@
    -56.5,
    -99.0
   ]
- }
+ },
+ "bounty_board": [
+  7.57,
+  0.75,
+  2.0,
+  -90
+ ],
+ "mouse_territories": [
+  {
+   "id": "WorkshopMouse",
+   "name": "Workshop mouse",
+   "bounty": 12,
+   "holes": [
+    {
+     "id": "ws_hole_1",
+     "x": -21,
+     "z": 9.5,
+     "facing": "south"
+    },
+    {
+     "id": "ws_hole_2",
+     "x": -15.5,
+     "z": 9.5,
+     "facing": "south"
+    },
+    {
+     "id": "ws_hole_3",
+     "x": -10,
+     "z": 9.5,
+     "facing": "south"
+    }
+   ]
+  },
+  {
+   "id": "BegijnhofMouse",
+   "name": "Begijnhof mouse",
+   "bounty": 15,
+   "holes": [
+    {
+     "id": "bg_hole_1",
+     "x": -20,
+     "z": -110.55,
+     "facing": "south"
+    },
+    {
+     "id": "bg_hole_2",
+     "x": -10,
+     "z": -109.18,
+     "facing": "south"
+    },
+    {
+     "id": "bg_hole_3",
+     "x": 2,
+     "z": -107.54,
+     "facing": "south"
+    }
+   ]
+  }
+ ],
+ "feathers": [
+  {
+   "id": "kitchen",
+   "x": 5.5,
+   "y": 0,
+   "z": 2.5
+  },
+  {
+   "id": "living",
+   "x": 2.0,
+   "y": 0,
+   "z": 1.0
+  },
+  {
+   "id": "picnic",
+   "x": -1.4,
+   "y": 0.77,
+   "z": 2.6
+  },
+  {
+   "id": "firewood",
+   "x": -7,
+   "y": 0.92,
+   "z": 0.3
+  },
+  {
+   "id": "lawn_end",
+   "x": -19,
+   "y": 0,
+   "z": 3.8
+  },
+  {
+   "id": "maple",
+   "x": -22,
+   "y": 1.5,
+   "z": 3.95
+  },
+  {
+   "id": "ivy",
+   "x": -22,
+   "y": 3.5,
+   "z": 0.35
+  },
+  {
+   "id": "roof_a",
+   "x": -18,
+   "y": 6.5,
+   "z": -12
+  },
+  {
+   "id": "chimney",
+   "x": -16,
+   "y": 6.5,
+   "z": -9
+  },
+  {
+   "id": "roof_b",
+   "x": -6,
+   "y": 5.8,
+   "z": -2.5
+  },
+  {
+   "id": "high_block",
+   "x": -8,
+   "y": 8.6,
+   "z": -9
+  },
+  {
+   "id": "low_roof",
+   "x": -4,
+   "y": 3.7,
+   "z": -19
+  },
+  {
+   "id": "riverhouse",
+   "x": -27,
+   "y": 6.5,
+   "z": -13.5
+  },
+  {
+   "id": "quay_shed",
+   "x": -32.2,
+   "y": 3.2,
+   "z": -9.5
+  },
+  {
+   "id": "ledge",
+   "x": -34.78,
+   "y": 0,
+   "z": -60
+  },
+  {
+   "id": "water_house",
+   "x": -29,
+   "y": 6.0,
+   "z": -57
+  },
+  {
+   "id": "wild",
+   "x": -24,
+   "y": 0,
+   "z": 7.6
+  },
+  {
+   "id": "wheelbarrow",
+   "x": -6.5,
+   "y": 0.345,
+   "z": 8.2
+  },
+  {
+   "id": "bridge",
+   "x": -41.5,
+   "y": 0,
+   "z": -93
+  },
+  {
+   "id": "far_bank",
+   "x": -52,
+   "y": 0,
+   "z": -40
+  },
+  {
+   "id": "bakery_bin",
+   "x": -57.3,
+   "y": 1.1,
+   "z": -106.6
+  },
+  {
+   "id": "beg_wall",
+   "x": -15,
+   "y": 2.66,
+   "z": -109.66
+  },
+  {
+   "id": "beg_court",
+   "x": 60,
+   "y": 0,
+   "z": -240
+  },
+  {
+   "id": "beg_shed",
+   "x": -30.5,
+   "y": 2.0,
+   "z": -113.3
+  }
+ ]
 }

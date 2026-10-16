@@ -66,7 +66,12 @@ namespace Draho.EditorTools
             public DuckSpot[] ducks;
             public Ground[] bridges;
             public Bakery bakery;
+            public MouseTerritory[] mouse_territories;
+            public Feather[] feathers;
+            public float[] bounty_board; // x, y, z, yaw of the cork board
         }
+        [Serializable] class MouseTerritory { public string id, name; public int bounty; public Hole[] holes; }
+        [Serializable] class Feather { public string id; public float x, y, z; }
         [Serializable] class Bakery
         {
             public float x, z0, z1;
@@ -136,7 +141,7 @@ namespace Draho.EditorTools
             public float gap_at, gap_w, gap_h; // a hole at the bottom of a fence (a loose plank)
         }
         [Serializable] class Spawn { public float x, z; public string facing; }
-        [Serializable] class Hole { public string id, facing; public float x, z; }
+        [Serializable] class Hole { public string id, facing; public float x, y, z; }
         [Serializable] class ClimbableInfo
         {
             public string id, type, color, top_color, wall; // wall: where the wall is, seen from a pipe ("-z" default, "-x")
@@ -881,14 +886,20 @@ namespace Draho.EditorTools
                 m.transform.SetParent(level, false);
                 m.transform.position = new Vector3(b.marker[0], 0f, b.marker[1]);
             }
-            if (b.mouse_holes == null || b.mouse_holes.Length == 0) return;
+            if (b.mouse_holes != null && b.mouse_holes.Length > 0)
+                BuildMouseTerritory(new MouseTerritory { id = "BakeryMouse", name = "Bakery mouse", bounty = 15, holes = b.mouse_holes });
+        }
+
+        /// <summary>Mouse holes in walls and one mouse that lives there (a bounty on the board).</summary>
+        static Mouse BuildMouseTerritory(MouseTerritory t)
+        {
             var holes = new List<Transform>();
             var dark = Mat("Apt_MouseHole", new Color(0.03f, 0.025f, 0.02f), 0f);
-            foreach (var h in b.mouse_holes)
+            foreach (var h in t.holes)
             {
                 var hole = new GameObject(h.id).transform;
                 hole.SetParent(level, false);
-                hole.SetPositionAndRotation(new Vector3(h.x, 0f, h.z), Quaternion.Euler(0f, FacingYaw(h.facing) + 180f, 0f));
+                hole.SetPositionAndRotation(new Vector3(h.x, h.y, h.z), Quaternion.Euler(0f, FacingYaw(h.facing) + 180f, 0f));
                 var arch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 Object.DestroyImmediate(arch.GetComponent<Collider>());
                 arch.transform.SetParent(hole, false);
@@ -898,7 +909,40 @@ namespace Draho.EditorTools
                 arch.GetComponent<Renderer>().sharedMaterial = dark;
                 holes.Add(hole);
             }
-            MouseModel(holes).name = "BakeryMouse";
+            var mouse = MouseModel(holes);
+            mouse.name = t.id;
+            mouse.SetBounty(t.name, t.bounty);
+            return mouse;
+        }
+
+        /// <summary>Feathers to collect, floating a little above the place where they lie.</summary>
+        static void BuildFeathers(Layout layout)
+        {
+            var white = Mat("Feather_White", new Color(0.95f, 0.94f, 0.9f), 0.3f);
+            var tip = Mat("Feather_Tip", new Color(0.25f, 0.22f, 0.2f), 0.3f);
+            white.EnableKeyword("_EMISSION");
+            white.SetColor("_EmissionColor", new Color(0.35f, 0.33f, 0.28f));
+            EditorUtility.SetDirty(white);
+            foreach (var f in layout.feathers ?? new Feather[0])
+            {
+                var root = new GameObject($"Feather_{f.id}");
+                root.transform.SetParent(level, false);
+                root.transform.position = new Vector3(f.x, f.y + 0.2f, f.z);
+                var visual = new GameObject("Visual").transform;
+                visual.SetParent(root.transform, false);
+                var vane = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.DestroyImmediate(vane.GetComponent<Collider>());
+                vane.transform.SetParent(visual, false);
+                vane.transform.localScale = new Vector3(0.05f, 0.012f, 0.2f);
+                vane.GetComponent<Renderer>().sharedMaterial = white;
+                var end = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.DestroyImmediate(end.GetComponent<Collider>());
+                end.transform.SetParent(visual, false);
+                end.transform.localPosition = new Vector3(0f, 0f, 0.085f);
+                end.transform.localScale = new Vector3(0.035f, 0.013f, 0.05f);
+                end.GetComponent<Renderer>().sharedMaterial = tip;
+                root.AddComponent<Collectable>().Configure(f.id, visual);
+            }
         }
 
         /// <summary>Mallards on the river: drakes (green head) and brown ducks, in small groups.</summary>
@@ -1513,6 +1557,12 @@ namespace Draho.EditorTools
 
             BuildBirds(layout);
             Mouse mouse = MouseModel(holes);
+            mouse.SetBounty("Kitchen mouse", 10);
+            foreach (var t in layout.mouse_territories ?? new MouseTerritory[0]) BuildMouseTerritory(t);
+            BuildFeathers(layout);
+            BountyBoard(layout.bounty_board);
+            ProgressPanel(hud);
+            new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);
             var hudComp = StoryPanel(hud);
             var director = new GameObject("StoryDirector").AddComponent<StoryDirector>();
             director.Configure(hudComp, mouse, layout.rooms.Where(r => !r.outdoor).Min(r => r.x0));
@@ -1652,6 +1702,84 @@ namespace Draho.EditorTools
                 var right = Wing("WingR", 1f);
                 root.AddComponent<Bird>().Configure(body, head, left, right, perches.ToArray(), lawn);
             }
+        }
+
+        /// <summary>A cork board on the kitchen wall with paper notes: the mouse bounties.</summary>
+        static void BountyBoard(float[] at)
+        {
+            if (at == null || at.Length < 4) return;
+            var root = new GameObject("BountyBoard").transform;
+            root.SetParent(level, false);
+            root.SetPositionAndRotation(new Vector3(at[0], at[1], at[2]), Quaternion.Euler(0f, at[3], 0f));
+            var cork = Mat("Apt_Cork", new Color(0.66f, 0.5f, 0.33f), 0.1f);
+            var frame = Mat("Apt_BoardFrame", new Color(0.35f, 0.25f, 0.16f), 0.2f);
+            var paper = Mat("Apt_Paper", new Color(0.95f, 0.93f, 0.86f), 0.1f);
+            var pin = Mat("Apt_Pin", new Color(0.8f, 0.15f, 0.12f), 0.6f);
+            Part(root, "Frame", new Vector3(0f, 0f, 0f), new Vector3(0.66f, 0.48f, 0.03f), frame);
+            Part(root, "Cork", new Vector3(0f, 0f, 0.01f), new Vector3(0.6f, 0.42f, 0.02f), cork);
+            var notes = new[] { new Vector3(-0.17f, 0.08f, 0f), new Vector3(0.05f, 0.1f, 0f), new Vector3(0.18f, -0.06f, 0f), new Vector3(-0.08f, -0.1f, 0f) };
+            for (int i = 0; i < notes.Length; i++)
+            {
+                var note = Part(root, "Note", notes[i] + new Vector3(0f, 0f, 0.022f), new Vector3(0.12f, 0.15f, 0.004f), paper);
+                note.localRotation = Quaternion.Euler(0f, 0f, (i % 2 == 0 ? 1f : -1f) * 6f);
+                Part(root, "Pin", notes[i] + new Vector3(0f, 0.06f, 0.028f), Vector3.one * 0.015f, pin);
+            }
+            var marker = new GameObject("Marker_BountyBoard").transform;
+            marker.SetParent(level, false);
+            marker.position = new Vector3(at[0], 0f, at[2]) + root.forward * 0.4f;
+
+            Transform Part(Transform parent, string name, Vector3 local, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = name;
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = local;
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                return go.transform;
+            }
+        }
+
+        /// <summary>Coins and feathers (top right) and the bounty list panel (shown at the board).</summary>
+        static void ProgressPanel(Transform canvas)
+        {
+            Text MakeText(string name, Transform parent, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize, TextAnchor align)
+            {
+                var go = new GameObject(name, typeof(RectTransform), typeof(Text));
+                var rt = (RectTransform)go.transform;
+                rt.SetParent(parent, false);
+                rt.anchorMin = rt.anchorMax = anchor;
+                rt.pivot = anchor;
+                rt.anchoredPosition = pos;
+                rt.sizeDelta = size;
+                var t = go.GetComponent<Text>();
+                t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                t.fontSize = fontSize;
+                t.alignment = align;
+                t.color = new Color(1f, 0.92f, 0.7f);
+                t.raycastTarget = false;
+                go.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.6f);
+                return t;
+            }
+            var counters = MakeText("Counters", canvas, new Vector2(1f, 1f), new Vector2(-40f, -230f), new Vector2(700f, 60f), 36, TextAnchor.MiddleRight);
+            var panel = new GameObject("BountyPanel", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+            var prt = (RectTransform)panel.transform;
+            prt.SetParent(canvas, false);
+            prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0f);
+            prt.anchoredPosition = new Vector2(0f, 40f);
+            prt.sizeDelta = new Vector2(1100f, 420f);
+            var bg = panel.GetComponent<Image>();
+            bg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
+            bg.type = Image.Type.Sliced;
+            bg.color = new Color(0.25f, 0.17f, 0.1f, 0.85f);
+            bg.raycastTarget = false;
+            var group = panel.GetComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.blocksRaycasts = false;
+            var board = MakeText("BountyList", prt, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1020f, 380f), 34, TextAnchor.MiddleCenter);
+            var hud = canvas.gameObject.AddComponent<ProgressHud>();
+            hud.Configure(counters, board, group);
         }
 
         static StoryHud StoryPanel(Transform canvas)

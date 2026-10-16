@@ -26,6 +26,11 @@ namespace Draho.World
         [SerializeField] float hearStill = 0.25f;
         [SerializeField] float catchRadius = 0.28f;
         [SerializeField] float hideTime = 4f;
+        [Header("Bounty")]
+        [SerializeField] string displayName = "Kitchen mouse";
+        [SerializeField] int bounty = 10;
+        [Tooltip("Seconds after a catch before a (warier) mouse moves in again.")]
+        [SerializeField] float respawnTime = 50f;
 
         CharacterController controller;
         CatMotor cat;
@@ -39,11 +44,21 @@ namespace Draho.World
         bool firstAppearance = true;
 
         public bool IsCaught => state == State.Caught;
+        public string DisplayName => displayName;
+        public int Bounty => bounty;
+        /// <summary>How often a mouse of this territory was caught (this session); each catch makes the next one warier.</summary>
+        public int Catches { get; private set; }
         public bool IsVisible => state == State.Wander || state == State.Flee;
         /// <summary>Raised once, when the cat catches the mouse.</summary>
         public event System.Action Caught;
 
         /// <summary>Set up by the level builder (edit time).</summary>
+        public void SetBounty(string name, int coins)
+        {
+            displayName = name;
+            bounty = coins;
+        }
+
         public void Configure(Transform[] mouseHoles, Transform bodyVisual, Transform tailVisual)
         {
             holes = mouseHoles;
@@ -79,14 +94,28 @@ namespace Draho.World
                     }
                     return;
                 case State.Caught:
+                    // A new mouse moves into the territory after a while. It heard what happened: warier and faster.
+                    timer -= dt;
+                    if (timer <= 0f)
+                    {
+                        float warier = 1.15f;
+                        hearRunning = Mathf.Min(hearRunning * warier, 4.5f);
+                        hearWalking = Mathf.Min(hearWalking * warier, 2.4f);
+                        hearSneaking = Mathf.Min(hearSneaking * warier, 0.75f);
+                        fleeSpeed = Mathf.Min(fleeSpeed * 1.08f, 2f);
+                        HideIn(PickHole(exclude: null), 2f);
+                        Debug.Log($"STORY a new {displayName} moved in (warier)");
+                    }
                     return;
             }
 
             if (CanBeCaught())
             {
                 state = State.Caught;
+                Catches++;
+                timer = respawnTime;
                 SetVisible(false);
-                Debug.Log("STORY mouse caught");
+                Debug.Log($"STORY mouse caught: {displayName} (bounty {bounty})");
                 Caught?.Invoke();
                 return;
             }

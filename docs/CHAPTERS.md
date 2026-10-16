@@ -16,7 +16,7 @@ surface and terrain models). Only relative game metres go into this repository.
 | 8 | Night | All areas after sunset | Moths, a fox, the street light; find the way home | 35 min | Planned |
 | 9 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |
 | 10 | Home | Back to the apartment | The humans come home; a gift for them | 15 min | Planned |
-|   | Side activities | Everywhere | Collectables (feathers, lost socks), naps in sunny spots, rewards | 40 min | Planned |
+|   | Side activities | Everywhere | 24 feathers to find, a bounty board with 5 mouse territories (mice come back warier), coins | 40 min | First part playable |
 
 Rules for each chapter:
 - Every new area comes from the real block (survey first, then the blueprint, then the scene).

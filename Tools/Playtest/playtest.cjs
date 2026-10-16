@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -206,6 +206,17 @@ const steps = {
     ['04_on_top', 'wait', '1.5'],
     ['05_walk', 'move', '0,1,0,2'],
   ],
+  // Start with ?beat=4&at=6.4,2,90 : in the kitchen at the bounty board; then (teleport) pick up two feathers.
+  board: [
+    ['02_walk_to_board', 'move', '0,1,0,1.5'],
+    ['03_read_board', 'wait', '2'],
+    ['04_feather', 'call', 'StoryDirector.TestTeleport:-1.4,2.3,0,0.77'],
+    ['05_pick', 'move', '0,1,0,1.5'],
+    ['06_feather2', 'call', 'StoryDirector.TestTeleport:-19,3.0,0'],
+    ['07_pick', 'move', '0,1,0,2'],
+    ['08_wait', 'wait', '7'],
+    ['09_reload', 'reload', 'https://sanderdebleeckerr.github.io/Draho/'],
+  ],
   // Start with ?beat=7&at=-22,0.9,180 : close to the ivy; jump at it, hang on, climb a bit, tap to drop off.
   grab: [
     ['02_jump_at_ivy', 'movejump', '0,1,0,1.2,0.2'],
@@ -258,6 +269,11 @@ for (const [name, action, arg] of steps) {
     const v = arg.split(','); await send('TestMove', v.slice(0, 4).join(',')); await page.waitForTimeout(+v[4] * 1000);
     await send('TestJump', ''); await page.waitForTimeout(Math.max(0, (+v[3] - +v[4])) * 1000);
   }
+  else if (action === 'reload') { // the same browser (same save data), the game URL without test arguments
+    await page.goto(arg, { waitUntil: 'load', timeout: 120000 });
+    await page.waitForFunction(() => window.unityInstance, null, { timeout: 150000 }).catch(() => {});
+    await page.waitForTimeout(8000);
+  }
   else if (action === 'hold') { await send('TestHold', arg); await page.waitForTimeout(+arg * 1000); }
   else if (action === 'runjump') { await send('TestMove', arg); await page.waitForTimeout(1200); await send('TestJump', ''); await page.waitForTimeout(800); }
   else if (action === 'move') { await send('TestMove', arg); await page.waitForTimeout(+arg.split(',')[3] * 1000); }
@@ -271,5 +287,5 @@ await shot('99_end');
 
 fs.writeFileSync(`${out}/console.log`, log.join('\n') + '\n');
 await browser.close();
-console.log(log.filter(l => /STORY|STATE|CAT|shot|input|exception/i.test(l)).join('\n'));
+console.log(log.filter(l => /STORY|STATE|CAT|SAVE|COINS|COLLECT|shot|input|exception/i.test(l)).join('\n'));
 })();

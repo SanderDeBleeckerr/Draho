@@ -92,7 +92,7 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Got it! Drahomil, mouse hunter. The first job is done.",
+                    Story = "Got it! Drahomil, mouse hunter. The bounty board by the kitchen pays for every mouse in the neighbourhood.",
                     Goal = "Sit in front of the garden door until it opens.",
                     Done = () => door == null || door.IsOpen,
                 },
@@ -237,7 +237,16 @@ namespace Draho.Story
                 },
             };
 
-            ApplyUrlArguments(out int startBeat);
+            bool urlBeat = ApplyUrlArguments(out int startBeat);
+            // Continue a saved game (unless the URL picks a beat, as the playtest does).
+            var progress = Draho.Core.Progress.Instance;
+            if (!urlBeat && progress != null && progress.SavedBeat > 0)
+            {
+                startBeat = progress.SavedBeat;
+                if (progress.TryGetSavedPosition(out Vector3 saved, out float savedYaw))
+                    cat.Teleport(saved + Vector3.up * 0.05f, Quaternion.Euler(0f, savedYaw, 0f));
+                Debug.Log($"SAVE resume at beat {startBeat}");
+            }
             lastPosition = cat.transform.position;
             for (int i = 0; i < startBeat && i < beats.Length - 1; i++) beats[i].Begin?.Invoke();
             index = Mathf.Clamp(startBeat, 0, beats.Length - 1) - 1;
@@ -273,6 +282,7 @@ namespace Draho.Story
             Beat beat = beats[index];
             beat.Begin?.Invoke();
             if (hud != null) hud.Show(beat.Story, beat.Goal);
+            Draho.Core.Progress.Instance?.BeatReached(index);
             Debug.Log($"STORY beat {index}: {beat.Story}");
         }
 
@@ -309,17 +319,18 @@ namespace Draho.Story
             cat.Teleport(new Vector3(v[0], (v.Length >= 4 ? v[3] : 0f) + 0.05f, v[1]), Quaternion.Euler(0f, v.Length >= 3 ? v[2] : 0f, 0f));
         }
 
-        void ApplyUrlArguments(out int startBeat)
+        bool ApplyUrlArguments(out int startBeat)
         {
             startBeat = 0;
+            bool beatGiven = false;
             string url = Application.absoluteURL;
             int q = string.IsNullOrEmpty(url) ? -1 : url.IndexOf('?');
-            if (q < 0) return;
+            if (q < 0) return false;
             foreach (string pair in url.Substring(q + 1).Split('&'))
             {
                 string[] kv = pair.Split('=');
                 if (kv.Length != 2) continue;
-                if (kv[0] == "beat") int.TryParse(kv[1], out startBeat);
+                if (kv[0] == "beat") beatGiven = int.TryParse(kv[1], out startBeat);
                 if (kv[0] == "at")
                 {
                     string[] xz = Uri.UnescapeDataString(kv[1]).Split(',');
@@ -333,6 +344,7 @@ namespace Draho.Story
                     }
                 }
             }
+            return beatGiven;
         }
     }
 }

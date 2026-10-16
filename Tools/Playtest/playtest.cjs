@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|rivals|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|bounty|rivals|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -215,6 +215,14 @@ const steps = {
     ['06_to_zlatenka', 'call', 'StoryDirector.TestTeleport:-11.4,3.2,90'],
     ['07_duck', 'duck', ''],
     ['08_nap', 'wait', '7'],
+  ],
+  // Start with ?beat=2&at=5.9,1.05,90 : the kitchen mouse comes out; the test hook catches it; then read the board.
+  bounty: [
+    ['02_mouse_out', 'wait', '4'],
+    ['03_catch', 'call', 'Mouse.TestCatch'],
+    ['04_paid', 'wait', '3'],
+    ['05_to_board', 'call', 'StoryDirector.TestTeleport:7.0,2.0,90'],
+    ['06_board', 'wait', '2'],
   ],
   // Start with ?beat=4&at=6.4,2,90 : in the kitchen at the bounty board; then (teleport) pick up two feathers.
   board: [

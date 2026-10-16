@@ -42,6 +42,10 @@ namespace Draho.World
         float verticalVelocity;
         float phase;
         bool firstAppearance = true;
+        bool testCatch;
+
+        /// <summary>Test hook: SendMessage('Mouse', 'TestCatch') catches the mouse when it is out of its hole.</summary>
+        public void TestCatch() => testCatch = true;
 
         public bool IsCaught => state == State.Caught;
         public string DisplayName => displayName;
@@ -109,8 +113,9 @@ namespace Draho.World
                     return;
             }
 
-            if (CanBeCaught())
+            if (CanBeCaught() || testCatch)
             {
+                testCatch = false;
                 state = State.Caught;
                 Catches++;
                 timer = respawnTime;

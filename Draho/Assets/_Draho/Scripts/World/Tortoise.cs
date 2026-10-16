@@ -21,7 +21,7 @@ namespace Draho.World
 
         CatMotor cat;
         int spot;
-        float rest, nap, cooldown, phase;
+        float rest = 30f, nap, cooldown, phase; // she starts with a long rest at her first sunny spot
         bool met;
 
         public void Configure(Transform headPart, Vector3[] spots)
@@ -57,7 +57,7 @@ namespace Draho.World
             if (cat == null) return;
 
             float d = Vector3.Distance(new Vector3(cat.transform.position.x, 0f, cat.transform.position.z), new Vector3(p.x, 0f, p.z));
-            if (!met && d < 2f)
+            if (!met && d < 2.5f)
             {
                 met = true;
                 ProgressHud.Toast("Zlatenka! Drahomil's oldest friend. Lie down next to her (DUCK) for a nap in the sun.");

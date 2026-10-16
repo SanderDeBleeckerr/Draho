@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -27,6 +27,7 @@ page.on('requestfailed', r => log.push(`${stamp()} [requestfailed] ${r.url()} ${
 
 const shot = async name => {
   await page.evaluate(() => window.unityInstance && window.unityInstance.SendMessage('StoryDirector', 'LogState'));
+  if ((process.argv[4] || '') === 'perf') await page.evaluate(() => { try { window.unityInstance.SendMessage('PerfProbe', 'Log'); } catch (e) {} });
   await page.screenshot({ path: `${out}/${name}.png` });
   log.push(`${stamp()} [shot] ${name}`);
 };
@@ -216,6 +217,15 @@ const steps = {
     ['07_duck', 'duck', ''],
     ['08_nap', 'wait', '7'],
   ],
+  // Start with ?beat=27 : performance stations (teleport, settle, log fps and render counters).
+  perf: [
+    ['02_apartment', 'call', 'StoryDirector.TestTeleport:2,2.5,0'], ['02b', 'wait', '6'],
+    ['03_garden', 'call', 'StoryDirector.TestTeleport:-3,2.5,270'], ['03b', 'wait', '6'],
+    ['04_roofs', 'call', 'StoryDirector.TestTeleport:-18,-10,200,6.5'], ['04b', 'wait', '6'],
+    ['05_quay', 'call', 'StoryDirector.TestTeleport:-33,-50,180'], ['05b', 'wait', '6'],
+    ['06_begijnhof', 'call', 'StoryDirector.TestTeleport:20,-150,180'], ['06b', 'wait', '6'],
+    ['07_far_bank', 'call', 'StoryDirector.TestTeleport:-53,-60,180'], ['07b', 'wait', '6'],
+  ],
   // Start with ?beat=2&at=5.9,1.05,90 : the kitchen mouse comes out; the test hook catches it; then read the board.
   bounty: [
     ['02_mouse_out', 'wait', '4'],
@@ -329,5 +339,5 @@ await shot('99_end');
 
 fs.writeFileSync(`${out}/console.log`, log.join('\n') + '\n');
 await browser.close();
-console.log(log.filter(l => /STORY|STATE|CAT|SAVE|COINS|COLLECT|TOAST|shot|input|exception/i.test(l)).join('\n'));
+console.log(log.filter(l => /STORY|STATE|CAT|SAVE|COINS|COLLECT|TOAST|PERF|shot|input|exception/i.test(l)).join('\n'));
 })();

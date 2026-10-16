@@ -1565,6 +1565,7 @@ namespace Draho.EditorTools
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);
+            new GameObject("PerfProbe").AddComponent<Draho.Core.PerfProbe>().transform.SetParent(level, false);
             var hudComp = StoryPanel(hud);
             var director = new GameObject("StoryDirector").AddComponent<StoryDirector>();
             director.Configure(hudComp, mouse, layout.rooms.Where(r => !r.outdoor).Min(r => r.x0));

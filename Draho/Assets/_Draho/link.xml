@@ -1,0 +1,5 @@
+<!-- Code stripping keeps all of our own scripts: the playtest calls test hooks by name (SendMessage),
+     and level data is read with JsonUtility. -->
+<linker>
+  <assembly fullname="Assembly-CSharp" preserve="all"/>
+</linker>

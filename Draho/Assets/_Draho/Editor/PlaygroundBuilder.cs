@@ -557,7 +557,7 @@ namespace Draho.EditorTools
             camGo.tag = "MainCamera";
             var cam = camGo.GetComponent<Camera>();
             cam.nearClipPlane = 0.03f;
-            cam.farClipPlane = 200f;
+            cam.farClipPlane = 170f; // fog (apartment scene) hides the end of the view
             cam.fieldOfView = 55f;
             cam.clearFlags = RenderSettings.skybox != null ? CameraClearFlags.Skybox : CameraClearFlags.SolidColor;
             cam.backgroundColor = background;
@@ -576,6 +576,7 @@ namespace Draho.EditorTools
             fill.intensity = 0.45f;
             fill.range = 1.6f;
             fill.shadows = LightShadows.None;
+            camGo.AddComponent<AdaptiveQuality>();
             var orbit = camGo.AddComponent<OrbitCamera>();
             SetField(orbit, "target", cat.transform);
             SetField(orbit, "lookArea", lookArea);

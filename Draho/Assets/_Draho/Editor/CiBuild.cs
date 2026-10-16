@@ -27,6 +27,16 @@ namespace Draho.EditorTools
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
             PlayerSettings.WebGL.dataCaching = true;
 
+            // Smaller download: strip unused code (our own scripts are kept by Assets/_Draho/link.xml),
+            // compile IL2CPP for size, no debug symbols, ASTC textures (the format iPhones read directly).
+            var webgl = UnityEditor.Build.NamedBuildTarget.WebGL;
+            PlayerSettings.SetManagedStrippingLevel(webgl, ManagedStrippingLevel.Medium);
+            PlayerSettings.SetIl2CppCodeGeneration(webgl, UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
+            PlayerSettings.stripEngineCode = true;
+            PlayerSettings.WebGL.debugSymbolMode = WebGLDebugSymbolMode.Off;
+            PlayerSettings.WebGL.exceptionSupport = WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
+            EditorUserBuildSettings.webGLBuildSubtarget = WebGLTextureSubtarget.ASTC;
+
             var options = new BuildPlayerOptions
             {
                 scenes = System.Array.ConvertAll(EditorBuildSettings.scenes, s => s.path), // apartment first

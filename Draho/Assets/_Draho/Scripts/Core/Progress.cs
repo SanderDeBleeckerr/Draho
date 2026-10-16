@@ -29,7 +29,9 @@ namespace Draho.Core
         public static Progress Instance { get; private set; }
 
         [SerializeField] int coinsPerBeat = 5;
-        [SerializeField] float autosaveInterval = 6f;
+        [SerializeField] float autosaveInterval = 8f;
+        [Tooltip("Save the position only after the cat moved this far (a save writes to the browser storage).")]
+        [SerializeField] float autosaveDistance = 2f;
 
         Data data = new Data();
         CatMotor cat;
@@ -82,6 +84,7 @@ namespace Draho.Core
             if (autosave > 0f || !cat.IsGrounded || cat.IsClimbing) return;
             autosave = autosaveInterval;
             Vector3 p = cat.transform.position;
+            if (data.hasPosition && Vector3.Distance(p, new Vector3(data.x, data.y, data.z)) < autosaveDistance) return;
             data.hasPosition = true;
             data.x = p.x; data.y = p.y; data.z = p.z; data.yaw = cat.transform.eulerAngles.y;
             Save();

@@ -183,8 +183,64 @@ namespace Draho.EditorTools
             BuildLamps(layout);
             BuildStory(layout, hud);
 
+            OptimiseScene();
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log($"Draho: built '{layout.name}' with {layout.props.Length} props -> {ScenePath}");
+        }
+
+        /// <summary>
+        /// Performance (mobile WebGL): everything that never moves is marked static (Unity combines it into
+        /// fewer draw calls), small details cast no shadow and go on the Detail layer (not drawn far away),
+        /// and fog hides the end of the camera's view.
+        /// </summary>
+        static void OptimiseScene()
+        {
+            var dynamicTypes = new[]
+            {
+                typeof(Mouse), typeof(Bird), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator),
+            };
+            bool IsDynamic(Transform t)
+            {
+                for (var p = t; p != null; p = p.parent)
+                    foreach (var type in dynamicTypes)
+                        if (p.GetComponent(type) != null) return true;
+                return false;
+            }
+            int statics = 0, details = 0, noShadow = 0;
+            var combine = new List<GameObject>();
+            foreach (var t in level.GetComponentsInChildren<Transform>(true))
+            {
+                if (!IsDynamic(t))
+                {
+                    GameObjectUtility.SetStaticEditorFlags(t.gameObject, StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccludeeStatic);
+                    statics++;
+                    if (t.GetComponent<MeshRenderer>() != null && t.gameObject.activeInHierarchy) combine.Add(t.gameObject);
+                }
+                var r = t.GetComponent<Renderer>();
+                if (r == null) continue;
+                Vector3 size = r.bounds.size;
+                float largest = Mathf.Max(size.x, Mathf.Max(size.y, size.z));
+                if (largest < 0.5f)
+                {
+                    if (r.shadowCastingMode != ShadowCastingMode.Off) noShadow++;
+                    r.shadowCastingMode = ShadowCastingMode.Off;
+                    if (t.gameObject.layer == 0 && t.GetComponent<Collider>() == null)
+                    {
+                        t.gameObject.layer = Draho.CameraRig.AdaptiveQuality.DetailLayer;
+                        details++;
+                    }
+                }
+                if (t.name == "TallGrass" || t.name == "WildGrass") r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+            // The project's static-batching setting is not in the repository, so combine at load time.
+            level.gameObject.AddComponent<Draho.Core.StaticScenery>().Configure(combine.ToArray());
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = new Color(0.78f, 0.84f, 0.9f);
+            RenderSettings.fogStartDistance = 90f;
+            RenderSettings.fogEndDistance = 170f;
+            Debug.Log($"Draho: optimised scene: {statics} static objects, {details} details (culled beyond 35 m), {noShadow} small shadows off");
         }
 
         static Rect InsideRect(Layout layout)

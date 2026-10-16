@@ -1,6 +1,6 @@
 {
  "name": "Drahomil's apartment",
- "version": 18,
+ "version": 19,
  "units": "metres",
  "axes": "x = west (garden glass, x=0) to east (kitchen). z = south (z=0) to north (sofa wall). y = up.",
  "note": "Draft from photos, a video and the owner's corrections. Sizes are rough. Change numbers here; the blueprint image and (later) the level are made from this file.",
@@ -434,6 +434,36 @@
    "color": "#6B5440",
    "top_color": "#4A4642",
    "standable": true
+  },
+  {
+   "id": "quay_pipe",
+   "type": "pipe",
+   "label": "Drainpipe on the quay shed (way back up)",
+   "x": -33.56,
+   "z": -9.5,
+   "radius": 0.05,
+   "h": 3.2,
+   "bottom": 0.0,
+   "climb_top": 3.2,
+   "color": "#6E6E6A",
+   "top_color": "#6E6E6A",
+   "standable": true,
+   "wall": "+x"
+  },
+  {
+   "id": "riverhouse_pipe",
+   "type": "pipe",
+   "label": "Drainpipe on the riverhouse",
+   "x": -31.06,
+   "z": -9.5,
+   "radius": 0.05,
+   "h": 6.5,
+   "bottom": 3.2,
+   "climb_top": 6.5,
+   "color": "#6E6E6A",
+   "top_color": "#6E6E6A",
+   "standable": true,
+   "wall": "+x"
   }
  ],
  "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",
@@ -555,17 +585,6 @@
    "z1": 17,
    "h": 5.5,
    "color": "#9C8C7E",
-   "roof_color": "#5E5B56"
-  },
-  {
-   "id": "neighbour_annex",
-   "label": "Neighbour's annex (3 m)",
-   "x0": -2,
-   "x1": 2,
-   "z0": 5.15,
-   "z1": 9,
-   "h": 3.0,
-   "color": "#C9BFB2",
    "roof_color": "#5E5B56"
   },
   {
@@ -1171,11 +1190,6 @@
     "x": -4.5,
     "z": 9.1,
     "r": 0.6
-   },
-   {
-    "x": -3,
-    "z": 6,
-    "r": 0.45
    }
   ],
   "wheelbarrow": {

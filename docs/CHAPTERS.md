@@ -12,10 +12,11 @@ surface and terrain models). Only relative game metres go into this repository.
 | 4 | The Riverside | Roofs west of the garden, the quay, a narrow edge above the river | Drop to the quay, walk the edge or the rooftops, do not fall in (the cat climbs out wet) | 25 min | First part playable |
 | 5 | The Begijnhof | An old walled court of white houses, lindens and a church, down the river | Ivy over the wall, explore the court | 25 min | First part playable |
 | 6 | The Bakery | Across a footbridge, on the far bank of the river | Leave the begijnhof over its wall, cross the bridge, catch the bakery mouse | 20 min | First part playable |
-| 7 | The inner court | Round-stone court inside the apartment block | Pigeons, a cat flap, a lost toy | 25 min | Planned |
-| 8 | Night | All areas after sunset | Moths, a fox, the street light; find the way home | 35 min | Planned |
-| 9 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |
-| 10 | Home | Back to the apartment | The humans come home; a gift for them | 15 min | Planned |
+| 7 | The Neighbour's Flat | The flat behind the apartment, through a window from the wild garden | Hrozna the corgi sleeps on Drahomil's toy mouse: sneak in, take it back, get out | 20 min | First part playable |
+| 8 | The inner court | Round-stone court inside the apartment block | Pigeons, a cat flap, a lost toy | 25 min | Planned |
+| 9 | Night | All areas after sunset | Moths, a fox, the street light; find the way home | 35 min | Planned |
+| 10 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |
+| 11 | Home | Back to the apartment | The humans come home; a gift for them | 15 min | Planned |
 |   | Side activities | Everywhere | 24 feathers to find, a bounty board with 5 mouse territories (mice come back warier), coins | 40 min | First part playable |
 
 Rules for each chapter:

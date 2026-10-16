@@ -1348,7 +1348,7 @@ namespace Draho.EditorTools
                 pipe.transform.localScale = new Vector3(c.radius * 2, len / 2, c.radius * 2);
                 pipe.GetComponent<Renderer>().sharedMaterial = Mat($"Apt_{c.id}", Hex(c.color), 0.5f);
                 for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
-                    Box("Bracket", root.position + Vector3.up * y + (c.wall == "-x" ? Vector3.left : Vector3.back) * c.radius,
+                    Box("Bracket", root.position + Vector3.up * y + (c.wall == "-x" ? Vector3.left : c.wall == "+x" ? Vector3.right : Vector3.back) * c.radius,
                         new Vector3(c.radius * 2.4f, 0.03f, c.radius * 2.4f),
                         Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
                 climbable.Configure(c.climb_top, c.standable);
@@ -1561,6 +1561,7 @@ namespace Draho.EditorTools
             foreach (var t in layout.mouse_territories ?? new MouseTerritory[0]) BuildMouseTerritory(t);
             BuildFeathers(layout);
             BuildGardenCharacters();
+            BuildNeighbourFlat();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);
@@ -1748,6 +1749,113 @@ namespace Draho.EditorTools
             {
                 new Vector3(-12f, 0f, 3.2f), new Vector3(-16f, 0f, 2.2f), new Vector3(-9f, 0f, 1.6f), new Vector3(-14f, 0f, 4.1f),
             });
+        }
+
+        /// <summary>
+        /// The neighbour's flat behind the apartment (chapter 7), reached through an open window from the wild
+        /// garden: plaster walls (open at the top, like the apartment), a wooden floor, a sofa, a rug, a
+        /// shelf, a food bowl, Hrozna's basket with Drahomil's toy mouse, and Hrozna herself.
+        /// </summary>
+        static void BuildNeighbourFlat()
+        {
+            const float x0 = -2f, x1 = 7.6f, z0 = 5.25f, z1 = 9.0f, h = 2.6f, t = 0.15f;
+            var root = new GameObject("NeighbourFlat").transform;
+            root.SetParent(level, false);
+            var plaster = Mat("Flat_Wall", new Color(0.86f, 0.82f, 0.74f), 0.15f);
+            var floorMat = Mat("Flat_Floor", new Color(0.55f, 0.4f, 0.27f), 0.35f, TileTexture(), new Vector2(x1 - x0, z1 - z0) / 0.25f);
+            Box("FlatFloor", new Vector3((x0 + x1) / 2, -0.04f, (z0 + z1) / 2), new Vector3(x1 - x0, 0.1f, z1 - z0), floorMat).transform.SetParent(root, true);
+            // West wall with an open window (sill 0.55 m) towards the wild garden.
+            const float w0 = 6.6f, w1 = 7.6f, sill = 0.55f, top = 1.45f;
+            WallSegment("FlatWall_W", false, x0 - t / 2, z0, w0, 0f, h, t, plaster);
+            WallSegment("FlatWall_W", false, x0 - t / 2, w1, z1, 0f, h, t, plaster);
+            WallSegment("FlatWall_W_sill", false, x0 - t / 2, w0, w1, 0f, sill, t, plaster);
+            WallSegment("FlatWall_W_head", false, x0 - t / 2, w0, w1, top, h, t, plaster);
+            WallSegment("FlatWall_N", true, z1 + t / 2, x0 - t, x1 + t, 0f, h, t, plaster);
+            WallSegment("FlatWall_E", false, x1 + t / 2, z0, z1, 0f, h, t, plaster);
+            WallSegment("FlatWall_S", true, z0 - t / 2, x0 - t, 0f, 0f, h, t, plaster); // the apartment wall covers x 0..7.6
+            foreach (var shutter in new[] { w0 - 0.3f, w1 + 0.3f }) // open green shutters
+                Box("Shutter", new Vector3(x0 - 0.2f, (sill + top) / 2, shutter), new Vector3(0.04f, top - sill, 0.5f),
+                    Mat("Flat_Shutter", new Color(0.2f, 0.36f, 0.26f), 0.3f), collider: false).transform.SetParent(root, true);
+
+            var fabric = Mat("Flat_Sofa", new Color(0.36f, 0.42f, 0.55f), 0.2f);
+            Box("Sofa", new Vector3(2.5f, 0.22f, 8.55f), new Vector3(2.0f, 0.44f, 0.8f), fabric).transform.SetParent(root, true);
+            Box("SofaBack", new Vector3(2.5f, 0.6f, 8.85f), new Vector3(2.0f, 0.5f, 0.2f), fabric).transform.SetParent(root, true);
+            Box("Rug", new Vector3(2.5f, 0.012f, 7.2f), new Vector3(2.4f, 0.02f, 1.6f), Mat("Flat_Rug", new Color(0.62f, 0.3f, 0.22f), 0.1f), collider: false).transform.SetParent(root, true);
+            Box("Shelf", new Vector3(5.2f, 0.9f, 8.8f), new Vector3(1.4f, 1.8f, 0.35f), Mat("Flat_Shelf", new Color(0.45f, 0.32f, 0.2f), 0.2f)).transform.SetParent(root, true);
+            var bowl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            bowl.name = "DogBowl";
+            Object.DestroyImmediate(bowl.GetComponent<Collider>());
+            bowl.transform.SetParent(root, false);
+            bowl.transform.position = new Vector3(0.6f, 0.04f, 5.7f);
+            bowl.transform.localScale = new Vector3(0.26f, 0.04f, 0.26f);
+            bowl.GetComponent<Renderer>().sharedMaterial = Mat("Flat_Bowl", new Color(0.75f, 0.18f, 0.16f), 0.6f);
+
+            // Hrozna's basket in the far corner, with the toy mouse on the cushion.
+            var basketSpot = new GameObject("HroznaBasket").transform;
+            basketSpot.SetParent(root, false);
+            basketSpot.position = new Vector3(6.8f, 0f, 6.2f);
+            var wicker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(wicker.GetComponent<Collider>());
+            wicker.transform.SetParent(root, false);
+            wicker.transform.position = basketSpot.position + Vector3.up * 0.06f;
+            wicker.transform.localScale = new Vector3(0.95f, 0.06f, 0.8f);
+            wicker.GetComponent<Renderer>().sharedMaterial = Mat("Flat_Wicker", new Color(0.66f, 0.5f, 0.3f), 0.2f);
+            var cushion = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(cushion.GetComponent<Collider>());
+            cushion.transform.SetParent(root, false);
+            cushion.transform.position = basketSpot.position + Vector3.up * 0.1f;
+            cushion.transform.localScale = new Vector3(0.8f, 0.03f, 0.65f);
+            cushion.GetComponent<Renderer>().sharedMaterial = Mat("Flat_Cushion", new Color(0.82f, 0.74f, 0.6f), 0.1f);
+            var toy = new GameObject("ToyMouse");
+            toy.transform.SetParent(level, false);
+            toy.transform.position = basketSpot.position + new Vector3(0.28f, 0.14f, -0.12f);
+            var toyBody = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            Object.DestroyImmediate(toyBody.GetComponent<Collider>());
+            toyBody.transform.SetParent(toy.transform, false);
+            toyBody.transform.localRotation = Quaternion.Euler(90f, 30f, 0f);
+            toyBody.transform.localScale = new Vector3(0.05f, 0.04f, 0.05f);
+            toyBody.GetComponent<Renderer>().sharedMaterial = Mat("Toy_Felt", new Color(0.55f, 0.55f, 0.6f), 0.1f);
+            toy.AddComponent<StoryItem>().Configure("Drahomil's toy mouse! Now get out before Hrozna wakes up.");
+
+            // Hrozna: a red Cardigan corgi with a white chest and her long fox tail.
+            var dog = new GameObject("Hrozna");
+            dog.transform.SetParent(level, false);
+            dog.transform.SetPositionAndRotation(basketSpot.position, Quaternion.Euler(0f, 250f, 0f));
+            var red = Mat("Corgi_Red", new Color(0.72f, 0.42f, 0.2f), 0.25f);
+            var white = Mat("Corgi_White", new Color(0.94f, 0.92f, 0.88f), 0.25f);
+            var dark = Mat("Mouse_Eye", new Color(0.02f, 0.02f, 0.02f), 0.9f);
+            var body = new GameObject("Body").transform;
+            body.SetParent(dog.transform, false);
+            Transform Part(Transform parent, Vector3 pos, Vector3 scale, Material m, PrimitiveType type = PrimitiveType.Sphere)
+            {
+                var go = GameObject.CreatePrimitive(type);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                return go.transform;
+            }
+            Part(body, new Vector3(0f, 0.2f, 0f), new Vector3(0.26f, 0.22f, 0.6f), red);
+            Part(body, new Vector3(0f, 0.17f, 0.2f), new Vector3(0.2f, 0.18f, 0.2f), white);         // chest
+            Part(body, new Vector3(0f, 0.33f, 0.33f), new Vector3(0.2f, 0.19f, 0.22f), red);         // head
+            Part(body, new Vector3(0f, 0.29f, 0.45f), new Vector3(0.1f, 0.09f, 0.12f), white);       // muzzle
+            Part(body, new Vector3(0f, 0.3f, 0.51f), Vector3.one * 0.035f, dark);                     // nose
+            foreach (float sx in new[] { -1f, 1f })
+            {
+                var ear = Part(body, new Vector3(sx * 0.07f, 0.47f, 0.31f), new Vector3(0.08f, 0.16f, 0.04f), red);
+                ear.localRotation = Quaternion.Euler(0f, 0f, sx * -15f);
+                Part(body, new Vector3(sx * 0.055f, 0.36f, 0.43f), Vector3.one * 0.03f, dark);       // eyes
+                foreach (float fz in new[] { 0.18f, -0.18f })
+                    Part(body, new Vector3(sx * 0.08f, 0.06f, fz), new Vector3(0.07f, 0.12f, 0.07f), white, PrimitiveType.Cylinder);
+            }
+            var tail = new GameObject("Tail").transform;
+            tail.SetParent(body, false);
+            tail.localPosition = new Vector3(0f, 0.22f, -0.3f);
+            var tailPart = Part(tail, new Vector3(0f, -0.02f, -0.16f), new Vector3(0.09f, 0.09f, 0.34f), red);
+            tailPart.localRotation = Quaternion.Euler(20f, 0f, 0f);
+            dog.AddComponent<AudioSource>().playOnAwake = false;
+            dog.AddComponent<Hrozna>().Configure(body, tail, basketSpot);
         }
 
         /// <summary>A cork board on the kitchen wall with paper notes: the mouse bounties.</summary>

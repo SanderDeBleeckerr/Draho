@@ -39,6 +39,10 @@ namespace Draho.Story
         Climbable[] lindens;
         Transform churchDoor, bakery;
         NpcCat greyCat;
+        StoryItem toyMouse;
+
+        static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
+        static bool InFlat(Vector3 p) => p.x > -1.9f && p.x < 7.6f && p.z > 5.3f && p.z < 9f && p.y < 1.5f;
         Mouse bakeryMouse;
 
         static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
@@ -65,6 +69,7 @@ namespace Draho.Story
             churchDoor = GameObject.Find("Marker_ChurchDoor")?.transform;
             bakery = GameObject.Find("Marker_Bakery")?.transform;
             greyCat = FindAnyObjectByType<NpcCat>();
+            toyMouse = FindAnyObjectByType<StoryItem>();
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
@@ -231,7 +236,25 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The baker smiles and puts a saucer of milk by the door. Drahomil, mouse hunter of the riverside. End of chapter 6 for now!",
+                    Story = "The baker smiles and puts a saucer of milk by the door. Drahomil, mouse hunter of the riverside. Time to go home.",
+                    Goal = "Go home: quay, drainpipes up to the roofs, the ivy down into the garden.",
+                    Done = () => InApartment(cat.transform.position),
+                },
+                new Beat
+                {
+                    Story = "Chapter 7: The Neighbour's Flat. Home... but the toy mouse is gone! Corgi paw prints lead to the neighbour's open window.",
+                    Goal = "Go through the loose plank and the wild garden. Jump in at the open window.",
+                    Done = () => InFlat(cat.transform.position),
+                },
+                new Beat
+                {
+                    Story = "Hrozna, the corgi next door, sleeps in her basket. On her cushion: Drahomil's toy mouse!",
+                    Goal = "Sneak to the basket (DUCK) and take the toy mouse back. If Hrozna wakes up, she chases you out.",
+                    Done = () => toyMouse == null || toyMouse.Taken,
+                },
+                new Beat
+                {
+                    Story = "Got it! Hrozna opens one eye, barks once, and goes back to sleep. Not enemies, just loud neighbours. End of chapter 7 for now!",
                     Goal = "",
                     Done = () => false,
                 },

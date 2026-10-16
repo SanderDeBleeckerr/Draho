@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|bounty|rivals|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -223,6 +223,30 @@ const steps = {
     ['04_paid', 'wait', '3'],
     ['05_to_board', 'call', 'StoryDirector.TestTeleport:7.0,2.0,90'],
     ['06_board', 'wait', '2'],
+  ],
+  // Start with ?beat=25&at=-4,6.6,90 : in the wild garden before the neighbour's window; jump in, sneak to the toy.
+  flat: [
+    ['02_jump_in', 'movejump', '0,1,0,2.5,1.4'],
+    ['03_inside', 'wait', '1'],
+    ['04_duck', 'duck', ''],
+    ['05_sneak', 'move', '0.25,1,0,8'],
+    ['06_sneak', 'move', '0.25,1,0,8'],
+    ['07_sneak', 'move', '0,1,0,6'],
+    ['08_wait', 'wait', '2'],
+  ],
+  // Start with ?beat=26&at=0,6.8,90 : inside the flat; run at the basket: Hrozna wakes and throws the cat out.
+  flatloud: [
+    ['02_run', 'move', '0,1,1,3'],
+    ['03_barking', 'wait', '3'],
+    ['04_out', 'wait', '3'],
+  ],
+  // Start with ?beat=24&at=-34,-9.5,90 : on the quay, facing the shed pipe; climb back up to the riverhouse roof.
+  wayback: [
+    ['02_climb_shed', 'hold', '6.5'],
+    ['03_on_shed', 'wait', '1'],
+    ['04_walk_to_pipe', 'move', '0,1,0,2'],
+    ['05_climb_house', 'hold', '7'],
+    ['06_on_roof', 'wait', '1.5'],
   ],
   // Start with ?beat=4&at=6.4,2,90 : in the kitchen at the bounty board; then (teleport) pick up two feathers.
   board: [

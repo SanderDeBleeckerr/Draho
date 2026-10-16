@@ -1,20 +1,22 @@
 ---
 description: >-
-  San, the solo hobby developer who started Draho on a sleepless
-  night on 14 October 2026.
+  Jim, the night-owl hobby developer who started Draho on a sleepless night in
+  October 2026.
 ---
 
 # The developer
 
-Draho is made by **San**, a developer from Flanders, Belgium. Draho is his **hobby project**.
+Draho is made by **Jim**, a hobby developer from Belgium. Jim writes software for a living and makes games
+for fun. Draho is a **hobby project**.
 
 ## How it started
 
-On the night of **14 October 2026**, San could not sleep. Drahomil was around, as always, and the idea came:
-a game where this spoiled black cat is a mouse bounty hunter.
+On a **sleepless night in mid-October 2026**, Jim gave up on sleep and opened a laptop instead. The idea was
+simple: a game about Drahomil, the spoiled black cat Jim has known since the days under the green couch.
+In the game, that cat is a mouse bounty hunter.
 
-That same night, the first design document, the first Unity project and the first test build went online.
-The first level is his own home: the kitchen, the living room and the garden where Drahomil lives.
+By morning, the first design document, the first Unity project and the first test build were online.
+The first level is Drahomil's own home: the kitchen, the living room and the garden he guards.
 
 ## Why build in the open
 

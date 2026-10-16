@@ -32,6 +32,6 @@ Draho is in **early development**. The test build is free, and it changes many t
 
 ## How we test
 
-Each change goes into the web build automatically, about 6 to 10 minutes after it is saved. San then plays
-it on his phone and reports what feels wrong. Each round of feedback becomes the next change.
+Each change goes into the web build automatically, about 6 to 10 minutes after it is saved. Jim then plays
+it on a phone and reports what feels wrong. Each round of feedback becomes the next change.
 See [How Draho is made](../behind-the-game/how-it-is-made.md).

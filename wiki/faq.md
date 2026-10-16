@@ -23,7 +23,7 @@ iPhone first, in landscape. The web build is for testing.
 
 ## When does it come out?
 
-There is no release date yet. Draho started on 14 October 2026 as a hobby project.
+There is no release date yet. Draho started in October 2026 as a hobby project.
 See the [roadmap](the-game/roadmap.md).
 
 ## Will it cost money?
@@ -32,7 +32,7 @@ The plan is free to play with cosmetic purchases only: collars, beds, fur patter
 
 ## Who makes it?
 
-San, a solo hobby developer from Flanders. See [The developer](behind-the-game/developer.md).
+Jim, a solo hobby developer from Belgium. See [The developer](behind-the-game/developer.md).
 
 ## How can I help?
 

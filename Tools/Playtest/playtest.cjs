@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|board|rivals|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -206,6 +206,16 @@ const steps = {
     ['04_on_top', 'wait', '1.5'],
     ['05_walk', 'move', '0,1,0,2'],
   ],
+  // Start with ?beat=6&at=-10,2.5,270 : in the garden; Fatsocat comes (test hook): stand your ground. Then nap with Zlatenka.
+  rivals: [
+    ['02_fatsocat', 'call', 'Fatsocat.TestArrive'],
+    ['03_he_comes', 'wait', '6'],
+    ['04_stand', 'wait', '6'],
+    ['05_gone', 'wait', '4'],
+    ['06_to_zlatenka', 'call', 'StoryDirector.TestTeleport:-11.4,3.2,90'],
+    ['07_duck', 'duck', ''],
+    ['08_nap', 'wait', '7'],
+  ],
   // Start with ?beat=4&at=6.4,2,90 : in the kitchen at the bounty board; then (teleport) pick up two feathers.
   board: [
     ['02_walk_to_board', 'move', '0,1,0,1.5'],
@@ -287,5 +297,5 @@ await shot('99_end');
 
 fs.writeFileSync(`${out}/console.log`, log.join('\n') + '\n');
 await browser.close();
-console.log(log.filter(l => /STORY|STATE|CAT|SAVE|COINS|COLLECT|shot|input|exception/i.test(l)).join('\n'));
+console.log(log.filter(l => /STORY|STATE|CAT|SAVE|COINS|COLLECT|TOAST|shot|input|exception/i.test(l)).join('\n'));
 })();

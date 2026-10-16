@@ -14,6 +14,9 @@ namespace Draho.UI
         [SerializeField] Text board;
         [SerializeField] CanvasGroup boardGroup;
 
+        static ProgressHud instance;
+        Text toast;
+        float toastTime;
         Transform boardSpot, cat;
         Mouse[] mice;
         float boardAlpha;
@@ -24,6 +27,31 @@ namespace Draho.UI
             counters = countersText;
             board = boardText;
             boardGroup = boardPanel;
+        }
+
+        /// <summary>A short message under the coins (side events: naps, rivals, finds).</summary>
+        public static void Toast(string message)
+        {
+            Debug.Log($"TOAST {message}");
+            if (instance == null || instance.toast == null) return;
+            instance.toast.text = message;
+            instance.toastTime = 5f;
+        }
+
+        void Awake()
+        {
+            instance = this;
+            if (counters != null)
+            {
+                // The toast line sits under the counters, same style.
+                toast = Instantiate(counters, counters.transform.parent);
+                toast.name = "Toast";
+                var rt = (RectTransform)toast.transform;
+                rt.anchoredPosition += new Vector2(0f, -56f);
+                rt.sizeDelta = new Vector2(900f, 60f);
+                toast.fontSize = 32;
+                toast.text = "";
+            }
         }
 
         void Start()
@@ -51,6 +79,13 @@ namespace Draho.UI
                     sb.Append($"\n{m.DisplayName}: {m.Bounty} coins   (caught {(p != null ? p.BountyCount(m.DisplayName) : 0)}x)");
                 sb.Append("\n\nCaught mice come back, and each new one is warier.");
                 board.text = sb.ToString();
+            }
+            if (toast != null)
+            {
+                toastTime -= Time.deltaTime;
+                var c = toast.color;
+                c.a = Mathf.Clamp01(toastTime);
+                toast.color = c;
             }
             boardAlpha = Mathf.MoveTowards(boardAlpha, atBoard ? 1f : 0f, 3f * Time.deltaTime);
             if (boardGroup != null) boardGroup.alpha = boardAlpha;

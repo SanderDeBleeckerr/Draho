@@ -1560,6 +1560,7 @@ namespace Draho.EditorTools
             mouse.SetBounty("Kitchen mouse", 10);
             foreach (var t in layout.mouse_territories ?? new MouseTerritory[0]) BuildMouseTerritory(t);
             BuildFeathers(layout);
+            BuildGardenCharacters();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);
@@ -1702,6 +1703,51 @@ namespace Draho.EditorTools
                 var right = Wing("WingR", 1f);
                 root.AddComponent<Bird>().Configure(body, head, left, right, perches.ToArray(), lawn);
             }
+        }
+
+        /// <summary>Fatsocat (the big white rival) and Zlatenka (the leopard tortoise) in the garden.</summary>
+        static void BuildGardenCharacters()
+        {
+            var fat = PlaygroundBuilder.NpcCatModel("Fatsocat", level, new Color(0.93f, 0.93f, 0.9f), 1.45f);
+            var model = fat.transform.GetChild(0);
+            model.localScale = Vector3.Scale(model.localScale, new Vector3(1.3f, 1.05f, 1.1f)); // very fat
+            fat.transform.SetPositionAndRotation(new Vector3(-23.6f, 0f, 2.5f), Quaternion.Euler(0f, 90f, 0f));
+            fat.AddComponent<Fatsocat>().Configure(fat.GetComponentInChildren<Animator>());
+
+            var tortoise = new GameObject("Zlatenka");
+            tortoise.transform.SetParent(level, false);
+            tortoise.transform.SetPositionAndRotation(new Vector3(-12f, 0f, 3.2f), Quaternion.Euler(0f, 250f, 0f));
+            var shellMat = Mat("Tortoise_Shell", new Color(0.78f, 0.66f, 0.42f), 0.35f);
+            var spotMat = Mat("Tortoise_Spots", new Color(0.18f, 0.13f, 0.08f), 0.3f);
+            var skin = Mat("Tortoise_Skin", new Color(0.62f, 0.56f, 0.44f), 0.2f);
+            Transform Part(Transform parent, Vector3 pos, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                return go.transform;
+            }
+            Part(tortoise.transform, new Vector3(0f, 0.09f, 0f), new Vector3(0.3f, 0.2f, 0.36f), shellMat);
+            var rng = new System.Random(3);
+            for (int i = 0; i < 18; i++) // leopard spots on the shell
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI * 2f, up = 0.3f + 0.6f * (float)rng.NextDouble();
+                var n = new Vector3(Mathf.Cos(a) * Mathf.Sqrt(1f - up * up), up, Mathf.Sin(a) * Mathf.Sqrt(1f - up * up));
+                Part(tortoise.transform, new Vector3(0f, 0.09f, 0f) + Vector3.Scale(n, new Vector3(0.15f, 0.1f, 0.18f)), Vector3.one * 0.035f, spotMat);
+            }
+            var head = new GameObject("Head").transform;
+            head.SetParent(tortoise.transform, false);
+            head.localPosition = new Vector3(0f, 0.07f, 0.19f);
+            Part(head, new Vector3(0f, 0f, 0.04f), new Vector3(0.07f, 0.06f, 0.09f), skin);
+            foreach (var leg in new[] { new Vector3(-0.11f, 0.03f, 0.1f), new Vector3(0.11f, 0.03f, 0.1f), new Vector3(-0.11f, 0.03f, -0.1f), new Vector3(0.11f, 0.03f, -0.1f) })
+                Part(tortoise.transform, leg, new Vector3(0.06f, 0.06f, 0.06f), skin);
+            tortoise.AddComponent<Tortoise>().Configure(head, new[]
+            {
+                new Vector3(-12f, 0f, 3.2f), new Vector3(-16f, 0f, 2.2f), new Vector3(-9f, 0f, 1.6f), new Vector3(-14f, 0f, 4.1f),
+            });
         }
 
         /// <summary>A cork board on the kitchen wall with paper notes: the mouse bounties.</summary>

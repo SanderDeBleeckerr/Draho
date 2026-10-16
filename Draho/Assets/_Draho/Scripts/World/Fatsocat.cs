@@ -65,7 +65,7 @@ namespace Draho.World
 
                 case State.Arrive:
                     if (!catInGarden) { state = State.Retreat; break; }
-                    if (d > standoffDistance) { Face(toCat); Move(toCat.normalized, walkSpeed, dt); }
+                    if (d > standoffDistance) { Face(toCat); Move(toCat.normalized, walkSpeed * 2f, dt); } // a purposeful trot
                     else { state = State.Standoff; hold = 0f; }
                     break;
 

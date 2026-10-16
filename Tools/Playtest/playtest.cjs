@@ -209,9 +209,9 @@ const steps = {
   // Start with ?beat=6&at=-10,2.5,270 : in the garden; Fatsocat comes (test hook): stand your ground. Then nap with Zlatenka.
   rivals: [
     ['02_fatsocat', 'call', 'Fatsocat.TestArrive'],
-    ['03_he_comes', 'wait', '6'],
-    ['04_stand', 'wait', '6'],
-    ['05_gone', 'wait', '4'],
+    ['03_he_comes', 'wait', '10'],
+    ['04_stand', 'wait', '8'],
+    ['05_gone', 'wait', '3'],
     ['06_to_zlatenka', 'call', 'StoryDirector.TestTeleport:-11.4,3.2,90'],
     ['07_duck', 'duck', ''],
     ['08_nap', 'wait', '7'],

@@ -13,7 +13,7 @@ surface and terrain models). Only relative game metres go into this repository.
 | 5 | The Begijnhof | An old walled court of white houses, lindens and a church, down the river | Ivy over the wall, explore the court | 25 min | First part playable |
 | 6 | The Bakery | Across a footbridge, on the far bank of the river | Leave the begijnhof over its wall, cross the bridge, catch the bakery mouse | 20 min | First part playable |
 | 7 | The Neighbour's Flat | The flat behind the apartment, through a window from the wild garden | Hrozna the corgi sleeps on Drahomil's toy mouse: sneak in, take it back, get out | 20 min | First part playable |
-| 8 | The inner court | Round-stone court inside the apartment block | Pigeons, a cat flap, a lost toy | 25 min | Planned |
+| 8 | The inner court | The round-stone court: a light well in the house (8.8 m) | Pigeons that flee a straight approach (sneak past from the side), a flock that flies up together, a drainpipe to the lost jingle ball | 15 min | First part playable (to verify) |
 | 9 | Night | All areas after sunset | Moths, a fox, the street light; find the way home | 35 min | Planned |
 | 10 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |
 | 11 | Home | Back to the apartment | The humans come home; a gift for them | 15 min | Planned |

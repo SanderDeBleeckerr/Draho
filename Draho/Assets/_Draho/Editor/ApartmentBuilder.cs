@@ -707,7 +707,7 @@ namespace Draho.EditorTools
                     var n = Vector3.Cross(side, Vector3.up).normalized;
                     for (int k = 0; k < 3; k++) normals.Add(Vector3.Lerp(n, Vector3.up, 0.5f).normalized);
                     float tone = (rng.Next(4) + 0.5f) / 4f;
-                    uvs.Add(new Vector2(tone, 0.5f)); uvs.Add(new Vector2(tone, 0.5f)); uvs.Add(new Vector2(tone, 0.5f));
+                    uvs.Add(new Vector2(tone, 0f)); uvs.Add(new Vector2(tone, 0f)); uvs.Add(new Vector2(tone, 1f)); // uv.y: wind sway weight
                     tris.AddRange(new[] { b0, b0 + 2, b0 + 1 });
                 }
             }
@@ -727,7 +727,7 @@ namespace Draho.EditorTools
                 2 => new Color(0.6f, 0.58f, 0.3f), // dry blades
                 _ => new Color(0.3f, 0.38f, 0.16f),
             }));
-            grassMat.SetFloat("_Cull", 0f);
+            WindFoliage(grassMat, 0.07f, 0.4f);
             grass.AddComponent<MeshRenderer>().sharedMaterial = grassMat;
 
             // Brambles: dark, thorny clumps; low ones have no collider (the cat pushes through).
@@ -1518,7 +1518,7 @@ namespace Draho.EditorTools
                     Vector3 q = rot * (p * size);
                     verts.Add(o + q);
                     normals.Add(n);
-                    uvs.Add(new Vector2(colour, 0.5f));
+                    uvs.Add(new Vector2(colour, p.y > 0.9f ? 1f : p.y > 0f ? 0.55f : 0f)); // uv.y: wind sway weight, the tip moves most
                 }
                 tris.AddRange(new[] { b, b + 1, b + 2, b, b + 2, b + 3 });
             }
@@ -1539,11 +1539,24 @@ namespace Draho.EditorTools
         {
             if (materials.TryGetValue("Apt_IvyLeaves", out var m)) return m;
             m = PlaygroundBuilder.LitMaterial("Apt_IvyLeaves", Color.white, 0.35f, IvyColours());
-            m.SetFloat("_Cull", 0f); // both faces: thin leaves
-            m.doubleSidedGI = true;
-            EditorUtility.SetDirty(m);
+            WindFoliage(m, 0.012f, 0.5f);
             materials["Apt_IvyLeaves"] = m;
             return m;
+        }
+
+        /// <summary>
+        /// Grass and leaves that move in the wind (Draho/WindFoliage, both faces lit). The mesh's uv.y is the sway weight.
+        /// </summary>
+        static void WindFoliage(Material m, float strength, float translucency)
+        {
+            var shader = Shader.Find("Draho/WindFoliage");
+            if (shader == null) { Debug.LogWarning("Draho/WindFoliage not found, the foliage stays still"); m.SetFloat("_Cull", 0f); return; }
+            m.shader = shader;
+            m.SetFloat("_WindStrength", strength);
+            m.SetFloat("_Translucency", translucency);
+            m.SetFloat("_Cull", 0f);
+            m.doubleSidedGI = true;
+            EditorUtility.SetDirty(m);
         }
 
         static Texture2D IvyColours() => MakeTexture("IvyColours.png", 4, (x, y, size) => x switch

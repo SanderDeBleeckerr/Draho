@@ -55,3 +55,17 @@ except while climbing. No anticipation crouch (input must stay instant on a phon
 [Stylized Grass with Wind](https://marketplace.unity.com/packages/3d/vegetation/plants/stylized-grass-wind-194396)):
 opaque geometry, a global wind controller, cheaper modes for weak devices. Next: our own small vertex wind
 shader for the grass and ivy meshes (to do in a later round, measured with the perf scenario).
+
+## Round 30
+
+**Wind in the grass and ivy: how to write a small URP foliage shader by hand?**
+Sources: [Introduction to custom lighting in URP (Unity 6.3 manual)](https://docs.unity.com/en-us/engine/6000.3/manual/lighting-overview/lighting/custom-lighting/introduction.md),
+[Use built-in lighting methods in a URP shader (Unity 6 manual)](https://docs.unity.com/en-us/engine/6000.0/manual/materials-and-shaders/shaders/writing-custom-shaders-urp/use-built-in-shader-methods/lighting),
+[Creating a foliage shader in URP (Ned Makes Games)](https://nedmakesgames.medium.com/creating-a-foliage-shader-in-unity-urp-shader-graph-5854bf8dc4c2).
+Findings: include Lighting.hlsl and call GetMainLight (with a shadow coord) in a "UniversalForward" pass;
+put the wind offset in the vertex function before the clip-space transform; foliage is two-sided, so flip the
+normal on back faces; a weight per vertex keeps the roots still.
+In Draho: `Draho/WindFoliage` (Art/Shaders). uv.y is the sway weight (grass root 0, tip 1; ivy stem 0, sides 0.55,
+tip 1). A slow gust in world space (so it still works after static batching) plus a quick flutter. Wrap lighting,
+back-light translucency, ambient SH, fog. Grass sways 7 cm at the tip, ivy 1.2 cm. No shadow-caster pass
+(the grass already cast no shadows; the ivy leaves now cast none either).

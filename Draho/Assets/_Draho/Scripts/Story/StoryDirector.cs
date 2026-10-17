@@ -40,7 +40,8 @@ namespace Draho.Story
         Climbable[] lindens;
         Transform churchDoor, bakery;
         NpcCat greyCat;
-        StoryItem toyMouse;
+        StoryItem toyMouse, jingleBall;
+        Pigeon[] pigeons;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
         static Vector3? P(float x, float y, float z) => new Vector3(x, y, z);
@@ -83,6 +84,21 @@ namespace Draho.Story
             return P(2f, 0f, 2.5f);                                              // home
         }
 
+        static bool InCourt(Vector3 p) => p.x > 4.6f && p.x < 7.6f && p.z > 3.2f && p.z < 5f && p.y < 4f;
+
+        Vector3? NearestPigeon()
+        {
+            Vector3? best = null;
+            float bestD = float.MaxValue;
+            foreach (var b in pigeons)
+            {
+                if (b == null || !b.OnGround) continue;
+                float d = Vector3.Distance(b.transform.position, cat.transform.position);
+                if (d < bestD) { bestD = d; best = b.transform.position; }
+            }
+            return best;
+        }
+
         static bool InFlat(Vector3 p) => p.x > -1.9f && p.x < 7.6f && p.z > 5.3f && p.z < 9f && p.y < 1.5f;
         Mouse bakeryMouse;
 
@@ -110,7 +126,10 @@ namespace Draho.Story
             churchDoor = GameObject.Find("Marker_ChurchDoor")?.transform;
             bakery = GameObject.Find("Marker_Bakery")?.transform;
             greyCat = FindAnyObjectByType<NpcCat>();
-            toyMouse = FindAnyObjectByType<StoryItem>();
+            var items = FindObjectsByType<StoryItem>(FindObjectsSortMode.None);
+            toyMouse = Array.Find(items, i => i.name == "ToyMouse");
+            jingleBall = Array.Find(items, i => i.name == "JingleBall");
+            pigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
@@ -320,7 +339,35 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Got it! Hrozna opens one eye, barks once, and goes back to sleep. Not enemies, just loud neighbours. End of chapter 7 for now!",
+                    Story = "Got it! Hrozna opens one eye, barks once, and goes back to sleep. Not enemies, just loud neighbours.",
+                    Goal = "Bring the toy mouse home: out of the window, through the wild garden and the loose plank.",
+                    Target = () => InFlat(cat.transform.position) ? P(-2.6f, 0f, 7.1f) : cat.transform.position.z > 5f ? P(-19.5f, 0f, 4.6f) : P(2f, 0f, 2.5f),
+                    Done = () => InApartment(cat.transform.position),
+                },
+                new Beat
+                {
+                    Story = "Chapter 8: The Inner Court. Roo-coo... roo-coo... Pigeons have landed in the little court behind the glass!",
+                    Goal = "The court door next to the cat tree is open a crack. Squeeze through.",
+                    Target = () => P(4.6f, 0f, 3.8f),
+                    Done = () => InCourt(cat.transform.position),
+                },
+                new Beat
+                {
+                    Story = "Three fat pigeons peck between the round stones. Pigeons watch each other: when one flies, they all fly.",
+                    Goal = "Sneak up (DUCK) and touch a pigeon. Do not go straight at it: walk past it from the side.",
+                    Target = () => NearestPigeon(),
+                    Done = () => Pigeon.AnyTouched,
+                },
+                new Beat
+                {
+                    Story = "Flap-flap-flap! The flock flies up the light well. Something shines behind the drainpipe: your old jingle ball, lost last spring!",
+                    Goal = "Climb the drainpipe in the court (hold the middle of the stick) and take the jingle ball.",
+                    Target = () => jingleBall != null && jingleBall.gameObject.activeSelf ? jingleBall.transform.position : (Vector3?)null,
+                    Done = () => jingleBall == null || jingleBall.Taken,
+                },
+                new Beat
+                {
+                    Story = "Ting-a-ling! The pigeons coo from the gutter, very offended. The sky turns orange: the evening comes. End of chapter 8 for now!",
                     Goal = "",
                     Done = () => false,
                 },

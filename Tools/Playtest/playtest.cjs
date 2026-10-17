@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -243,6 +243,25 @@ const steps = {
     ['06_sneak', 'move', '0,1,0,6'],
     ['07_got_it', 'wait', '2'],
     ['08_sneak_out', 'move', '0,-1,0,6'],
+  ],
+  // Start with ?beat=28&at=3.8,4.05,90 : in the living room by the court door, facing the gap. Walk into the court,
+  // walk straight at the pigeons (they fly), sneak, then (test hook) touch one and climb the court pipe to the jingle ball.
+  court: [
+    ['02_squeeze_in', 'move', '0,1,0,2.5'],
+    ['03_in_court', 'wait', '1'],
+    ['04_walk_at_them', 'move', '0.3,1,0,1.5'],
+    ['05_flock_up', 'wait', '2'],
+    ['06_duck', 'duck', ''],
+    ['07_wait_down', 'wait', '12'],
+    ['08_sneak_side', 'move', '1,0,0,2'],
+    ['09_touch', 'call', 'Pigeon_1.TestTouch'],
+    ['10_at_pipe', 'call', 'StoryDirector.TestTeleport:7.3,4.15,90'],
+    ['11_stand', 'duck', ''],
+    ['12_climb', 'hold', '4'],
+    ['13_climb_more', 'hold', '4'],
+    ['14_top', 'hold', '2'],
+    ['15_down', 'jump', ''],
+    ['16_landed', 'wait', '2'],
   ],
   // Start with ?beat=26&at=0,6.8,90 : inside the flat; run at the basket: Hrozna wakes and throws the cat out.
   flatloud: [

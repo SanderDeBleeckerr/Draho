@@ -69,3 +69,29 @@ In Draho: `Draho/WindFoliage` (Art/Shaders). uv.y is the sway weight (grass root
 tip 1). A slow gust in world space (so it still works after static batching) plus a quick flutter. Wrap lighting,
 back-light translucency, ambient SH, fog. Grass sways 7 cm at the tip, ivy 1.2 cm. No shadow-caster pass
 (the grass already cast no shadows; the ivy leaves now cast none either).
+
+## Round 31 (2026-10-17): chapter 8, the inner court
+
+**Question.** How do birds in games (and in real life) react to an approaching predator, and how do we make
+a tiny, tall space (a 3 x 1.8 m light well) fun to play in?
+
+**Sources.**
+- Feral pigeons in New York City flee later where there are more people: their flight initiation distance (FID)
+  becomes shorter with human activity. ([Zenodo record 3936120](https://zenodo.org/records/3936120))
+- A study of 62 bird species: birds tell a direct approach from a tangential one, maybe by the speed or
+  acceleration of the approach. ([Behavioral Ecology 25(4):960](https://academic.oup.com/beheco/article/25/4/960/257797))
+- A bird that flees the player: a trigger radius, then a flight away from the player and upwards.
+  ([Bird AI and Inheritance, itch.io devlog](https://hookedfeelings.itch.io/dungeon-siege-project/devlog/100759/bird-ai-and-inheritance))
+- Flocking and steering behaviours (Reynolds' boids) as the base of group movement.
+  ([AI for Game Developers, ch. 4: Flocking](https://oreilly.com/library/view/ai-for-game/0596005555/ch04.html))
+- Vertical levels: a "golden path" that winds upward, so the player feels progress through height; short way back
+  after a fall. ([Jungle Gym level design write-up](https://hammillb.myportfolio.com/junglegym))
+
+**What we do.**
+- `Pigeon` (new creature): the flee distance depends on the cat's speed (run 2.6 m, walk 1.3 m, sneak 0.45 m)
+  and on the approach: x1.6 when the cat comes straight at the pigeon, x0.6 when it walks past to the side.
+  City pigeons are used to people, so the distances are short (the court is small).
+- Flock alarm: when one pigeon flies up, every other pigeon on the ground follows after 0.15-0.5 s.
+- The court becomes a light well (8.8 m, from the height model) with window sills and a gutter: the pigeons
+  perch higher and higher, and the jingle ball sits up the drainpipe, so the goal leads the eye upward.
+- The way down is short (a 3 m drop onto the stones), so a mistake costs little.

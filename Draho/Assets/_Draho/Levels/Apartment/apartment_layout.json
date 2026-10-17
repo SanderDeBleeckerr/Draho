@@ -295,7 +295,9 @@
    "outer_walls": [
     "north",
     "east"
-   ]
+   ],
+   "shaft_height": 8.8,
+   "shaft_note": "The house rises round the open court (light well): about 8.8 m to the gutter, from the height model."
   }
  ],
  "mouse_holes": [
@@ -464,6 +466,21 @@
    "top_color": "#6E6E6A",
    "standable": true,
    "wall": "+x"
+  },
+  {
+   "id": "court_pipe",
+   "type": "pipe",
+   "x": 7.55,
+   "z": 4.15,
+   "h": 8.8,
+   "bottom": 0.0,
+   "radius": 0.05,
+   "climb_top": 3.3,
+   "standable": false,
+   "wall": "+x",
+   "color": "#8C8F91",
+   "top_color": "#8C8F91",
+   "note": "Drainpipe in the inner court, on the east wall. A wide bracket at 3.3 m stops the climb."
   }
  ],
  "garden_note": "Garden from the owner's description and open aerial data (Digitaal Vlaanderen): a strip about 4.2 m wide and 24 m long. In real life the garden runs north-east from the house; in this file it runs west (game west = real north-east, game south = real north-west, game north = real south-east).",

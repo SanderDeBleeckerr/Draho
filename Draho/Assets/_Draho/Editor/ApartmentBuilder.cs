@@ -128,7 +128,7 @@ namespace Draho.EditorTools
         [Serializable] class Court
         {
             public string id, color;
-            public float x0, z0, x1, z1, glass_height;
+            public float x0, z0, x1, z1, glass_height, shaft_height; // shaft_height: the house walls round the open court
             public string[] glass, outer_walls;
             public Door[] doors;
         }
@@ -197,7 +197,7 @@ namespace Draho.EditorTools
         {
             var dynamicTypes = new[]
             {
-                typeof(Mouse), typeof(Bird), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
+                typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
                 typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator),
             };
             bool IsDynamic(Transform t)
@@ -411,6 +411,137 @@ namespace Draho.EditorTools
             }
             // Corner posts where the glass walls meet.
             WallSegment("CourtPost", true, c.z0, c.x0 - 0.03f, c.x0 + 0.03f, 0f, h, 0.06f, frame);
+            if (c.shaft_height > h) CourtShaft(layout, c, h);
+        }
+
+        /// <summary>
+        /// The court is open to the sky, but the upper floors of the house rise round it: a light well.
+        /// Plaster walls up to the roof, windows with sills (pigeon perches) and a zinc gutter at the top.
+        /// </summary>
+        static void CourtShaft(Layout layout, Court c, float glassTop)
+        {
+            float t = layout.wall.thickness, top = c.shaft_height;
+            var plaster = Mat("Apt_CourtPlaster", new Color(0.85f, 0.83f, 0.79f), 0.08f);
+            // North and east: the outer walls of the house (the apartment wall below is 2.6 m high).
+            float baseNE = layout.wall.height;
+            WallSegment("Shaft_north", true, c.z1 + t / 2, c.x0 - t, c.x1 + t, baseNE, top, t, plaster);
+            WallSegment("Shaft_east", false, c.x1 + t / 2, c.z0 - t, c.z1, baseNE, top, t, plaster);
+            // South and west: the house above the glass walls.
+            WallSegment("Shaft_south", true, c.z0 - t / 2, c.x0 - t, c.x1 + t, glassTop, top, t, plaster);
+            WallSegment("Shaft_west", false, c.x0 - t / 2, c.z0, c.z1, glassTop, top, t, plaster);
+
+            var window = Mat("Apt_CourtWindow", new Color(0.16f, 0.2f, 0.24f), 0.85f);
+            var stone = Mat("Apt_Coping", Color.gray, 0.2f);
+            float midX = (c.x0 + c.x1) / 2, midZ = (c.z0 + c.z1) / 2;
+            foreach (float floorY in new[] { 3.3f, 6.1f })
+            {
+                // A window on the north wall and a smaller one on the west wall, each with a stone sill.
+                Box("ShaftWindow", new Vector3(midX, floorY + 0.7f, c.z1 - 0.005f), new Vector3(1.3f, 1.3f, 0.01f), window, collider: false);
+                Box("ShaftSill", new Vector3(midX, floorY - 0.025f, c.z1 - 0.1f), new Vector3(1.5f, 0.05f, 0.2f), stone, collider: false);
+                Box("ShaftWindow", new Vector3(c.x0 + 0.005f, floorY + 0.7f, midZ), new Vector3(0.01f, 1.3f, 0.9f), window, collider: false);
+                Box("ShaftSill", new Vector3(c.x0 + 0.1f, floorY - 0.025f, midZ), new Vector3(0.2f, 0.05f, 1.1f), stone, collider: false);
+            }
+            var zinc = Mat("Apt_Zinc", new Color(0.55f, 0.57f, 0.58f), 0.55f);
+            Box("ShaftGutter", new Vector3(midX, top - 0.06f, c.z1 - 0.08f), new Vector3(c.x1 - c.x0, 0.12f, 0.16f), zinc, collider: false);
+            Box("ShaftGutter", new Vector3(c.x1 - 0.08f, top - 0.06f, midZ), new Vector3(0.16f, 0.12f, c.z1 - c.z0), zinc, collider: false);
+        }
+
+        /// <summary>
+        /// Chapter 8 in the inner court: three pigeons on the stones (they perch on the sills and the gutter)
+        /// and Drahomil's old jingle ball, stuck behind a bracket of the court drainpipe.
+        /// </summary>
+        static void BuildCourtLife(Layout layout)
+        {
+            var c = (layout.courts ?? new Court[0]).FirstOrDefault(x => x.shaft_height > 0f);
+            if (c == null) return;
+            float midX = (c.x0 + c.x1) / 2, midZ = (c.z0 + c.z1) / 2, top = c.shaft_height;
+            var perches = new List<Vector3>();
+            foreach (float floorY in new[] { 3.3f, 6.1f })
+            {
+                perches.Add(new Vector3(midX - 0.45f, floorY, c.z1 - 0.1f));
+                perches.Add(new Vector3(midX + 0.45f, floorY, c.z1 - 0.1f));
+                perches.Add(new Vector3(c.x0 + 0.1f, floorY, midZ));
+            }
+            perches.Add(new Vector3(c.x0 + 0.5f, top, c.z1 - 0.08f));
+            perches.Add(new Vector3(midX, top, c.z1 - 0.08f));
+            perches.Add(new Vector3(c.x1 - 0.08f, top, midZ - 0.4f));
+            var yard = new Vector4(c.x0 + 0.3f, c.z0 + 0.3f, c.x1 - 0.3f, c.z1 - 0.3f);
+
+            var grey = Mat("Pigeon_Grey", new Color(0.56f, 0.58f, 0.62f), 0.25f);
+            var darkGrey = Mat("Pigeon_Head", new Color(0.4f, 0.42f, 0.47f), 0.25f);
+            var neck = Mat("Pigeon_Neck", new Color(0.3f, 0.48f, 0.42f), 0.7f); // the green-purple sheen
+            var bar = Mat("Pigeon_Bar", new Color(0.18f, 0.18f, 0.2f), 0.3f);
+            var pink = Mat("Pigeon_Feet", new Color(0.85f, 0.42f, 0.45f), 0.3f);
+            var eye = Mat("Bird_Beak", new Color(0.95f, 0.6f, 0.08f), 0.5f);
+            var spots = new[] { new Vector3(c.x0 + 0.8f, 0f, c.z0 + 0.6f), new Vector3(midX + 0.3f, 0f, c.z1 - 0.5f), new Vector3(c.x1 - 0.5f, 0f, c.z0 + 0.5f) };
+            for (int i = 0; i < spots.Length; i++)
+            {
+                var root = new GameObject($"Pigeon_{i + 1}");
+                root.transform.SetParent(level, false);
+                root.transform.SetPositionAndRotation(spots[i], Quaternion.Euler(0f, 70f + i * 110f, 0f));
+                Transform Part(PrimitiveType type, Transform parent, Vector3 pos, Vector3 euler, Vector3 scale, Material m)
+                {
+                    var go = GameObject.CreatePrimitive(type);
+                    Object.DestroyImmediate(go.GetComponent<Collider>());
+                    go.transform.SetParent(parent, false);
+                    go.transform.localPosition = pos;
+                    go.transform.localRotation = Quaternion.Euler(euler);
+                    go.transform.localScale = scale;
+                    go.GetComponent<Renderer>().sharedMaterial = m;
+                    return go.transform;
+                }
+                Transform Pivot(string name, Transform parent, Vector3 pos)
+                {
+                    var t = new GameObject(name).transform;
+                    t.SetParent(parent, false);
+                    t.localPosition = pos;
+                    return t;
+                }
+                // About 32 cm from beak to tail: a plump grey body, a small dark head, a shiny neck. +Z is forward.
+                var body = Pivot("Body", root.transform, Vector3.zero);
+                Part(PrimitiveType.Sphere, body, new Vector3(0f, 0.1f, 0f), new Vector3(-10f, 0f, 0f), new Vector3(0.12f, 0.11f, 0.2f), grey);
+                Part(PrimitiveType.Sphere, body, new Vector3(0f, 0.13f, 0.065f), Vector3.zero, new Vector3(0.085f, 0.09f, 0.08f), neck);
+                Part(PrimitiveType.Cube, body, new Vector3(0f, 0.11f, -0.15f), new Vector3(-12f, 0f, 0f), new Vector3(0.07f, 0.015f, 0.12f), darkGrey);
+                foreach (float side in new[] { -1f, 1f })
+                    Part(PrimitiveType.Cylinder, body, new Vector3(side * 0.025f, 0.025f, 0.01f), Vector3.zero, new Vector3(0.012f, 0.025f, 0.012f), pink);
+                var head = Pivot("Head", body, new Vector3(0f, 0.15f, 0.06f));
+                Part(PrimitiveType.Sphere, head, new Vector3(0f, 0.025f, 0.025f), Vector3.zero, Vector3.one * 0.06f, darkGrey);
+                Part(PrimitiveType.Cube, head, new Vector3(0f, 0.018f, 0.062f), new Vector3(10f, 0f, 0f), new Vector3(0.012f, 0.012f, 0.03f), bar);
+                foreach (float side in new[] { -1f, 1f })
+                    Part(PrimitiveType.Sphere, head, new Vector3(side * 0.025f, 0.035f, 0.035f), Vector3.zero, Vector3.one * 0.012f, eye);
+                Transform Wing(string name, float side)
+                {
+                    var pivot = Pivot(name, body, new Vector3(side * 0.055f, 0.14f, 0f));
+                    Part(PrimitiveType.Cube, pivot, new Vector3(side * 0.008f, -0.04f, -0.02f), Vector3.zero, new Vector3(0.012f, 0.085f, 0.17f), grey);
+                    Part(PrimitiveType.Cube, pivot, new Vector3(side * 0.015f, -0.05f, -0.05f), Vector3.zero, new Vector3(0.004f, 0.06f, 0.012f), bar); // wing bars
+                    Part(PrimitiveType.Cube, pivot, new Vector3(side * 0.015f, -0.05f, -0.08f), Vector3.zero, new Vector3(0.004f, 0.06f, 0.012f), bar);
+                    return pivot;
+                }
+                var left = Wing("WingL", -1f);
+                var right = Wing("WingR", 1f);
+                root.AddComponent<Pigeon>().Configure(body, head, left, right, perches.ToArray(), yard);
+            }
+
+            // The jingle ball: behind a bracket of the court drainpipe, just under the top of the climb.
+            var pipe = (layout.climbables ?? new ClimbableInfo[0]).FirstOrDefault(x => x.id == "court_pipe");
+            if (pipe == null) return;
+            var ball = new GameObject("JingleBall");
+            ball.transform.SetParent(level, false);
+            ball.transform.position = new Vector3(pipe.x - 0.1f, pipe.climb_top - 0.25f, pipe.z + 0.13f);
+            var shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Object.DestroyImmediate(shell.GetComponent<Collider>());
+            shell.transform.SetParent(ball.transform, false);
+            shell.transform.localScale = Vector3.one * 0.06f;
+            shell.GetComponent<Renderer>().sharedMaterial = Mat("Toy_Bell", new Color(0.95f, 0.75f, 0.25f), 0.85f);
+            var slot = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Object.DestroyImmediate(slot.GetComponent<Collider>());
+            slot.transform.SetParent(ball.transform, false);
+            slot.transform.localPosition = new Vector3(0f, 0f, 0f);
+            slot.transform.localScale = new Vector3(0.062f, 0.006f, 0.03f);
+            slot.GetComponent<Renderer>().sharedMaterial = Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f);
+            Box("BallBracket", ball.transform.position - Vector3.up * 0.04f, new Vector3(0.12f, 0.02f, 0.12f),
+                Mat($"Apt_{pipe.id}", Hex(pipe.color), 0.5f), collider: false);
+            ball.AddComponent<StoryItem>().Configure("Ting-a-ling! Your old jingle ball!", 0.5f);
         }
 
         // ------------------------------------------------------------------ furniture
@@ -1631,6 +1762,7 @@ namespace Draho.EditorTools
             BuildFeathers(layout);
             BuildGardenCharacters();
             BuildNeighbourFlat();
+            BuildCourtLife(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

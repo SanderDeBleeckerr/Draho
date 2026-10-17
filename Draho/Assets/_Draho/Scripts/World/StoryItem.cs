@@ -13,7 +13,7 @@ namespace Draho.World
         CatMotor cat;
         public bool Taken { get; private set; }
 
-        public void Configure(string pickMessage) => message = pickMessage;
+        public void Configure(string pickMessage, float radius = 0.4f) { message = pickMessage; pickRadius = radius; }
 
         void Awake() => cat = FindAnyObjectByType<CatMotor>();
 

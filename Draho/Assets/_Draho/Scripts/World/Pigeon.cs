@@ -129,10 +129,10 @@ namespace Draho.World
 
         float FleeDistance(Vector3 toPigeon, out string how)
         {
-            float radius = cat.IsCrouching ? fleeSneaking
+            float radius = cat.Speed < 0.05f ? fleeSneaking * 0.5f // a cat that sits still is part of the court
+                : cat.IsCrouching ? fleeSneaking
                 : cat.Speed > cat.Stats.walkSpeed * 1.5f ? fleeRunning
-                : cat.Speed > 0.05f ? fleeWalking
-                : fleeSneaking * 0.5f;
+                : fleeWalking;
             if (cat.IsAirborne || cat.IsClimbing) radius = Mathf.Max(radius, fleeWalking);
             how = "still";
             if (cat.Speed > 0.05f && toPigeon.sqrMagnitude > 1e-4f)

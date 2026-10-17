@@ -156,6 +156,7 @@ namespace Draho.EditorTools
         {
             var layout = JsonUtility.FromJson<Layout>(File.ReadAllText(LayoutPath));
             materials.Clear();
+            lowSphere = null;
 
             Scene scene = PlaygroundBuilder.NewLitScene(Quaternion.Euler(45f, 240f, 0f)); // real afternoon sun (see garden_note)
             level = new GameObject("Apartment").transform;
@@ -386,7 +387,7 @@ namespace Draho.EditorTools
         static void BuildCourt(Layout layout, Court c)
         {
             float h = c.glass_height > 0 ? c.glass_height : layout.wall.height;
-            var pebbles = Mat("Apt_Pebbles", Hex(c.color), 0.2f, PebbleTexture(), new Vector2(c.x1 - c.x0, c.z1 - c.z0) / 0.5f);
+            var pebbles = Mat("Apt_Pebbles", Hex(c.color), 0.2f, PebbleTexture(), new Vector2(c.x1 - c.x0, c.z1 - c.z0) / 0.3f);
             Box("Court_Stones", new Vector3((c.x0 + c.x1) / 2, 0.005f, (c.z0 + c.z1) / 2),
                 new Vector3(c.x1 - c.x0, 0.01f, c.z1 - c.z0), pebbles, collider: false);
 
@@ -488,6 +489,7 @@ namespace Draho.EditorTools
                     go.transform.localRotation = Quaternion.Euler(euler);
                     go.transform.localScale = scale;
                     go.GetComponent<Renderer>().sharedMaterial = m;
+                    if (type == PrimitiveType.Sphere) go.GetComponent<MeshFilter>().sharedMesh = LowSphere(); // small: few triangles
                     return go.transform;
                 }
                 Transform Pivot(string name, Transform parent, Vector3 pos)
@@ -539,7 +541,7 @@ namespace Draho.EditorTools
             slot.transform.localPosition = new Vector3(0f, 0f, 0f);
             slot.transform.localScale = new Vector3(0.062f, 0.006f, 0.03f);
             slot.GetComponent<Renderer>().sharedMaterial = Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f);
-            Box("BallBracket", ball.transform.position - Vector3.up * 0.04f, new Vector3(0.12f, 0.02f, 0.12f),
+            Box("BallBracket", new Vector3(pipe.x - 0.05f, ball.transform.position.y - 0.04f, pipe.z + 0.08f), new Vector3(0.14f, 0.02f, 0.2f),
                 Mat($"Apt_{pipe.id}", Hex(pipe.color), 0.5f), collider: false);
             ball.AddComponent<StoryItem>().Configure("Ting-a-ling! Your old jingle ball!", 0.5f);
         }
@@ -1666,6 +1668,43 @@ namespace Draho.EditorTools
             return mesh;
         }
 
+        static Mesh lowSphere;
+
+        /// <summary>
+        /// A sphere with about 100 triangles (Unity's built-in one has 760), for small animals made of many parts.
+        /// Radius 0.5, like the built-in sphere, so the parts keep their size.
+        /// </summary>
+        static Mesh LowSphere()
+        {
+            if (lowSphere != null) return lowSphere;
+            const int lon = 10, lat = 6;
+            var verts = new List<Vector3>();
+            var tris = new List<int>();
+            for (int j = 0; j <= lat; j++)
+            for (int i = 0; i <= lon; i++)
+            {
+                float a = Mathf.PI * j / lat, b = 2f * Mathf.PI * i / lon;
+                verts.Add(0.5f * new Vector3(Mathf.Sin(a) * Mathf.Cos(b), Mathf.Cos(a), Mathf.Sin(a) * Mathf.Sin(b)));
+            }
+            for (int j = 0; j < lat; j++)
+            for (int i = 0; i < lon; i++)
+            {
+                int v = j * (lon + 1) + i;
+                if (j > 0) { tris.Add(v); tris.Add(v + 1); tris.Add(v + lon + 1); }
+                if (j < lat - 1) { tris.Add(v + 1); tris.Add(v + lon + 2); tris.Add(v + lon + 1); }
+            }
+            var mesh = new Mesh { name = "LowSphere" };
+            mesh.SetVertices(verts);
+            mesh.SetNormals(verts.ConvertAll(x => x.normalized));
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateBounds();
+            string path = $"{PlaygroundBuilder.ArtDir}/Meshes/LowSphere.asset";
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(mesh, path);
+            return lowSphere = mesh;
+        }
+
         static Material IvyLeafMat()
         {
             if (materials.TryGetValue("Apt_IvyLeaves", out var m)) return m;
@@ -1880,6 +1919,7 @@ namespace Draho.EditorTools
                     go.transform.localRotation = Quaternion.Euler(euler);
                     go.transform.localScale = scale;
                     go.GetComponent<Renderer>().sharedMaterial = m;
+                    if (type == PrimitiveType.Sphere) go.GetComponent<MeshFilter>().sharedMesh = LowSphere(); // small: few triangles
                     return go.transform;
                 }
                 Transform Pivot(string name, Transform parent, Vector3 pos)

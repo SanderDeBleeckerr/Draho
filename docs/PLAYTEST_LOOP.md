@@ -20,6 +20,10 @@ Claude improves the game in rounds. Each round has the same steps:
    **graphics**, **gameplay** and **story**.
 5. **Change.** Fix the most important item on each axis. Then go back to step 1.
 
+Since round 28 the loop has a research step: the skill `.claude/skills/game-improvement-loop` searches the
+web for how good games solve each weak point before it changes anything. Findings and sources are in
+`docs/RESEARCH_NOTES.md`.
+
 ## Round log
 
 | Round | Graphics | Gameplay | Story |
@@ -51,3 +55,4 @@ Claude improves the game in rounds. Each round has the same steps:
 | 25 | The neighbour's flat (plaster walls, wooden floor, sofa, rug, shelf, bowl, basket, open window with shutters); Hrozna, a red Cardigan corgi with her fox tail | Hrozna hears the cat (sneak to get close), barks (sound made in code) and chases it out of the window; drainpipes from the quay back up to the roofs | Back home after the bakery; chapter 7 "The Neighbour's Flat" (4 beats) |
 | 26 | Hrozna smaller (85 %) with corgi ears (were rabbit-like); a dark window frame and a pale sill make the neighbour's window easy to see | Verified: sneak takes the toy without waking Hrozna; running wakes her and she chases the cat out | — |
 | 27 | Performance: run-time static batching of all fixed scenery, Detail layer (small things not drawn beyond 35 m, no shadows), fog and a 170 m view; smaller download (managed stripping, IL2CPP for size, no debug symbols, ASTC textures) | Adaptive render scale on slow devices (?lockscale=1 to turn off); fewer save writes | — |
+| 28 | Research-led (docs/RESEARCH_NOTES.md): FSR 1 upscaling for the adaptive render scale, warmer trilight ambient | Noise ring around the cat near listening animals; goal compass (chevron + distance, next waypoint on long routes) | Every beat has a place for the compass |

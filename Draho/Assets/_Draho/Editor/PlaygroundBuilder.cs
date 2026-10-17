@@ -94,6 +94,11 @@ namespace Draho.EditorTools
                 Debug.Log("Draho: created and assigned a URP asset.");
             }
             urp.renderScale = 1f;
+            // When AdaptiveQuality lowers the render scale, AMD FSR 1 upscales more sharply than bilinear
+            // (Unity manual: "Introduction to changing resolution scale", URP supports FSR 1).
+            urp.upscalingFilter = UpscalingFilterSelection.FSR;
+            urp.fsrOverrideSharpness = true;
+            urp.fsrSharpness = 0.8f;
             urp.msaaSampleCount = 2;
             urp.shadowDistance = 10f;    // the apartment is small: spend the shadow map on it
             urp.shadowCascadeCount = 2;
@@ -461,8 +466,10 @@ namespace Draho.EditorTools
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(0.62f, 0.68f, 0.78f);
-            RenderSettings.ambientEquatorColor = new Color(0.45f, 0.45f, 0.47f);
-            RenderSettings.ambientGroundColor = new Color(0.22f, 0.2f, 0.19f);
+            // Warm afternoon bounce light from the ground and the horizon (low-poly look: the gradient and the
+            // palette do much of the lighting work).
+            RenderSettings.ambientEquatorColor = new Color(0.52f, 0.49f, 0.45f);
+            RenderSettings.ambientGroundColor = new Color(0.3f, 0.26f, 0.21f);
 
             new GameObject("Game").AddComponent<GameBootstrap>();
 

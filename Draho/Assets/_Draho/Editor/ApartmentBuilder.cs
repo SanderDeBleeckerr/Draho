@@ -1622,6 +1622,10 @@ namespace Draho.EditorTools
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);
             new GameObject("PerfProbe").AddComponent<Draho.Core.PerfProbe>().transform.SetParent(level, false);
+            var ring = new GameObject("NoiseRing", typeof(LineRenderer));
+            ring.transform.SetParent(level, false);
+            ring.GetComponent<LineRenderer>().sharedMaterial = NoiseRingMaterial();
+            ring.AddComponent<NoiseRing>();
             var hudComp = StoryPanel(hud);
             var director = new GameObject("StoryDirector").AddComponent<StoryDirector>();
             director.Configure(hudComp, mouse, layout.rooms.Where(r => !r.outdoor).Min(r => r.x0));
@@ -1959,6 +1963,19 @@ namespace Draho.EditorTools
             }
         }
 
+        static Material NoiseRingMaterial()
+        {
+            // Sprites/Default: unlit, alpha-blended and uses the line's vertex colours.
+            string path = $"{PlaygroundBuilder.MaterialDir}/NoiseRing.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null)
+            {
+                m = new Material(Shader.Find("Sprites/Default"));
+                AssetDatabase.CreateAsset(m, path);
+            }
+            return m;
+        }
+
         /// <summary>Coins and feathers (top right) and the bounty list panel (shown at the board).</summary>
         static void ProgressPanel(Transform canvas)
         {
@@ -1998,6 +2015,36 @@ namespace Draho.EditorTools
             var board = MakeText("BountyList", prt, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1020f, 380f), 34, TextAnchor.MiddleCenter);
             var hud = canvas.gameObject.AddComponent<ProgressHud>();
             hud.Configure(counters, board, group);
+
+            // Goal compass under the story panel: a chevron of two bars and the distance.
+            var compass = new GameObject("GoalCompass", typeof(RectTransform), typeof(CanvasGroup));
+            var crt = (RectTransform)compass.transform;
+            crt.SetParent(canvas, false);
+            crt.anchorMin = crt.anchorMax = crt.pivot = new Vector2(0.5f, 1f);
+            crt.anchoredPosition = new Vector2(0f, -232f);
+            crt.sizeDelta = new Vector2(240f, 110f);
+            var cg = compass.GetComponent<CanvasGroup>();
+            cg.alpha = 0f;
+            cg.blocksRaycasts = false;
+            var arrow = new GameObject("Arrow", typeof(RectTransform)).GetComponent<RectTransform>();
+            arrow.SetParent(crt, false);
+            arrow.anchorMin = arrow.anchorMax = new Vector2(0.5f, 1f);
+            arrow.anchoredPosition = new Vector2(0f, -30f);
+            arrow.sizeDelta = new Vector2(50f, 50f);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var bar = new GameObject("Bar", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
+                bar.SetParent(arrow, false);
+                bar.sizeDelta = new Vector2(10f, 34f);
+                bar.anchoredPosition = new Vector2(side * 9f, 0f);
+                bar.localRotation = Quaternion.Euler(0f, 0f, side * 40f);
+                var img = bar.GetComponent<Image>();
+                img.color = new Color(1f, 0.85f, 0.45f, 0.95f);
+                img.raycastTarget = false;
+                bar.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.6f);
+            }
+            var dist = MakeText("Distance", crt, new Vector2(0.5f, 1f), new Vector2(0f, -62f), new Vector2(240f, 44f), 30, TextAnchor.MiddleCenter);
+            compass.AddComponent<GoalCompass>().Configure(arrow, dist, cg);
         }
 
         static StoryHud StoryPanel(Transform canvas)

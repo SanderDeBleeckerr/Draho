@@ -26,6 +26,7 @@ namespace Draho.Story
             public string Story, Goal;
             public Func<bool> Done;
             public Action Begin;
+            public Func<Vector3?> Target; // where the goal compass points (null: no compass)
         }
 
         Beat[] beats;
@@ -42,6 +43,46 @@ namespace Draho.Story
         StoryItem toyMouse;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
+        static Vector3? P(float x, float y, float z) => new Vector3(x, y, z);
+        static bool InBegijnhof(Vector3 p) => p.z < -112.4f && p.x > -35f && p.y < 2f;
+
+        Vector3? NearestBird()
+        {
+            Vector3? best = null;
+            float bestD = float.MaxValue;
+            foreach (var b in birds)
+            {
+                if (b == null || !b.OnGround) continue;
+                float d = Vector3.Distance(b.transform.position, cat.transform.position);
+                if (d < bestD) { bestD = d; best = b.transform.position; }
+            }
+            return best;
+        }
+
+        Vector3? NearestLinden()
+        {
+            Vector3? best = null;
+            float bestD = float.MaxValue;
+            foreach (var l in lindens)
+            {
+                float d = Vector3.Distance(l.transform.position, cat.transform.position);
+                if (d < bestD) { bestD = d; best = l.transform.position; }
+            }
+            return best;
+        }
+
+        /// <summary>The next step on the way home from the far side: quay, shed pipe, riverhouse pipe, ivy, garden door.</summary>
+        Vector3? HomeWaypoint()
+        {
+            Vector3 p = cat.transform.position;
+            if (p.x < -47f) return P(-41.5f, 0f, -93f);                          // across the footbridge
+            if (InBegijnhof(p)) return P(-30.5f, 0f, -114.6f);                   // the shed by the wall
+            if (p.x < -31f && p.y < 1f) return P(-33.9f, 0f, -9.5f);             // the pipe on the quay shed
+            if (p.x < -31f && p.y < 4.5f) return P(-31.5f, 3.2f, -9.5f);         // the pipe on the riverhouse
+            if (p.y > 4.5f) return P(-22f, 6.5f, -0.4f);                         // the ivy down into the garden
+            return P(2f, 0f, 2.5f);                                              // home
+        }
+
         static bool InFlat(Vector3 p) => p.x > -1.9f && p.x < 7.6f && p.z > 5.3f && p.z < 9f && p.y < 1.5f;
         Mouse bakeryMouse;
 
@@ -92,6 +133,7 @@ namespace Draho.Story
                 {
                     Story = "Scritch... scritch... Something moves in the kitchen!",
                     Goal = "Catch the mouse. It hears running paws: DUCK to sneak up on it.",
+                    Target = () => P(7.2f, 0f, 1.05f),
                     Begin = () => { if (mouse != null) mouse.gameObject.SetActive(true); },
                     Done = () => mouse == null || mouse.IsCaught,
                 },
@@ -99,24 +141,28 @@ namespace Draho.Story
                 {
                     Story = "Got it! Drahomil, mouse hunter. The bounty board by the kitchen pays for every mouse in the neighbourhood.",
                     Goal = "Sit in front of the garden door until it opens.",
+                    Target = () => door != null ? door.transform.position : (Vector3?)null,
                     Done = () => door == null || door.IsOpen,
                 },
                 new Beat
                 {
                     Story = "The door slides open. Fresh air, birds, and new smells.",
                     Goal = "Go out into the garden.",
+                    Target = () => P(-3f, 0f, 2.5f),
                     Done = () => cat.transform.position.x < gardenEdgeX - 0.4f,
                 },
                 new Beat
                 {
                     Story = "Blackbirds hop on the lawn. They look for worms, and they watch for cats.",
                     Goal = "Sneak up on a blackbird: switch DUCK on and creep close.",
+                    Target = () => NearestBird(),
                     Done = () => birds.Length == 0 || Array.Exists(birds, b => b.WasStalked),
                 },
                 new Beat
                 {
                     Story = "Almost! The blackbird escapes to the maple by the fence. It sings at Drahomil from a branch.",
                     Goal = "Climb the maple: walk up to the trunk and hold the middle of the stick.",
+                    Target = () => P(-22f, 0f, 3.9f),
                     Begin = SendBirdToMaple,
                     Done = () => maple == null || (cat.CurrentClimbable == maple && cat.transform.position.y > 1.2f),
                 },
@@ -124,24 +170,28 @@ namespace Draho.Story
                 {
                     Story = "The trunk is too thin higher up. But at the end of the garden, ivy grows up the old wall. A ladder for cats.",
                     Goal = "Walk up to the ivy, then hold your thumb in the middle of the stick to climb.",
+                    Target = () => P(-22f, 0f, 0.5f),
                     Done = () => cat.IsClimbing && cat.transform.position.y > 2.6f,
                 },
                 new Beat
                 {
                     Story = "End of chapter 1! But the ivy does not stop here. It goes all the way up to the roof.",
                     Goal = "Keep holding: climb to the top and pull yourself onto the roof.",
+                    Target = () => P(-22f, 6.5f, -0.4f),
                     Done = () => cat.IsGrounded && cat.transform.position.y > 6f,
                 },
                 new Beat
                 {
                     Story = "Chapter 2: The Rooftops. Warm gravel, chimneys, and the whole block below. Nobody comes up here. Except cats.",
                     Goal = "Find the drainpipe on the high wall. Climb it to the highest roof.",
+                    Target = () => P(-7f, 5.8f, -4.2f),
                     Done = () => cat.IsGrounded && cat.transform.position.y > 8.4f,
                 },
                 new Beat
                 {
                     Story = "The highest point of the block. Drahomil can see the garden, the maple and the blackbirds, all very small.",
                     Goal = "Find a way down to the low roof at the back.",
+                    Target = () => P(-6f, 3.7f, -14f),
                     Done = () => cat.IsGrounded && cat.transform.position.y > 3.5f && cat.transform.position.y < 4f
                                  && cat.transform.position.z < -11f,
                 },
@@ -149,24 +199,28 @@ namespace Draho.Story
                 {
                     Story = "From up here Drahomil sees the neighbour's garden: wild and empty for months.",
                     Goal = "Go back down to your garden. Find a loose plank in the fence near the maple.",
+                    Target = () => cat.transform.position.y > 3f && cat.transform.position.z < -11f ? P(-10.6f, 3.7f, -16f) : cat.transform.position.y > 5f ? P(-22f, 6.5f, -0.4f) : P(-19.5f, 0f, 4.6f),
                     Done = () => cat.transform.position.z > 5.3f && cat.transform.position.y < 1f,
                 },
                 new Beat
                 {
                     Story = "Chapter 3: Over the Fence. The grass is as high as a cat. Something snuffles in it.",
                     Goal = "Find what is snuffling in the tall grass.",
+                    Target = () => hedgehog != null ? hedgehog.transform.position : (Vector3?)null,
                     Done = () => hedgehog == null || Vector3.Distance(hedgehog.transform.position, cat.transform.position) < 1.2f,
                 },
                 new Beat
                 {
                     Story = "A hedgehog! It rolls into a prickly ball. Hedgehogs need time to trust a cat.",
                     Goal = "Sit still close to the hedgehog. Do not move.",
+                    Target = () => hedgehog != null ? hedgehog.transform.position : (Vector3?)null,
                     Done = () => hedgehog == null || hedgehog.Trusts,
                 },
                 new Beat
                 {
                     Story = "The hedgehog sniffs Drahomil's nose and trots off. It wants to show something.",
                     Goal = "Follow the hedgehog. Go slowly.",
+                    Target = () => hedgehog != null ? hedgehog.transform.position : (Vector3?)null,
                     Done = () => hedgehog == null || (hedgehog.AtNest
                                  && Vector3.Distance(hedgehog.transform.position, cat.transform.position) < 2.5f),
                 },
@@ -174,36 +228,42 @@ namespace Draho.Story
                 {
                     Story = "Under the old wheelbarrow: a nest with three tiny hoglets. Drahomil keeps the secret.",
                     Goal = "Back up on the roofs, go west, past the end of the garden. Something glitters there.",
+                    Target = () => cat.transform.position.y < 5f ? P(-22f, 0f, 0.5f) : P(-27f, 6.5f, -8f),
                     Done = () => cat.transform.position.x < -26f && cat.transform.position.y > 5f,
                 },
                 new Beat
                 {
                     Story = "Chapter 4: The Riverside. Water! Boats, ducks and old houses along the quay. Far down the river: a white wall.",
                     Goal = "Get down to the quay: the shed by the water is a good step.",
+                    Target = () => cat.transform.position.y > 4f ? P(-32.2f, 3.2f, -9.5f) : P(-33f, 0f, -12f),
                     Done = () => cat.IsGrounded && cat.transform.position.y < 0.5f && cat.transform.position.x < -31f,
                 },
                 new Beat
                 {
                     Story = "Ducks on the river! They watch Drahomil: a friend, or a fox? Running scares them away.",
                     Goal = "Sit still at the edge of the quay until a duck paddles close.",
+                    Target = () => P(-34.7f, 0f, -20f),
                     Done = () => ducks.Length == 0 || Array.Exists(ducks, d => d.IsClose),
                 },
                 new Beat
                 {
                     Story = "The quay becomes a narrow edge along a house, right above the water. Cats do not like swimming.",
                     Goal = "Follow the river to the white wall. Walk on the edge, or take the rooftops.",
+                    Target = () => P(-33f, 0f, -111.4f),
                     Done = () => cat.transform.position.z < -104f,
                 },
                 new Beat
                 {
                     Story = "Chapter 5: The Begijnhof. Behind this old wall live quiet people and very old trees. The gate is shut, but ivy grows up the wall.",
                     Goal = "Climb the ivy over the begijnhof wall.",
+                    Target = () => P(-33f, 0f, -111.4f),
                     Done = () => cat.transform.position.z < -112.6f && cat.IsGrounded,
                 },
                 new Beat
                 {
                     Story = "A big quiet lawn, rows of old lindens, little houses with red doors and a church. Only the bells make a sound.",
                     Goal = "Explore: sit under a linden, then find the big church.",
+                    Target = () => visitedLindens ? (churchDoor != null ? churchDoor.position : (Vector3?)null) : NearestLinden(),
                     Begin = () => { visitedLindens = false; },
                     Done = () =>
                     {
@@ -220,36 +280,42 @@ namespace Draho.Story
                 {
                     Story = "Someone watches from the church step: an old grey cat. This is her begijnhof.",
                     Goal = "Walk slowly to the grey cat. Do not run: she does not like that.",
+                    Target = () => greyCat != null ? greyCat.transform.position : (Vector3?)null,
                     Done = () => greyCat == null || greyCat.Welcomed,
                 },
                 new Beat
                 {
                     Story = "She blinks slowly: you may stay. Then she sniffs the air. Across the river: fresh bread!",
                     Goal = "Leave over the wall (rain barrel, shed, wall), cross the footbridge and find the bakery.",
+                    Target = () => InBegijnhof(cat.transform.position) ? P(-30.5f, 0f, -114.6f) : (bakery != null ? bakery.position : (Vector3?)null),
                     Done = () => bakery == null || Vector3.Distance(Flat(bakery.position), Flat(cat.transform.position)) < 5f,
                 },
                 new Beat
                 {
                     Story = "Chapter 6: The Bakery. The baker sweeps flour and mutters about a mouse in the bread crates. A job for a mouse hunter!",
                     Goal = "Catch the bakery mouse. Use DUCK to sneak up on it.",
+                    Target = () => P(-57.4f, 0f, -99.8f),
                     Done = () => bakeryMouse == null || bakeryMouse.IsCaught,
                 },
                 new Beat
                 {
                     Story = "The baker smiles and puts a saucer of milk by the door. Drahomil, mouse hunter of the riverside. Time to go home.",
                     Goal = "Go home: quay, drainpipes up to the roofs, the ivy down into the garden.",
+                    Target = () => HomeWaypoint(),
                     Done = () => InApartment(cat.transform.position),
                 },
                 new Beat
                 {
                     Story = "Chapter 7: The Neighbour's Flat. Home... but the toy mouse is gone! Corgi paw prints lead to the neighbour's open window.",
                     Goal = "Go through the loose plank and the wild garden. Jump in at the open window.",
+                    Target = () => cat.transform.position.z < 5f && cat.transform.position.x < 0f ? P(-19.5f, 0f, 4.6f) : P(-2.6f, 0f, 7.1f),
                     Done = () => InFlat(cat.transform.position),
                 },
                 new Beat
                 {
                     Story = "Hrozna, the corgi next door, sleeps in her basket. Right by her nose: Drahomil's toy mouse!",
                     Goal = "Sneak to the basket (DUCK) and take the toy mouse back. If Hrozna wakes up, she chases you out.",
+                    Target = () => toyMouse != null && toyMouse.gameObject.activeSelf ? toyMouse.transform.position : (Vector3?)null,
                     Done = () => toyMouse == null || toyMouse.Taken,
                 },
                 new Beat
@@ -307,6 +373,7 @@ namespace Draho.Story
             if (hud != null) hud.Show(beat.Story, beat.Goal);
             Draho.Core.Progress.Instance?.BeatReached(index);
             Debug.Log($"STORY beat {index}: {beat.Story}");
+            GoalCompass.Target = beat.Target;
         }
 
         /// <summary>Test hook: unityInstance.SendMessage('StoryDirector', 'LogState') from the playtest.</summary>

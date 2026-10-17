@@ -33,3 +33,25 @@ low-poly scenes get much of their look from gradient ambient light and the palet
 occlusion / depth effects are expensive on phones.
 In Draho: URP upscaling filter **FSR 1** (sharpness 0.8) for the adaptive render scale; a **warmer
 trilight ambient** (warm horizon and ground bounce). No SSAO (cost on phones).
+
+## Round 29 (2026-10-17)
+
+**Game feel: how do jumps and landings feel good, and how should the camera follow a small, quick character?**
+Sources: [Jumping and landing feedback (Vaults and Vampires devlog)](https://rcxa.itch.io/vaults-and-vampires/devlog/662233/jumping-and-landing-feedback),
+[GDevelop: character game feel](https://wiki.gdevelop.io/gdevelop5/extensions/character-game-feel/),
+[Platformer animation guide (MoCap Online)](https://mocaponline.com/blogs/mocap-news/platformer-animation-guide),
+[Cinemachine follow cameras in practice](https://uhiyama-lab.com/en/notes/unity/unity-cinemachine-camera-guide/),
+[Build a robust third person camera (Wayline)](https://www.wayline.io/blog/build-robust-third-person-camera-system),
+[Camera damping in a platformer (MakeCode forum)](https://forum.makecode.com/t/camera-damping-in-platformer/39276).
+Findings: land with a squash (lower and wider) scaled by the fall speed, keep the volume; keep
+anticipation very short (2-4 frames) so the jump does not feel late; the camera's feel comes from
+damping, a dead zone and lookahead; too much damping feels unresponsive, snapping feels bad.
+In Draho: stretch on take-off, squash on landing (6-22 %, by fall speed, volume kept), a dust puff on hard
+landings, camera lookahead (0.18 s of movement) and calmer vertical follow (sharpness 5 instead of 12)
+except while climbing. No anticipation crouch (input must stay instant on a phone).
+
+**Moving vegetation (wiki milestone 2).** The search found mostly asset-store wind shaders
+([Stylized Grass Shader](https://assetstore.unity.com/packages/vfx/shaders/stylized-grass-shader-143830),
+[Stylized Grass with Wind](https://marketplace.unity.com/packages/3d/vegetation/plants/stylized-grass-wind-194396)):
+opaque geometry, a global wind controller, cheaper modes for weak devices. Next: our own small vertex wind
+shader for the grass and ivy meshes (to do in a later round, measured with the perf scenario).

@@ -371,6 +371,7 @@ namespace Draho.EditorTools
             var catAnimator = root.AddComponent<CatAnimator>();
             SetField(catAnimator, "motor", motor);
             SetField(catAnimator, "animator", animator);
+            SetField(catAnimator, "dust", DustPuff(root.transform));
 
             foreach (var t in root.GetComponentsInChildren<Transform>(true))
                 t.gameObject.layer = IgnoreRaycastLayer;
@@ -416,6 +417,61 @@ namespace Draho.EditorTools
                 r.sharedMaterials = r.sharedMaterials.Select(m =>
                     m == null ? m : m.name == "Fur" ? furMat : AssetDatabase.LoadAssetAtPath<Material>($"{MaterialDir}/{m.name}.mat") ?? m).ToArray();
             return root;
+        }
+
+        /// <summary>A small dust puff for hard landings: soft round particles, emitted by CatAnimator.</summary>
+        static ParticleSystem DustPuff(Transform parent)
+        {
+            var go = new GameObject("Dust");
+            go.transform.SetParent(parent, false);
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.playOnAwake = false;
+            main.loop = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.35f, 0.6f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.3f, 0.8f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.11f);
+            main.startColor = new Color(0.82f, 0.77f, 0.7f, 0.55f);
+            main.gravityModifier = -0.05f;
+            main.maxParticles = 40;
+            var emission = ps.emission;
+            emission.enabled = false; // only explicit Emit() calls
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Circle;
+            shape.radius = 0.08f;
+            shape.rotation = new Vector3(-90f, 0f, 0f);
+            var fade = ps.colorOverLifetime;
+            fade.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                      new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) });
+            fade.color = g;
+            var grow = ps.sizeOverLifetime;
+            grow.enabled = true;
+            grow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 1.6f));
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            string path = $"{MaterialDir}/Dust.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.SetFloat("_Surface", 1f); // transparent, alpha blend
+            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            mat.SetTexture("_BaseMap", AssetDatabase.GetBuiltinExtraResource<Texture2D>("Default-Particle.psd"));
+            EditorUtility.SetDirty(mat);
+            renderer.sharedMaterial = mat;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            return ps;
         }
 
         static void FixModelOrientationAndScale(GameObject model)

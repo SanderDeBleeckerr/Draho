@@ -20,6 +20,10 @@ namespace Draho.CameraRig
         [SerializeField] float distance = 0.6f;
         [SerializeField] float focusHeight = 0.22f;
         [SerializeField] float followSharpness = 12f;
+        [Tooltip("How fast the camera follows height changes (lower: calmer during jumps).")]
+        [SerializeField] float verticalSharpness = 5f;
+        [Tooltip("Seconds of movement the camera looks ahead of a running cat.")]
+        [SerializeField] float lookaheadTime = 0.18f;
 
         [Header("Orbit")]
         [Tooltip("Degrees per screen height of swipe.")]
@@ -45,6 +49,7 @@ namespace Draho.CameraRig
         float yaw;
         CatMotor motor;
         float climbBlend;
+        Vector3 lookahead;
         Vector3 focus;
         float currentDistance;
 
@@ -86,8 +91,14 @@ namespace Draho.CameraRig
             if (blend > 0f && look.sqrMagnitude < 0.01f)
                 yaw = Mathf.MoveTowardsAngle(yaw, target.eulerAngles.y, 50f * blend * dt);
 
-            Vector3 targetFocus = target.position + Vector3.up * Mathf.Lerp(focusHeight, climbFocusHeight, blend);
-            focus = Vector3.Lerp(focus, targetFocus, 1f - Mathf.Exp(-followSharpness * dt));
+            // Look a little ahead of a running cat; follow height changes more calmly than sideways moves,
+            // so the view does not bob with every jump (research: damping, lookahead, vertical dead zone).
+            Vector3 velocity = motor != null ? Vector3.ProjectOnPlane(target.forward, Vector3.up) * motor.Speed : Vector3.zero;
+            lookahead = Vector3.Lerp(lookahead, velocity * lookaheadTime, 1f - Mathf.Exp(-3f * dt));
+            Vector3 targetFocus = target.position + lookahead + Vector3.up * Mathf.Lerp(focusHeight, climbFocusHeight, blend);
+            float k = 1f - Mathf.Exp(-followSharpness * dt);
+            float ky = 1f - Mathf.Exp(-(blend > 0.5f ? followSharpness : verticalSharpness) * dt);
+            focus = new Vector3(Mathf.Lerp(focus.x, targetFocus.x, k), Mathf.Lerp(focus.y, targetFocus.y, ky), Mathf.Lerp(focus.z, targetFocus.z, k));
 
             Quaternion rotation = Quaternion.Euler(Mathf.Lerp(pitch, climbPitch, blend), yaw, 0f);
             Vector3 back = rotation * Vector3.back;

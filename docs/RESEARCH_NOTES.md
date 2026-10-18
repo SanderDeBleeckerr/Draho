@@ -203,3 +203,20 @@ dark windows mixed?
   3 m floor, chosen lit or dark at build time (35 % lit, fixed seed): two meshes, two draw calls.
 - `WindowGlow` sets the emission of the shared lit material from `SkyMood.NightAmount`; by day all panes are
   dark glass, which also breaks up the plain block walls.
+
+## Round 38 (2026-10-18): stars and the moon
+
+**Question:** the night sky was an empty dark blue. How do stylized mobile games draw stars and a moon cheaply?
+
+**Sources**
+- Farland Skies - Low Poly (Unity Asset Store), https://assetstore.unity.com/packages/slug/64604 : a single-pass
+  skybox shader, three star types, adjustable twinkle, horizon extinction; made for mobile.
+- Polyverse Skies, https://assetstore.unity.com/packages/vfx/shaders/polyverse-skies-low-poly-skybox-shaders-104017 :
+  three star layers and a moon mesh, mobile-optimised shaders.
+- Astral Fjord Skybox, https://codinfinity.itch.io/astral-fjord-skybox : procedural, adjustable twinkle, no textures.
+
+**What we do** (no paid assets): `Art/Shaders/NightSky.shader`
+- Stars: 700 billboards 140 m around the camera (inside the far plane), upper sky only (the horizon is in the
+  fog), mostly small with a few big, warm or blue ones; each twinkles at its own speed (seed in vertex alpha).
+- Moon: one billboard in the night-light direction, a pale disc with a soft halo.
+- Additive, no fog, no shadows, one mesh each; strength from `_DrahoNight`, set by SkyMood.

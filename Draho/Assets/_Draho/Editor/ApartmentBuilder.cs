@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans),
             };
             bool IsDynamic(Transform t)
             {
@@ -761,6 +761,77 @@ namespace Draho.EditorTools
             if (dust != null) renderer.sharedMaterial = dust;
             else Debug.LogWarning("Dust.mat not found: the rain has no material");
             go.AddComponent<Storm>().Configure(ps);
+        }
+
+        /// <summary>
+        /// Chapter 10-11: a roof hatch on the flat roof (the way down after the storm), the apartment's front door
+        /// on the kitchen's east wall, and the humans' legs in front of it (hidden until they come home).
+        /// </summary>
+        static void BuildHomecoming(Layout layout)
+        {
+            var wood = Mat("Hatch_Wood", new Color(0.3f, 0.24f, 0.18f), 0.15f);
+            var dark = Mat("Hatch_Dark", new Color(0.01f, 0.01f, 0.012f), 0f);
+            var hatch = new GameObject("RoofHatch").transform;
+            hatch.SetParent(level, false);
+            hatch.position = new Vector3(2.2f, 8.8f, 6.5f);
+            foreach (float s in new[] { -1f, 1f })
+            {
+                Box("HatchFrame", hatch.position + new Vector3(s * 0.45f, 0.06f, 0f), new Vector3(0.1f, 0.12f, 1.1f), wood, collider: false).transform.SetParent(hatch, true);
+                Box("HatchFrame", hatch.position + new Vector3(0f, 0.06f, s * 0.5f), new Vector3(1.0f, 0.12f, 0.1f), wood, collider: false).transform.SetParent(hatch, true);
+            }
+            Box("HatchHole", hatch.position + Vector3.up * 0.005f, new Vector3(0.8f, 0.01f, 0.9f), dark, collider: false).transform.SetParent(hatch, true);
+            var lid = Box("HatchLid", hatch.position + new Vector3(0f, 0.2f, -0.5f), new Vector3(0.85f, 0.04f, 0.95f), wood, collider: false);
+            lid.transform.rotation = Quaternion.Euler(-25f, 0f, 0f); // open a crack, lifted by the storm
+            lid.transform.SetParent(hatch, true);
+
+            // The front door: on the kitchen's east wall, between the fridge and the island.
+            float t = layout.wall.thickness, wallX = 7.6f - t / 2;
+            var doorMat = Mat("Apt_FrontDoor", new Color(0.36f, 0.27f, 0.2f), 0.25f);
+            var frame = Mat("Apt_DoorFrame", new Color(0.88f, 0.87f, 0.84f), 0.3f);
+            Box("FrontDoor", new Vector3(wallX - 0.015f, 1.0f, 1.0f), new Vector3(0.03f, 2.0f, 0.8f), doorMat, collider: false);
+            Box("FrontDoorFrame", new Vector3(wallX - 0.02f, 2.04f, 1.0f), new Vector3(0.04f, 0.08f, 0.96f), frame, collider: false);
+            foreach (float s in new[] { -1f, 1f })
+                Box("FrontDoorFrame", new Vector3(wallX - 0.02f, 1.0f, 1.0f + s * 0.44f), new Vector3(0.04f, 2.08f, 0.08f), frame, collider: false);
+            Box("DoorHandle", new Vector3(wallX - 0.05f, 1.0f, 0.7f), new Vector3(0.04f, 0.03f, 0.12f), Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), collider: false);
+
+            // The humans, seen from cat height: legs, shoes and the hem of a coat. +Z of each person faces the room.
+            var humans = new GameObject("Humans").transform;
+            humans.SetParent(level, false);
+            var jeans = Mat("Human_Jeans", new Color(0.18f, 0.24f, 0.36f), 0.2f);
+            var trousers = Mat("Human_Trousers", new Color(0.22f, 0.2f, 0.19f), 0.2f);
+            var coat = Mat("Human_Coat", new Color(0.55f, 0.42f, 0.3f), 0.2f);
+            var coat2 = Mat("Human_Coat2", new Color(0.2f, 0.3f, 0.26f), 0.2f);
+            var shoe = Mat("Human_Shoe", new Color(0.08f, 0.07f, 0.07f), 0.4f);
+            var people = new[] { (new Vector3(7.05f, 0f, 0.85f), jeans, coat), (new Vector3(6.85f, 0f, 1.3f), trousers, coat2) };
+            foreach (var (pos, legs, top) in people)
+            {
+                var person = new GameObject("Person").transform;
+                person.SetParent(humans, false);
+                person.position = pos;
+                person.rotation = Quaternion.Euler(0f, -90f, 0f); // facing into the kitchen (-x)
+                foreach (float s in new[] { -1f, 1f })
+                {
+                    var leg = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    Object.DestroyImmediate(leg.GetComponent<Collider>());
+                    leg.transform.SetParent(person, false);
+                    leg.transform.localPosition = new Vector3(s * 0.1f, 0.45f, 0f);
+                    leg.transform.localScale = new Vector3(0.13f, 0.42f, 0.13f);
+                    leg.GetComponent<Renderer>().sharedMaterial = legs;
+                    var foot = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    Object.DestroyImmediate(foot.GetComponent<Collider>());
+                    foot.transform.SetParent(person, false);
+                    foot.transform.localPosition = new Vector3(s * 0.1f, 0.04f, 0.05f);
+                    foot.transform.localScale = new Vector3(0.11f, 0.08f, 0.28f);
+                    foot.GetComponent<Renderer>().sharedMaterial = shoe;
+                }
+                var hem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                Object.DestroyImmediate(hem.GetComponent<Collider>());
+                hem.transform.SetParent(person, false);
+                hem.transform.localPosition = new Vector3(0f, 1.05f, 0f);
+                hem.transform.localScale = new Vector3(0.46f, 0.2f, 0.32f);
+                hem.GetComponent<Renderer>().sharedMaterial = top;
+            }
+            humans.gameObject.AddComponent<Humans>();
         }
 
         static void BuildFox()
@@ -2198,6 +2269,7 @@ namespace Draho.EditorTools
             BuildQuayLamp(layout.quay_lamp);
             BuildNightSky();
             BuildRain();
+            BuildHomecoming(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

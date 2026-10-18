@@ -849,16 +849,6 @@
    "d": 0.9,
    "h": 3.4,
    "color": "#7E5444"
-  },
-  {
-   "id": "skylight_back",
-   "label": "Skylight on the flat roof",
-   "x": 2.2,
-   "z": 6.5,
-   "w": 1.0,
-   "d": 1.4,
-   "h": 0.35,
-   "color": "#2E3A44"
   }
  ],
  "bounds": [

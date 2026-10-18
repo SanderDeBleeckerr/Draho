@@ -44,7 +44,9 @@ namespace Draho.Story
         Transform gardenLamp;
         Fox fox;
         Climbable courtPipe;
-        Transform frontChimney, northChimney;
+        Transform frontChimney, northChimney, roofHatch, catTree;
+        Humans humans;
+        float greetTime;
         Pigeon[] pigeons;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
@@ -143,6 +145,11 @@ namespace Draho.Story
             if (chimneyGo != null) frontChimney = chimneyGo.transform;
             var northGo = GameObject.Find("chimney_north");
             if (northGo != null) northChimney = northGo.transform;
+            var hatchGo = GameObject.Find("RoofHatch");
+            if (hatchGo != null) roofHatch = hatchGo.transform;
+            var treeGo = GameObject.Find("cat_tree");
+            if (treeGo != null) catTree = treeGo.transform;
+            humans = FindAnyObjectByType<Humans>();
             pigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
@@ -479,7 +486,44 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Behind the big chimney you are out of the wind. Lightning! In the flash you see a dark square on the roof below: a hatch, open a crack. End of the second part of chapter 10.",
+                    Story = "Behind the big chimney you are out of the wind. Lightning! In the flash you see a dark square on the flat roof behind the light well: a hatch, open a crack.",
+                    Goal = "Get to the hatch on the flat roof (back over the ridge, past the light well) and slip inside.",
+                    Target = () => roofHatch != null ? roofHatch.position : (Vector3?)null,
+                    Done = () => roofHatch != null && Vector3.Distance(cat.transform.position, roofHatch.position) < 0.8f,
+                },
+                // ---- Chapter 11: Home ----
+                new Beat
+                {
+                    Story = "Chapter 11: Home. Through the hatch, down a dusty attic ladder and the dark stairs, and in through your own cat flap. Home, and wet to the bone.",
+                    Goal = "Dry off: climb into your basket on top of the cat tree.",
+                    Begin = () => ScreenFade.Run(() =>
+                    {
+                        Storm.End();
+                        SkyMood.Set(SkyMood.Mood.Night, 0.1f);
+                        cat.Teleport(new Vector3(3.4f, 0.05f, 3.4f), Quaternion.Euler(0f, 60f, 0f));
+                    }),
+                    Target = () => catTree != null ? catTree.position + Vector3.up * 0.8f : (Vector3?)null,
+                    Done = () => catTree != null && cat.transform.position.y > 0.5f && Vector3.Distance(Flat(cat.transform.position), Flat(catTree.position)) < 0.6f,
+                },
+                new Beat
+                {
+                    Story = "Warm and dry, you sleep... Birds sing: morning! The storm has washed the town clean. Then: keys in the door. The humans are home!",
+                    Goal = "Run to the front door in the kitchen and greet them: rub against their legs.",
+                    Begin = () => { SkyMood.Set(SkyMood.Mood.Day, 14f); humans?.ComeHome(); greetTime = 0f; },
+                    Target = () => humans != null ? humans.transform.GetChild(0).position + Vector3.up * 0.4f : (Vector3?)null,
+                    Done = () =>
+                    {
+                        if (humans == null) return true;
+                        bool close = false;
+                        foreach (Transform person in humans.transform)
+                            if (Vector3.Distance(Flat(cat.transform.position), Flat(person.position)) < 0.55f) close = true;
+                        greetTime = close ? greetTime + Time.deltaTime : Mathf.Max(0f, greetTime - Time.deltaTime);
+                        return greetTime > 2.5f;
+                    },
+                },
+                new Beat
+                {
+                    Story = "Purrrr. They smell of trains and coffee. One kneels down and scratches you behind the ear: \"Did you have a quiet day, Drahomil?\" You blink, very slowly. THE END. Thank you for playing!",
                     Goal = "",
                     Done = () => false,
                 },

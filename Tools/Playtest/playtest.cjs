@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,18 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=44&at=3.2,6.5,270,8.9 : on the flat roof by the hatch after the storm; slip in, dry off on the
+  // cat tree, morning, greet the humans at the front door, the end.
+  homecoming: [
+    ['02_to_hatch', 'move', '0,1,0,1'],
+    ['03_fade', 'wait', '3'],
+    ['04_on_tree', 'call', 'StoryDirector.TestTeleport:4.1,4.35,0,0.8'],
+    ['05_morning', 'wait', '5'],
+    ['06_to_door', 'call', 'StoryDirector.TestTeleport:6.4,1.05,90'],
+    ['07_rub', 'move', '0,1,0,0.7'],
+    ['08_purr', 'wait', '4'],
+    ['09_end', 'wait', '3'],
   ],
   // Start with ?beat=43&at=14.4,4.6,180,11.9 : on the ridge by the front chimney in the storm; walk north along the
   // ridge, standing through one gust and ducking through the next, then to the neighbour's chimney.

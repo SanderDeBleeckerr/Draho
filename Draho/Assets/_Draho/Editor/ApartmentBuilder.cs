@@ -850,7 +850,7 @@ namespace Draho.EditorTools
             food.transform.localScale = new Vector3(0.13f, 0.04f, 0.13f);
             food.GetComponent<Renderer>().sharedMaterial = Mat("Cat_Food", new Color(0.5f, 0.32f, 0.2f), 0.4f);
             food.GetComponent<MeshFilter>().sharedMesh = LowSphere();
-            bowl.AddComponent<StoryItem>().Configure("Breakfast! Crunch, crunch, purr.", 0.35f);
+            bowl.AddComponent<StoryItem>().Configure("Breakfast! Crunch, crunch, purr.", 0.5f);
             bowl.SetActive(false);
         }
 

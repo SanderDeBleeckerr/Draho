@@ -318,7 +318,7 @@ const steps = {
     ['07_rub', 'move', '0,1,0,0.7'],
     ['08_purr', 'wait', '4'],
     ['09_to_bowl', 'call', 'StoryDirector.TestTeleport:4.7,1.0,90'],
-    ['10_eat', 'move', '0,1,0,0.5'],
+    ['10_eat', 'move', '0,1,0,1.2'],
     ['11_end', 'wait', '4'],
   ],
   // Start with ?beat=47&at=14.4,4.6,180,11.9 : on the ridge by the front chimney in the storm; walk north along the

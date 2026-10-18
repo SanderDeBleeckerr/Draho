@@ -11,7 +11,7 @@ surface and terrain models). Only relative game metres go into this repository.
 | 3 | Over the Fence | The neighbour's wild garden (nobody home for months), workshop wall | A loose plank in the fence, tall grass, brambles, a hedgehog that must learn to trust the cat, its nest | 30 min | First part playable |
 | 4 | The Riverside | Roofs west of the garden, the quay, a narrow edge above the river | Drop to the quay, walk the edge or the rooftops, do not fall in (the cat climbs out wet) | 25 min | First part playable |
 | 5 | The Begijnhof | An old walled court of white houses, lindens and a church, down the river | Ivy over the wall, explore the court | 25 min | First part playable |
-| 6 | The Bakery | Across a footbridge, on the far bank of the river | Leave the begijnhof over its wall, cross the bridge, catch the bakery mouse | 20 min | First part playable |
+| 6 | The Bakery | Across a footbridge, on the far bank of the river | Leave the begijnhof over its wall, cross the bridge, catch the bakery mouse, chase off a croissant-thief gull, eat the crumbs | 20 min | First part playable |
 | 7 | The Neighbour's Flat | The flat behind the apartment, through a window from the wild garden | Hrozna the corgi sleeps on Drahomil's toy mouse: sneak in, take it back, get out | 20 min | First part playable |
 | 8 | The inner court | The round-stone court: a light well in the house (8.8 m) | Pigeons that flee a straight approach (sneak past from the side), a flock that flies up together, a drainpipe to the lost jingle ball | 15 min | First part playable |
 | 9 | Night | All areas after sunset | Moths at the garden lamp, follow a fox to its den, through a broken fence to the river bank and its lamp-post, home over the shed | 35 min | Playable (to polish) |

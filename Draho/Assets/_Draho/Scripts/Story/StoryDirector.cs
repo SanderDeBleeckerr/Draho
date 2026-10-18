@@ -48,6 +48,8 @@ namespace Draho.Story
         Humans humans;
         float greetTime;
         Pigeon[] pigeons;
+        Pigeon gull;
+        StoryItem croissant;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
         static Vector3? P(float x, float y, float z) => new Vector3(x, y, z);
@@ -150,7 +152,10 @@ namespace Draho.Story
             var treeGo = GameObject.Find("cat_tree");
             if (treeGo != null) catTree = treeGo.transform;
             humans = FindAnyObjectByType<Humans>();
-            pigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
+            var birdsOfStone = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
+            pigeons = Array.FindAll(birdsOfStone, p => p.name.StartsWith("Pigeon_"));
+            gull = Array.Find(birdsOfStone, p => p.name == "Gull");
+            croissant = Array.Find(FindObjectsByType<StoryItem>(FindObjectsInactive.Include, FindObjectsSortMode.None), i => i.name == "Croissant");
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
@@ -339,7 +344,22 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The baker smiles and puts a saucer of milk by the door. Drahomil, mouse hunter of the riverside. Time to go home.",
+                    Story = "Got it! But a big herring gull lands on the bread crates and snatches a croissant. The baker shakes his broom at it.",
+                    Goal = "Chase the gull: sneak close from the side (DUCK) and touch it. Gulls flee from a cat that comes straight at them.",
+                    Target = () => gull != null ? gull.transform.position : (Vector3?)null,
+                    Done = () => gull == null || gull.WasTouched,
+                },
+                new Beat
+                {
+                    Story = "SKREEE! The gull flies up to the roof, screaming, and drops the croissant by the door.",
+                    Goal = "Eat the croissant crumbs by the bakery door.",
+                    Begin = () => { if (croissant != null) croissant.gameObject.SetActive(true); },
+                    Target = () => croissant != null && croissant.gameObject.activeSelf ? croissant.transform.position : (Vector3?)null,
+                    Done = () => croissant == null || croissant.Taken,
+                },
+                new Beat
+                {
+                    Story = "The baker smiles and puts a saucer of milk by the door. Drahomil, mouse hunter and gull chaser of the riverside. Time to go home.",
                     Goal = "Go home: quay, drainpipes up to the roofs, the ivy down into the garden.",
                     Target = () => HomeWaypoint(),
                     Done = () => InApartment(cat.transform.position),

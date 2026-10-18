@@ -834,6 +834,90 @@ namespace Draho.EditorTools
             humans.gameObject.AddComponent<Humans>();
         }
 
+        /// <summary>
+        /// Chapter 6: a herring gull on the far bank by the bakery, with a stolen croissant. It is a bird of the
+        /// Pigeon kind (flees a straight approach, perches high) in its own group, bigger and warier; when the
+        /// cat touches it, it drops the croissant (a StoryItem by the bakery door, hidden until then).
+        /// </summary>
+        static void BuildGull(Layout layout)
+        {
+            var b = layout.bakery;
+            if (b == null) return;
+            var white = Mat("Gull_White", new Color(0.93f, 0.93f, 0.92f), 0.25f);
+            var grey = Mat("Gull_Grey", new Color(0.62f, 0.66f, 0.7f), 0.25f);
+            var black = Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f);
+            var yellow = Mat("Gull_Beak", new Color(0.98f, 0.8f, 0.2f), 0.4f);
+            var pink = Mat("Pigeon_Feet", new Color(0.85f, 0.42f, 0.45f), 0.3f);
+            var crust = Mat("Croissant", new Color(0.8f, 0.52f, 0.2f), 0.35f);
+            var root = new GameObject("Gull");
+            root.transform.SetParent(level, false);
+            root.transform.SetPositionAndRotation(new Vector3(b.x + 1.6f, 0f, -97.8f), Quaternion.Euler(0f, 200f, 0f));
+            Transform Part(PrimitiveType type, Transform parent, Vector3 pos, Vector3 euler, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(type);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localRotation = Quaternion.Euler(euler);
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                if (type == PrimitiveType.Sphere) go.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                return go.transform;
+            }
+            Transform Pivot(string name, Transform parent, Vector3 pos)
+            {
+                var t = new GameObject(name).transform;
+                t.SetParent(parent, false);
+                t.localPosition = pos;
+                return t;
+            }
+            // About 60 cm long: white body and head, grey back, black wing tips, a yellow beak with a croissant.
+            var body = Pivot("Body", root.transform, Vector3.zero);
+            Part(PrimitiveType.Sphere, body, new Vector3(0f, 0.2f, 0f), new Vector3(-8f, 0f, 0f), new Vector3(0.2f, 0.19f, 0.4f), white);
+            Part(PrimitiveType.Cube, body, new Vector3(0f, 0.18f, -0.25f), new Vector3(-10f, 0f, 0f), new Vector3(0.09f, 0.03f, 0.16f), black);
+            foreach (float side in new[] { -1f, 1f })
+                Part(PrimitiveType.Cylinder, body, new Vector3(side * 0.04f, 0.05f, 0.02f), Vector3.zero, new Vector3(0.018f, 0.05f, 0.018f), pink);
+            var head = Pivot("Head", body, new Vector3(0f, 0.32f, 0.16f));
+            Part(PrimitiveType.Sphere, head, Vector3.zero, Vector3.zero, new Vector3(0.11f, 0.11f, 0.12f), white);
+            Part(PrimitiveType.Cube, head, new Vector3(0f, -0.01f, 0.1f), new Vector3(8f, 0f, 0f), new Vector3(0.025f, 0.03f, 0.09f), yellow);
+            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.02f, 0.17f), new Vector3(0f, 0f, 90f), new Vector3(0.035f, 0.08f, 0.035f), crust); // the croissant
+            foreach (float side in new[] { -1f, 1f })
+                Part(PrimitiveType.Sphere, head, new Vector3(side * 0.045f, 0.02f, 0.035f), Vector3.zero, Vector3.one * 0.016f, black);
+            Transform Wing(string name, float side)
+            {
+                var pivot = Pivot(name, body, new Vector3(side * 0.09f, 0.26f, 0f));
+                Part(PrimitiveType.Cube, pivot, new Vector3(side * 0.01f, -0.06f, -0.05f), Vector3.zero, new Vector3(0.018f, 0.13f, 0.34f), grey);
+                Part(PrimitiveType.Cube, pivot, new Vector3(side * 0.012f, -0.08f, -0.24f), Vector3.zero, new Vector3(0.016f, 0.08f, 0.1f), black);
+                return pivot;
+            }
+            var left = Wing("WingL", -1f);
+            var right = Wing("WingR", 1f);
+            // Perches: the bakery's front gutter and the far bank's railing posts; the yard is the bank in front.
+            var perches = new[]
+            {
+                new Vector3(b.x + 0.1f, 7.05f, -94f), new Vector3(b.x + 0.1f, 7.05f, -100f), new Vector3(b.x + 0.1f, 7.05f, -105f),
+            };
+            var yard = new Vector4(b.x + 0.8f, b.z0 + 1.5f, -49.5f, b.z1 - 1.5f);
+            var gull = root.AddComponent<Pigeon>();
+            gull.Configure(body, head, left, right, perches, yard);
+            var so = new SerializedObject(gull);
+            so.FindProperty("group").stringValue = "gull";
+            so.FindProperty("touchRadius").floatValue = 0.45f;
+            so.FindProperty("fleeSneaking").floatValue = 0.6f;
+            so.FindProperty("fleeWalking").floatValue = 1.8f;
+            so.FindProperty("fleeRunning").floatValue = 3.2f;
+            so.FindProperty("walkSpeed").floatValue = 0.35f;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            // The croissant it drops, by the bakery door (hidden until the gull lets go).
+            var croissant = new GameObject("Croissant");
+            croissant.transform.SetParent(level, false);
+            croissant.transform.position = new Vector3(b.x + 0.9f, 0.06f, -99.0f);
+            Part(PrimitiveType.Sphere, croissant.transform, Vector3.zero, new Vector3(0f, 30f, 90f), new Vector3(0.06f, 0.14f, 0.06f), crust);
+            croissant.AddComponent<StoryItem>().Configure("Flaky, buttery crumbs. Mmm!", 0.45f);
+            croissant.SetActive(false);
+        }
+
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
@@ -2270,6 +2354,7 @@ namespace Draho.EditorTools
             BuildNightSky();
             BuildRain();
             BuildHomecoming(layout);
+            BuildGull(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

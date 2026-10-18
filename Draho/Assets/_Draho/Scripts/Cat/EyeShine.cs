@@ -11,8 +11,8 @@ namespace Draho.Cat
     public class EyeShine : MonoBehaviour
     {
         [SerializeField] Material eye;
-        [SerializeField] Color shine = new Color(0.5f, 0.95f, 0.35f);
-        [SerializeField] float strength = 2.2f;
+        [SerializeField] Color shine = new Color(0.42f, 0.9f, 0.22f);
+        [SerializeField] float strength = 1.4f;
 
         static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
         Transform cam;

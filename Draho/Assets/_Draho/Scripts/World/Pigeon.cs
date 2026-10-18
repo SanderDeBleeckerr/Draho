@@ -35,6 +35,9 @@ namespace Draho.World
         [SerializeField] float sideFactor = 0.6f;
         [SerializeField] float touchRadius = 0.32f;
 
+        [Tooltip("Birds watch only their own flock (the court pigeons, the bakery gull).")]
+        [SerializeField] string group = "court";
+
         [Header("Moves")]
         [SerializeField] float flySpeed = 3f;
         [SerializeField] float walkSpeed = 0.25f;
@@ -97,8 +100,9 @@ namespace Draho.World
                 float d = toPigeon.magnitude;
                 if (d < touchRadius && !WasTouched)
                 {
-                    WasTouched = AnyTouched = true;
-                    Debug.Log($"STORY pigeon touched at {d:0.00} m");
+                    WasTouched = true;
+                    if (group == "court") AnyTouched = true;
+                    Debug.Log($"STORY {group} bird touched at {d:0.00} m");
                     TakeOff("touched");
                     return;
                 }
@@ -148,12 +152,12 @@ namespace Draho.World
 
         void TakeOff(string why)
         {
-            Debug.Log($"STORY pigeon flies up ({why})");
+            Debug.Log($"STORY {(group == "court" ? "pigeon" : group)} flies up ({why})");
             FlyTo(PickPerch());
             timer = Random.Range(8f, 13f);
             // Alarm: the rest of the flock follows one by one.
             foreach (var other in flock)
-                if (other != this && other.state == State.Ground && other.alarmDelay < 0f)
+                if (other != this && other.group == group && other.state == State.Ground && other.alarmDelay < 0f)
                     other.alarmDelay = Random.Range(0.15f, 0.5f);
         }
 
@@ -238,8 +242,9 @@ namespace Draho.World
         /// <summary>Test hook: SendMessage('Pigeon_1', 'TestTouch'): as if the cat touched this pigeon.</summary>
         public void TestTouch()
         {
-            WasTouched = AnyTouched = true;
-            Debug.Log("STORY pigeon touched (test)");
+            WasTouched = true;
+            if (group == "court") AnyTouched = true;
+            Debug.Log($"STORY {group} bird touched (test)");
             if (state == State.Ground) TakeOff("touched");
         }
 

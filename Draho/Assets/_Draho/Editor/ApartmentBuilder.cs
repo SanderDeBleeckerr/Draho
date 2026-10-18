@@ -970,7 +970,7 @@ namespace Draho.EditorTools
                 var torso = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 Object.DestroyImmediate(torso.GetComponent<Collider>());
                 torso.transform.SetParent(fly.transform, false);
-                torso.transform.localScale = new Vector3(0.012f, 0.012f, 0.04f);
+                torso.transform.localScale = new Vector3(0.02f, 0.02f, 0.065f); // a bit bigger than life: it must read on a phone
                 torso.GetComponent<Renderer>().sharedMaterial = dark;
                 torso.GetComponent<MeshFilter>().sharedMesh = LowSphere();
                 Transform Wing(float side)
@@ -981,16 +981,16 @@ namespace Draho.EditorTools
                     var w = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     Object.DestroyImmediate(w.GetComponent<Collider>());
                     w.transform.SetParent(pivot, false);
-                    w.transform.localPosition = new Vector3(side * 0.03f, 0f, 0.004f);
-                    w.transform.localScale = new Vector3(0.06f, 0.002f, 0.05f);
+                    w.transform.localPosition = new Vector3(side * 0.05f, 0f, 0.006f);
+                    w.transform.localScale = new Vector3(0.1f, 0.003f, 0.085f);
                     w.GetComponent<Renderer>().sharedMaterial = wingMat;
                     if (i == 1) // the red admiral's orange band
                     {
                         var stripe = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         Object.DestroyImmediate(stripe.GetComponent<Collider>());
                         stripe.transform.SetParent(pivot, false);
-                        stripe.transform.localPosition = new Vector3(side * 0.03f, 0.0015f, 0.008f);
-                        stripe.transform.localScale = new Vector3(0.045f, 0.002f, 0.012f);
+                        stripe.transform.localPosition = new Vector3(side * 0.05f, 0.0025f, 0.012f);
+                        stripe.transform.localScale = new Vector3(0.075f, 0.003f, 0.02f);
                         stripe.GetComponent<Renderer>().sharedMaterial = band;
                     }
                     return pivot;

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,17 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=6&at=-10,2.5,0 (open lawn). Duck and crawl to the right; the shots come while the cat still moves (crawl animation check).
+  sneak: [
+    ['02_duck', 'duck', ''],
+    ['03_crawl', 'call', 'PlayerInput.TestMove:1,0,0,6'],
+    ['04_crawl', 'wait', '0.3'],
+    ['05_crawl', 'wait', '0.3'],
+    ['06_crawl', 'wait', '0.3'],
+    ['07_crawl', 'wait', '1.5'],
+    ['08_still', 'wait', '4'],
+    ['09_stand', 'duck', ''],
   ],
   // Start with ?beat=26&at=0,6.8,90 : inside the flat; run at the basket: Hrozna wakes and throws the cat out.
   flatloud: [

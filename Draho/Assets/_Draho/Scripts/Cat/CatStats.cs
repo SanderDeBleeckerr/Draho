@@ -56,7 +56,7 @@ namespace Draho.Cat
         [Tooltip("Speed at which the Run clip's paws do not slide, at playback speed 1.")]
         public float runClipSpeed = 0.666f;
         [Tooltip("Speed at which the CrouchWalk clip's paws do not slide, at playback speed 1.")]
-        public float crouchClipSpeed = 0.194f;
+        public float crouchClipSpeed = 0.196f;
         public float climbClipSpeed = 0.24f;
     }
 }

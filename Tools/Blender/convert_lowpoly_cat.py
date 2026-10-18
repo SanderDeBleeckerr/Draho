@@ -236,16 +236,26 @@ for owner in LEGS:
     targets[owner] = (e, e.location.copy())
 
 
-def leg_offset(u, duty, stride, lift):
-    """Paw path for one leg; u in [0,1). Stance: back along the ground. Swing: forward in an arc."""
+def leg_offset(u, duty, stride, lift, hover=0.0):
+    """Paw path for one leg; u in [0,1). Stance: back along the ground. Swing: forward in an arc.
+    hover > 0: the paw reaches forward early, waits just above the ground and then sets down softly
+    (a stalking cat feels for a quiet spot before it puts weight on the paw)."""
     if u < duty:
         s = u / duty
         return FWD * (stride * (0.5 - s))
     s = (u - duty) / (1 - duty)
-    return FWD * (stride * (smooth01(s) - 0.5)) + UP * (lift * math.sin(math.pi * s))
+    if hover <= 0.0:
+        return FWD * (stride * (smooth01(s) - 0.5)) + UP * (lift * math.sin(math.pi * s))
+    reach = smooth01(s / (1 - hover))                     # forward during the first part of the swing
+    height = math.sin(math.pi * min(s / (1 - hover), 1.0) * 0.5)  # up, and stay up
+    down = smooth01((s - (1 - hover)) / hover)            # then set down at the end
+    return FWD * (stride * (reach - 0.5)) + UP * (lift * height * (1 - down))
 
 
-def bake_clip(name, frames, pose_fn, use_ik):
+PAWS = ("Fingers.L", "Fingers.R", "Toe.L", "Toe.R")
+
+
+def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False):
     for owner, (e, base) in targets.items():
         e.animation_data_clear()
     cons = []
@@ -255,6 +265,17 @@ def bake_clip(name, frames, pose_fn, use_ik):
             c.target = e
             c.chain_count = 2
             cons.append((owner, c))
+    if flat_paws:
+        # Deeply bent legs tip the paws over (they curl like fists). Keep each paw pointing the way it
+        # points in the rest pose: track a point far away in that direction.
+        for n in PAWS:
+            bone = arm.data.bones[n]
+            aim = bpy.data.objects.new(f"Aim_{n}", None)
+            scene.collection.objects.link(aim)
+            aim.location = arm.matrix_world @ (bone.head_local + (bone.tail_local - bone.head_local).normalized() * 50)
+            c = arm.pose.bones[n].constraints.new("DAMPED_TRACK")
+            c.target = aim
+            cons.append((n, c))
     tmp = new_action(name + "_fk")
     for f in range(frames + 1):
         t = f / frames
@@ -269,14 +290,20 @@ def bake_clip(name, frames, pose_fn, use_ik):
     baked.name = name
     baked.use_fake_user = True
     for owner, c in cons:
+        if c.type == "DAMPED_TRACK":
+            bpy.data.objects.remove(c.target, do_unlink=True)
         arm.pose.bones[owner].constraints.remove(c)
     bpy.data.actions.remove(tmp)
     return baked
 
 
 WALK_FRAMES, WALK_DUTY, WALK_STRIDE, WALK_LIFT = 24, 0.62, 0.16, 0.035
-CROUCH_FRAMES, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT = 28, 0.7, 0.12, 0.02
-CROUCH_DROP = 0.065  # how far the body sinks when the cat ducks
+# Stalking (research round 32): the whole body goes low with the back level (hip height about 30 % lower),
+# slow steps with the paws close to the ground, each hind paw set where the front paw was, the head low,
+# forward and steady on the prey, and a small rise and fall of hips and shoulders so it does not look stiff.
+CROUCH_FRAMES, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT = 36, 0.72, 0.16, 0.025
+CROUCH_DROP = 0.07  # how far the body sinks when the cat ducks
+STALK_LEGS = {"Shin.L": 0.0, "Forearm.L": 0.3, "Shin.R": 0.5, "Forearm.R": 0.8}  # a little more diagonal
 TAILS = ("Tail1", "Tail2", "Tail3", "Tail4")
 # Sign guide (world axes, the cat faces +Y): rotating about SIDE (+X) by a positive angle swings a
 # downward leg forward, pitches the body nose-up, and lowers a backward-pointing tail.
@@ -287,10 +314,11 @@ def move_world(pb, offset):
     pb.matrix = Matrix.Translation(offset) @ pb.matrix
 
 
-def set_legs(t, phases, duty, stride, lift, f):
+def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0):
     for owner, phase in phases.items():
         e, base = targets[owner]
-        e.location = base + (leg_offset((t + phase) % 1.0, duty, stride, lift) if duty else Vector())
+        out = SIDE * (spread if owner.endswith(".L") else -spread)  # elbows and knees out when low
+        e.location = base + out + (leg_offset((t + phase) % 1.0, duty, stride, lift, hover) if duty else Vector())
         e.keyframe_insert("location", frame=f)
 
 
@@ -323,20 +351,23 @@ def idle_pose(t, f):
         rot_world(pb[name], SIDE, -(0.05 + 0.05 * i))
 
 
-def crouch_body(pb, w):
-    """Low, stretched stalking body: hips and chest down, head low and level, tail low."""
-    move_world(pb["Root"], -UP * CROUCH_DROP)
-    rot_world(pb["Neck"], SIDE, -0.25)                      # neck forward and down
-    rot_world(pb["Head"], SIDE, 0.3)                        # eyes stay level
+def crouch_body(pb, w, bob=0.0):
+    """Low, level stalking body: hips and chest down, shoulder blades high, head low and forward with
+    the eyes level, tail low behind with the tip just off the floor."""
+    move_world(pb["Root"], -UP * (CROUCH_DROP + bob))
+    rot_world(pb["Neck"], SIDE, -0.5)                       # neck forward and down, below the shoulders
+    rot_world(pb["Head"], SIDE, 0.55)                       # eyes stay level, on the prey
     for ear in ("Ear.L", "Ear.R"):
-        rot_world(pb[ear], SIDE, 0.25)                      # ears a little back
+        rot_world(pb[ear], SIDE, -0.2)                      # ears forward, listening
     for i, name in enumerate(TAILS):
-        rot_world(pb[name], SIDE, 0.06)                     # tail low, almost on the floor
-        rot_world(pb[name], UP, 0.06 * math.sin(w - 0.7 * i))
+        rot_world(pb[name], SIDE, 0.6 if i == 0 else -0.05 * i)  # tail low, the tip curls up a little
+        rot_world(pb[name], UP, 0.05 * math.sin(w - 0.7 * i))
+    flick = max(0.0, math.sin(w + 1.5)) ** 4               # the tip twitches: the hunter is excited
+    rot_world(pb["Tail4"], UP, 0.35 * flick)
 
 
 def crouch_idle_pose(t, f):
-    set_legs(t, LEGS, 0, 0, 0, f)
+    set_legs(t, LEGS, 0, 0, 0, f, spread=0.012)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     crouch_body(pb, 2 * w)
@@ -346,12 +377,16 @@ def crouch_idle_pose(t, f):
 
 
 def crouch_walk_pose(t, f):
-    set_legs(t, LEGS, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT, f)
+    set_legs(t, STALK_LEGS, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT, f, hover=0.35, spread=0.012)
     pb = arm.pose.bones
     w = 2 * math.pi * t
-    crouch_body(pb, w)
+    # Two small dips per cycle (one for each hind step), out of phase between hips and shoulders.
+    crouch_body(pb, w, bob=0.004 * math.sin(2 * w))
+    rot_world(pb["Hips"], SIDE, 0.035 * math.sin(2 * w))     # the hips rock as the hind legs push
+    rot_world(pb["Chest"], SIDE, -0.03 * math.sin(2 * w + 1.2))
     rot_world(pb["Hips"], FWD, 0.04 * math.sin(w))
     rot_world(pb["Chest"], FWD, -0.04 * math.sin(w + 0.8))
+    rot_world(pb["Head"], SIDE, 0.035 * math.sin(2 * w + 1.2))  # the head stays still: undo the chest rock
 
 
 AIR_FRAMES = 12
@@ -454,8 +489,8 @@ def climb_pose(t, f):
 
 walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True)
 idle = bake_clip("Idle", IDLE_FRAMES, idle_pose, use_ik=True)
-crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True)
-crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True)
+crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True, flat_paws=True)
+crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True, flat_paws=True)
 jump = bake_clip("Jump", AIR_FRAMES, jump_pose, use_ik=False)
 fall = bake_clip("Fall", AIR_FRAMES, fall_pose, use_ik=False)
 rear = bake_clip("Rear", IDLE_FRAMES // 2, rear_pose, use_ik=True)

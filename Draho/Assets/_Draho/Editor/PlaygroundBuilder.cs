@@ -366,6 +366,14 @@ namespace Draho.EditorTools
                 r.shadowCastingMode = ShadowCastingMode.On;
             }
 
+            // Eyeshine at night (EyeShine drives the emission; black by day).
+            var eyeMat = materials["Eye"];
+            eyeMat.EnableKeyword("_EMISSION");
+            eyeMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            eyeMat.SetColor("_EmissionColor", Color.black);
+            EditorUtility.SetDirty(eyeMat);
+            SetField(root.AddComponent<EyeShine>(), "eye", eyeMat);
+
             var motor = root.AddComponent<CatMotor>();
             SetField(motor, "stats", stats);
             var catAnimator = root.AddComponent<CatAnimator>();

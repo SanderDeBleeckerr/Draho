@@ -640,6 +640,88 @@ namespace Draho.EditorTools
             Debug.Log($"Draho: windows {lit.Count / 4} lit, {dark.Count / 4} dark");
         }
 
+        /// <summary>
+        /// Stars and the moon (Draho/NightSky): billboards far away around the camera, drawn only at night.
+        /// Root objects (not under the level), so static batching does not touch their special vertices.
+        /// </summary>
+        static void BuildNightSky()
+        {
+            var shader = Shader.Find("Draho/NightSky");
+            if (shader == null) { Debug.LogWarning("Draho/NightSky not found: no stars"); return; }
+            Material SkyMat(string name, Color color, float moon)
+            {
+                string path = $"{PlaygroundBuilder.MaterialDir}/{name}.mat";
+                var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
+                m.shader = shader;
+                m.SetColor("_Color", color);
+                m.SetFloat("_Moon", moon);
+                EditorUtility.SetDirty(m);
+                return m;
+            }
+            Mesh Quads(string name, List<(Vector3 dir, float size, Color tint)> items)
+            {
+                var verts = new List<Vector3>();
+                var uvs = new List<Vector2>();
+                var sizes = new List<Vector2>();
+                var colors = new List<Color>();
+                var tris = new List<int>();
+                var rng = new System.Random(77);
+                foreach (var (dir, size, tint) in items)
+                {
+                    int v = verts.Count;
+                    float seed = (float)rng.NextDouble();
+                    foreach (var uv in new[] { new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f) })
+                    {
+                        verts.Add(dir);
+                        uvs.Add(uv);
+                        sizes.Add(new Vector2(size, 0f));
+                        colors.Add(new Color(tint.r, tint.g, tint.b, seed));
+                    }
+                    tris.AddRange(new[] { v, v + 1, v + 2, v, v + 2, v + 3 }); // Cull Off: the side does not matter
+                }
+                var mesh = new Mesh { name = name };
+                mesh.SetVertices(verts);
+                mesh.SetUVs(0, uvs);
+                mesh.SetUVs(1, sizes);
+                mesh.SetColors(colors);
+                mesh.SetTriangles(tris, 0);
+                mesh.bounds = new Bounds(Vector3.zero, Vector3.one * 4000f); // the shader moves it around the camera
+                string path = $"{PlaygroundBuilder.ArtDir}/Meshes/{name}.asset";
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(mesh, path);
+                return mesh;
+            }
+            void Sky(string name, Mesh mesh, Material m)
+            {
+                var go = new GameObject(name);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterial = m;
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                r.receiveShadows = false;
+            }
+            // 700 stars in the upper sky, more small than big, a few warm and a few blue.
+            var rngStars = new System.Random(2024);
+            var stars = new List<(Vector3, float, Color)>();
+            while (stars.Count < 700)
+            {
+                var d = new Vector3((float)rngStars.NextDouble() * 2f - 1f, (float)rngStars.NextDouble(), (float)rngStars.NextDouble() * 2f - 1f);
+                if (d.sqrMagnitude > 1f || d.sqrMagnitude < 0.01f) continue;
+                d.Normalize();
+                if (d.y < 0.08f) continue; // the horizon is in the fog
+                float r = (float)rngStars.NextDouble();
+                float size = 0.35f + r * r * r * 1.1f;
+                double hue = rngStars.NextDouble();
+                var tint = hue < 0.12 ? new Color(1f, 0.85f, 0.7f) : hue > 0.85 ? new Color(0.75f, 0.85f, 1f) : Color.white;
+                stars.Add((d, size, tint));
+            }
+            Sky("NightStars", Quads("NightStars", stars), SkyMat("NightSky_Stars", new Color(0.9f, 0.93f, 1f), 0f));
+            Sky("NightMoon", Quads("NightMoon", new List<(Vector3, float, Color)> { (Vector3.up, 9f, Color.white) }),
+                SkyMat("NightSky_Moon", new Color(0.95f, 0.95f, 0.88f), 1f));
+        }
+
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
@@ -2056,6 +2138,7 @@ namespace Draho.EditorTools
             BuildGardenNight();
             BuildFox();
             BuildQuayLamp(layout.quay_lamp);
+            BuildNightSky();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

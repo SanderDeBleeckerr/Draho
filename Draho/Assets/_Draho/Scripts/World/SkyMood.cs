@@ -25,6 +25,8 @@ namespace Draho.World
         }
 
         static SkyMood instance;
+        static readonly int NightId = Shader.PropertyToID("_DrahoNight");
+        static readonly int MoonDirId = Shader.PropertyToID("_DrahoMoonDir");
 
         Light sun, fill;
         Material sky;
@@ -202,6 +204,9 @@ namespace Draho.World
             }
             NightAmount = p.night;
             float dark = Mathf.Clamp01(p.night * 2f - 1f); // only the real night loses colour
+            // Stars and the moon (Draho/NightSky); the moon sits where the night light comes from.
+            Shader.SetGlobalFloat(NightId, dark);
+            if (sun != null) Shader.SetGlobalVector(MoonDirId, -sun.transform.forward);
             if (grade != null) grade.saturation.Override(Mathf.Lerp(baseSaturation, -35f, dark));
             if (split != null)
             {

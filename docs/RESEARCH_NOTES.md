@@ -363,3 +363,25 @@ humans come home) → day (breakfast).
 **What we do** (`SqueakyToy.cs`): bright rubber toys are the loud "surface" of the flat: easy to see, easy to step
 round. A squeak plays, the toy squashes, a ring spreads 3.5 m over the floor and Hrozna wakes; the HUD explains the
 first squeak. The noise ring round the cat (round 20s) still shows how loud the cat's own steps are.
+
+## Round 49 (2026-10-18): a shaft of morning sun
+
+**Question:** how do games fake light shafts and dust in a sunbeam cheaply (WebGL, phone)?
+
+**Sources**
+- Unity Discussions, "Volumetric lighting for moving lights",
+  https://discussions.unity.com/t/volumetric-lighting-for-moving-lights-with-unity-pro-for-webplayer/17173 : the cheap
+  way is a transparent mesh matched to the shaft of light.
+- McNeel forum, "God rays in render", https://discourse.mcneel.com/t/god-rays-in-render/113151/4 : a gradient on the
+  alpha adds depth.
+- Volumetric Light Beam (mobile, WebGL),
+  https://discussions.unity.com/t/volumetric-light-beam-volumetric-lighting-solution-compatible-with-mobile-vr-and-webgl/679333
+  and Volumetric Light Mesh (https://assetstore.unity.com/packages/3d/environments/volumetric-light-mesh-224485) :
+  beams that fade with distance and near the camera.
+- FakeLight (itch.io), https://realanthonycolmenero.itch.io/fakelight : cone meshes with a semi-transparent shader,
+  cheap enough for mobile.
+
+**What we do** (`SunBeam.cs`): the four sides of the shaft from the sliding-door glass to where the light meets the
+floor or the far wall, rebuilt from the real sun direction; additive, warm, bright at the glass and 15 % at the far
+end; 60 dust motes drift in the room while the sun shines in. In this block only the low morning sun comes in
+through that door, so the shaft belongs to the dawn of chapter 11.

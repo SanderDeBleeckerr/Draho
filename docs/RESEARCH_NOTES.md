@@ -315,3 +315,18 @@ approach still multiplies the distance by 1.6, a side approach by 0.6.
 **What we do** (`Moth.dayFlier`): zigzag flight round the geraniums (speed, turn rate and height change all the
 time); a cat walking within 1 m triggers a fast, straight escape up and away; the butterfly comes back after
 about 1.6 s. Sneak close, then jump or rear when one flutters low.
+
+## Round 46 (2026-10-18): the fisherman (red light, green light)
+
+**Question:** how does a "freeze when watched" game stay fair?
+
+**Sources**
+- Playworks, "Red Light, Green Light", https://www.playworks.org/game-library/red-light-green-light/ : the caller
+  turns round on "red"; anyone still moving goes back to the start line.
+- University of Twente ProDeo, "Red Light, Green Light", https://www.prodeo.utwente.nl/?p=2966 : variants with a
+  clear turn signal and handicaps that balance the game.
+- Round 41 notes: announce an event before it acts.
+
+**What we do** (`Fisherman.cs`): he hums for 1.3 s before he turns (a HUD line when the cat is near), looks for
+2.2-3 s, then fishes for 3.5-7 s. Moving within 7 m while he looks sends the cat back up the quay (no fail state).
+The bucket is the goal; the turn of his upper body shows where he looks.

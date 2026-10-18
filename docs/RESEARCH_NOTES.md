@@ -330,3 +330,19 @@ about 1.6 s. Sneak close, then jump or rear when one flutters low.
 **What we do** (`Fisherman.cs`): he hums for 1.3 s before he turns (a HUD line when the cat is near), looks for
 2.2-3 s, then fishes for 3.5-7 s. Moving within 7 m while he looks sends the cat back up the quay (no fail state).
 The bucket is the goal; the turn of his upper body shows where he looks.
+
+## Round 47 (2026-10-18): dawn
+
+**Question:** what does the light look like between night and full morning?
+
+**Sources**
+- PhotographyTalk, "Golden hour vs blue hour",
+  https://www.photographytalk.com/golden-hour-vs-blue-hour-when-to-shoot-what-in-landscape-photography/ : golden
+  hour about 2000-3000 K (daylight about 5500 K) with long directional shadows, the sun about 6 degrees up; blue hour
+  cool, even and blue (9000-12000 K).
+- Swintons Art, "Twilight: the magic of the golden hour and the blue hour",
+  https://www.swintonsart.com/post/twilight-the-magic-of-the-golden-hour-and-the-blue-hour
+
+**What we do:** `SkyMood.Dawn`: the sun 6 degrees up in the east, warm gold at 0.85, the ambient and sky still
+cool blue-pink (the blue hour fading), pinkish fog; the lamps stay dimly on. The story goes night → dawn (the
+humans come home) → day (breakfast).

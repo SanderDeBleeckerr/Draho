@@ -165,3 +165,24 @@ night so it reads as night and not as a dark day?
 - `NightLamp.cs`: the lantern switches on with `SkyMood.NightAmount`; emissive glass for the bloom.
 - `SkyMood`: at night saturation -35 and split toning (blue shadows, warm highlights).
 - Story: chapter 9 opens at the lamp; the garden table is 1 m from the lantern, a natural jumping-off point.
+
+## Round 35 (2026-10-18): the fox, and a follow mission that is fair
+
+**Questions:** how do urban foxes and cats behave toward each other at night? Players often dislike
+"tailing" missions: what goes wrong, and how do we avoid it?
+
+**Sources**
+- "Adaptations of the red fox to urban environments in Sydney" (Journal of Urban Ecology, 2020),
+  https://researchers.mq.edu.au/en/publications/adaptations-of-the-red-fox-ivulpes-vulpesi-to-urban-environments-/ :
+  fox activity overlapped 78 % with cats (both nocturnal), only 20 % with dogs.
+- Anita Kelsey, cat behaviourist, "Are foxes a threat to cats", https://www.catbehaviourist.com/?p=332 :
+  foxes and cats meet many times every night and mostly ignore each other (a secondary source).
+- Game Developer, "Protect the moron", https://www.gamedeveloper.com/design/protect-the-moron- ; PC Gamer forum
+  and Hitman forum threads on tailing missions : the complaints are instant fails, hidden rules, slow pace and
+  missions used only for exposition.
+
+**What we do** (`Scripts/World/Fox.cs`)
+- The fox is no enemy: the cat follows it out of curiosity, to learn where it goes.
+- No fail state: the fox waits (looks back) when the cat is more than 7 m behind; a cat within 1.8 m that does
+  not sneak makes it stop and stare; if the cat stays, the fox trots on to its next spot.
+- The rule is in the goal text ("stay low, keep a few metres back"); the route is short (about 22 m, 6 stops).

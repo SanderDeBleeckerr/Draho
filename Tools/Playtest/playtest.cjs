@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,20 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=35&at=-2.6,7.4,270 : in the wild garden behind the fox's start; follow it west, sneaking
+  // first, then walking (it should stop and stare), then let it go to its den (test hook).
+  fox: [
+    ['02_fox_starts', 'wait', '2'],
+    ['03_duck', 'duck', ''],
+    ['04_sneak', 'move', '0,1,0,5'],
+    ['05_stand', 'duck', ''],
+    ['06_walk', 'move', '0,1,0,4'],
+    ['07_walk_more', 'move', '0,1,1,3'],
+    ['08_look', 'wait', '3'],
+    ['09_walk_on', 'move', '0,1,0,4'],
+    ['10_to_den', 'call', 'Fox.TestToDen'],
+    ['11_den', 'wait', '5'],
   ],
   // Start with ?beat=33&at=-0.9,2.0,180,0.8 : on the garden table at night, facing the lamp. Real jumps at
   // diving moths first, then test catches so the beat can finish.

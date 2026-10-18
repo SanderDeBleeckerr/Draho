@@ -199,7 +199,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox),
             };
             bool IsDynamic(Transform t)
             {
@@ -515,6 +515,71 @@ namespace Draho.EditorTools
                 var right = Wing(1f);
                 moth.AddComponent<Moth>().Configure(centre, left, right);
             }
+        }
+
+        /// <summary>
+        /// Chapter 9: a red fox (about 90 cm with the tail) that walks a night route west through the wild
+        /// garden, from the workshop end to a den under the bushes in the far corner. +Z is forward.
+        /// </summary>
+        static void BuildFox()
+        {
+            var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
+            var white = Mat("Fox_White", new Color(0.92f, 0.9f, 0.86f), 0.2f);
+            var black = Mat("Fox_Black", new Color(0.08f, 0.07f, 0.07f), 0.3f);
+            var root = new GameObject("Fox");
+            root.transform.SetParent(level, false);
+            root.transform.position = new Vector3(-3.5f, 0f, 8.6f);
+            Transform Part(PrimitiveType type, Transform parent, Vector3 pos, Vector3 euler, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(type);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localRotation = Quaternion.Euler(euler);
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                if (type == PrimitiveType.Sphere) go.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                return go.transform;
+            }
+            Transform Pivot(string name, Transform parent, Vector3 pos)
+            {
+                var t = new GameObject(name).transform;
+                t.SetParent(parent, false);
+                t.localPosition = pos;
+                return t;
+            }
+            var r = root.transform;
+            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.33f, 0f), Vector3.zero, new Vector3(0.2f, 0.2f, 0.48f), orange);
+            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.3f, 0.18f), Vector3.zero, new Vector3(0.15f, 0.16f, 0.17f), white); // chest
+            var head = Pivot("Head", r, new Vector3(0f, 0.42f, 0.26f));
+            Part(PrimitiveType.Sphere, head, Vector3.zero, Vector3.zero, new Vector3(0.15f, 0.13f, 0.15f), orange);
+            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.025f, 0.1f), Vector3.zero, new Vector3(0.07f, 0.06f, 0.13f), orange); // snout
+            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.045f, 0.09f), Vector3.zero, new Vector3(0.06f, 0.035f, 0.1f), white); // white jaw
+            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.015f, 0.165f), Vector3.zero, Vector3.one * 0.025f, black);          // nose
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Part(PrimitiveType.Cube, head, new Vector3(side * 0.045f, 0.08f, -0.01f), new Vector3(0f, 0f, side * -12f), new Vector3(0.05f, 0.09f, 0.02f), black); // ears
+                Part(PrimitiveType.Sphere, head, new Vector3(side * 0.04f, 0.02f, 0.06f), Vector3.zero, Vector3.one * 0.018f, black);   // eyes
+            }
+            var legs = new List<Transform>();
+            foreach (float z in new[] { 0.16f, -0.16f })
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    var leg = Pivot("Leg", r, new Vector3(side * 0.06f, 0.27f, z));
+                    Part(PrimitiveType.Cube, leg, new Vector3(0f, -0.135f, 0f), Vector3.zero, new Vector3(0.04f, 0.27f, 0.045f), black);
+                    legs.Add(leg);
+                }
+            var tail = Pivot("Tail", r, new Vector3(0f, 0.36f, -0.22f));
+            Part(PrimitiveType.Sphere, tail, new Vector3(0f, -0.05f, -0.17f), new Vector3(-15f, 0f, 0f), new Vector3(0.12f, 0.12f, 0.38f), orange);
+            Part(PrimitiveType.Sphere, tail, new Vector3(0f, -0.1f, -0.35f), new Vector3(-15f, 0f, 0f), new Vector3(0.085f, 0.085f, 0.11f), white);
+            // The route: from the workshop end of the wild garden to the far corner, sniffing on the way.
+            var route = new[]
+            {
+                new Vector3(-3.5f, 0f, 8.6f), new Vector3(-7f, 0f, 7.2f), new Vector3(-11f, 0f, 8.3f), new Vector3(-15f, 0f, 6.5f),
+                new Vector3(-19f, 0f, 7.8f), new Vector3(-22.5f, 0f, 6.9f), new Vector3(-24.6f, 0f, 6.3f),
+            };
+            var sniff = new[] { false, true, true, true, false, true, false };
+            root.AddComponent<Fox>().Configure(head, tail, legs.ToArray(), route, sniff);
         }
 
         static void BuildCourtLife(Layout layout)
@@ -1869,6 +1934,7 @@ namespace Draho.EditorTools
             BuildNeighbourFlat();
             BuildCourtLife(layout);
             BuildGardenNight();
+            BuildFox();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

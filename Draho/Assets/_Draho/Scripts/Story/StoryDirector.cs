@@ -42,6 +42,7 @@ namespace Draho.Story
         NpcCat greyCat;
         StoryItem toyMouse, jingleBall;
         Transform gardenLamp;
+        Fox fox;
         Pigeon[] pigeons;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
@@ -133,6 +134,7 @@ namespace Draho.Story
             jingleBall = Array.Find(items, i => i.name == "JingleBall");
             var lampGo = GameObject.Find("GardenLamp");
             if (lampGo != null) gardenLamp = lampGo.transform;
+            fox = FindAnyObjectByType<Fox>();
             pigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
@@ -395,7 +397,22 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Crunchy and dusty! Three moths. The night garden is full of small sounds now... End of the first part of chapter 9.",
+                    Story = "Crunchy and dusty! Three moths. The night garden is full of small sounds now... A twig snaps behind the fence.",
+                    Goal = "Listen... something moves in the neighbour's wild garden. Go and look over the fence.",
+                    Target = () => new Vector3(-4f, 0f, 5f),
+                    Done = () => beatTime > 5f && (cat.transform.position.z > 4.2f || cat.transform.position.y > 1.2f || fox == null),
+                },
+                new Beat
+                {
+                    Story = "A shadow with a white-tipped tail: a fox! Foxes and cats share the night, and most nights they leave each other alone. This one walks its route. Where does it go?",
+                    Goal = "Follow the fox through the wild garden. Stay low (DUCK) and keep a few metres back: too close, and it stops and stares.",
+                    Begin = () => fox?.Begin(),
+                    Target = () => fox != null && !fox.AtDen ? fox.transform.position : (Vector3?)null,
+                    Done = () => fox == null || fox.AtDen,
+                },
+                new Beat
+                {
+                    Story = "The fox slips into a den under the bushes in the far corner. Behind the den, the old fence is broken: a secret way out to the street, where a lamp-post hums. End of the second part of chapter 9.",
                     Goal = "",
                     Done = () => false,
                 },

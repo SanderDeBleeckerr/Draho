@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,19 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=40&at=7.3,4.15,90 : at the court drainpipe; climb to the roof, walk up the slate to the
+  // chimney on the ridge (a teleport at the end in case the walk misses it).
+  highroof: [
+    ['02_climb', 'hold', '5'],
+    ['03_climb_more', 'hold', '5'],
+    ['04_climb_top', 'hold', '5'],
+    ['05_on_roof', 'hold', '2'],
+    ['06_up_the_slate', 'move', '0,1,0,6'],
+    ['07_to_chimney', 'move', '-1,0,0,2.5'],
+    ['08_look', 'wait', '2'],
+    ['09_ridge', 'call', 'StoryDirector.TestTeleport:14.4,5.4,0,11.9'],
+    ['10_view', 'wait', '3'],
   ],
   // Start with ?beat=36&at=-24.9,6.3,270 : at the fox's den; through the broken fence to the river bank,
   // up the ivy on the end shed, over its roof and down into the own garden, home to the lamp.

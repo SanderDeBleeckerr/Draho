@@ -106,11 +106,14 @@ namespace Draho.EditorTools
             public Spot wheelbarrow, chair, barrel, hedgehog;
         }
         [Serializable] class Spot { public float x, z, r, yaw; }
-        [Serializable] class ContextBuilding { public float x, z, w, d, yaw, h; }
+        [Serializable] class ContextBuilding { public float x, z, w, d, yaw, h, y0; public string faces; }
         [Serializable] class Building
         {
             public string id, color, roof_color, material, roof, front; // material: brick | plaster; roof: flat | pitched
             public float x0, x1, z0, z1, h, ridge;
+            public float base_y;    // walls start here (upper floors over the apartment)
+            public string windows;  // faces with window panes, for example "-x+z"
+            public string ridge_along; // pitched: "x" or "z" (default: along the long side)
         }
         [Serializable] class QuayLampInfo { public float x, z, h; }
         [Serializable] class Ground { public string id, color, material; public float x0, x1, z0, z1, top; }
@@ -140,6 +143,7 @@ namespace Draho.EditorTools
             public string id, color, style, post_color, material;
             public float[] from, to;
             public float h, post_spacing;
+            public float y0; // bounds: the invisible wall starts at this height (roof edges)
             public float gap_at, gap_w, gap_h; // a hole at the bottom of a fence (a loose plank)
         }
         [Serializable] class Spawn { public float x, z; public string facing; }
@@ -577,14 +581,15 @@ namespace Draho.EditorTools
                 // Four faces: (normal, tangent, half depth, face width) in the block's own axes.
                 var faces = new[]
                 {
-                    (Vector3.forward, Vector3.right, c.d / 2, c.w), (Vector3.back, Vector3.left, c.d / 2, c.w),
-                    (Vector3.right, Vector3.back, c.w / 2, c.d), (Vector3.left, Vector3.forward, c.w / 2, c.d),
+                    (Vector3.forward, Vector3.right, c.d / 2, c.w, "+z"), (Vector3.back, Vector3.left, c.d / 2, c.w, "-z"),
+                    (Vector3.right, Vector3.back, c.w / 2, c.d, "+x"), (Vector3.left, Vector3.forward, c.w / 2, c.d, "-x"),
                 };
-                foreach (var (normal, tangent, half, width) in faces)
+                foreach (var (normal, tangent, half, width, name) in faces)
                 {
+                    if (!string.IsNullOrEmpty(c.faces) && !c.faces.Contains(name)) continue;
                     int count = Mathf.FloorToInt((width - 1f) / step);
                     if (count < 1) continue;
-                    for (float y = 1.2f; y + paneH < c.h - 0.5f; y += floor)
+                    for (float y = Mathf.Max(1.2f, c.y0 + 0.7f); y + paneH < c.h - 0.5f; y += floor)
                         for (int i = 0; i < count; i++)
                         {
                             float t = (i - (count - 1) / 2f) * step;
@@ -1072,7 +1077,7 @@ namespace Draho.EditorTools
                     : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
                 var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 7f); // small stones
                 var stone = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
-                Box("Walls", new Vector3(cx, (b.h - roofT) / 2, cz), new Vector3(w, b.h - roofT, d), brick).transform.SetParent(root, true);
+                Box("Walls", new Vector3(cx, (b.base_y + b.h - roofT) / 2, cz), new Vector3(w, b.h - roofT - b.base_y, d), brick).transform.SetParent(root, true);
                 Box("Roof", new Vector3(cx, b.h - roofT / 2, cz), new Vector3(w, roofT, d), gravel).transform.SetParent(root, true);
                 // A thin stone coping along the edges: the roof line reads clearly from the garden.
                 foreach (float z in new[] { b.z0, b.z1 })
@@ -1105,7 +1110,10 @@ namespace Draho.EditorTools
                 roof.transform.rotation = body.transform.rotation;
                 n++;
             }
-            BuildWindows(layout.context_buildings ?? new ContextBuilding[0]);
+            // Window panes on the scenery blocks, and on the faces of story buildings that ask for them.
+            var facades = (layout.buildings ?? new Building[0]).Where(b => !string.IsNullOrEmpty(b.windows))
+                .Select(b => new ContextBuilding { x = (b.x0 + b.x1) / 2, z = (b.z0 + b.z1) / 2, w = b.x1 - b.x0, d = b.z1 - b.z0, h = b.h, y0 = b.base_y, faces = b.windows });
+            BuildWindows((layout.context_buildings ?? new ContextBuilding[0]).Concat(facades).ToArray());
             // Ground under the block (yards, streets), just below the garden; it has a hole for the river.
             var groundMat = Mat("Apt_Ground", new Color(0.42f, 0.41f, 0.38f), 0.1f);
             var river = layout.water;
@@ -1134,7 +1142,7 @@ namespace Draho.EditorTools
                 float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
                 float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
                 float mid = (a + b) / 2, len = b - a;
-                var block = Box($"Bound_{e.id}", alongX ? new Vector3(mid, 7f, line) : new Vector3(line, 7f, mid),
+                var block = Box($"Bound_{e.id}", alongX ? new Vector3(mid, e.y0 + 7f, line) : new Vector3(line, e.y0 + 7f, mid),
                     alongX ? new Vector3(len, 14f, 0.1f) : new Vector3(0.1f, 14f, len), null);
                 Object.DestroyImmediate(block.GetComponent<Renderer>());
             }
@@ -1653,7 +1661,7 @@ namespace Draho.EditorTools
             var wallMat = b.material == "plaster" ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f) : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
             var tiles = Mat($"Apt_{b.id}_tiles", Hex(b.roof_color), 0.2f, TileTexture(), new Vector2(6f, 3f));
             Box("Walls", new Vector3(cx, b.h / 2, cz), new Vector3(w, b.h, d), wallMat).transform.SetParent(root, true);
-            bool alongX = w >= d; // the ridge runs along the long side
+            bool alongX = b.ridge_along == "x" || (b.ridge_along != "z" && w >= d); // the ridge runs along the long side unless set
             float span = alongX ? d : w, length = alongX ? w : d, ridge = b.ridge > 0f ? b.ridge : span * 0.4f;
             float slope = Mathf.Atan2(ridge, span / 2) * Mathf.Rad2Deg, slab = Mathf.Sqrt(span * span / 4 + ridge * ridge) + 0.3f;
             foreach (float side in new[] { -1f, 1f })

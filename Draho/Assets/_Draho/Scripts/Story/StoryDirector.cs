@@ -43,6 +43,8 @@ namespace Draho.Story
         StoryItem toyMouse, jingleBall;
         Transform gardenLamp;
         Fox fox;
+        Climbable courtPipe;
+        Transform frontChimney;
         Pigeon[] pigeons;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
@@ -135,6 +137,10 @@ namespace Draho.Story
             var lampGo = GameObject.Find("GardenLamp");
             if (lampGo != null) gardenLamp = lampGo.transform;
             fox = FindAnyObjectByType<Fox>();
+            var pipeGo = GameObject.Find("court_pipe");
+            if (pipeGo != null) courtPipe = pipeGo.GetComponent<Climbable>();
+            var chimneyGo = GameObject.Find("chimney_front");
+            if (chimneyGo != null) frontChimney = chimneyGo.transform;
             pigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
@@ -435,6 +441,29 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "Home again, by the warm lamp. The moths are still dancing. The humans are not back yet... End of chapter 9.",
+                    Goal = "",
+                    Done = () => beatTime > 7f,
+                },
+                // ---- Chapter 10: The high roofs ----
+                new Beat
+                {
+                    Story = "Chapter 10: The high roofs. You cannot sleep. The pigeons coo up in the light well, and the moon shines on the roof of your own house. From up there you can see the whole town.",
+                    Goal = "Go to the inner court and climb the drainpipe all the way up to the roof (hold the middle of the stick).",
+                    // The bracket that held the jingle ball is loose now: the pipe goes on to the gutter.
+                    Begin = () => courtPipe?.Configure(8.8f, true),
+                    Target = () => new Vector3(7.5f, 1f, 4.15f),
+                    Done = () => cat.transform.position.y > 8.5f,
+                },
+                new Beat
+                {
+                    Story = "The roof! Chimneys stand like trees in a forest of slate, and a hundred windows glow over the dark street. The air smells of rain.",
+                    Goal = "Walk up the slate roof to the big chimney on the ridge.",
+                    Target = () => frontChimney != null ? frontChimney.position + Vector3.up * 2.2f : (Vector3?)null,
+                    Done = () => frontChimney != null && cat.transform.position.y > 10.5f && Vector3.Distance(Flat(cat.transform.position), Flat(frontChimney.position)) < 2.2f,
+                },
+                new Beat
+                {
+                    Story = "From the ridge you see the river, the begijnhof tower and all your roads of today. The wind turns: far away, thunder grumbles. End of the first part of chapter 10.",
                     Goal = "",
                     Done = () => false,
                 },

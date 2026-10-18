@@ -500,7 +500,7 @@
    "wall": "+x",
    "color": "#8C8F91",
    "top_color": "#8C8F91",
-   "note": "Drainpipe in the inner court, on the east wall. A wide bracket at 3.3 m stops the climb."
+   "note": "Chapter 8: holds at 3.3 m (the jingle ball). Chapter 10: the story lets it go on to the gutter at 8.8 m."
   },
   {
    "id": "shed_ivy",
@@ -731,6 +731,93 @@
    "roof_color": "#7A3A2A",
    "roof": "pitched",
    "front": "+x"
+  },
+  {
+   "id": "house_back_w",
+   "label": "The cat's house, upper floors over the living room (flat roof, 8.8 m)",
+   "x0": 0.0,
+   "x1": 4.6,
+   "z0": 0.0,
+   "z1": 9.0,
+   "h": 8.8,
+   "base_y": 2.6,
+   "windows": "-x-z",
+   "color": "#CFC6B8",
+   "roof_color": "#4F4E4C",
+   "material": "plaster"
+  },
+  {
+   "id": "house_back_s",
+   "label": "Upper floors over the kitchen, south of the light well",
+   "x0": 4.6,
+   "x1": 7.6,
+   "z0": 0.0,
+   "z1": 3.2,
+   "h": 8.8,
+   "base_y": 2.6,
+   "windows": "-z",
+   "color": "#CFC6B8",
+   "roof_color": "#4F4E4C",
+   "material": "plaster"
+  },
+  {
+   "id": "house_back_n",
+   "label": "Upper floors north of the light well",
+   "x0": 4.6,
+   "x1": 7.6,
+   "z0": 5.0,
+   "z1": 9.0,
+   "h": 8.8,
+   "base_y": 2.6,
+   "color": "#CFC6B8",
+   "roof_color": "#4F4E4C",
+   "material": "plaster"
+  },
+  {
+   "id": "house_back_e",
+   "label": "A flat strip of roof between the light well and the front roof (the top of the court drainpipe)",
+   "x0": 7.6,
+   "x1": 9.0,
+   "z0": 0.0,
+   "z1": 9.0,
+   "h": 8.8,
+   "color": "#CFC6B8",
+   "roof_color": "#4F4E4C",
+   "material": "plaster"
+  },
+  {
+   "id": "house_front",
+   "label": "The front of the cat's house on the street: eaves 8.8 m, slate ridge 11.8 m",
+   "x0": 9.0,
+   "x1": 19.8,
+   "z0": 0.0,
+   "z1": 9.0,
+   "h": 8.8,
+   "ridge": 3.0,
+   "roof": "pitched",
+   "front": "+x",
+   "windows": "+x-z",
+   "color": "#D8CDBB",
+   "roof_color": "#3E4146",
+   "material": "plaster",
+   "ridge_along": "z"
+  },
+  {
+   "id": "street_north",
+   "label": "Neighbour on the street: eaves 8.8 m, tiled ridge 11.2 m",
+   "x0": 9.0,
+   "x1": 19.8,
+   "z0": 9.0,
+   "z1": 17.0,
+   "h": 8.8,
+   "ridge": 2.4,
+   "roof": "pitched",
+   "front": "+x",
+   "windows": "+x",
+   "color": "#A8735C",
+   "roof_color": "#7A4A3A",
+   "material": "brick",
+   "ridge_along": "z"
   }
  ],
  "roof_props": [
@@ -742,6 +829,36 @@
    "d": 0.6,
    "h": 1.2,
    "color": "#8E5A48"
+  },
+  {
+   "id": "chimney_front",
+   "label": "Chimney on the front roof",
+   "x": 14.4,
+   "z": 6.5,
+   "w": 0.7,
+   "d": 1.1,
+   "h": 4.0,
+   "color": "#8A5A48"
+  },
+  {
+   "id": "chimney_north",
+   "label": "Chimney on the neighbour's roof",
+   "x": 14.4,
+   "z": 13.0,
+   "w": 0.6,
+   "d": 0.9,
+   "h": 3.4,
+   "color": "#7E5444"
+  },
+  {
+   "id": "skylight_back",
+   "label": "Skylight on the flat roof",
+   "x": 2.2,
+   "z": 6.5,
+   "w": 1.0,
+   "d": 1.4,
+   "h": 0.35,
+   "color": "#2E3A44"
   }
  ],
  "bounds": [
@@ -843,6 +960,66 @@
     -28,
     9.5
    ]
+  },
+  {
+   "id": "roof_street",
+   "from": [
+    19.9,
+    -0.1
+   ],
+   "to": [
+    19.9,
+    17.1
+   ],
+   "y0": 6.0
+  },
+  {
+   "id": "roof_south",
+   "from": [
+    0.0,
+    -0.08
+   ],
+   "to": [
+    19.9,
+    -0.08
+   ],
+   "y0": 3.0
+  },
+  {
+   "id": "roof_north_back",
+   "from": [
+    0.0,
+    9.05
+   ],
+   "to": [
+    9.0,
+    9.05
+   ],
+   "y0": 3.0
+  },
+  {
+   "id": "roof_north_end",
+   "from": [
+    7.6,
+    17.1
+   ],
+   "to": [
+    19.9,
+    17.1
+   ],
+   "y0": 6.0
+  },
+  {
+   "id": "roof_north_west",
+   "from": [
+    8.95,
+    9.0
+   ],
+   "to": [
+    8.95,
+    17.1
+   ],
+   "y0": 3.0
   }
  ],
  "context_note": "Scenery only (no colliders): the other buildings of the block, as boxes in game metres (centre, size, yaw, height).",
@@ -3602,5 +3779,6 @@
   "z": 3.6,
   "h": 4.2,
   "note": "Chapter 9: an old lamp-post at the north end of the quay."
- }
+ },
+ "buildings_street_note": "Chapter 10: the cat's own house and its neighbour on the street, from GRB footprints and DHM heights (median 8.8 m, top 11.2-11.8 m), in game metres."
 }

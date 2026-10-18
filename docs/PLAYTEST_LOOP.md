@@ -68,3 +68,5 @@ web for how good games solve each weak point before it changes anything. Finding
 | 35b | Long story lines ran into the goal line (3 lines): HUD text now shrinks to fit; the fox's white chest glowed at night (smaller, creamy, matte) | — | — |
 | 36 | River bank (grass, alder), cast-iron quay lamp-post, old post fence with a broken plank, ivy on the end shed | Verified live: gap → bank → shed ivy → roof → home, beats 36-39; fox replayed its route on a late start (36b: SkipToDen) | Chapter 9 complete: moths, fox, the way home along the river |
 | 37 | Window panes on all scenery blocks (two meshes: dark glass, 35 % lit warm at night) | perf live: spawn 253 draws / 38 k tris, garden 127 k tris (budget 150 k); `home` re-run: the maple crown blocks the shed's north-east corner, the test now drops from the middle | — |
+| 38 | Stars (700 twinkling billboards) and a moon (hand-written NightSky shader) | — | — |
+| 38b | Live: stars too faint, moon (55°) never in view → bigger, brighter stars, moon at 32°; verified live: stars read above the lit town | — | — |

@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam),
             };
             bool IsDynamic(Transform t)
             {
@@ -1101,6 +1101,77 @@ namespace Draho.EditorTools
             for (int i = 0; i < 3; i++)
                 Part(PrimitiveType.Sphere, bucket, new Vector3(-0.06f + i * 0.06f, 0.33f, 0.02f * i), new Vector3(0f, 30f * i, 0f), new Vector3(0.05f, 0.04f, 0.16f), silver);
             root.gameObject.AddComponent<Fisherman>().Configure(torso, bucket, bobber);
+        }
+
+        /// <summary>
+        /// A shaft of low sun through the sliding glass door, with dust motes (SunBeam builds the shaft at runtime from
+        /// the sun's direction). Additive, both faces, no shadows.
+        /// </summary>
+        static void BuildSunBeam(Layout layout)
+        {
+            var door = (layout.openings ?? new Opening[0]).FirstOrDefault(o => o.id == "sliding_door");
+            if (door == null) return;
+            string path = $"{PlaygroundBuilder.MaterialDir}/SunBeam.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 2f); // additive
+            mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)BlendMode.One);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.SetFloat("_Cull", 0f);
+            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = (int)RenderQueue.Transparent;
+            mat.SetColor("_BaseColor", Color.white);
+            EditorUtility.SetDirty(mat);
+
+            var beam = new GameObject("SunBeam");
+            beam.transform.SetParent(level, false);
+            beam.AddComponent<MeshFilter>();
+            var r = beam.AddComponent<MeshRenderer>();
+            r.sharedMaterial = mat;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            float x = 0.03f, z0 = door.from + 0.05f, z1 = door.to - 0.05f, top = door.height - 0.05f;
+            var opening = new[] { new Vector3(x, 0.05f, z0), new Vector3(x, top, z0), new Vector3(x, top, z1), new Vector3(x, 0.05f, z1) };
+
+            // Dust motes: a few slow specks in the living room, emitted only while the sun shines in.
+            var motesGo = new GameObject("Motes");
+            motesGo.transform.SetParent(beam.transform, false);
+            motesGo.transform.position = new Vector3(1.6f, 1.2f, (z0 + z1) / 2);
+            var ps = motesGo.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.playOnAwake = true;
+            main.loop = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(6f, 9f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.06f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.012f, 0.025f);
+            main.startColor = new Color(1f, 0.92f, 0.75f, 0.7f);
+            main.maxParticles = 60;
+            main.gravityModifier = -0.002f;
+            var emission = ps.emission;
+            emission.rateOverTime = 0f;
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(2.8f, 1.8f, z1 - z0);
+            var fade = ps.colorOverLifetime;
+            fade.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                      new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.3f), new GradientAlphaKey(1f, 0.7f), new GradientAlphaKey(0f, 1f) });
+            fade.color = g;
+            var pr = motesGo.GetComponent<ParticleSystemRenderer>();
+            pr.shadowCastingMode = ShadowCastingMode.Off;
+            var dust = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat");
+            if (dust != null) pr.sharedMaterial = dust;
+            beam.AddComponent<SunBeam>().Configure(opening, 4.4f, ps);
         }
 
         static void BuildFox()
@@ -2542,6 +2613,7 @@ namespace Draho.EditorTools
             BuildGull(layout);
             BuildButterflies(layout);
             BuildFisherman(layout);
+            BuildSunBeam(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

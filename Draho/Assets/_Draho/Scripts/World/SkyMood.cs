@@ -156,7 +156,7 @@ namespace Draho.World
             {
                 // Sunrise after the storm: a low gold sun from the east (opposite the evening sun), long shadows,
                 // the sky still cool and blue-pink from the blue hour; the lamps are still dimly on.
-                p.sunEuler = new Vector3(6f, day.sunEuler.y - 140f, 0f);
+                p.sunEuler = new Vector3(10f, day.sunEuler.y - 140f, 0f);
                 p.sun = new Color(1f, 0.72f, 0.48f);
                 p.sunIntensity = 0.85f;
                 p.sky = new Color(0.45f, 0.5f, 0.66f);

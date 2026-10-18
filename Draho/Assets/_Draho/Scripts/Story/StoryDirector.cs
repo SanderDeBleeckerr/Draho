@@ -563,7 +563,7 @@ namespace Draho.Story
                 {
                     Story = "Purrrr. They smell of trains and coffee. The sun climbs over the roofs, and something rattles in the kitchen: the food box!",
                     Goal = "Breakfast! Go to your bowl between the counter and the island.",
-                    Begin = () => { SkyMood.Set(SkyMood.Mood.Day, 25f); if (breakfast != null) breakfast.gameObject.SetActive(true); },
+                    Begin = () => { if (breakfast != null) breakfast.gameObject.SetActive(true); }, // the golden morning light stays: a patch of sun for the ending
                     Target = () => breakfast != null && breakfast.gameObject.activeSelf ? breakfast.transform.position : (Vector3?)null,
                     Done = () => breakfast == null || breakfast.Taken,
                 },

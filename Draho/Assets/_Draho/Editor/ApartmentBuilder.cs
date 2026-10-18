@@ -727,6 +727,42 @@ namespace Draho.EditorTools
                 SkyMat("NightSky_Moon", new Color(0.95f, 0.95f, 0.88f), 1f));
         }
 
+        /// <summary>
+        /// Chapter 10's storm: rain round the camera (stretched soft particles, no shadows, at most 1200),
+        /// switched on and driven by <see cref="Storm"/>. A root object: it follows the camera.
+        /// </summary>
+        static void BuildRain()
+        {
+            var go = new GameObject("Rain");
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.playOnAwake = false;
+            main.loop = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = 1.1f;
+            main.startSpeed = new ParticleSystem.MinMaxCurve(8f, 10f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.02f, 0.035f);
+            main.startColor = new Color(0.72f, 0.78f, 0.9f, 0.32f);
+            main.maxParticles = 1200;
+            var emission = ps.emission;
+            emission.rateOverTime = 0f;
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(16f, 16f, 0.1f);
+            shape.rotation = new Vector3(90f, 0f, 0f); // emits along -Y: down
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            renderer.renderMode = ParticleSystemRenderMode.Stretch;
+            renderer.velocityScale = 0.045f;
+            renderer.lengthScale = 1f;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            var dust = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat");
+            if (dust != null) renderer.sharedMaterial = dust;
+            else Debug.LogWarning("Dust.mat not found: the rain has no material");
+            go.AddComponent<Storm>().Configure(ps);
+        }
+
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
@@ -2161,6 +2197,7 @@ namespace Draho.EditorTools
             BuildFox();
             BuildQuayLamp(layout.quay_lamp);
             BuildNightSky();
+            BuildRain();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

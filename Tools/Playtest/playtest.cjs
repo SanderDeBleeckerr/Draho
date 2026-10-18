@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,21 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=43&at=14.4,4.6,180,11.9 : on the ridge by the front chimney in the storm; walk north along the
+  // ridge, standing through one gust and ducking through the next, then to the neighbour's chimney.
+  storm: [
+    ['02_rain', 'wait', '3'],
+    ['03_gust_warn', 'call', 'Rain.TestGust'],
+    ['04_gust_standing', 'wait', '2.5'],
+    ['05_back_up', 'call', 'StoryDirector.TestTeleport:14.4,8.0,0,11.9'],
+    ['06_duck', 'duck', ''],
+    ['07_gust_warn2', 'call', 'Rain.TestGust'],
+    ['08_gust_ducked', 'wait', '2.5'],
+    ['09_stand', 'duck', ''],
+    ['10_walk_ridge', 'move', '0,1,0,4'],
+    ['11_chimney', 'call', 'StoryDirector.TestTeleport:14.4,11.9,0,11.9'],
+    ['12_shelter', 'wait', '3'],
   ],
   // Start with ?beat=40&at=7.3,4.15,90 : at the court drainpipe; climb to the roof, walk up the slate to the
   // chimney on the ridge (a teleport at the end in case the walk misses it).

@@ -51,6 +51,8 @@ namespace Draho.Cat
         public bool IsAirborne => mode == Mode.Normal && (verticalVelocity > 0f || timeSinceGrounded > AirborneDelay);
         public float VerticalVelocity => verticalVelocity;
         public bool IsCrouching { get; private set; }
+        /// <summary>A storm gust (m/s, horizontal). A crouched cat feels only a little of it.</summary>
+        public Vector3 Wind { get; set; }
         public bool IsRearing => mode == Mode.Rearing;
         public bool IsClimbing => mode == Mode.Climbing || mode == Mode.Mantling;
         /// <summary>Raised after <see cref="Teleport"/> (the camera jumps behind the cat).</summary>
@@ -173,7 +175,8 @@ namespace Draho.Cat
             else
                 verticalVelocity = Mathf.Max(verticalVelocity + stats.gravity * dt, -stats.maxFallSpeed);
 
-            Vector3 velocity = transform.forward * speed + Vector3.up * verticalVelocity;
+            Vector3 velocity = transform.forward * speed + Vector3.up * verticalVelocity
+                + Wind * (IsCrouching ? 0.15f : 1f); // low cats do not blow away
             CollisionFlags hit = controller.Move(velocity * dt);
             if ((hit & CollisionFlags.Above) != 0 && verticalVelocity > 0f) verticalVelocity = 0f;
         }

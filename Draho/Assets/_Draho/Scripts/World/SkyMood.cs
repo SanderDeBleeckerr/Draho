@@ -15,13 +15,13 @@ namespace Draho.World
     /// </summary>
     public class SkyMood : MonoBehaviour
     {
-        public enum Mood { Day, Evening, Night }
+        public enum Mood { Day, Evening, Night, Storm }
 
         struct Preset
         {
             public Vector3 sunEuler;
             public Color sun, sky, equator, ground, fog, skyTint, fill;
-            public float sunIntensity, exposure, fogStart, fogEnd, fillIntensity, fillRange, night;
+            public float sunIntensity, exposure, fogStart, fogEnd, fillIntensity, fillRange, night, clouds;
         }
 
         static SkyMood instance;
@@ -32,6 +32,8 @@ namespace Draho.World
         Material sky;
         Preset day, from, to;
         float blend = 1f, duration = 1f;
+        Preset now;
+        float flash;
         ColorAdjustments grade;
         SplitToning split;
         float baseSaturation;
@@ -135,7 +137,30 @@ namespace Draho.World
                 p.fillRange = 1.9f;
                 p.night = 1f;
             }
+            else if (mood == Mood.Storm)
+            {
+                // A storm at night: clouds hide the moon and the stars, the fog closes in, grey-blue and dark.
+                p = For(Mood.Night);
+                p.sun = new Color(0.55f, 0.62f, 0.8f);
+                p.sunIntensity = 0.16f;
+                p.sky = new Color(0.13f, 0.15f, 0.22f);
+                p.equator = new Color(0.11f, 0.12f, 0.16f);
+                p.fog = new Color(0.07f, 0.08f, 0.11f);
+                p.fogStart = 12f;
+                p.fogEnd = 70f;
+                p.skyTint = new Color(0.2f, 0.22f, 0.28f);
+                p.exposure = 0.12f;
+                p.clouds = 1f;
+            }
             return p;
+        }
+
+        /// <summary>A lightning flash: a short, bright cold light over everything (the storm calls it).</summary>
+        public static void Flash()
+        {
+            if (instance == null) return;
+            instance.flash = 1f;
+            Debug.Log("SKY lightning");
         }
 
         void Begin(Mood mood, float seconds)
@@ -151,9 +176,18 @@ namespace Draho.World
 
         void Update()
         {
-            if (blend >= 1f) return;
-            blend = Mathf.Min(1f, blend + Time.deltaTime / duration);
-            Apply(Lerp(from, to, Smooth(blend)));
+            if (blend < 1f)
+            {
+                blend = Mathf.Min(1f, blend + Time.deltaTime / duration);
+                Apply(Lerp(from, to, Smooth(blend)));
+            }
+            if (flash <= 0f) return;
+            // Two quick bright pulses, then the dark again.
+            flash = Mathf.Max(0f, flash - Time.deltaTime * 2.5f);
+            float pulse = flash > 0.75f || (flash > 0.45f && flash < 0.6f) ? flash : 0f;
+            if (sun != null) sun.intensity = now.sunIntensity + pulse * 2.2f;
+            RenderSettings.ambientSkyColor = now.sky + new Color(0.45f, 0.5f, 0.65f) * pulse;
+            RenderSettings.ambientEquatorColor = now.equator + new Color(0.3f, 0.32f, 0.4f) * pulse;
         }
 
         static float Smooth(float t) => t * t * (3f - 2f * t);
@@ -175,10 +209,12 @@ namespace Draho.World
             fillIntensity = Mathf.Lerp(a.fillIntensity, b.fillIntensity, t),
             fillRange = Mathf.Lerp(a.fillRange, b.fillRange, t),
             night = Mathf.Lerp(a.night, b.night, t),
+            clouds = Mathf.Lerp(a.clouds, b.clouds, t),
         };
 
         void Apply(Preset p)
         {
+            now = p;
             if (sun != null)
             {
                 sun.transform.rotation = Quaternion.Euler(p.sunEuler);
@@ -205,7 +241,7 @@ namespace Draho.World
             NightAmount = p.night;
             float dark = Mathf.Clamp01(p.night * 2f - 1f); // only the real night loses colour
             // Stars and the moon (Draho/NightSky); the moon sits where the night light comes from.
-            Shader.SetGlobalFloat(NightId, dark);
+            Shader.SetGlobalFloat(NightId, dark * (1f - p.clouds)); // clouds hide the stars and the moon
             if (sun != null) Shader.SetGlobalVector(MoonDirId, -sun.transform.forward);
             if (grade != null) grade.saturation.Override(Mathf.Lerp(baseSaturation, -35f, dark));
             if (split != null)

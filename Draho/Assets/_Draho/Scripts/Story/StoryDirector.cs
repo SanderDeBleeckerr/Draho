@@ -44,7 +44,7 @@ namespace Draho.Story
         Transform gardenLamp;
         Fox fox;
         Climbable courtPipe;
-        Transform frontChimney;
+        Transform frontChimney, northChimney;
         Pigeon[] pigeons;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
@@ -141,6 +141,8 @@ namespace Draho.Story
             if (pipeGo != null) courtPipe = pipeGo.GetComponent<Climbable>();
             var chimneyGo = GameObject.Find("chimney_front");
             if (chimneyGo != null) frontChimney = chimneyGo.transform;
+            var northGo = GameObject.Find("chimney_north");
+            if (northGo != null) northChimney = northGo.transform;
             pigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
@@ -463,7 +465,21 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "From the ridge you see the river, the begijnhof tower and all your roads of today. The wind turns: far away, thunder grumbles. End of the first part of chapter 10.",
+                    Story = "From the ridge you see the river, the begijnhof tower and all your roads of today. The wind turns: far away, thunder grumbles.",
+                    Goal = "",
+                    Done = () => beatTime > 6f,
+                },
+                new Beat
+                {
+                    Story = "The storm breaks! Rain drums on the slate, lightning flashes, and the wind pulls at your fur.",
+                    Goal = "Go along the ridge to the neighbour's chimney. When the wind howls, DUCK: low cats do not blow away.",
+                    Begin = () => Storm.Begin(),
+                    Target = () => northChimney != null ? northChimney.position + Vector3.up * 1.9f : (Vector3?)null,
+                    Done = () => northChimney != null && cat.transform.position.y > 10f && Vector3.Distance(Flat(cat.transform.position), Flat(northChimney.position)) < 2f,
+                },
+                new Beat
+                {
+                    Story = "Behind the big chimney you are out of the wind. Lightning! In the flash you see a dark square on the roof below: a hatch, open a crack. End of the second part of chapter 10.",
                     Goal = "",
                     Done = () => false,
                 },

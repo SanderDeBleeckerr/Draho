@@ -41,6 +41,7 @@ namespace Draho.Story
         Transform churchDoor, bakery;
         NpcCat greyCat;
         StoryItem toyMouse, jingleBall;
+        Transform gardenLamp;
         Pigeon[] pigeons;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
@@ -84,6 +85,7 @@ namespace Draho.Story
             return P(2f, 0f, 2.5f);                                              // home
         }
 
+        static bool InGarden(Vector3 p) => p.x < 0f && p.x > -24f && p.z > 0f && p.z < 5f && p.y < 3f;
         static bool InCourt(Vector3 p) => p.x > 4.6f && p.x < 7.6f && p.z > 3.2f && p.z < 5f && p.y < 4f;
 
         Vector3? NearestPigeon()
@@ -129,6 +131,8 @@ namespace Draho.Story
             var items = FindObjectsByType<StoryItem>(FindObjectsSortMode.None);
             toyMouse = Array.Find(items, i => i.name == "ToyMouse");
             jingleBall = Array.Find(items, i => i.name == "JingleBall");
+            var lampGo = GameObject.Find("GardenLamp");
+            if (lampGo != null) gardenLamp = lampGo.transform;
             pigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
@@ -367,9 +371,32 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Ting-a-ling! The pigeons coo from the gutter, very offended. The sky turns orange: the evening comes. End of chapter 8 for now!",
-                    Goal = "",
+                    Story = "Ting-a-ling! The pigeons coo from the gutter, very offended. The sky turns orange: the evening comes.",
+                    Goal = "Go home and out into the garden: the evening air smells of cut grass.",
                     Begin = () => SkyMood.Set(SkyMood.Mood.Evening, 12f),
+                    Target = () => new Vector3(-1f, 0f, 2.9f),
+                    Done = () => InGarden(cat.transform.position),
+                },
+                // ---- Chapter 9: Night ----
+                new Beat
+                {
+                    Story = "Chapter 9: Night. The humans are still not home. The moon comes up over the fence, and the lamp by the door switches on. Soft grey wings flutter around it: moths!",
+                    Goal = "Go to the lamp by the sliding door.",
+                    Begin = () => SkyMood.Set(SkyMood.Mood.Night, 10f),
+                    Target = () => gardenLamp != null ? gardenLamp.position : (Vector3?)null,
+                    Done = () => gardenLamp != null && Vector3.Distance(cat.transform.position, gardenLamp.position - Vector3.up * 1.9f) < 2.2f,
+                },
+                new Beat
+                {
+                    Story = "Moths do not fly into the light: they keep their backs to it, so they loop and loop around the lamp. Sometimes one drops low.",
+                    Goal = "Catch 3 moths: jump when one drops low. The garden table is a good place to jump from.",
+                    Target = () => gardenLamp != null ? gardenLamp.position : (Vector3?)null,
+                    Done = () => Moth.CaughtCount >= 3,
+                },
+                new Beat
+                {
+                    Story = "Crunchy and dusty! Three moths. The night garden is full of small sounds now... End of the first part of chapter 9.",
+                    Goal = "",
                     Done = () => false,
                 },
             };

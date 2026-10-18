@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Draho.World
 {
@@ -7,6 +9,8 @@ namespace Draho.World
     /// Night uses "Hollywood darkness" (research round 33): it feels dark but stays readable. The moon is a
     /// cool blue key light, the ambient light is a dim blue fill, the fog is closer and dark blue, and the
     /// cat's fill light grows into a moon-blue rim so the black fur keeps its shape.
+    /// Night also loses colour, as the eye does in the dark (Purkinje shift): less saturation, blue shadows,
+    /// slightly warm highlights (split toning), so lamps still look warm.
     /// The story calls <see cref="Set"/>; the playtest can call SendMessage('SkyMood', 'TestMood', 'Night').
     /// </summary>
     public class SkyMood : MonoBehaviour
@@ -17,7 +21,7 @@ namespace Draho.World
         {
             public Vector3 sunEuler;
             public Color sun, sky, equator, ground, fog, skyTint, fill;
-            public float sunIntensity, exposure, fogStart, fogEnd, fillIntensity, fillRange;
+            public float sunIntensity, exposure, fogStart, fogEnd, fillIntensity, fillRange, night;
         }
 
         static SkyMood instance;
@@ -26,8 +30,13 @@ namespace Draho.World
         Material sky;
         Preset day, from, to;
         float blend = 1f, duration = 1f;
+        ColorAdjustments grade;
+        SplitToning split;
+        float baseSaturation;
 
         public static Mood Current { get; private set; } = Mood.Day;
+        /// <summary>0 by day, 0.5 in the evening, 1 at night (blended): lamps and moths use it.</summary>
+        public static float NightAmount { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Create()
@@ -54,6 +63,13 @@ namespace Draho.World
             {
                 sky = new Material(RenderSettings.skybox); // do not change the shared asset
                 RenderSettings.skybox = sky;
+            }
+            var volume = FindAnyObjectByType<Volume>();
+            if (volume != null)
+            {
+                var profile = volume.profile; // a copy for this run
+                if (profile.TryGet(out grade)) baseSaturation = grade.saturation.value;
+                if (!profile.TryGet(out split)) split = profile.Add<SplitToning>(true);
             }
             day = Capture();
             from = to = day;
@@ -94,6 +110,7 @@ namespace Draho.World
                 p.fogEnd = 150f;
                 p.skyTint = new Color(0.62f, 0.5f, 0.55f);
                 p.exposure = 1.0f;
+                p.night = 0.5f;
             }
             else if (mood == Mood.Night)
             {
@@ -114,6 +131,7 @@ namespace Draho.World
                 p.fill = new Color(0.62f, 0.74f, 1f);
                 p.fillIntensity = 1.1f;
                 p.fillRange = 2.2f;
+                p.night = 1f;
             }
             return p;
         }
@@ -154,6 +172,7 @@ namespace Draho.World
             fill = Color.Lerp(a.fill, b.fill, t),
             fillIntensity = Mathf.Lerp(a.fillIntensity, b.fillIntensity, t),
             fillRange = Mathf.Lerp(a.fillRange, b.fillRange, t),
+            night = Mathf.Lerp(a.night, b.night, t),
         };
 
         void Apply(Preset p)
@@ -180,6 +199,15 @@ namespace Draho.World
                 fill.color = p.fill;
                 fill.intensity = p.fillIntensity;
                 fill.range = p.fillRange;
+            }
+            NightAmount = p.night;
+            float dark = Mathf.Clamp01(p.night * 2f - 1f); // only the real night loses colour
+            if (grade != null) grade.saturation.Override(Mathf.Lerp(baseSaturation, -35f, dark));
+            if (split != null)
+            {
+                Color grey = new Color(0.5f, 0.5f, 0.5f);
+                split.shadows.Override(Color.Lerp(grey, new Color(0.32f, 0.42f, 0.72f), dark));
+                split.highlights.Override(Color.Lerp(grey, new Color(0.66f, 0.56f, 0.42f), dark * 0.7f));
             }
         }
 

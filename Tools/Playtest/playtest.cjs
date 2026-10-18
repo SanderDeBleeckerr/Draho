@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,21 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=33&at=-0.9,2.0,180,0.8 : on the garden table at night, facing the lamp. Real jumps at
+  // diving moths first, then test catches so the beat can finish.
+  moths: [
+    ['02_night_lamp', 'wait', '2'],
+    ['03_dive', 'call', 'Moth_1.TestDive'],
+    ['04_jump', 'jump', ''],
+    ['05_dive2', 'call', 'Moth_2.TestDive'],
+    ['06_jump2', 'jump', ''],
+    ['07_dive3', 'call', 'Moth_3.TestDive'],
+    ['08_jump3', 'jump', ''],
+    ['09_catch_a', 'call', 'Moth_4.TestCatch'],
+    ['10_catch_b', 'call', 'Moth_1.TestCatch'],
+    ['11_catch_c', 'call', 'Moth_2.TestCatch'],
+    ['12_done', 'wait', '3'],
   ],
   // Start with ?beat=6&at=-10,2.5,0 (open lawn): day, evening and night light (SkyMood test hook).
   sky: [

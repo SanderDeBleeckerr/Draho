@@ -199,7 +199,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp),
             };
             bool IsDynamic(Transform t)
             {
@@ -451,6 +451,72 @@ namespace Draho.EditorTools
         /// Chapter 8 in the inner court: three pigeons on the stones (they perch on the sills and the gutter)
         /// and Drahomil's old jingle ball, stuck behind a bracket of the court drainpipe.
         /// </summary>
+        /// <summary>
+        /// Chapter 9: a wall lamp next to the sliding door (on from the evening) and moths that loop around it.
+        /// The lantern hangs 1 m from the garden table, so the table is a good place to jump from.
+        /// </summary>
+        static void BuildGardenNight()
+        {
+            var iron = Mat("Lamp_Iron", new Color(0.12f, 0.12f, 0.13f), 0.4f);
+            var glass = Mat("Lamp_Glow", new Color(1f, 0.85f, 0.6f), 0.6f);
+            glass.EnableKeyword("_EMISSION");
+            glass.SetColor("_EmissionColor", new Color(0.15f, 0.11f, 0.06f));
+            EditorUtility.SetDirty(glass);
+            Transform Part(PrimitiveType type, Transform parent, Vector3 pos, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(type);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                if (type == PrimitiveType.Sphere) go.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                return go.transform;
+            }
+
+            var root = new GameObject("GardenLamp");
+            root.transform.SetParent(level, false);
+            root.transform.position = new Vector3(-0.05f, 1.95f, 1.0f);
+            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.01f, 0f, 0f), new Vector3(0.02f, 0.16f, 0.1f), iron);   // wall plate
+            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.09f, 0.05f, 0f), new Vector3(0.16f, 0.02f, 0.02f), iron); // arm
+            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, 0.03f, 0f), new Vector3(0.12f, 0.02f, 0.12f), iron); // roof
+            var bulb = Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.05f, 0f), new Vector3(0.09f, 0.14f, 0.09f), glass);
+            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.13f, 0f), new Vector3(0.11f, 0.02f, 0.11f), iron); // base
+            var light = new GameObject("GardenLampLight").AddComponent<Light>();
+            light.transform.SetParent(root.transform, false);
+            light.transform.localPosition = new Vector3(-0.3f, -0.08f, 0f);
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.74f, 0.45f);
+            light.range = 6f;
+            light.intensity = 0f;
+            light.enabled = false;
+            light.shadows = LightShadows.None;
+            root.AddComponent<NightLamp>().Configure(light, bulb.GetComponent<Renderer>());
+
+            // Four moths: pale wings, a furry brown body, about 4 cm long. +Z is forward.
+            var body = Mat("Moth_Body", new Color(0.42f, 0.34f, 0.26f), 0.1f);
+            var wing = Mat("Moth_Wing", new Color(0.8f, 0.74f, 0.62f), 0.1f);
+            Vector3 centre = new Vector3(-0.75f, 1.8f, 1.0f);
+            for (int i = 0; i < 4; i++)
+            {
+                var moth = new GameObject($"Moth_{i + 1}");
+                moth.transform.SetParent(level, false);
+                moth.transform.position = centre + new Vector3(0.3f * Mathf.Cos(i * 1.6f), 0f, 0.3f * Mathf.Sin(i * 1.6f));
+                Part(PrimitiveType.Sphere, moth.transform, Vector3.zero, new Vector3(0.014f, 0.014f, 0.035f), body);
+                Transform Wing(float side)
+                {
+                    var pivot = new GameObject(side < 0 ? "WingL" : "WingR").transform;
+                    pivot.SetParent(moth.transform, false);
+                    pivot.localPosition = new Vector3(side * 0.005f, 0.004f, 0f);
+                    Part(PrimitiveType.Cube, pivot, new Vector3(side * 0.02f, 0f, -0.002f), new Vector3(0.04f, 0.002f, 0.03f), wing);
+                    return pivot;
+                }
+                var left = Wing(-1f);
+                var right = Wing(1f);
+                moth.AddComponent<Moth>().Configure(centre, left, right);
+            }
+        }
+
         static void BuildCourtLife(Layout layout)
         {
             var c = (layout.courts ?? new Court[0]).FirstOrDefault(x => x.shaft_height > 0f);
@@ -1802,6 +1868,7 @@ namespace Draho.EditorTools
             BuildGardenCharacters();
             BuildNeighbourFlat();
             BuildCourtLife(layout);
+            BuildGardenNight();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

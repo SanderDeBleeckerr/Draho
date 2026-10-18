@@ -118,7 +118,7 @@ namespace Draho.World
                 // Not pure blue and orange: the ambient keeps a little violet as a third colour.
                 p.sunEuler = new Vector3(55f, day.sunEuler.y - 70f, 0f);
                 p.sun = new Color(0.6f, 0.7f, 1f);
-                p.sunIntensity = 0.42f;
+                p.sunIntensity = 0.32f;
                 p.sky = new Color(0.17f, 0.2f, 0.34f);
                 p.equator = new Color(0.14f, 0.13f, 0.22f);
                 p.ground = new Color(0.05f, 0.05f, 0.07f);
@@ -129,8 +129,8 @@ namespace Draho.World
                 p.exposure = 0.22f;
                 // The fill light near the camera becomes a moon-blue rim on the black fur.
                 p.fill = new Color(0.62f, 0.74f, 1f);
-                p.fillIntensity = 1.1f;
-                p.fillRange = 2.2f;
+                p.fillIntensity = 0.42f;
+                p.fillRange = 1.9f;
                 p.night = 1f;
             }
             return p;

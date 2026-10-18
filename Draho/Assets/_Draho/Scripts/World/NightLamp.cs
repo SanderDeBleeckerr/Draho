@@ -10,7 +10,7 @@ namespace Draho.World
     {
         [SerializeField] Light lamp;
         [SerializeField] Renderer bulb;
-        [SerializeField] float intensity = 2.2f;
+        [SerializeField] float intensity = 3.2f;
         [SerializeField] Color glow = new Color(1f, 0.72f, 0.4f);
 
         static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");

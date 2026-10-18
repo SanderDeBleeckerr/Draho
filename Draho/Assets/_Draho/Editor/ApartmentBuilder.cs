@@ -832,6 +832,26 @@ namespace Draho.EditorTools
                 hem.GetComponent<Renderer>().sharedMaterial = top;
             }
             humans.gameObject.AddComponent<Humans>();
+
+            // Breakfast: a blue bowl between the back counter and the island (hidden until the humans fill it).
+            var bowl = new GameObject("Breakfast");
+            bowl.transform.SetParent(level, false);
+            bowl.transform.position = new Vector3(5.3f, 0f, 1.0f);
+            var dish = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(dish.GetComponent<Collider>());
+            dish.transform.SetParent(bowl.transform, false);
+            dish.transform.localPosition = Vector3.up * 0.03f;
+            dish.transform.localScale = new Vector3(0.18f, 0.03f, 0.18f);
+            dish.GetComponent<Renderer>().sharedMaterial = Mat("Bowl_Blue", new Color(0.25f, 0.42f, 0.7f), 0.7f);
+            var food = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Object.DestroyImmediate(food.GetComponent<Collider>());
+            food.transform.SetParent(bowl.transform, false);
+            food.transform.localPosition = Vector3.up * 0.06f;
+            food.transform.localScale = new Vector3(0.13f, 0.04f, 0.13f);
+            food.GetComponent<Renderer>().sharedMaterial = Mat("Cat_Food", new Color(0.5f, 0.32f, 0.2f), 0.4f);
+            food.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+            bowl.AddComponent<StoryItem>().Configure("Breakfast! Crunch, crunch, purr.", 0.35f);
+            bowl.SetActive(false);
         }
 
         /// <summary>

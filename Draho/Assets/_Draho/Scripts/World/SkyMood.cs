@@ -15,7 +15,7 @@ namespace Draho.World
     /// </summary>
     public class SkyMood : MonoBehaviour
     {
-        public enum Mood { Day, Evening, Night, Storm }
+        public enum Mood { Day, Evening, Night, Storm, Dawn }
 
         struct Preset
         {
@@ -151,6 +151,23 @@ namespace Draho.World
                 p.skyTint = new Color(0.2f, 0.22f, 0.28f);
                 p.exposure = 0.12f;
                 p.clouds = 1f;
+            }
+            else if (mood == Mood.Dawn)
+            {
+                // Sunrise after the storm: a low gold sun from the east (opposite the evening sun), long shadows,
+                // the sky still cool and blue-pink from the blue hour; the lamps are still dimly on.
+                p.sunEuler = new Vector3(6f, day.sunEuler.y - 140f, 0f);
+                p.sun = new Color(1f, 0.72f, 0.48f);
+                p.sunIntensity = 0.85f;
+                p.sky = new Color(0.45f, 0.5f, 0.66f);
+                p.equator = new Color(0.7f, 0.56f, 0.52f);
+                p.ground = new Color(0.22f, 0.18f, 0.17f);
+                p.fog = new Color(0.8f, 0.68f, 0.68f);
+                p.fogStart = 40f;
+                p.fogEnd = 140f;
+                p.skyTint = new Color(0.55f, 0.5f, 0.62f);
+                p.exposure = 0.8f;
+                p.night = 0.35f;
             }
             return p;
         }

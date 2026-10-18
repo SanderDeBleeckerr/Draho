@@ -50,7 +50,7 @@ namespace Draho.Story
         float greetTime;
         Pigeon[] pigeons;
         Pigeon gull;
-        StoryItem croissant;
+        StoryItem croissant, breakfast;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
         static Vector3? P(float x, float y, float z) => new Vector3(x, y, z);
@@ -157,7 +157,9 @@ namespace Draho.Story
             var birdsOfStone = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             pigeons = Array.FindAll(birdsOfStone, p => p.name.StartsWith("Pigeon_"));
             gull = Array.Find(birdsOfStone, p => p.name == "Gull");
-            croissant = Array.Find(FindObjectsByType<StoryItem>(FindObjectsInactive.Include, FindObjectsSortMode.None), i => i.name == "Croissant");
+            var allItems = FindObjectsByType<StoryItem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            croissant = Array.Find(allItems, i => i.name == "Croissant");
+            breakfast = Array.Find(allItems, i => i.name == "Breakfast");
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
@@ -545,7 +547,7 @@ namespace Draho.Story
                 {
                     Story = "Warm and dry, you sleep... Birds sing: morning! The storm has washed the town clean. Then: keys in the door. The humans are home!",
                     Goal = "Run to the front door in the kitchen and greet them: rub against their legs.",
-                    Begin = () => { SkyMood.Set(SkyMood.Mood.Day, 14f); humans?.ComeHome(); greetTime = 0f; },
+                    Begin = () => { SkyMood.Set(SkyMood.Mood.Dawn, 10f); humans?.ComeHome(); greetTime = 0f; },
                     Target = () => humans != null ? humans.transform.GetChild(0).position + Vector3.up * 0.4f : (Vector3?)null,
                     Done = () =>
                     {
@@ -559,7 +561,15 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Purrrr. They smell of trains and coffee. One kneels down and scratches you behind the ear: \"Did you have a quiet day, Drahomil?\" You blink, very slowly. THE END. Thank you for playing!",
+                    Story = "Purrrr. They smell of trains and coffee. The sun climbs over the roofs, and something rattles in the kitchen: the food box!",
+                    Goal = "Breakfast! Go to your bowl between the counter and the island.",
+                    Begin = () => { SkyMood.Set(SkyMood.Mood.Day, 25f); if (breakfast != null) breakfast.gameObject.SetActive(true); },
+                    Target = () => breakfast != null && breakfast.gameObject.activeSelf ? breakfast.transform.position : (Vector3?)null,
+                    Done = () => breakfast == null || breakfast.Taken,
+                },
+                new Beat
+                {
+                    Story = "Full and warm, you curl up in a patch of morning sun. One of your humans kneels down and scratches you behind the ear: \"Did you have a quiet day, Drahomil?\" You blink, very slowly. THE END. Thank you for playing!",
                     Goal = "",
                     Done = () => false,
                 },

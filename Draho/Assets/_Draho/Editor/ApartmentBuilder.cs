@@ -712,7 +712,7 @@ namespace Draho.EditorTools
                 d.Normalize();
                 if (d.y < 0.08f) continue; // the horizon is in the fog
                 float r = (float)rngStars.NextDouble();
-                float size = 0.35f + r * r * r * 1.1f;
+                float size = 0.6f + r * r * r * 1.7f;
                 double hue = rngStars.NextDouble();
                 var tint = hue < 0.12 ? new Color(1f, 0.85f, 0.7f) : hue > 0.85 ? new Color(0.75f, 0.85f, 1f) : Color.white;
                 stars.Add((d, size, tint));

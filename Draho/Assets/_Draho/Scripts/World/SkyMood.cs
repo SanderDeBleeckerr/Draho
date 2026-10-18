@@ -118,7 +118,7 @@ namespace Draho.World
             {
                 // Moonlight: a high, cool key light that still casts shadows; a dim blue fill everywhere.
                 // Not pure blue and orange: the ambient keeps a little violet as a third colour.
-                p.sunEuler = new Vector3(55f, day.sunEuler.y - 70f, 0f);
+                p.sunEuler = new Vector3(32f, day.sunEuler.y - 70f, 0f); // a low moon: often in view
                 p.sun = new Color(0.6f, 0.7f, 1f);
                 p.sunIntensity = 0.32f;
                 p.sky = new Color(0.17f, 0.2f, 0.34f);

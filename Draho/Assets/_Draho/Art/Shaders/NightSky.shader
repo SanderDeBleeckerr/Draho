@@ -85,7 +85,7 @@ Shader "Draho/NightSky"
                     core = core * core * core;
                     float seed = i.color.a;
                     half twinkle = 0.6 + 0.4 * sin(_Time.y * (1.3 + seed * 2.7) + seed * 40.0);
-                    col = _Color.rgb * i.color.rgb * core * twinkle;
+                    col = _Color.rgb * i.color.rgb * core * twinkle * 1.8;
                 }
                 return half4(col * _DrahoNight, 1.0);
             }

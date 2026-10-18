@@ -70,3 +70,4 @@ web for how good games solve each weak point before it changes anything. Finding
 | 37 | Window panes on all scenery blocks (two meshes: dark glass, 35 % lit warm at night) | perf live: spawn 253 draws / 38 k tris, garden 127 k tris (budget 150 k); `home` re-run: the maple crown blocks the shed's north-east corner, the test now drops from the middle | — |
 | 38 | Stars (700 twinkling billboards) and a moon (hand-written NightSky shader) | — | — |
 | 38b | Live: stars too faint, moon (55°) never in view → bigger, brighter stars, moon at 32°; verified live: stars read above the lit town | — | — |
+| 39 | Upper floors of the cat's house, slate front roof, tiled neighbour roof, chimneys, skylight, lit windows on the house | Verified live: court drainpipe to 8.8 m, pull-up onto the flat strip, walk up the slate (9.9 m), ridge → beat 42; the slate read as one flat blue surface | Chapter 10 part 1: up the light well to the roofs |

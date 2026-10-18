@@ -1659,11 +1659,14 @@ namespace Draho.EditorTools
         {
             float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
             var wallMat = b.material == "plaster" ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f) : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
-            var tiles = Mat($"Apt_{b.id}_tiles", Hex(b.roof_color), 0.2f, TileTexture(), new Vector2(6f, 3f));
             Box("Walls", new Vector3(cx, b.h / 2, cz), new Vector3(w, b.h, d), wallMat).transform.SetParent(root, true);
             bool alongX = b.ridge_along == "x" || (b.ridge_along != "z" && w >= d); // the ridge runs along the long side unless set
             float span = alongX ? d : w, length = alongX ? w : d, ridge = b.ridge > 0f ? b.ridge : span * 0.4f;
             float slope = Mathf.Atan2(ridge, span / 2) * Mathf.Rad2Deg, slab = Mathf.Sqrt(span * span / 4 + ridge * ridge) + 0.3f;
+            // Rows of slates (1 m of texture = 4 rows), parallel to the ridge: the cube's top face maps x to u, z to v.
+            var tiles = alongX
+                ? Mat($"Apt_{b.id}_tiles", Hex(b.roof_color), 0.25f, RoofTexture(false), new Vector2(length + 0.3f, slab))
+                : Mat($"Apt_{b.id}_tiles", Hex(b.roof_color), 0.25f, RoofTexture(true), new Vector2(slab, length + 0.3f));
             foreach (float side in new[] { -1f, 1f })
             {
                 Vector3 across = alongX ? Vector3.forward : Vector3.right;
@@ -1671,6 +1674,17 @@ namespace Draho.EditorTools
                     alongX ? new Vector3(length + 0.3f, 0.12f, slab) : new Vector3(slab, 0.12f, length + 0.3f), tiles);
                 roof.transform.rotation = alongX ? Quaternion.Euler(side * slope, 0f, 0f) : Quaternion.Euler(0f, 0f, -side * slope);
                 roof.transform.SetParent(root, true);
+            }
+            // Trims: a ridge cap and zinc gutters along both eaves.
+            var cap = Mat($"Apt_{b.id}_cap", Hex(b.roof_color) * 0.7f, 0.2f);
+            var zinc = Mat("Apt_Zinc", new Color(0.55f, 0.57f, 0.58f), 0.55f);
+            Box("RidgeCap", new Vector3(cx, b.h + ridge + 0.03f, cz), alongX ? new Vector3(length + 0.3f, 0.1f, 0.24f) : new Vector3(0.24f, 0.1f, length + 0.3f), cap, collider: false)
+                .transform.SetParent(root, true);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Vector3 across = alongX ? Vector3.forward : Vector3.right;
+                Box("Gutter", new Vector3(cx, b.h - 0.04f, cz) + across * side * (span / 2 + 0.14f),
+                    alongX ? new Vector3(length + 0.3f, 0.1f, 0.13f) : new Vector3(0.13f, 0.1f, length + 0.3f), zinc, collider: false).transform.SetParent(root, true);
             }
             // Gables: a cube turned 45 degrees, squeezed to fit the roof slope (its lower half hides in the walls).
             foreach (float end in new[] { -1f, 1f })
@@ -2692,6 +2706,28 @@ namespace Draho.EditorTools
             materials["Apt_Glass"] = m;
             return m;
         }
+
+        /// <summary>
+        /// Roof slates or tiles, 1 m square (white, tinted by the material): 4 rows of 5, every second row shifted,
+        /// a dark shadow line under each row (the overlap) and a little variation per slate. vertical: rows along v.
+        /// </summary>
+        static Texture2D RoofTexture(bool vertical) => MakeTexture(vertical ? "RoofSlatesV.png" : "RoofSlates.png", 256, (px, py, size) =>
+        {
+            int x = vertical ? py : px, y = vertical ? px : py;
+            const int rowH = 64, slateW = 51;
+            int row = y / rowH;
+            int shifted = x + (row % 2) * slateW / 2;
+            int col = shifted / slateW;
+            int inRow = y % rowH;
+            if (shifted % slateW < 2) return new Color(0.5f, 0.5f, 0.52f);  // the gap between two slates
+            int hash = (row * 73856093) ^ (col * 19349663);
+            float tone = 0.8f + 0.2f * (((hash >> 4) & 15) / 15f);
+            float shade = inRow < 6 ? 0.55f + inRow * 0.06f : 1f;           // shadow of the row above
+            float edge = inRow > rowH - 4 ? 1.08f : 1f;                     // a light lower edge
+            float n = Mathf.PerlinNoise(px * 0.05f, py * 0.05f) * 0.08f;
+            float t = Mathf.Clamp01(tone * shade * edge - n);
+            return new Color(t, t, t);
+        });
 
         static Texture2D TileTexture() => MakeTexture("FloorTile.png", 128, (x, y, size) =>
         {

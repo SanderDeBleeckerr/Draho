@@ -162,6 +162,14 @@ namespace Draho.World
             foreach (var r in renderers) r.enabled = on;
         }
 
+        /// <summary>The story is past the chase (a saved game or a test start): the fox is already in its den.</summary>
+        public void SkipToDen()
+        {
+            if (state == State.Den) return;
+            state = State.Den;
+            Show(false);
+        }
+
         /// <summary>Test hook: SendMessage('Fox', 'TestBegin').</summary>
         public void TestBegin() => Begin();
 

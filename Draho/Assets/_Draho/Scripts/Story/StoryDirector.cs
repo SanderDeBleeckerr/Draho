@@ -414,6 +414,7 @@ namespace Draho.Story
                 {
                     Story = "The fox slips into its den under the bushes. Behind the den, the old fence has a broken plank: a dark gap that smells of water.",
                     Goal = "Squeeze through the gap in the fence behind the fox's den.",
+                    Begin = () => fox?.SkipToDen(),
                     Target = () => new Vector3(-26f, 0f, 6.3f),
                     Done = () => cat.transform.position.x < -26.3f,
                 },

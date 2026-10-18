@@ -273,7 +273,7 @@ const steps = {
     ['06_climb', 'hold', '4'],
     ['07_climb_more', 'hold', '4'],
     ['08_roof', 'hold', '2'],
-    ['09_walk_east', 'move', '-1,0,0,3'],
+    ['09_walk_east', 'move', '-1,0,0,6'],
     ['10_down', 'wait', '2'],
     ['11_to_lamp', 'call', 'StoryDirector.TestTeleport:-1.3,1.4,90'],
     ['12_home', 'wait', '3'],

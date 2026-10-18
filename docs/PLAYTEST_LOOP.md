@@ -79,3 +79,5 @@ web for how good games solve each weak point before it changes anything. Finding
 | 45 | Geranium pot and two butterflies on the big gravel roof | Verified live: a walking cat makes a butterfly escape; catch → beat 10; but the butterflies were nearly invisible at real size (45b: 1.7× bigger) | Chapter 2 grows from 3 to 4 beats |
 | 46 | Fisherman on a stool (rod, line, bobbing float), bucket of silver fish | Verified live: hum → moving cat shooed back up the quay; reach the bucket while he fishes → fish → beat 20 (the test now starts within his 7 m) | Chapter 4 grows from 3 to 4 beats |
 | 47 | Dawn (low gold sun from the east, blue-pink ambient), blue food bowl | Verified live: night → dawn at the humans → breakfast beat; the cat stopped just short of the bowl (47b: pick radius 0.35 → 0.5 m) | Chapter 11 grows from 3 to 4 beats |
+| 47b | — | Verified live: breakfast eaten at 0.5 m → the ending | — |
+| 48 | Six bright rubber toys in the neighbour's flat (squeak, squash, floor ring) | Live: 'flat' passes on its new path (toy mouse taken); the squeak test stopped 0.23 m short of a duck (48b: the front paws count too) | Chapter 7: find a quiet path |

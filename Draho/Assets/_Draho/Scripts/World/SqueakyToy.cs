@@ -46,9 +46,11 @@ namespace Draho.World
             cooldown -= dt;
             if (cat != null && cooldown <= 0f && cat.IsGrounded)
             {
+                // The body or the front paws (a little ahead of the body) on the toy.
                 Vector3 d = cat.transform.position - transform.position;
-                d.y = 0f;
-                if (d.magnitude < stepRadius) Squeak();
+                Vector3 paws = d + cat.transform.forward * 0.15f;
+                d.y = paws.y = 0f;
+                if (d.magnitude < stepRadius || paws.magnitude < stepRadius) Squeak();
             }
             // Squash and spring back; the ring spreads and fades.
             float squash = Mathf.Clamp01(cooldown - 1.4f) * 1.6f;

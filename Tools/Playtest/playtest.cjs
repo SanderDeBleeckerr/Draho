@@ -266,7 +266,7 @@ const steps = {
   // Start with ?beat=30&at=-0.6,6.6,90 : inside the neighbour's flat by the window; walk onto the rubber duck: it
   // squeaks (ring, toast) and Hrozna wakes and chases the cat out.
   squeak: [
-    ['02_walk_onto_duck', 'move', '0,1,0,1.6'],
+    ['02_walk_onto_duck', 'move', '0,1,0,2.2'],
     ['03_squeak', 'wait', '0.6'],
     ['04_chase', 'wait', '3'],
     ['05_out', 'wait', '2'],

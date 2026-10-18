@@ -263,7 +263,7 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=19&at=-33.3,-18,180 : on the quay north of the fisherman; walk down while he fishes, freeze
+  // Start with ?beat=19&at=-33.3,-22,180 : on the quay north of the fisherman; walk down while he fishes, freeze
   // when he hums (one shoo on purpose: keep walking while he looks), then reach the bucket.
   fisher: [
     ['02_walk', 'move', '0,1,0,3'],

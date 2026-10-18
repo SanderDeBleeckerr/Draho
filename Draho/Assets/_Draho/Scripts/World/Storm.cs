@@ -15,9 +15,9 @@ namespace Draho.World
         enum Phase { Calm, Warning, Gust }
 
         [SerializeField] ParticleSystem rain;
-        [SerializeField] float rainRate = 700f;
+        [SerializeField] float rainRate = 900f;
         [SerializeField] Vector3 gustDirection = new Vector3(-1f, 0f, 0.25f);
-        [SerializeField] float gustSpeed = 2.4f;
+        [SerializeField] float gustSpeed = 1.8f;
         [SerializeField] float warningTime = 1.3f;
         [SerializeField] float gustTime = 1.8f;
         [SerializeField] float roofHeight = 8f;

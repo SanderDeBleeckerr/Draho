@@ -71,3 +71,5 @@ web for how good games solve each weak point before it changes anything. Finding
 | 38 | Stars (700 twinkling billboards) and a moon (hand-written NightSky shader) | — | — |
 | 38b | Live: stars too faint, moon (55°) never in view → bigger, brighter stars, moon at 32°; verified live: stars read above the lit town | — | — |
 | 39 | Upper floors of the cat's house, slate front roof, tiled neighbour roof, chimneys, skylight, lit windows on the house | Verified live: court drainpipe to 8.8 m, pull-up onto the flat strip, walk up the slate (9.9 m), ridge → beat 42; the slate read as one flat blue surface | Chapter 10 part 1: up the light well to the roofs |
+| 40 | Slate texture with rows, ridge caps, zinc gutters on pitched roofs | Verified live: rows read on the slate at night | — |
+| 41 | Storm: rain round the camera, lightning pulses, clouds hide the stars | Gusts verified live: standing cat pushed 6.7 m down the slope, ducking cat 0.66 m; beat 43 → 44 at the neighbour's chimney (41b: gust 2.4 → 1.8 m/s, denser rain) | Chapter 10 part 2: the storm on the ridge |

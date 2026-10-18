@@ -743,7 +743,7 @@ namespace Draho.EditorTools
             main.startLifetime = 1.1f;
             main.startSpeed = new ParticleSystem.MinMaxCurve(8f, 10f);
             main.startSize = new ParticleSystem.MinMaxCurve(0.02f, 0.035f);
-            main.startColor = new Color(0.72f, 0.78f, 0.9f, 0.32f);
+            main.startColor = new Color(0.72f, 0.78f, 0.9f, 0.45f);
             main.maxParticles = 1200;
             var emission = ps.emission;
             emission.rateOverTime = 0f;

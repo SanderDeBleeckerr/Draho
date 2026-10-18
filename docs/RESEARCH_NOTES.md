@@ -95,3 +95,28 @@ a tiny, tall space (a 3 x 1.8 m light well) fun to play in?
 - The court becomes a light well (8.8 m, from the height model) with window sills and a gutter: the pigeons
   perch higher and higher, and the jingle ball sits up the drainpipe, so the goal leads the eye upward.
 - The way down is short (a 3 m drop onto the stones), so a mistake costs little.
+
+## Round 32 (2026-10-18): a better crawl (stalking) animation
+
+**Question:** the crawl looked stiff: curled front paws, a straight tail held high, a high head and a flat,
+board-like body. How does a real cat stalk, and how do animators make a sneak walk look alive?
+
+**Sources**
+- Bishop, Pai & Schmitt (2008), "Whole body mechanics of stealthy walking in cats", PLOS ONE,
+  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2583958/ : the trunk stays level, the hips go about 30 % lower,
+  the head is low; crouched cats use a more diagonal footfall pattern and recover less energy (stealth over economy).
+- Animation Mentor, "Animating a sneak walk cycle with personality",
+  https://www.animationmentor.com/blog/tutorial-animating-sneak-walk-cycle-with-personality/ : a perfectly level
+  body looks mechanical; add a small up-down motion to hips, shoulders and head; knees never fully straight.
+- SIGGRAPH HyperGraph walking exercise,
+  https://education.siggraph.org/static/HyperGraph/animation/character_animation/walking/walking_excercise.htm :
+  animate the hips first; the shoulders answer the hips.
+- Student cat gait study (arts.ac.uk) : the paws lift very little, the head stays still on the prey.
+
+**What we do** (in `Tools/Blender/convert_lowpoly_cat.py`, baked into `Drahomil.fbx`)
+- Paws stay flat: a damped-track constraint keeps each paw in its rest direction while the legs bend deep.
+- Head low and forward under the shoulder line, eyes level, ears forward; tail low, tip twitches.
+- Steps: the paw reaches forward, hovers just above the ground and then sets down (`hover` in `leg_offset`).
+- Slightly more diagonal phases (fore legs at 0.3 / 0.8 instead of 0.25 / 0.75), elbows and knees 1.2 cm out.
+- Two small dips per cycle in hips and shoulders, out of phase; the head cancels the chest rock.
+- 36-frame cycle, stride 0.16 m: clip speed 0.196 m/s, so at the crouch speed (0.28 m/s) the clip plays at 1.4×.

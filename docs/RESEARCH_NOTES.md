@@ -120,3 +120,26 @@ board-like body. How does a real cat stalk, and how do animators make a sneak wa
 - Slightly more diagonal phases (fore legs at 0.3 / 0.8 instead of 0.25 / 0.75), elbows and knees 1.2 cm out.
 - Two small dips per cycle in hips and shoulders, out of phase; the head cancels the chest rock.
 - 36-frame cycle, stride 0.16 m: clip speed 0.196 m/s, so at the crouch speed (0.28 m/s) the clip plays at 1.4×.
+
+## Round 33 (2026-10-18): evening and night light (SkyMood)
+
+**Question:** chapter 9 plays at night, and the hero is a black cat. How do games make night feel dark but
+stay readable, and how do they blend the time of day at runtime in URP?
+
+**Sources**
+- The Level Design Book, "Lighting for darkness", https://book.leveldesignbook.com/process/lighting/darkness :
+  "Hollywood darkness": feel dark without being dark; dim, soft, blue-ish fill lights without shadows; rim light
+  to pick out silhouettes; let some shadows reach black (contrast, not darkness); avoid plain blue-orange, add a
+  third hue.
+- Wikipedia, "Day for night", https://en.wikipedia.org/wiki/Day_for_night : moonlight looks blue to the eye
+  (Purkinje effect), so film and games tint it blue.
+- Unity BoatAttack sample, `DayNightController.cs` : one time value drives the sun rotation and colour, the sky
+  tint, the fog colour and the ambient light together.
+- Wayline, "Easy URP day/night cycle", https://www.wayline.io/blog/easy-urp-day-night-cycle-unity-scripting :
+  lerp the directional light and the skybox exposure from a script.
+
+**What we do** (`Scripts/World/SkyMood.cs`, created at runtime in every scene)
+- Three presets, blended with a smooth step: Day (the scene as built), Evening (low warm sun, pink-orange fog),
+  Night (high cool moon at 0.42 that still casts shadows, blue-violet trilight ambient, fog 25-95 m, sky exposure 0.22).
+- The camera's CatFillLight becomes a moon-blue rim at night (1.1, range 2.2 m): the black fur keeps its shape.
+- The story sets the mood: beat 31 turns to Evening. Test hook `SkyMood.TestMood`, scenario `sky`.

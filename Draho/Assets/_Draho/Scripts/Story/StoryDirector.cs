@@ -412,7 +412,28 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The fox slips into a den under the bushes in the far corner. Behind the den, the old fence is broken: a secret way out to the street, where a lamp-post hums. End of the second part of chapter 9.",
+                    Story = "The fox slips into its den under the bushes. Behind the den, the old fence has a broken plank: a dark gap that smells of water.",
+                    Goal = "Squeeze through the gap in the fence behind the fox's den.",
+                    Target = () => new Vector3(-26f, 0f, 6.3f),
+                    Done = () => cat.transform.position.x < -26.3f,
+                },
+                new Beat
+                {
+                    Story = "The river bank! The water whispers in the dark, and an old lamp-post hums on the quay. Home is close: ivy grows up the back of the shed at the end of your own garden.",
+                    Goal = "Climb the ivy on the shed (hold the middle of the stick) and get onto its roof.",
+                    Target = () => new Vector3(-27f, 2f, 5.1f),
+                    Done = () => cat.transform.position.y > 3.9f && cat.transform.position.x > -28.2f && cat.transform.position.x < -23.8f && cat.transform.position.z < 5.05f,
+                },
+                new Beat
+                {
+                    Story = "From the shed roof you see your own garden, silver in the moonlight, and the warm lamp by your door.",
+                    Goal = "Jump down into your garden and go home to the lamp by the door.",
+                    Target = () => gardenLamp != null ? gardenLamp.position : (Vector3?)null,
+                    Done = () => InGarden(cat.transform.position) && gardenLamp != null && Vector3.Distance(cat.transform.position, gardenLamp.position - Vector3.up * 1.9f) < 2.5f,
+                },
+                new Beat
+                {
+                    Story = "Home again, by the warm lamp. The moths are still dancing. The humans are not back yet... End of chapter 9.",
                     Goal = "",
                     Done = () => false,
                 },

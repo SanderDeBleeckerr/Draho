@@ -61,6 +61,7 @@ namespace Draho.EditorTools
             public ContextBuilding[] context_buildings;
             public WildGarden wild_garden;
             public Ground[] grounds;
+            public QuayLampInfo quay_lamp;
             public Water water;
             public Begijnhof begijnhof;
             public DuckSpot[] ducks;
@@ -111,6 +112,7 @@ namespace Draho.EditorTools
             public string id, color, roof_color, material, roof, front; // material: brick | plaster; roof: flat | pitched
             public float x0, x1, z0, z1, h, ridge;
         }
+        [Serializable] class QuayLampInfo { public float x, z, h; }
         [Serializable] class Ground { public string id, color, material; public float x0, x1, z0, z1, top; }
         [Serializable] class Water { public string color; public float x0, x1, z0, z1, top; }
         [Serializable] class GardenPath { public string id, color; public float[] from, to; public float w, slab; }
@@ -521,6 +523,41 @@ namespace Draho.EditorTools
         /// Chapter 9: a red fox (about 90 cm with the tail) that walks a night route west through the wild
         /// garden, from the workshop end to a den under the bushes in the far corner. +Z is forward.
         /// </summary>
+        /// <summary>Chapter 9: an old cast-iron lamp-post at the north end of the quay; on at night.</summary>
+        static void BuildQuayLamp(QuayLampInfo q)
+        {
+            if (q == null || q.h <= 0f) return;
+            var iron = Mat("QuayLamp_Iron", new Color(0.13f, 0.17f, 0.15f), 0.35f); // old dark green paint
+            var glass = Mat("Lamp_Glow", new Color(1f, 0.85f, 0.6f), 0.6f);
+            var root = new GameObject("QuayLamp");
+            root.transform.SetParent(level, false);
+            root.transform.position = new Vector3(q.x, 0f, q.z);
+            Box("Foot", root.transform.position + Vector3.up * 0.2f, new Vector3(0.26f, 0.4f, 0.26f), iron).transform.SetParent(root.transform, true);
+            var post = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            post.name = "Post";
+            post.transform.SetParent(root.transform, false);
+            post.transform.localPosition = Vector3.up * (q.h / 2);
+            post.transform.localScale = new Vector3(0.1f, q.h / 2, 0.1f);
+            post.GetComponent<Renderer>().sharedMaterial = iron;
+            Box("Cap", root.transform.position + Vector3.up * (q.h + 0.42f), new Vector3(0.4f, 0.05f, 0.4f), iron, collider: false).transform.SetParent(root.transform, true);
+            var bulb = Box("Lantern", root.transform.position + Vector3.up * (q.h + 0.22f), new Vector3(0.28f, 0.36f, 0.28f), glass, collider: false);
+            bulb.transform.SetParent(root.transform, true);
+            var light = new GameObject("QuayLampLight").AddComponent<Light>();
+            light.transform.SetParent(root.transform, false);
+            light.transform.localPosition = Vector3.up * (q.h - 0.1f);
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.72f, 0.42f);
+            light.range = 9f;
+            light.intensity = 0f;
+            light.enabled = false;
+            light.shadows = LightShadows.None;
+            var lamp = root.AddComponent<NightLamp>();
+            lamp.Configure(light, bulb.GetComponent<Renderer>());
+            var so = new SerializedObject(lamp);
+            so.FindProperty("intensity").floatValue = 4.5f;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
@@ -1935,6 +1972,7 @@ namespace Draho.EditorTools
             BuildCourtLife(layout);
             BuildGardenNight();
             BuildFox();
+            BuildQuayLamp(layout.quay_lamp);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

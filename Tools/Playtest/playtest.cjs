@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,21 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=36&at=-24.9,6.3,270 : at the fox's den; through the broken fence to the river bank,
+  // up the ivy on the end shed, over its roof and down into the own garden, home to the lamp.
+  home: [
+    ['02_to_gap', 'move', '0,1,0,3'],
+    ['03_bank', 'wait', '2'],
+    ['04_look_lamp', 'move', '-1,0,0,1.2'],
+    ['05_at_ivy', 'call', 'StoryDirector.TestTeleport:-27,5.45,180'],
+    ['06_climb', 'hold', '4'],
+    ['07_climb_more', 'hold', '4'],
+    ['08_roof', 'hold', '2'],
+    ['09_walk_east', 'move', '-1,0,0,3'],
+    ['10_down', 'wait', '2'],
+    ['11_to_lamp', 'call', 'StoryDirector.TestTeleport:-1.3,1.4,90'],
+    ['12_home', 'wait', '3'],
   ],
   // Start with ?beat=35&at=-2.6,7.4,270 : in the wild garden behind the fox's start; follow it west, sneaking
   // first, then walking (it should stop and stare), then let it go to its den (test hook).

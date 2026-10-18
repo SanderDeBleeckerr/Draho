@@ -298,3 +298,20 @@ the Eye material glows green-gold, scaled by how straight the cat faces the came
 **What we do:** the gull is a solitary bird of the Pigeon kind in its own group: it flees at 1.8 m from a
 walking cat (pigeons 1.3 m), 3.2 m from a running cat (2.6 m) and 0.6 m from a sneaking cat (0.45 m); a direct
 approach still multiplies the distance by 1.6, a side approach by 0.6.
+
+## Round 45 (2026-10-18): butterflies on the rooftops
+
+**Question:** how do butterflies fly, and why are they so hard to catch?
+
+**Sources**
+- Cornell Chronicle, "Hind wings help butterflies make swift turns to evade predators" (Eisner & Jantzen 2009,
+  PNAS), https://news.cornell.edu/node/272576 : without hind wings, turning acceleration roughly halves.
+- SICB abstract, "Erratic flight in butterflies" (Horisawa, Byrnes & Dudley), https://sicb.org/?p=32602 :
+  palatable butterflies fly erratic, sinuous paths that help them evade aerial predators.
+- Journal of Experimental Biology (small tortoiseshells),
+  https://cob.silverchair.com/jeb/article-pdf/211/1/24/1262751/24.pdf : after a simulated attack they fly faster
+  and straighter than in spontaneous flight.
+
+**What we do** (`Moth.dayFlier`): zigzag flight round the geraniums (speed, turn rate and height change all the
+time); a cat walking within 1 m triggers a fast, straight escape up and away; the butterfly comes back after
+about 1.6 s. Sneak close, then jump or rear when one flutters low.

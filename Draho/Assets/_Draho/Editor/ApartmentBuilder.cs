@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman),
             };
             bool IsDynamic(Transform t)
             {
@@ -1006,6 +1006,81 @@ namespace Draho.EditorTools
                 so.FindProperty("catchRadius").floatValue = 0.34f;
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
+        }
+
+        /// <summary>
+        /// Chapter 4: an old fisherman on a stool at the quay edge, his rod in a holder, a float on the river and a
+        /// bucket of fish beside him. +Z of the root faces the river.
+        /// </summary>
+        static void BuildFisherman(Layout layout)
+        {
+            if (layout.water == null) return;
+            var wood = Mat("Stool_Wood", new Color(0.45f, 0.33f, 0.22f), 0.2f);
+            var trousers = Mat("Fisher_Trousers", new Color(0.3f, 0.28f, 0.22f), 0.2f);
+            var jacket = Mat("Fisher_Jacket", new Color(0.24f, 0.36f, 0.24f), 0.2f);
+            var skin = Mat("Fisher_Skin", new Color(0.86f, 0.66f, 0.52f), 0.3f);
+            var cap = Mat("Fisher_Cap", new Color(0.18f, 0.2f, 0.28f), 0.2f);
+            var boot = Mat("Human_Shoe", new Color(0.08f, 0.07f, 0.07f), 0.4f);
+            var metal = Mat("Bucket_Metal", new Color(0.55f, 0.57f, 0.6f), 0.6f);
+            var silver = Mat("Fish_Silver", new Color(0.78f, 0.8f, 0.84f), 0.85f);
+            var red = Mat("Float_Red", new Color(0.9f, 0.15f, 0.1f), 0.4f);
+            var rodMat = Mat("Rod", new Color(0.15f, 0.12f, 0.1f), 0.5f);
+            var root = new GameObject("Fisherman").transform;
+            root.SetParent(level, false);
+            root.SetPositionAndRotation(new Vector3(-34.5f, 0f, -28f), Quaternion.Euler(0f, 270f, 0f));
+            Transform Part(PrimitiveType type, Transform parent, Vector3 pos, Vector3 euler, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(type);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localRotation = Quaternion.Euler(euler);
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                if (type == PrimitiveType.Sphere) go.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                return go.transform;
+            }
+            Part(PrimitiveType.Cylinder, root, new Vector3(0f, 0.22f, 0f), Vector3.zero, new Vector3(0.32f, 0.22f, 0.32f), wood);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Part(PrimitiveType.Cube, root, new Vector3(side * 0.11f, 0.5f, 0.2f), Vector3.zero, new Vector3(0.14f, 0.14f, 0.42f), trousers);
+                Part(PrimitiveType.Cube, root, new Vector3(side * 0.11f, 0.26f, 0.4f), Vector3.zero, new Vector3(0.13f, 0.46f, 0.13f), trousers);
+                Part(PrimitiveType.Cube, root, new Vector3(side * 0.11f, 0.05f, 0.46f), Vector3.zero, new Vector3(0.14f, 0.1f, 0.26f), boot);
+            }
+            var torso = new GameObject("Torso").transform;
+            torso.SetParent(root, false);
+            torso.localPosition = new Vector3(0f, 0.52f, 0f);
+            Part(PrimitiveType.Cube, torso, new Vector3(0f, 0.3f, 0f), new Vector3(8f, 0f, 0f), new Vector3(0.44f, 0.58f, 0.28f), jacket);
+            Part(PrimitiveType.Sphere, torso, new Vector3(0f, 0.74f, 0.03f), Vector3.zero, Vector3.one * 0.24f, skin);
+            Part(PrimitiveType.Cylinder, torso, new Vector3(0f, 0.85f, 0.03f), Vector3.zero, new Vector3(0.25f, 0.04f, 0.25f), cap);
+            Part(PrimitiveType.Cube, torso, new Vector3(0f, 0.83f, 0.15f), Vector3.zero, new Vector3(0.2f, 0.02f, 0.12f), cap);
+            foreach (float side in new[] { -1f, 1f })
+                Part(PrimitiveType.Cube, torso, new Vector3(side * 0.24f, 0.32f, 0.12f), new Vector3(20f, 0f, 0f), new Vector3(0.11f, 0.11f, 0.36f), jacket);
+            // The rod rests in a holder, 30 degrees up over the river; a line down to the float.
+            var holder = new GameObject("Rod").transform;
+            holder.SetParent(root, false);
+            holder.localPosition = new Vector3(0.3f, 0.35f, 0.3f);
+            holder.localRotation = Quaternion.Euler(60f, 0f, 0f);
+            Part(PrimitiveType.Cylinder, holder, new Vector3(0f, 1.5f, 0f), Vector3.zero, new Vector3(0.025f, 1.5f, 0.025f), rodMat);
+            Vector3 tip = holder.TransformPoint(new Vector3(0f, 3f, 0f));
+            Vector3 floatPos = new Vector3(tip.x - 1.2f, layout.water.top + 0.02f, tip.z);
+            var line = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(line.GetComponent<Collider>());
+            line.transform.SetParent(root, true);
+            line.transform.position = (tip + floatPos) / 2;
+            line.transform.rotation = Quaternion.FromToRotation(Vector3.up, tip - floatPos);
+            line.transform.localScale = new Vector3(0.004f, Vector3.Distance(tip, floatPos) / 2, 0.004f);
+            line.GetComponent<Renderer>().sharedMaterial = Mat("Fishing_Line", new Color(0.85f, 0.85f, 0.8f), 0.3f);
+            var bobber = Part(PrimitiveType.Sphere, root, Vector3.zero, Vector3.zero, Vector3.one * 0.07f, red);
+            bobber.position = floatPos;
+            // The bucket, beside him on the quay side, three fish on top.
+            var bucket = new GameObject("FishBucket").transform;
+            bucket.SetParent(level, false);
+            bucket.position = new Vector3(-33.8f, 0f, -27.3f);
+            Part(PrimitiveType.Cylinder, bucket, new Vector3(0f, 0.16f, 0f), Vector3.zero, new Vector3(0.3f, 0.16f, 0.3f), metal);
+            for (int i = 0; i < 3; i++)
+                Part(PrimitiveType.Sphere, bucket, new Vector3(-0.06f + i * 0.06f, 0.33f, 0.02f * i), new Vector3(0f, 30f * i, 0f), new Vector3(0.05f, 0.04f, 0.16f), silver);
+            root.gameObject.AddComponent<Fisherman>().Configure(torso, bucket, bobber);
         }
 
         static void BuildFox()
@@ -2446,6 +2521,7 @@ namespace Draho.EditorTools
             BuildHomecoming(layout);
             BuildGull(layout);
             BuildButterflies(layout);
+            BuildFisherman(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

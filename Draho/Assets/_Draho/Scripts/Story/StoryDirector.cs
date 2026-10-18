@@ -46,6 +46,7 @@ namespace Draho.Story
         Climbable courtPipe;
         Transform frontChimney, northChimney, roofHatch, catTree;
         Humans humans;
+        Fisherman fisherman;
         float greetTime;
         Pigeon[] pigeons;
         Pigeon gull;
@@ -152,6 +153,7 @@ namespace Draho.Story
             var treeGo = GameObject.Find("cat_tree");
             if (treeGo != null) catTree = treeGo.transform;
             humans = FindAnyObjectByType<Humans>();
+            fisherman = FindAnyObjectByType<Fisherman>();
             var birdsOfStone = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             pigeons = Array.FindAll(birdsOfStone, p => p.name.StartsWith("Pigeon_"));
             gull = Array.Find(birdsOfStone, p => p.name == "Gull");
@@ -299,7 +301,14 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The quay becomes a narrow edge along a house, right above the water. Cats do not like swimming.",
+                    Story = "Down the quay an old fisherman sits on a stool and watches his float. Beside him: a bucket of silver fish!",
+                    Goal = "Take a fish from the bucket. Move only while he watches his float: when he hums, freeze!",
+                    Target = () => fisherman != null && !fisherman.FishTaken ? P(-33.8f, 0.3f, -27.3f) : (Vector3?)null,
+                    Done = () => fisherman == null || fisherman.FishTaken,
+                },
+                new Beat
+                {
+                    Story = "The fisherman laughs: \"Clever cat. Keep it, I have plenty.\" The quay becomes a narrow edge along a house, right above the water. Cats do not like swimming.",
                     Goal = "Follow the river to the white wall. Walk on the edge, or take the rooftops.",
                     Target = () => P(-33f, 0f, -111.4f),
                     Done = () => cat.transform.position.z < -104f,

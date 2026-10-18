@@ -143,3 +143,25 @@ stay readable, and how do they blend the time of day at runtime in URP?
   Night (high cool moon at 0.42 that still casts shadows, blue-violet trilight ambient, fog 25-95 m, sky exposure 0.22).
 - The camera's CatFillLight becomes a moon-blue rim at night (1.1, range 2.2 m): the black fur keeps its shape.
 - The story sets the mood: beat 31 turns to Evening. Test hook `SkyMood.TestMood`, scenario `sky`.
+
+## Round 34 (2026-10-18): moths at the garden lamp, night colour grading
+
+**Questions:** how do moths really fly around a lamp (so the catch game feels natural)? How do games grade
+night so it reads as night and not as a dark day?
+
+**Sources**
+- Fabian, Sondhi et al. (2024), Nature Communications, reported by Mongabay
+  https://news.mongabay.com/2024/02/like-a-moth-to-a-flame-science-finally-explains-why-insects-flock-to-artificial-lights/
+  and Physics Today https://physicstoday.aip.org/news/why-insects-orbit-light-at-night : insects keep their
+  backs to the brightest point (dorsal light response). Near a lamp this gives orbiting, stalling and
+  inverting flights, not a straight line into the light.
+- Factorio forum on night rendering https://forums.factorio.com/viewtopic.php?p=398614 and The Artist's Road,
+  "The Purkinje effect" https://www.theartistsroad.net/p/the-purkinje-effect : in the dark the eye loses colour
+  and shifts to blue-green; games desaturate and tint shadows blue, and keep the highlights near neutral or warm.
+
+**What we do**
+- `Moth.cs`: loops around the lamp, body tilted with its back to the light; random stalls with a turn back;
+  dives (about 1 m lower, wider ring) are the moments a jumping cat can catch one. Hidden by day.
+- `NightLamp.cs`: the lantern switches on with `SkyMood.NightAmount`; emissive glass for the bloom.
+- `SkyMood`: at night saturation -35 and split toning (blue shadows, warm highlights).
+- Story: chapter 9 opens at the lamp; the garden table is 1 m from the lantern, a natural jumping-off point.

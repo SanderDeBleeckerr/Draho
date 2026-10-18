@@ -268,3 +268,17 @@ variation per slate), tiled at real scale with the rows parallel to the ridge; a
 - Each gust is announced 1.3 s before it pushes: the rain slants, and the HUD howls for the first three gusts.
 - `CatMotor.Wind` is an explicit push; a crouched cat feels 15 % of it. Gusts only push on the roofs.
 - Rain: at most 1200 stretched soft particles round the camera; lightning: two short cold pulses of light.
+
+## Round 43 (2026-10-18): eyeshine
+
+**Question:** what does a cat's eyeshine look like, and when does it show?
+
+**Sources**
+- Wikipedia, "Tapetum lucidum", https://en.wikipedia.org/wiki/Tapetum_lucidum : a reflective layer behind the
+  retina; eyeshine is iridescent, its colour varies with the angle and the reflector.
+- Sci.News, https://www.sci.news/biology/tapetum-lucidum-10711.html : in cats the reflector is riboflavin.
+- Vetstreet, https://www.vetstreet.com/our-pet-experts/why-do-my-cats-eyes-glow-in-the-dark : cats mostly glow
+  green to yellow; the glow shows when light comes from near the viewer (a flash, a torch).
+
+**What we do** (`Scripts/Cat/EyeShine.cs`): the camera's fill light acts as the light near the viewer. At night
+the Eye material glows green-gold, scaled by how straight the cat faces the camera (dot product to the 6th power).

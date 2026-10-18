@@ -220,3 +220,21 @@ dark windows mixed?
   fog), mostly small with a few big, warm or blue ones; each twinkles at its own speed (seed in vertex alpha).
 - Moon: one billboard in the night-light direction, a pale disc with a soft halo.
 - Additive, no fog, no shadows, one mesh each; strength from `_DrahoNight`, set by SkyMood.
+
+## Round 39 (2026-10-18): chapter 10, the high roofs (first part)
+
+**Question:** how should a rooftop level guide the player over pitched roofs?
+
+**Sources**
+- Game Developer, "Traversal level design principles",
+  https://www.gamedeveloper.com/design/traversal-level-design-principles : good traversal lets the player move
+  through, on top of and under a space; even linear routes feel fresh in 3D.
+- 80.lv, "The principles of traversal gameplay", https://80.lv/articles/the-principles-of-traversal-gameplay
+- BAFTA Young Game Designers, "Rooftoppers", https://ygd.bafta.org/competition/competition-news/2024/rooftoppers :
+  tall landmarks (a tower, a chimney) anchor the player on the roofs.
+
+**What we do**
+- The route goes up the light well (chapter 8's drainpipe, now to the gutter), over a flat strip and up the slate.
+- Ridges run along the street, so the slope (29°, the cat walks up to 50°) is a clear way up from the flat strip.
+- Chimneys on the ridges are the goals: the player sees them from the top of the drainpipe.
+- Roof-edge bounds start above the ground (`Edge.y0`), so the cat cannot fall into the street and get stuck.

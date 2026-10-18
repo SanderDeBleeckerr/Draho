@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -262,6 +262,16 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=6&at=-10,2.5,0 (open lawn): day, evening and night light (SkyMood test hook).
+  sky: [
+    ['02_day', 'move', '0,1,0,1'],
+    ['03_evening', 'call', 'SkyMood.TestMood:Evening'],
+    ['04_evening_turn', 'move', '-1,0,0,1'],
+    ['05_night', 'call', 'SkyMood.TestMood:Night'],
+    ['06_night_walk', 'move', '0,1,0,1.5'],
+    ['07_night_turn', 'move', '1,0,0,1.5'],
+    ['08_night_still', 'wait', '1'],
   ],
   // Start with ?beat=6&at=-10,2.5,0 (open lawn). Duck and crawl to the right; the shots come while the cat still moves (crawl animation check).
   sneak: [

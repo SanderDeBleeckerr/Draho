@@ -369,6 +369,7 @@ namespace Draho.Story
                 {
                     Story = "Ting-a-ling! The pigeons coo from the gutter, very offended. The sky turns orange: the evening comes. End of chapter 8 for now!",
                     Goal = "",
+                    Begin = () => SkyMood.Set(SkyMood.Mood.Evening, 12f),
                     Done = () => false,
                 },
             };

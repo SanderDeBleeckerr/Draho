@@ -558,6 +558,88 @@ namespace Draho.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        /// <summary>
+        /// Windows on the scenery blocks: flat panes in rows (one floor = 3 m), about a third of them lit at
+        /// night. All panes are in two meshes (lit and dark), so the whole block costs two draw calls.
+        /// </summary>
+        static void BuildWindows(ContextBuilding[] blocks)
+        {
+            var rng = new System.Random(1931);
+            var lit = new List<Vector3>();
+            var dark = new List<Vector3>();
+            var litN = new List<Vector3>();
+            var darkN = new List<Vector3>();
+            const float paneW = 0.9f, paneH = 1.3f, step = 2.6f, floor = 3f;
+            foreach (var c in blocks)
+            {
+                var q = Quaternion.Euler(0f, c.yaw, 0f);
+                var centre = new Vector3(c.x, 0f, c.z);
+                // Four faces: (normal, tangent, half depth, face width) in the block's own axes.
+                var faces = new[]
+                {
+                    (Vector3.forward, Vector3.right, c.d / 2, c.w), (Vector3.back, Vector3.left, c.d / 2, c.w),
+                    (Vector3.right, Vector3.back, c.w / 2, c.d), (Vector3.left, Vector3.forward, c.w / 2, c.d),
+                };
+                foreach (var (normal, tangent, half, width) in faces)
+                {
+                    int count = Mathf.FloorToInt((width - 1f) / step);
+                    if (count < 1) continue;
+                    for (float y = 1.2f; y + paneH < c.h - 0.5f; y += floor)
+                        for (int i = 0; i < count; i++)
+                        {
+                            float t = (i - (count - 1) / 2f) * step;
+                            Vector3 mid = centre + q * (normal * (half + 0.02f) + tangent * t) + Vector3.up * (y + paneH / 2);
+                            Vector3 right = q * tangent * (paneW / 2), up = Vector3.up * (paneH / 2);
+                            bool on = rng.NextDouble() < 0.35;
+                            var list = on ? lit : dark;
+                            list.Add(mid - right - up); list.Add(mid - right + up); list.Add(mid + right + up); list.Add(mid + right - up);
+                            var nl = on ? litN : darkN;
+                            for (int k = 0; k < 4; k++) nl.Add(q * normal);
+                        }
+                }
+            }
+            Mesh Panes(string name, List<Vector3> verts, List<Vector3> normals)
+            {
+                var mesh = new Mesh { name = name };
+                if (verts.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+                mesh.SetVertices(verts);
+                mesh.SetNormals(normals);
+                var tris = new int[verts.Count / 4 * 6];
+                for (int i = 0, v = 0; v < verts.Count; v += 4, i += 6)
+                {
+                    // The tangent points to the viewer's left, so this order is clockwise seen from outside.
+                    tris[i] = v; tris[i + 1] = v + 2; tris[i + 2] = v + 1;
+                    tris[i + 3] = v; tris[i + 4] = v + 3; tris[i + 5] = v + 2;
+                }
+                mesh.SetTriangles(tris, 0);
+                mesh.RecalculateBounds();
+                string path = $"{PlaygroundBuilder.ArtDir}/Meshes/{name}.asset";
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(mesh, path);
+                return mesh;
+            }
+            var glass = Mat("Window_Glass", new Color(0.1f, 0.12f, 0.16f), 0.85f);
+            var warm = Mat("Window_Lit", new Color(0.13f, 0.13f, 0.15f), 0.8f);
+            warm.EnableKeyword("_EMISSION");
+            warm.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            warm.SetColor("_EmissionColor", Color.black);
+            EditorUtility.SetDirty(warm);
+            GameObject PaneObject(string name, Mesh mesh, Material m)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(level, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterial = m;
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                return go;
+            }
+            PaneObject("Windows_Dark", Panes("WindowsDark", dark, darkN), glass);
+            PaneObject("Windows_Lit", Panes("WindowsLit", lit, litN), warm).AddComponent<WindowGlow>().Configure(warm);
+            Debug.Log($"Draho: windows {lit.Count / 4} lit, {dark.Count / 4} dark");
+        }
+
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
@@ -941,6 +1023,7 @@ namespace Draho.EditorTools
                 roof.transform.rotation = body.transform.rotation;
                 n++;
             }
+            BuildWindows(layout.context_buildings ?? new ContextBuilding[0]);
             // Ground under the block (yards, streets), just below the garden; it has a hole for the river.
             var groundMat = Mat("Apt_Ground", new Color(0.42f, 0.41f, 0.38f), 0.1f);
             var river = layout.water;

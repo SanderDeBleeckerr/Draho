@@ -15,8 +15,8 @@ surface and terrain models). Only relative game metres go into this repository.
 | 7 | The Neighbour's Flat | The flat behind the apartment, through a window from the wild garden | Hrozna the corgi sleeps on Drahomil's toy mouse: sneak in, take it back, get out | 20 min | First part playable |
 | 8 | The inner court | The round-stone court: a light well in the house (8.8 m) | Pigeons that flee a straight approach (sneak past from the side), a flock that flies up together, a drainpipe to the lost jingle ball | 15 min | First part playable |
 | 9 | Night | All areas after sunset | Moths at the garden lamp, follow a fox to its den, through a broken fence to the river bank and its lamp-post, home over the shed | 35 min | Playable (to polish) |
-| 10 | The high roofs | Pitched roofs of the street (9–12 m) | Gutters, skylights, chimneys, a storm | 40 min | Planned |
-| 11 | Home | Back to the apartment | The humans come home; a gift for them | 15 min | Planned |
+| 10 | The high roofs | The cat's house and its neighbour on the street (8.8–11.8 m) | Up the light well, slate and tiles, chimneys, a storm with gusts (DUCK), the roof hatch | 40 min | Playable (to grow) |
+| 11 | Home | Back to the apartment | Dry off on the cat tree, morning, the humans come home; greet them | 15 min | Playable (to grow) |
 |   | Side activities | Everywhere | 24 feathers to find, a bounty board with 5 mouse territories (mice come back warier), coins | 40 min | First part playable |
 
 Rules for each chapter:

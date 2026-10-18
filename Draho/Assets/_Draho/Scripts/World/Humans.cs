@@ -12,17 +12,20 @@ namespace Draho.World
         float phase;
 
         public bool Home { get; private set; }
+        /// <summary>True once the humans are home: the bounty board by the door stays quiet in the ending.</summary>
+        public static bool AnyHome { get; private set; }
 
         void Awake()
         {
             renderers = GetComponentsInChildren<Renderer>();
             foreach (var r in renderers) r.enabled = false;
+            AnyHome = false;
         }
 
         public void ComeHome()
         {
             if (Home) return;
-            Home = true;
+            Home = AnyHome = true;
             foreach (var r in renderers) r.enabled = true;
             Debug.Log("STORY the humans come home");
         }

@@ -71,7 +71,8 @@ namespace Draho.UI
             }
             bool atBoard = boardSpot != null && cat != null
                 && Vector3.Distance(new Vector3(cat.position.x, 0f, cat.position.z), new Vector3(boardSpot.position.x, 0f, boardSpot.position.z)) < 1.6f
-                && Mathf.Abs(cat.position.y - boardSpot.position.y) < 2f;
+                && Mathf.Abs(cat.position.y - boardSpot.position.y) < 2f
+                && !Draho.World.Humans.AnyHome; // the board stays quiet while the humans are at the door
             if (atBoard && board != null)
             {
                 var sb = new System.Text.StringBuilder("BOUNTY BOARD — mice wanted\n");

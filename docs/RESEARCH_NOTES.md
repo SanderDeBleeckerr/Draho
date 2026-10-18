@@ -282,3 +282,19 @@ variation per slate), tiled at real scale with the rows parallel to the ridge; a
 
 **What we do** (`Scripts/Cat/EyeShine.cs`): the camera's fill light acts as the light near the viewer. At night
 the Eye material glows green-gold, scaled by how straight the cat faces the camera (dot product to the 6th power).
+
+## Round 44 (2026-10-18): the bakery gull
+
+**Question:** a gull is much bigger than a pigeon: should it flee sooner?
+
+**Sources**
+- Mayer et al. (2019), PLoS ONE, https://doaj.org/article/16e500f3e94a456888f3e5a9b7285997 : flight-initiation
+  distance is species-specific and can depend on body size; heavier birds take flight at greater distances.
+- Universidade Federal de Uberlândia study on flight-initiation distance,
+  https://repositorio.ufu.br/bitstream/123456789/27892/1/Dist%c3%a2nciaInicialVoo.pdf : larger solitary birds flee
+  sooner; in flocks the body-mass effect was not significant.
+- Round 31 sources (direct vs tangential approach).
+
+**What we do:** the gull is a solitary bird of the Pigeon kind in its own group: it flees at 1.8 m from a
+walking cat (pigeons 1.3 m), 3.2 m from a running cat (2.6 m) and 0.6 m from a sneaking cat (0.45 m); a direct
+approach still multiplies the distance by 1.6, a side approach by 0.6.

@@ -524,7 +524,7 @@ namespace Draho.EditorTools
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
-            var white = Mat("Fox_White", new Color(0.92f, 0.9f, 0.86f), 0.2f);
+            var white = Mat("Fox_White", new Color(0.78f, 0.75f, 0.7f), 0.05f); // creamy, not bright at night
             var black = Mat("Fox_Black", new Color(0.08f, 0.07f, 0.07f), 0.3f);
             var root = new GameObject("Fox");
             root.transform.SetParent(level, false);
@@ -550,7 +550,7 @@ namespace Draho.EditorTools
             }
             var r = root.transform;
             Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.33f, 0f), Vector3.zero, new Vector3(0.2f, 0.2f, 0.48f), orange);
-            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.3f, 0.18f), Vector3.zero, new Vector3(0.15f, 0.16f, 0.17f), white); // chest
+            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.27f, 0.2f), Vector3.zero, new Vector3(0.11f, 0.12f, 0.12f), white); // chest
             var head = Pivot("Head", r, new Vector3(0f, 0.42f, 0.26f));
             Part(PrimitiveType.Sphere, head, Vector3.zero, Vector3.zero, new Vector3(0.15f, 0.13f, 0.15f), orange);
             Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.025f, 0.1f), Vector3.zero, new Vector3(0.07f, 0.06f, 0.13f), orange); // snout
@@ -2400,7 +2400,11 @@ namespace Draho.EditorTools
                 t.color = color;
                 t.alignment = TextAnchor.MiddleCenter;
                 t.horizontalOverflow = HorizontalWrapMode.Wrap;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                // Long lines shrink to fit their box, so the story never runs into the goal.
+                t.verticalOverflow = VerticalWrapMode.Truncate;
+                t.resizeTextForBestFit = true;
+                t.resizeTextMinSize = Mathf.RoundToInt(size * 0.62f);
+                t.resizeTextMaxSize = size;
                 t.raycastTarget = false;
                 return t;
             }

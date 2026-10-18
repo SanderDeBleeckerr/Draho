@@ -238,3 +238,33 @@ dark windows mixed?
 - Ridges run along the street, so the slope (29°, the cat walks up to 50°) is a clear way up from the flat strip.
 - Chimneys on the ridges are the goals: the player sees them from the top of the drainpipe.
 - Roof-edge bounds start above the ground (`Edge.y0`), so the cat cannot fall into the street and get stuck.
+
+## Round 40 (2026-10-18): readable roofs
+
+**Sources:** Polycount roof-tile threads (https://polycount.com/discussion/comment/2808527), Kalponic Studio
+"100 Stylized Roof Textures" (https://kalponic-studio.itch.io/100-stylized-roof-textures), freestylized.com:
+a clean tiling base colour with varied tiles reads best in a stylized look; trims frame the shape.
+**What we do:** a generated slate texture (4 rows of 5 per metre, shifted rows, a shadow line at each overlap,
+variation per slate), tiled at real scale with the rows parallel to the ridge; a ridge cap and zinc gutters.
+
+## Round 41 (2026-10-18): the storm - rain, lightning, wind gusts
+
+**Questions:** how do games make wind gusts fair? How is rain done cheaply on a phone?
+
+**Sources**
+- Game Developer, "Design lesson 101: Frontier's LostWinds",
+  https://www.gamedeveloper.com/design/design-lesson-101---frontier-s-em-lostwinds-em- : wind as a core mechanic.
+- "Gone with the Wind" (itch.io), https://thejoro.itch.io/gone-with-the-wind : players could not tell when the wind
+  acted; the fix is sound and visuals that start before the gust.
+- Construct forum, "How do I create horizontal wind physics",
+  https://www.construct.net/en/forum/construct-3/how-do-i-8/create-horizontal-wind-137320 : a push hidden in friction
+  does not read; make it an explicit velocity term.
+- "Gusty Glade" trope, https://tropedia.fandom.com/wiki/Gusty_Glade : gusts at intervals; the player times moves.
+- Unity manual, Particle System Renderer (stretched billboards),
+  https://docs.unity.cn/cn/current/Manual/PartSysRendererModule.html ; rain write-ups on ArtStation and the Asset
+  Store (camera-attached rain, light for mobile).
+
+**What we do**
+- Each gust is announced 1.3 s before it pushes: the rain slants, and the HUD howls for the first three gusts.
+- `CatMotor.Wind` is an explicit push; a crouched cat feels 15 % of it. Gusts only push on the roofs.
+- Rain: at most 1200 stretched soft particles round the camera; lightning: two short cold pulses of light.

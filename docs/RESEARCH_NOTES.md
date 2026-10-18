@@ -186,3 +186,20 @@ night so it reads as night and not as a dark day?
 - No fail state: the fox waits (looks back) when the cat is more than 7 m behind; a cat within 1.8 m that does
   not sneak makes it stop and stare; if the cat stays, the fox trots on to its next spot.
 - The rule is in the goal text ("stay low, keep a few metres back"); the route is short (about 22 m, 6 stops).
+
+## Round 37 (2026-10-18): lit windows on the block
+
+**Question:** the night block was a set of dark boxes. How do games light a night town cheaply, with lit and
+dark windows mixed?
+
+**Sources**
+- Fab, "Interior Cubemap System" (UE5), https://www.fab.com/listings/428d45ff-e4e8-456a-84f4-ab7009b9dc7c :
+  a setting for the share of lit rooms at night and a warm emissive with some temperature variation.
+- Unreal Answers, "Randomize section of material", https://answers.unrealengine.com/questions/180562/view.html :
+  per-window variation needs per-pane data (UVs or vertex colours); one material instance varies only per mesh.
+
+**What we do**
+- No interior mapping (too costly for the phone). Flat panes on each face of each scenery block, one row per
+  3 m floor, chosen lit or dark at build time (35 % lit, fixed seed): two meshes, two draw calls.
+- `WindowGlow` sets the emission of the shared lit material from `SkyMood.NightAmount`; by day all panes are
+  dark glass, which also breaks up the plain block walls.

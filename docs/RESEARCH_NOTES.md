@@ -346,3 +346,20 @@ The bucket is the goal; the turn of his upper body shows where he looks.
 **What we do:** `SkyMood.Dawn`: the sun 6 degrees up in the east, warm gold at 0.85, the ambient and sky still
 cool blue-pink (the blue hour fading), pinkish fog; the lamps stay dimly on. The story goes night → dawn (the
 humans come home) → day (breakfast).
+
+## Round 48 (2026-10-18): squeaky toys in the neighbour's flat
+
+**Question:** how do stealth games make noise sources readable and fair?
+
+**Sources**
+- Wikipedia, "Thief: The Dark Project", https://en.wikipedia.org/wiki/Thief:_The_Dark_Project : soft surfaces are
+  quiet, tiles and metal are loud; the player watches both their noise and what they walk on.
+- GameSpot review, https://www.gamespot.com/reviews/thief-the-dark-project-review/1900-2533843/ : each surface
+  sounds different, so sound itself is feedback.
+- critpoints, "Stealth game spotting deconstruction", https://critpoints.net/2015/03/30/stealth-game-spotting-deconstruction/
+- Uppsala speldesign student post, https://babel.speldesign.uu.se/?p=3933 : ripples (as in Mark of the Ninja) show
+  what made a sound and how far it travels.
+
+**What we do** (`SqueakyToy.cs`): bright rubber toys are the loud "surface" of the flat: easy to see, easy to step
+round. A squeak plays, the toy squashes, a ring spreads 3.5 m over the floor and Hrozna wakes; the HUD explains the
+first squeak. The noise ring round the cat (round 20s) still shows how loud the cat's own steps are.

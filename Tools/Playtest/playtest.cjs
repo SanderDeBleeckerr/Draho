@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -238,7 +238,7 @@ const steps = {
   flat: [
     ['02_jump_in', 'movejump', '0,1,0,5,3.4'],
     ['03_inside', 'wait', '1'],
-    ['04_near_basket', 'call', 'StoryDirector.TestTeleport:4.6,5.9,90'],
+    ['04_near_basket', 'call', 'StoryDirector.TestTeleport:4.6,5.6,90'],
     ['05_duck', 'duck', ''],
     ['06_sneak', 'move', '0,1,0,6'],
     ['07_got_it', 'wait', '2'],
@@ -262,6 +262,14 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=30&at=-0.6,6.6,90 : inside the neighbour's flat by the window; walk onto the rubber duck: it
+  // squeaks (ring, toast) and Hrozna wakes and chases the cat out.
+  squeak: [
+    ['02_walk_onto_duck', 'move', '0,1,0,1.6'],
+    ['03_squeak', 'wait', '0.6'],
+    ['04_chase', 'wait', '3'],
+    ['05_out', 'wait', '2'],
   ],
   // Start with ?beat=19&at=-33.3,-22,180 : on the quay north of the fisherman; walk down while he fishes, freeze
   // when he hums (one shoo on purpose: keep walking while he looks), then reach the bucket.

@@ -391,8 +391,8 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Hrozna, the corgi next door, sleeps in her basket. Right by her nose: Drahomil's toy mouse!",
-                    Goal = "Sneak to the basket (DUCK) and take the toy mouse back. If Hrozna wakes up, she chases you out.",
+                    Story = "Hrozna, the corgi next door, sleeps in her basket. Right by her nose: Drahomil's toy mouse! And all over the floor: her rubber toys.",
+                    Goal = "Sneak to the basket (DUCK) and take the toy mouse back. Do not step on a rubber toy: they squeak, and Hrozna wakes up.",
                     Target = () => toyMouse != null && toyMouse.gameObject.activeSelf ? toyMouse.transform.position : (Vector3?)null,
                     Done = () => toyMouse == null || toyMouse.Taken,
                 },

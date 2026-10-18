@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy),
             };
             bool IsDynamic(Transform t)
             {
@@ -2849,6 +2849,42 @@ namespace Draho.EditorTools
             dog.transform.localScale = Vector3.one * 0.85f;
             dog.AddComponent<AudioSource>().playOnAwake = false;
             dog.AddComponent<Hrozna>().Configure(body, tail, basketSpot);
+
+            // Hrozna's rubber toys on the floor between the window and her basket: step on one and it squeaks.
+            var toyMats = new[]
+            {
+                Mat("Rubber_Yellow", new Color(0.98f, 0.82f, 0.15f), 0.6f),
+                Mat("Rubber_Red", new Color(0.88f, 0.18f, 0.15f), 0.6f),
+                Mat("Rubber_Blue", new Color(0.2f, 0.45f, 0.9f), 0.6f),
+            };
+            var spots = new[] { new Vector3(0.3f, 0f, 6.6f), new Vector3(1.1f, 0f, 7.7f), new Vector3(2.9f, 0f, 6.1f),
+                                new Vector3(4.2f, 0f, 7.2f), new Vector3(5.3f, 0f, 6.0f), new Vector3(5.6f, 0f, 7.6f) };
+            for (int i = 0; i < spots.Length; i++)
+            {
+                var squeaker = new GameObject($"SqueakyToy_{i + 1}");
+                squeaker.transform.SetParent(level, false);
+                squeaker.transform.position = spots[i];
+                var m = toyMats[i % toyMats.Length];
+                if (i % 3 == 0) // a rubber duck
+                {
+                    Part(squeaker.transform, new Vector3(0f, 0.05f, 0f), new Vector3(0.1f, 0.08f, 0.13f), m);
+                    Part(squeaker.transform, new Vector3(0f, 0.11f, 0.04f), Vector3.one * 0.06f, m);
+                    Part(squeaker.transform, new Vector3(0f, 0.11f, 0.08f), new Vector3(0.03f, 0.015f, 0.03f), toyMats[1]);
+                }
+                else if (i % 3 == 1) // a bone
+                {
+                    Part(squeaker.transform, new Vector3(0f, 0.025f, 0f), new Vector3(0.04f, 0.04f, 0.16f), m, PrimitiveType.Capsule)
+                        .localRotation = Quaternion.Euler(90f, 0f, 0f);
+                    foreach (float end in new[] { -1f, 1f })
+                        Part(squeaker.transform, new Vector3(0f, 0.025f, end * 0.08f), new Vector3(0.06f, 0.045f, 0.04f), m);
+                }
+                else // a ball
+                    Part(squeaker.transform, new Vector3(0f, 0.045f, 0f), Vector3.one * 0.09f, m);
+                squeaker.transform.rotation = Quaternion.Euler(0f, i * 67f, 0f);
+                squeaker.AddComponent<AudioSource>().playOnAwake = false;
+                squeaker.AddComponent<LineRenderer>().sharedMaterial = NoiseRingMaterial();
+                squeaker.AddComponent<SqueakyToy>();
+            }
         }
 
         /// <summary>A cork board on the kitchen wall with paper notes: the mouse bounties.</summary>

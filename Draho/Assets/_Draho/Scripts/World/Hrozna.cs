@@ -102,6 +102,16 @@ namespace Draho.World
             if (tail != null) tail.localRotation = Quaternion.Euler(0f, Mathf.Sin(phase * (state == State.Sleep ? 1f : 14f)) * (state == State.Sleep ? 4f : 35f), 0f);
         }
 
+        /// <summary>A loud noise anywhere in the flat (a squeaky toy) wakes her.</summary>
+        public void Hear(string what)
+        {
+            if (state != State.Sleep) return;
+            state = State.Bark;
+            timer = 0.8f;
+            ProgressHud.Toast("WOOF! WOOF! Hrozna is awake!");
+            Debug.Log($"STORY Hrozna wakes up ({what})");
+        }
+
         float Hearing()
         {
             if (cat.IsCrouching) return hearSneaking;

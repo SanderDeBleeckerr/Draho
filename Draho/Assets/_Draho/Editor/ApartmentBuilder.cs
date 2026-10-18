@@ -918,6 +918,96 @@ namespace Draho.EditorTools
             croissant.SetActive(false);
         }
 
+        /// <summary>
+        /// Chapter 2: a pot of red geraniums someone left on the big gravel roof, and two butterflies (a cabbage
+        /// white and a red admiral) that zigzag over it by day (Moth with dayFlier).
+        /// </summary>
+        static void BuildButterflies(Layout layout)
+        {
+            var roof = (layout.buildings ?? new Building[0]).FirstOrDefault(b => b.id == "roof_a");
+            if (roof == null) return;
+            var potPos = new Vector3(-13.5f, roof.h, -5f);
+            var terracotta = Mat("Pot_Terracotta", new Color(0.72f, 0.38f, 0.24f), 0.15f);
+            var leaf = Mat("Geranium_Leaf", new Color(0.24f, 0.45f, 0.2f), 0.2f);
+            var bloom = Mat("Geranium_Red", new Color(0.86f, 0.12f, 0.14f), 0.3f);
+            var pot = new GameObject("GeraniumPot").transform;
+            pot.SetParent(level, false);
+            pot.position = potPos;
+            var body = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            body.transform.SetParent(pot, false);
+            body.transform.localPosition = Vector3.up * 0.15f;
+            body.transform.localScale = new Vector3(0.36f, 0.15f, 0.36f);
+            body.GetComponent<Renderer>().sharedMaterial = terracotta;
+            var rng = new System.Random(5);
+            for (int i = 0; i < 7; i++)
+            {
+                float a = i * 0.9f, r = 0.08f + 0.06f * (float)rng.NextDouble();
+                foreach (var (m, y, size) in new[] { (leaf, 0.34f, 0.13f), (bloom, 0.44f, 0.09f) })
+                {
+                    var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.DestroyImmediate(ball.GetComponent<Collider>());
+                    ball.transform.SetParent(pot, false);
+                    ball.transform.localPosition = new Vector3(Mathf.Cos(a) * r, y + 0.03f * (float)rng.NextDouble(), Mathf.Sin(a) * r);
+                    ball.transform.localScale = Vector3.one * size;
+                    ball.GetComponent<Renderer>().sharedMaterial = m;
+                    ball.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                }
+            }
+            var kinds = new[]
+            {
+                ("Butterfly_White", Mat("Butterfly_White", new Color(0.96f, 0.95f, 0.88f), 0.1f)),
+                ("Butterfly_Admiral", Mat("Butterfly_Admiral", new Color(0.12f, 0.1f, 0.1f), 0.1f)),
+            };
+            var band = Mat("Butterfly_Band", new Color(0.9f, 0.32f, 0.08f), 0.1f);
+            var dark = Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f);
+            Vector3 centre = potPos + Vector3.up * 0.95f;
+            for (int i = 0; i < kinds.Length; i++)
+            {
+                var (name, wingMat) = kinds[i];
+                var fly = new GameObject(name);
+                fly.transform.SetParent(level, false);
+                fly.transform.position = centre + new Vector3(0.4f * (i == 0 ? 1f : -1f), 0f, 0f);
+                var torso = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.DestroyImmediate(torso.GetComponent<Collider>());
+                torso.transform.SetParent(fly.transform, false);
+                torso.transform.localScale = new Vector3(0.012f, 0.012f, 0.04f);
+                torso.GetComponent<Renderer>().sharedMaterial = dark;
+                torso.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                Transform Wing(float side)
+                {
+                    var pivot = new GameObject(side < 0 ? "WingL" : "WingR").transform;
+                    pivot.SetParent(fly.transform, false);
+                    pivot.localPosition = new Vector3(side * 0.004f, 0.004f, 0f);
+                    var w = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    Object.DestroyImmediate(w.GetComponent<Collider>());
+                    w.transform.SetParent(pivot, false);
+                    w.transform.localPosition = new Vector3(side * 0.03f, 0f, 0.004f);
+                    w.transform.localScale = new Vector3(0.06f, 0.002f, 0.05f);
+                    w.GetComponent<Renderer>().sharedMaterial = wingMat;
+                    if (i == 1) // the red admiral's orange band
+                    {
+                        var stripe = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        Object.DestroyImmediate(stripe.GetComponent<Collider>());
+                        stripe.transform.SetParent(pivot, false);
+                        stripe.transform.localPosition = new Vector3(side * 0.03f, 0.0015f, 0.008f);
+                        stripe.transform.localScale = new Vector3(0.045f, 0.002f, 0.012f);
+                        stripe.GetComponent<Renderer>().sharedMaterial = band;
+                    }
+                    return pivot;
+                }
+                var left = Wing(-1f);
+                var right = Wing(1f);
+                var moth = fly.AddComponent<Moth>();
+                moth.Configure(centre, left, right, butterfly: true);
+                var so = new SerializedObject(moth);
+                so.FindProperty("radius").floatValue = 0.55f;
+                so.FindProperty("speed").floatValue = 0.9f;
+                so.FindProperty("diveDrop").floatValue = 0.5f;
+                so.FindProperty("catchRadius").floatValue = 0.34f;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
@@ -2355,6 +2445,7 @@ namespace Draho.EditorTools
             BuildRain();
             BuildHomecoming(layout);
             BuildGull(layout);
+            BuildButterflies(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

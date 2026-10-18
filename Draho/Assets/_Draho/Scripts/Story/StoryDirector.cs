@@ -227,7 +227,14 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Chapter 2: The Rooftops. Warm gravel, chimneys, and the whole block below. Nobody comes up here. Except cats.",
+                    Story = "Chapter 2: The Rooftops. Warm gravel, chimneys, and the whole block below. Nobody comes up here. Except cats... and butterflies: two dance over a pot of red geraniums.",
+                    Goal = "Catch a butterfly. They zigzag, and they escape when you walk at them: sneak close (DUCK), then jump when one flutters low.",
+                    Target = () => P(-13.5f, 6.9f, -5f),
+                    Done = () => Moth.ButterfliesCaught >= 1,
+                },
+                new Beat
+                {
+                    Story = "Got one! It tickles your nose... and you let it go. Over the roofs, on the high wall, a drainpipe glints in the sun.",
                     Goal = "Find the drainpipe on the high wall. Climb it to the highest roof.",
                     Target = () => P(-7f, 5.8f, -4.2f),
                     Done = () => cat.IsGrounded && cat.transform.position.y > 8.4f,

@@ -1166,12 +1166,9 @@ namespace Draho.EditorTools
             var sunGo = GameObject.Find("Sun");
             if (sunGo == null) return;
             string path = $"{PlaygroundBuilder.MaterialDir}/CloudCookie.asset";
-            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            if (tex == null)
-            {
-                tex = CloudShadows.MakeCookie(128, 0.45f);
-                AssetDatabase.CreateAsset(tex, path);
-            }
+            AssetDatabase.DeleteAsset(path); // remade every build, so a new cookie reaches the game
+            var tex = CloudShadows.MakeCookie(128, 0.5f);
+            AssetDatabase.CreateAsset(tex, path);
             var sun = sunGo.GetComponent<Light>();
             sun.cookie = tex;
             var data = sunGo.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>();

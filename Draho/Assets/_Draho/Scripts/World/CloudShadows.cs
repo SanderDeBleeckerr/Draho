@@ -13,7 +13,7 @@ namespace Draho.World
     {
         [SerializeField] float size = 60f;
         [SerializeField] Vector2 wind = new Vector2(0.9f, 0.35f);
-        [SerializeField] float shade = 0.45f;
+        [SerializeField] float shade = 0.5f;
 
         Light sun;
         UniversalAdditionalLightData sunData;
@@ -66,18 +66,26 @@ namespace Draho.World
             // Tiling noise: sample Perlin noise on a torus-like wrap (blend four shifted copies) so the edges meet.
             var tex = new Texture2D(n, n, TextureFormat.RGBA32, true) { wrapMode = TextureWrapMode.Repeat, name = "CloudCookie" };
             const float scale = 3f;
+            var noise = new float[n * n];
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)
                 {
                     float u = (float)x / n, v = (float)y / n;
                     float a = Fbm(u * scale, v * scale), b = Fbm((u - 1f) * scale, v * scale);
                     float c = Fbm(u * scale, (v - 1f) * scale), d = Fbm((u - 1f) * scale, (v - 1f) * scale);
-                    float noise = Mathf.Lerp(Mathf.Lerp(a, b, u), Mathf.Lerp(c, d, u), v);
-                    // Mostly sun; where the noise is high, a soft cloud shadow.
-                    float cloud = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.52f, 0.68f, noise));
-                    float lit = 1f - shade * cloud;
-                    tex.SetPixel(x, y, new Color(lit, lit, lit, lit));
+                    noise[y * n + x] = Mathf.Lerp(Mathf.Lerp(a, b, u), Mathf.Lerp(c, d, u), v);
                 }
+            // The blend pulls the noise to the middle, so take the thresholds from the noise itself:
+            // about 40% of the sky is cloud, with soft edges.
+            var sorted = (float[])noise.Clone();
+            System.Array.Sort(sorted);
+            float from = sorted[(int)(sorted.Length * 0.55f)], to = sorted[(int)(sorted.Length * 0.75f)];
+            for (int i = 0; i < noise.Length; i++)
+            {
+                float cloud = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(from, to, noise[i]));
+                float lit = 1f - shade * cloud;
+                tex.SetPixel(i % n, i / n, new Color(lit, lit, lit, lit));
+            }
             tex.Apply(true);
             return tex;
         }

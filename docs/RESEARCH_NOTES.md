@@ -550,3 +550,14 @@ several on high roofs you can see from below before you can reach them. A found 
   A soft version without map reveals suits a quiet cat game.
 - Done: five viewpoints on the high roofs; stand still in the faint blue ring and the camera eases out, turns
   slowly round the cat (30°/s) for 10 s and eases back in; any swipe ends it; a line names what you see.
+
+## Round 64 — shooting stars
+
+- A visible meteor lasts well under a second (a fast, thin streak that brightens and fades, brightest at the head);
+  an observer sees a few per hour on a normal night. The game uses one every 15-40 s on clear nights, so a
+  player sees some.
+- Lessons: (1) objects whose mesh is made at run time have zero bounds at build time, so OptimiseScene put them
+  on the near-only Detail layer: move them back on Awake. (2) From the low cat camera only about 25 degrees of sky
+  shows, and the story panel covers the middle top: put sky events low and to the side.
+- Done: Draho/Meteor (camera-relative quad, no fog, additive), 16-26 degrees up, 25-40 degrees beside the view
+  direction; a wish line the first time the cat sits still under one.

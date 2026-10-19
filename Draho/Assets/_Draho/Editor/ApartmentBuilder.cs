@@ -1165,7 +1165,7 @@ namespace Draho.EditorTools
             var m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
             m.shader = shader;
-            m.SetFloat("_Width", 2.5f);
+            m.SetFloat("_Width", 3f);
             EditorUtility.SetDirty(m);
             var go = new GameObject("ShootingStars");
             go.transform.SetParent(level, false);

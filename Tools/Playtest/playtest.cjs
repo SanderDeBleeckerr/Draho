@@ -365,7 +365,7 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=6&at=-8,2.5,180 : the lawn facing the brick wall; by day, then evening light: brick relief.
+  // Start with ?beat=6&at=-6,0.7,200 : close to the garden brick wall; by day, then evening light: brick relief.
   bricks: [
     ['02_day', 'wait', '2'],
     ['03_evening', 'call', 'SkyMood.TestMood:Evening'],

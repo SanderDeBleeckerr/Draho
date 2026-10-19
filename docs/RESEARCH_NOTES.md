@@ -683,3 +683,11 @@ several on high roofs you can see from below before you can reach them. A found 
   into noise and moire, so keep the strength modest (or fade it with distance).
 - Done: a 128 px ripple normal map made from the slopes of the ripple waves, imported as a normal map, put on the
   river material in the builder (the build keeps the _NORMALMAP variant); it flows with the base texture.
+
+## Round 83 — relief on bricks, tiles and gravel
+
+- A normal map made from a height field (mortar and grout low, a small bevel on each brick or tile, domes for
+  pebbles) adds relief at the cost of one texture sample; it shows most under low, raking light (evening, lamps).
+  Deriving the height from the same rules as the colour texture keeps the two in register.
+- Done: NormalMap() builds a tangent-space normal map from a height function by central differences and imports it
+  as a normal map; Mat() adds it to every material using Bricks, FloorTile or Pebbles (bump 0.8).

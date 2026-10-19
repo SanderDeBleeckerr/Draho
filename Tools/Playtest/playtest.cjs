@@ -180,6 +180,7 @@ const steps = {
   // Start with ?beat=42&at=-31,7.5,270 (the far-bank lamps) or ?beat=38&at=-2.2,1.2,90 (the garden lamp) at night:
   // soft cones of lamplight; then rain: the cones grow stronger.
   cones: [
+    ['02_look_up', 'call', 'Main Camera.TestView:-5,1.4'],
     ['02_cones', 'wait', '3'],
     ['03_rain', 'call', 'Rain.TestStorm'],
     ['04_cones_rain', 'wait', '6'],

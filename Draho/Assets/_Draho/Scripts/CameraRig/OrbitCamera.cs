@@ -82,6 +82,14 @@ namespace Draho.CameraRig
             focus = target.position + Vector3.up * focusHeight;
         }
 
+        /// <summary>Test hook: SendMessage('Main Camera', 'TestView', "pitch,distance"), e.g. "-5,1.2" to look up.</summary>
+        public void TestView(string args)
+        {
+            var parts = args.Split(',');
+            pitch = Mathf.Clamp(float.Parse(parts[0], System.Globalization.CultureInfo.InvariantCulture), minPitch, maxPitch);
+            if (parts.Length > 1) distance = float.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture);
+        }
+
         void LateUpdate()
         {
             if (target == null) return;

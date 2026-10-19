@@ -13,12 +13,12 @@ namespace Draho.World
     {
         const int Segments = 16;
         static readonly float[] Rings = { 0f, 0.3f, 1f };   // along the cone, 0 = the lamp
-        static readonly float[] Fade = { 1f, 0.45f, 0f };   // brightness at those rings
+        static readonly float[] Fade = { 1f, 0.6f, 0f };   // brightness at those rings
 
         [SerializeField] Light lamp;
         [SerializeField] float height = 4f;
         [SerializeField] float radius = 1.6f;
-        [SerializeField] float strength = 0.16f;
+        [SerializeField] float strength = 0.24f;
         [SerializeField] float rainBoost = 1.8f;
         [SerializeField] Color tint = new Color(1f, 0.75f, 0.45f);
 

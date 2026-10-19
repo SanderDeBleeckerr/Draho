@@ -3313,6 +3313,7 @@ namespace Draho.EditorTools
                 return t;
             }
             var counters = MakeText("Counters", canvas, new Vector2(1f, 1f), new Vector2(-40f, -230f), new Vector2(700f, 60f), 36, TextAnchor.MiddleRight);
+            counters.horizontalOverflow = HorizontalWrapMode.Overflow; // right-aligned: a longer line grows to the left
             var panel = new GameObject("BountyPanel", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
             var prt = (RectTransform)panel.transform;
             prt.SetParent(canvas, false);

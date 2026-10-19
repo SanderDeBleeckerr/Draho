@@ -542,3 +542,11 @@ several on high roofs you can see from below before you can reach them. A found 
   safe place, not as teaching.
 - Done: six gifts across the town (the wild garden, the quay, the bakery, the court, the begijnhof, the highest
   roof), only in the epilogue; carried one at a time to the humans at the front door, each with a reaction line.
+
+## Round 63 — viewpoints
+
+- Open-world "vista points" (the synchronisation points of Assassin's Creed, the towers of other open worlds)
+  reward a climb with a slow camera move over the view; they show the player the map and the routes around them.
+  A soft version without map reveals suits a quiet cat game.
+- Done: five viewpoints on the high roofs; stand still in the faint blue ring and the camera eases out, turns
+  slowly round the cat (30°/s) for 10 s and eases back in; any swipe ends it; a line names what you see.

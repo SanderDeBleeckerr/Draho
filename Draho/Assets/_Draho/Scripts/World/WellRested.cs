@@ -15,7 +15,7 @@ namespace Draho.World
         [SerializeField] int total = 12;
         [SerializeField] float jumpBoost = 1.15f;
         [SerializeField] Color glowColor = new Color(1f, 0.75f, 0.45f);
-        [SerializeField] float glowIntensity = 0.6f;
+        [SerializeField] float glowIntensity = 0.12f;
 
         CatMotor cat;
         Light glow;
@@ -52,11 +52,11 @@ namespace Draho.World
             cat.JumpBoost = jumpBoost;
             var go = new GameObject("RestedGlow");
             go.transform.SetParent(cat.transform, false);
-            go.transform.localPosition = new Vector3(0f, 0.35f, 0f);
+            go.transform.localPosition = new Vector3(0f, 0.12f, 0f);
             glow = go.AddComponent<Light>();
             glow.type = LightType.Point;
             glow.color = glowColor;
-            glow.range = 1.4f;
+            glow.range = 0.9f;
             glow.shadows = LightShadows.None;
             glow.intensity = 0f;
         }

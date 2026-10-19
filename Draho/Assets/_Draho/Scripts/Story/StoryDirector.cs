@@ -587,6 +587,21 @@ namespace Draho.Story
                 {
                     Story = "Full and warm, you curl up in a patch of morning sun. One of your humans kneels down and scratches you behind the ear: \"Did you have a quiet day, Drahomil?\" You blink, very slowly. THE END. Thank you for playing!",
                     Goal = "",
+                    Done = () => beatTime > 14f,
+                },
+                // ---- Epilogue: free roam (the story is over; the town is still there) ----
+                new Beat
+                {
+                    Story = "Epilogue: a new day. Your humans are home, the cat flap is open and the whole town is yours again.",
+                    Goal = "Free roam: find every feather and nap spot, fill the bounty board, or just sleep in the sun.",
+                    Begin = () =>
+                    {
+                        humans?.SettleIn();
+                        SkyMood.Set(SkyMood.Mood.Day, 20f);
+                        var p = Draho.Core.Progress.Instance;
+                        if (p != null)
+                            Debug.Log($"STORY epilogue: feathers {p.CollectedCount}/{p.TotalCollectables}, naps {p.NapCount}");
+                    },
                     Done = () => false,
                 },
             };

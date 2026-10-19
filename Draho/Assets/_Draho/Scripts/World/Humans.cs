@@ -12,7 +12,7 @@ namespace Draho.World
         float phase;
 
         public bool Home { get; private set; }
-        /// <summary>True once the humans are home: the bounty board by the door stays quiet in the ending.</summary>
+        /// <summary>True while the humans stand at the door: the bounty board by the door stays quiet in the ending.</summary>
         public static bool AnyHome { get; private set; }
 
         void Awake()
@@ -28,6 +28,14 @@ namespace Draho.World
             Home = AnyHome = true;
             foreach (var r in renderers) r.enabled = true;
             Debug.Log("STORY the humans come home");
+        }
+
+        /// <summary>The epilogue: the humans have gone in to unpack (no legs at the door), the board works again.</summary>
+        public void SettleIn()
+        {
+            Home = true;
+            AnyHome = false;
+            foreach (var r in renderers) r.enabled = false;
         }
 
         void Update()

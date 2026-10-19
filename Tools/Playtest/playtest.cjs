@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -176,6 +176,12 @@ const steps = {
     ['03_sit_on_it', 'wait', '6'],
     ['04_table', 'call', 'StoryDirector.TestTeleport:-1.4,2.6,90,0.8'],
     ['05_sit_table', 'wait', '6'],
+  ],
+  // Start with ?beat=53&at=3.4,3.4,60 : THE END; after 14 s the free-roam epilogue (day, the board works again).
+  epilogue: [
+    ['02_the_end', 'wait', '3'],
+    ['03_epilogue', 'wait', '14'],
+    ['04_day', 'wait', '6'],
   ],
   // Start with ?beat=42&at=-31,7.5,270 (the far-bank lamps) or ?beat=38&at=-2.2,1.2,90 (the garden lamp) at night:
   // soft cones of lamplight; then rain: the cones grow stronger.

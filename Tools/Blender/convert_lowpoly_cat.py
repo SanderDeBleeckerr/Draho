@@ -218,6 +218,7 @@ def rot_world(pb, axis, angle):
     head = m.translation.copy()
     r = Matrix.Rotation(angle, 4, axis)
     pb.matrix = Matrix.Translation(head) @ r @ Matrix.Translation(-head) @ m
+    pb.scale = (1.0, 1.0, 1.0)  # a pose only turns bones; never let a stray scale in (it blew the tail up once)
 
 
 def smooth01(t):
@@ -544,6 +545,19 @@ for fr in (0, 5, 10):
 bpy.ops.object.mode_set(mode="OBJECT")
 for owner, (e, base) in targets.items():
     bpy.data.objects.remove(e, do_unlink=True)
+# Every bone must keep scale 1 in every clip (a stray scale once blew the tail up to 26x).
+for act in bpy.data.actions:
+    if act.name not in ("Run", "Walk", "Idle", "CrouchIdle", "CrouchWalk", "Jump", "Fall", "Rear", "Climb", "Sit"):
+        continue
+    arm.animation_data.action = act
+    worst = ("", 1.0)
+    for fr in (0, 3, 6):
+        scene.frame_set(fr)
+        for pb in arm.pose.bones:
+            sc = max(abs(v) for v in pb.matrix_basis.to_scale())
+            if abs(sc - 1.0) > abs(worst[1] - 1.0):
+                worst = (pb.name, sc)
+    print(f"CHECK scale {act.name}: worst {worst[0]} {worst[1]:.3f}")
 run = bpy.data.actions["Run"]
 CLIPS = ("Run", "Walk", "Idle", "CrouchIdle", "CrouchWalk", "Jump", "Fall", "Rear", "Climb", "Sit")
 for a in list(bpy.data.actions):

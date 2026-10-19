@@ -93,3 +93,4 @@ web for how good games solve each weak point before it changes anything. Finding
 | 53b | — | Live: the glitter paths now show as short bright dashes at the far bank (foreshortened from the low camera) but faint (54: alpha 0.55 → 0.9, width 0.7 → 1.0) | — |
 | 54 | Sit clip (Blender, 3 tries), idle → sit after 4 s | Live: the cat was a quarter of its size (a stick when sitting): the import rescale used animated bounds (54b: measure the baked rest pose) | — |
 | 54c | The real cause: the Sit tail rotations (and the Climb clip baked after them) gave the last tail bone a scale of about 26 (a giant 'stick'), and its bounds made the builder shrink the cat. rot_world now resets the bone scale; a CHECK prints the worst bone scale of every clip (all 1.000) | — | — |
+| 54c-live | — | Verified live: normal size again; after 4 s the cat sits upright with the tail round the paws, stands up to walk | — |

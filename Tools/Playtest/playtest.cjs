@@ -180,10 +180,10 @@ const steps = {
   // Start with ?beat=38&at=-8,2.5,180 : night on the lawn; all nap spots done: a warm glow in the fur, higher jumps.
   rested: [
     ['02_before', 'wait', '1.5'],
-    ['03_jump_before', 'movejump', '0,1,1,0.9'],
+    ['03_jump_before', 'movejump', '0,1,1,1.2,0.5'],
     ['04_rested', 'call', 'WellRested.TestComplete'],
     ['05_glow', 'wait', '1.5'],
-    ['06_jump_after', 'movejump', '0,1,1,0.9'],
+    ['06_jump_after', 'movejump', '0,1,1,1.2,0.5'],
     ['07_glow_walk', 'move', '1,0,0,1.5'],
   ],
   // Start with ?beat=6&at=-8,2.5,180 : on the lawn by day; stand still: after 4 s the cat sits down; walk on.

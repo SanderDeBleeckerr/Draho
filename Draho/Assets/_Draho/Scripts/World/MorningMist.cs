@@ -13,7 +13,7 @@ namespace Draho.World
     public class MorningMist : MonoBehaviour
     {
         [SerializeField] float burnOff = 240f;
-        [SerializeField] float alpha = 0.16f;
+        [SerializeField] float alpha = 0.35f;
 
         ParticleSystem system;
         Material material;
@@ -47,6 +47,10 @@ namespace Draho.World
             amount = 1f;
             burnOff = Time.timeSinceLevelLoad + 600f;
             if (Progress.Instance == null || Progress.Instance.SavedBeat > 1) SkyMood.Set(SkyMood.Mood.Dawn, 0.1f);
+            Invoke(nameof(Report), 3f);
         }
+
+        void Report() => Debug.Log($"STATE mist: amount {amount:0.00}, particles {system.particleCount}, playing {system.isPlaying}, " +
+                                   $"emission {system.emission.enabled}, mood {SkyMood.Current}, colour {material.GetColor("_BaseColor")}");
     }
 }

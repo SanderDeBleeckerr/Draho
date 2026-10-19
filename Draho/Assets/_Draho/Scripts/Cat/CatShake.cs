@@ -91,6 +91,12 @@ namespace Draho.Cat
         }
 
         /// <summary>Test hook: SendMessage('Drahomil', 'TestShake').</summary>
-        public void TestShake() => Shake(0.1f);
+        public void TestShake()
+        {
+            Shake(0.1f);
+            Invoke(nameof(Report), 0.6f);
+        }
+
+        void Report() => Debug.Log($"STATE shake drops: {(drops != null ? drops.particleCount : -1)}, head {(head != null)}, chest {(chest != null)}");
     }
 }

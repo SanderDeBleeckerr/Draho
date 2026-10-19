@@ -622,3 +622,10 @@ several on high roofs you can see from below before you can reach them. A found 
   of mood and of what is out and about, not a long dark stretch.
 - Done: DayCycle runs only in the epilogue: day 8 min, evening 2, night 5, dawn 1.5 (SkyMood blends of 20-40 s),
   so the moths, glow-worms, lamp cones, shooting stars and eyeshine come back after the story.
+
+## Round 73 — a clear screen
+
+- Diegetic and minimal HUD practice: show the objective when it is new and on demand (a button, or at rest), and
+  keep the view free while the player moves; the marker on screen carries the direction meanwhile.
+- Done: StoryHud shows a new beat for max(8 s, 0.33 s per word), then fades; it fades back in when the cat stands
+  still for 2.5 s. The target marker and the counters stay.

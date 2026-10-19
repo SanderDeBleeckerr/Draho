@@ -3719,6 +3719,9 @@ namespace Draho.EditorTools
                 "Bricks" => BrickNormal(),
                 "FloorTile" => TileNormal(),
                 "Pebbles" => PebbleNormal(),
+                "RoofSlates" => SlateNormal(false),
+                "RoofSlatesV" => SlateNormal(true),
+                "Plaster" => PlasterNormal(),
                 _ => null,
             };
             if (normal != null)
@@ -3766,6 +3769,21 @@ namespace Draho.EditorTools
 
         static Texture2D TileNormal() => NormalMap("FloorTileNormal.png", 128, 1.0f, (x, y) =>
             Mathf.Clamp01((Mathf.Min(Mathf.Min(x, y), Mathf.Min(128 - x, 128 - y) + 2) - 1.5f) / 2f));
+
+        static Texture2D SlateNormal(bool vertical) => NormalMap(vertical ? "RoofSlatesVNormal.png" : "RoofSlatesNormal.png", 256, 3f, (px, py) =>
+        {
+            // The same layout as RoofTexture: each slate is a wedge, thin under the row above and thickest at its
+            // lower edge, then a step down to the next row; the gaps between slates are low.
+            int x = vertical ? py : px, y = vertical ? px : py;
+            const int rowH = 64, slateW = 51;
+            int row = y / rowH;
+            int shifted = x + (row % 2) * slateW / 2;
+            if (shifted % slateW < 2) return 0f;
+            return 0.3f + 0.7f * (y % rowH) / (float)rowH;
+        });
+
+        static Texture2D PlasterNormal() => NormalMap("PlasterNormal.png", 256, 6f, (x, y) =>
+            TileNoise(x, y, 256, 0.012f, 3.1f, 7.7f) * 0.6f + TileNoise(x, y, 256, 0.09f, 1.3f, 4.2f) * 0.15f);
 
         static Texture2D PebbleNormal() => NormalMap("PebblesNormal.png", 256, 2.5f, (x, y) =>
         {

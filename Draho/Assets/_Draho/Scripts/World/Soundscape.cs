@@ -11,7 +11,10 @@ namespace Draho.World
     {
         const int Rate = 22050;
 
-        AudioSource rain, thunder, purr;
+        AudioSource rain, thunder, purr, birds, crickets;
+        AudioClip[] songs;
+        AudioClip scream;
+        float nextSong = 4f;
         Cat.CatAnimator catAnimator;
         float thunderIn = -1f;
 
@@ -20,8 +23,12 @@ namespace Draho.World
             rain = Source(MakeRain(), true, 0f);
             thunder = Source(MakeThunder(), false, 0.9f);
             purr = Source(MakePurr(), true, 0f);
+            birds = Source(null, false, 0.22f);
+            crickets = Source(MakeCrickets(), true, 0f);
+            songs = new[] { MakeSong(1), MakeSong(2), MakeSong(3), MakeSong(4) };
+            scream = MakeScream();
             SkyMood.Flashed += OnFlash;
-            Debug.Log($"STATE soundscape: rain {rain.clip.length:0.0} s, thunder {thunder.clip.length:0.0} s, purr {purr.clip.length:0.0} s");
+            Debug.Log($"STATE soundscape: rain {rain.clip.length:0.0} s, thunder {thunder.clip.length:0.0} s, purr {purr.clip.length:0.0} s, {songs.Length} songs, crickets {crickets.clip.length:0.0} s, scream {scream.length:0.00} s");
         }
 
         void Start() => catAnimator = FindAnyObjectByType<Cat.CatAnimator>();
@@ -53,6 +60,21 @@ namespace Draho.World
                 {
                     thunder.pitch = Random.Range(0.8f, 1.1f);
                     thunder.PlayOneShot(thunder.clip, Random.Range(0.6f, 1f));
+                }
+            }
+            // Birds sing by day (now and then a phrase); crickets chirp at night; swifts scream when they fly low.
+            float night = SkyMood.NightAmount;
+            bool calm = !Storm.Active;
+            crickets.volume = Mathf.MoveTowards(crickets.volume, calm && night > 0.6f ? 0.12f : 0f, dt * 0.1f);
+            nextSong -= dt;
+            if (nextSong <= 0f)
+            {
+                nextSong = Random.Range(3f, 9f);
+                if (calm && night < 0.4f)
+                {
+                    birds.pitch = Random.Range(0.9f, 1.1f);
+                    bool low = Swifts.PartyLow;
+                    birds.PlayOneShot(low && Random.value < 0.6f ? scream : songs[Random.Range(0, songs.Length)], low ? 0.7f : 1f);
                 }
             }
             bool sitting = catAnimator != null && catAnimator.IdleTime > 4f;
@@ -123,6 +145,79 @@ namespace Draho.World
             }
             Crossfade(data, Rate / 20);
             var clip = AudioClip.Create("Purr", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip MakeSong(int seed)
+        {
+            // A blackbird-like phrase: 4-7 fluting notes, each a short glide between 1.5 and 3.5 kHz, with gaps.
+            var rng = new System.Random(seed * 31);
+            int notes = 4 + rng.Next(4);
+            int n = (int)(Rate * 1.6f);
+            var data = new float[n];
+            int at = 0;
+            for (int k = 0; k < notes && at < n; k++)
+            {
+                float f0 = 1500f + (float)rng.NextDouble() * 2000f, f1 = f0 * (0.8f + (float)rng.NextDouble() * 0.5f);
+                int len = (int)(Rate * (0.06f + (float)rng.NextDouble() * 0.12f));
+                float phase = 0f;
+                for (int i = 0; i < len && at + i < n; i++)
+                {
+                    float u = (float)i / len;
+                    phase += Mathf.Lerp(f0, f1, u) / Rate;
+                    float env = Mathf.Sin(u * Mathf.PI);
+                    data[at + i] += Mathf.Sin(phase * Mathf.PI * 2f) * env * 0.5f + Mathf.Sin(phase * Mathf.PI * 4f) * env * 0.08f;
+                }
+                at += len + (int)(Rate * (0.03f + (float)rng.NextDouble() * 0.08f));
+            }
+            var clip = AudioClip.Create($"Song{seed}", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip MakeScream()
+        {
+            // Swifts: a harsh, buzzing high trill (4-6 kHz with fast rough modulation), about half a second.
+            int n = (int)(Rate * 0.55f);
+            var data = new float[n];
+            var rng = new System.Random(81);
+            float phase = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float f = 5200f + 700f * Mathf.Sin(t * 60f) + (float)(rng.NextDouble() - 0.5) * 900f;
+                phase += f / Rate;
+                float rough = 0.6f + 0.4f * Mathf.Sign(Mathf.Sin(t * 2f * Mathf.PI * 70f));
+                float env = Mathf.Sin(Mathf.Clamp01(t / 0.55f) * Mathf.PI);
+                data[i] = Mathf.Sin(phase * Mathf.PI * 2f) * rough * env * 0.35f;
+            }
+            var clip = AudioClip.Create("SwiftScream", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip MakeCrickets()
+        {
+            // Bush-crickets in the grass: short bursts of a high tone (about 6.5 kHz), several singers out of step.
+            int n = Rate * 3;
+            var data = new float[n];
+            float[] periods = { 0.42f, 0.57f, 0.73f };
+            float[] freqs = { 6400f, 6900f, 6100f };
+            for (int s = 0; s < periods.Length; s++)
+            {
+                float vol = 0.18f - s * 0.04f;
+                for (int i = 0; i < n; i++)
+                {
+                    float t = (float)i / Rate + s * 0.13f;
+                    float inBurst = (t % periods[s]) / 0.06f;
+                    if (inBurst >= 1f) continue;
+                    float env = Mathf.Sin(inBurst * Mathf.PI);
+                    data[i] += Mathf.Sin(2f * Mathf.PI * freqs[s] * t) * env * vol;
+                }
+            }
+            Crossfade(data, Rate / 20);
+            var clip = AudioClip.Create("Crickets", n, 1, Rate, false);
             clip.SetData(data, 0);
             return clip;
         }

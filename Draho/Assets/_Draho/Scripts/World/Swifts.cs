@@ -20,6 +20,9 @@ namespace Draho.World
         Vector3[] last;
         static Mesh shape;
 
+        /// <summary>True while the flock races low over the roofs (their screams are heard then).</summary>
+        public static bool PartyLow { get; private set; }
+
         public void Configure(Material dark) => material = dark;
 
         void Start()
@@ -57,6 +60,7 @@ namespace Draho.World
         void Update()
         {
             bool flying = SkyMood.NightAmount < 0.5f && !Storm.Active;
+            PartyLow = flying && Mathf.Sin(Time.time * 0.05f) > 0.3f;
             for (int i = 0; i < birds.Length; i++)
             {
                 birds[i].gameObject.SetActive(flying);

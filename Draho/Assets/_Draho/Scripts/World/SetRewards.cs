@@ -73,7 +73,7 @@ namespace Draho.World
             ring.name = "Collar";
             ring.transform.SetParent(neck, false);
             ring.GetComponent<Renderer>().sharedMaterial = collarMat;
-            SetWorldSize(ring.transform, new Vector3(0.085f, 0.008f, 0.085f));
+            SetWorldSize(ring.transform, new Vector3(0.12f, 0.012f, 0.12f)); // wider than the neck, or it hides inside
             ring.transform.rotation = Quaternion.LookRotation(cat.transform.up, cat.transform.forward); // ring round the neck
             ring.transform.position = neck.position;
             var bell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -82,7 +82,9 @@ namespace Draho.World
             bell.transform.SetParent(neck, false);
             bell.GetComponent<Renderer>().sharedMaterial = bellMat != null ? bellMat : collarMat;
             SetWorldSize(bell.transform, Vector3.one * 0.022f);
-            bell.transform.position = neck.position + cat.transform.forward * 0.035f - cat.transform.up * 0.035f;
+            bell.transform.position = neck.position + cat.transform.forward * 0.06f - cat.transform.up * 0.045f;
+            var r = ring.GetComponent<Renderer>().bounds;
+            Debug.Log($"STATE collar at {ring.transform.position} (cat {cat.transform.position}), size {r.size}, neck scale {neck.lossyScale}");
         }
 
         static void SetWorldSize(Transform t, Vector3 size)

@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1347,6 +1347,26 @@ namespace Draho.EditorTools
             r.receiveShadows = false;
             r.maxParticleSize = 3f;
             go.AddComponent<MorningMist>();
+        }
+
+        /// <summary>A rainbow at dawn after the storm (Rainbow, the Draho/Rainbow shader).</summary>
+        static void BuildRainbow()
+        {
+            var shader = Shader.Find("Draho/Rainbow");
+            if (shader == null) { Debug.LogWarning("Draho/Rainbow not found: no rainbow"); return; }
+            string path = $"{PlaygroundBuilder.MaterialDir}/Rainbow.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
+            m.shader = shader;
+            EditorUtility.SetDirty(m);
+            var go = new GameObject("Rainbow");
+            go.transform.SetParent(level, false);
+            go.AddComponent<MeshFilter>();
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = m;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            go.AddComponent<Rainbow>();
         }
 
         /// <summary>The visible bolt of each lightning flash in the storm (LightningBolt, the Draho/Bolt shader).</summary>
@@ -3137,6 +3157,7 @@ namespace Draho.EditorTools
             BuildViewpoints();
             BuildShootingStars();
             BuildLightningBolt();
+            BuildRainbow();
             BuildMorningMist(layout);
             BuildScratchSpots();
             BuildRainSplashes();

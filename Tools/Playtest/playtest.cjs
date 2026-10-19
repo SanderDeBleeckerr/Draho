@@ -441,7 +441,7 @@ const steps = {
   ],
   // Start with ?beat=6&at=-8,2.5,180 : sit a while: Drahomil's notes (all categories) show on the board panel.
   notes: [
-    ['02_sit', 'wait', '9'],
+    ['02_sit', 'wait', '12'],
     ['03_walk_away', 'move', '0,1,0,1.5'],
   ],
   // Start with ?beat=48&at=14.4,4.6,180,11.9 : the storm on the slate; splashes where the rain lands round the cat.

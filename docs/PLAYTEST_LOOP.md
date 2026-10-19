@@ -81,3 +81,5 @@ web for how good games solve each weak point before it changes anything. Finding
 | 47 | Dawn (low gold sun from the east, blue-pink ambient), blue food bowl | Verified live: night → dawn at the humans → breakfast beat; the cat stopped just short of the bowl (47b: pick radius 0.35 → 0.5 m) | Chapter 11 grows from 3 to 4 beats |
 | 47b | — | Verified live: breakfast eaten at 0.5 m → the ending | — |
 | 48 | Six bright rubber toys in the neighbour's flat (squeak, squash, floor ring) | Live: 'flat' passes on its new path (toy mouse taken); the squeak test stopped 0.23 m short of a duck (48b: the front paws count too) | Chapter 7: find a quiet path |
+| 48b | — | Verified live: a step on the rubber duck squeaks, Hrozna wakes and chases the cat out | — |
+| 49 | Morning sunbeam through the sliding door (fake volume from the sun direction) and dust motes | Live: a start at the breakfast beat was night-blue: chapter 11's fade callback re-set the night after the dawn (49b: fade and jump only in play order; saved games had the same bug) | Breakfast and the ending stay in the morning light |

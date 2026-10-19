@@ -420,3 +420,21 @@ small changes. Off while climbing; the player's swipe always wins.
 the round-11 commit text said "10-14 cm", corrected here), in a darker, warmer stone colour. A generated old-plaster
 texture (tileable noise: soft unevenness, faint damp stains, fine grit; one tile = 3 m) on the light-well walls and
 on every plaster building.
+
+## Round 52 (2026-10-19): catnip and a scent trail
+
+**Question:** how do cats react to catnip, and how long?
+
+**Sources**
+- Espín-Iturbe et al. (2017), via Gwern's catnip archive, https://www.gwern.net/doc/cat/psychology/drug/catnip/2017-espiniturbe.pdf :
+  60 domestic cats; about a fifth showed active responses (rolling) and most a passive one; other studies put the
+  share of responders at about two thirds; the response is inherited and kittens do not react.
+- Hatch (1972), https://www.gwern.net/doc/cat/psychology/drug/catnip/1972-hatch.pdf : the behaviour ends after
+  about ten minutes.
+- Todd (1963), https://www.gwern.net/doc/cat/psychology/drug/catnip/1963-todd.pdf : sniffing, head shaking,
+  chin and cheek rubbing, rolling.
+- RSC Education, nepetalactone resource, https://edu.rsc.org/download?ac=14970
+
+**What we do** (`Catnip.cs`): the grey cat "points" at the herb garden; a trail of faint green wisps leads there
+(a new skill: follow a smell). A sniff gives the zoomies: 1.6 × speed for 12 s (a game-sized burst of the real
+ten minutes), then 40 s of rest before the bed works again.

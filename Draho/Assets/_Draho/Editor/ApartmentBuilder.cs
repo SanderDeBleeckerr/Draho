@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1154,6 +1154,21 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Glow-worms in the wild garden's long grass at night (GlowWorms; the additive glow material).</summary>
+        static void BuildGlowWorms(WildGarden w)
+        {
+            if (w == null) return;
+            var go = new GameObject("GlowWorms");
+            go.transform.SetParent(level, false);
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            r.sharedMaterial = AdditiveMaterial();
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            go.AddComponent<GlowWorms>().Configure(new Vector3(w.x0 + 0.3f, 0f, w.z0 + 0.25f), new Vector3(w.x1 - 0.5f, 0f, w.z1 - 0.2f));
         }
 
         /// <summary>A soft cone of lamplight from a lamp down to the ground (LampCone).</summary>
@@ -2770,6 +2785,7 @@ namespace Draho.EditorTools
             BuildButterflies(layout);
             BuildFisherman(layout);
             BuildSunBeam(layout);
+            BuildGlowWorms(layout.wild_garden);
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

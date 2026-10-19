@@ -182,6 +182,8 @@ const steps = {
     ['02_look', 'call', 'Main Camera.TestView:35,1.6'],
     ['03_clouds', 'wait', '3'],
     ['04_later', 'wait', '12'],
+    ['05_dark', 'call', 'CloudShadows.TestDark'],
+    ['06_dark_look', 'wait', '1'],
   ],
   // Start with ?beat=38&at=-12,6.2,270 : night in the wild garden; glow-worms in the grass, walk past them (they dim).
   glowworms: [

@@ -44,6 +44,18 @@ namespace Draho.World
             sunData.lightCookieOffset = offset;
         }
 
+        /// <summary>Test hook: SendMessage('CloudShadows', 'TestDark'): a nearly black cookie (do cookies work at all?).</summary>
+        public void TestDark()
+        {
+            var dark = new Texture2D(4, 4, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Repeat };
+            var px = new Color[16];
+            for (int i = 0; i < 16; i++) px[i] = new Color(0.1f, 0.1f, 0.1f, 0.1f);
+            dark.SetPixels(px);
+            dark.Apply();
+            cookie = dark;
+            Debug.Log($"STATE cloud test: cookie {sun != null && sun.cookie != null}, size {sunData?.lightCookieSize}, offset {sunData?.lightCookieOffset}, main {RenderSettings.sun?.name}");
+        }
+
         void OnDestroy()
         {
             if (sun != null) sun.cookie = null;

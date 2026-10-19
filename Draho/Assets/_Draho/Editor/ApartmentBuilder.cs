@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -3132,6 +3132,9 @@ namespace Draho.EditorTools
             BuildMorningMist(layout);
             BuildScratchSpots();
             BuildRainSplashes();
+            var swifts = new GameObject("Swifts");
+            swifts.transform.SetParent(level, false);
+            swifts.AddComponent<Swifts>().Configure(Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f));
             var smoke = new GameObject("ChimneySmoke");
             smoke.transform.SetParent(level, false);
             smoke.AddComponent<ChimneySmoke>().Configure(AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat"));

@@ -57,7 +57,7 @@ namespace Draho.Cat
             Twist(spine, 0.09f, env, axis, 0.9f);
             Twist(hips, 0.12f, env, axis, 0.5f);
             if (drops != null && Random.value < 0.6f)
-                drops.Emit(Mathf.CeilToInt(3 * env));
+                drops.Emit(Mathf.CeilToInt(5 * env));
         }
 
         void Twist(Transform bone, float lag, float env, Vector3 axis, float weight)
@@ -77,8 +77,8 @@ namespace Draho.Cat
             var main = ps.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(0.3f, 0.55f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(1.2f, 2.4f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.012f, 0.025f);
-            main.startColor = new Color(0.8f, 0.88f, 1f, 0.85f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.05f);
+            main.startColor = new Color(0.85f, 0.92f, 1f, 0.95f);
             main.gravityModifier = 1.2f;
             main.maxParticles = 120;
             var shape = ps.shape;

@@ -579,3 +579,11 @@ several on high roofs you can see from below before you can reach them. A found 
 - Done: CatTailLife adds small rotations after the Animator, round the cat's own axes in world space (no reliance
   on bone axes): tail base up to 18° while walking, tip twitch bursts while crouched, lazy sway when standing (not
   when sitting: the Sit clip curls the tail), random ear flicks, ears out 28° in the storm.
+
+## Round 68 — the wet shake
+
+- Dickerson, Mills & Hu (2012), "Wet mammals shake at tuned frequencies to dry": shaking frequency scales with body
+  mass (about M^-0.22); press summaries give a cat about 6 Hz, a dog 4-5 Hz, a mouse 27 Hz. The loose skin twists
+  back and forth; the motion starts at the head and travels down the body.
+- Done: CatShake twists head, neck, chest, spine and hips round the forward axis at 6 Hz for 0.9 s, each a little
+  later than the one before, with a spray of drops; after the river and when coming home wet.

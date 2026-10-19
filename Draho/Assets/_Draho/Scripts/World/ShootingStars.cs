@@ -62,13 +62,13 @@ namespace Draho.World
             wait = Random.Range(interval.x, interval.y);
             // Usually somewhere ahead of the camera (a low camera rarely shows the sky behind or straight up).
             var cam = Camera.main;
-            Fire(cam != null ? cam.transform.eulerAngles.y + Random.Range(20f, 45f) * (Random.value < 0.5f ? -1f : 1f) : Random.value * 360f);
+            Fire(cam != null ? cam.transform.eulerAngles.y + Random.Range(25f, 40f) * (Random.value < 0.5f ? -1f : 1f) : Random.value * 360f);
         }
 
         void Fire(float az)
         {
-            // Above the roofs and to the side of the story panel (a low camera sees 20-35 degrees up), falling at a slant over 15-25 degrees of sky.
-            float el = Random.Range(20f, 32f);
+            // Above the roofs and to the side of the story panel (a low camera sees up to about 25 degrees), falling at a slant over 15-25 degrees of sky.
+            float el = Random.Range(16f, 26f);
             Vector3 start = Quaternion.Euler(-el, az, 0f) * Vector3.forward;
             Vector3 end = Quaternion.Euler(-(el - Random.Range(5f, 10f)), az + Random.Range(12f, 22f) * (Random.value < 0.5f ? -1f : 1f), 0f) * Vector3.forward;
             material.SetVector(StartId, start);
@@ -107,7 +107,7 @@ namespace Draho.World
         {
             var cam = Camera.main;
             duration = 2.5f; // slow, so a screenshot catches it
-            Fire(cam != null ? cam.transform.eulerAngles.y + 35f : 0f);
+            Fire(cam != null ? cam.transform.eulerAngles.y + 30f : 0f);
         }
     }
 }

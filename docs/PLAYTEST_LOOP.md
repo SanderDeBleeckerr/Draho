@@ -102,3 +102,4 @@ web for how good games solve each weak point before it changes anything. Finding
 | 58b-live | — | Verified live (camera tilted up, rain): soft warm cones under the quay lamp-post and a far-bank lamp, no hard edge; the garden wall lamp glows over the table. Also fixed wait-deploy.sh (short sha never matched) | Lamplight reads as night air |
 | 59 | Free-roam epilogue after THE END (day, humans settle in, the board works again) | Verified live: THE END, 14 s later "Epilogue: a new day", day light, free-roam goal; the save keeps beat 54 | The story end opens the post-game |
 | 60 | Glow-worms in the wild garden (steady green, females switch off when the cat is near; flying males drift) | Live: present but two faint dots only (60b: size 0.05 → 0.14, bright core + halo texture, 22+7 → 30+9) | — |
+| 60b-live | — | Verified live: soft green points scattered in the long grass, a flying one close to the camera with a halo; quiet, not busy | Night garden feels alive |

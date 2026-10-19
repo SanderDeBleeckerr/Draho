@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested),
             };
             bool IsDynamic(Transform t)
             {
@@ -1301,6 +1301,9 @@ namespace Draho.EditorTools
                 go.AddComponent<LineRenderer>().sharedMaterial = mat;
                 go.AddComponent<NapSpot>().Configure(id, title);
             }
+            var rested = new GameObject("WellRested");
+            rested.transform.SetParent(level, false);
+            rested.AddComponent<WellRested>().Configure(spots.Length);
         }
 
         static void BuildFox()

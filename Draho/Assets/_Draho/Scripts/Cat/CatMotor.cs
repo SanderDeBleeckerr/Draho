@@ -55,6 +55,8 @@ namespace Draho.Cat
         public Vector3 Wind { get; set; }
         /// <summary>A short burst of speed (catnip zoomies): 1 is normal.</summary>
         public float SpeedBoost { get; set; } = 1f;
+        /// <summary>Jump height factor (well rested after all the nap spots): 1 is normal.</summary>
+        public float JumpBoost { get; set; } = 1f;
         public bool IsRearing => mode == Mode.Rearing;
         public bool IsClimbing => mode == Mode.Climbing || mode == Mode.Mantling;
         /// <summary>Raised after <see cref="Teleport"/> (the camera jumps behind the cat).</summary>
@@ -168,7 +170,7 @@ namespace Draho.Cat
                 else
                 {
                     speed = carried;
-                    verticalVelocity = Mathf.Sqrt(2f * -stats.gravity * stats.jumpHeight);
+                    verticalVelocity = Mathf.Sqrt(2f * -stats.gravity * stats.jumpHeight * JumpBoost);
                     Debug.Log($"CAT jump at {carried:0.00} m/s");
                     timeSinceGrounded = stats.coyoteTime + 1f; // no second jump in the air
                 }

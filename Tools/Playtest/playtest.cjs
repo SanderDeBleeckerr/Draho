@@ -365,7 +365,7 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=47&at=14.4,4.6,90,12.4 : on the ridge at night, looking east down at the street: lamp-posts
+  // Start with ?beat=42&at=21,-12,0 : in the street south of the house at night, looking north: lamp-posts
   // with soft cones along the house front.
   street: [
     ['02_look_down', 'call', 'Main Camera.TestView:28,2.4'],

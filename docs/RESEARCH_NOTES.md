@@ -510,3 +510,18 @@ several on high roofs you can see from below before you can reach them. A found 
   view-angle ("fresnel") fade so the silhouette is soft; in rain or mist the cones read stronger.
 - Done: LampCone under the garden lamp, the quay lamp and the three far-bank lamps (the sunbeam's additive
   material); per-vertex alpha updated each frame (51 vertices per cone); x1.8 in the storm.
+
+## Round 59 — after THE END
+
+- Open-world and collect-a-thon games return the player to the world after the credits (a post-game) so the
+  unfinished collectables still have a place to be found; a hard stop at the end text wastes them.
+- Done: 14 s after THE END a free-roam epilogue starts: day, the humans go in (the bounty board works again), the
+  goal points at the feathers, nap spots and bounties.
+
+## Round 60 — glow-worms
+
+- The common glow-worm of Belgium, Lampyris noctiluca: the wingless female glows a steady green-yellow in the
+  grass on summer nights (no flashing like American fireflies) and switches off when disturbed; the lesser
+  glow-worm, Lamprohiza splendidula, has flying males with a steady glow, low over the vegetation.
+- Done: GlowWorms in the wild garden: points on the ground (dim when the cat comes within 0.7 m, back slowly) and a
+  few slow flying ones; one particle system, positions and colours set by hand; only at night.

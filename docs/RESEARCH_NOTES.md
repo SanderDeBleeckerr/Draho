@@ -713,3 +713,19 @@ several on high roofs you can see from below before you can reach them. A found 
   in the low "screaming parties".
 - Done: Soundscape adds four generated song phrases (glides between 1.5 and 3.5 kHz), a 3 s cricket loop and a
   0.55 s scream (a rough trill near 5 kHz), played by day, at night, and while Swifts.PartyLow.
+
+## Round 88 — the cat's voice
+
+- Adult cats rarely meow at each other; the meow is mostly for people. A typical meow rises in pitch and falls
+  again while the mouth opens and closes ("mi-a-ow"), so the vowel formants move from i through a to u.
+- Done: CatVoice makes a 0.7 s meow (f0 550 → 820 → 440 Hz; formants F1 350 → 850 → 380, F2 2300 → 1250 → 850 Hz;
+  ten harmonics) and a 0.12 s pad thump; it meows at the humans (greeting, gifts) and thumps on hard landings.
+
+## Round 89 — the rainbow
+
+- The primary rainbow is a circle of about 42° round the antisolar point (red outside at 42°, violet inside at
+  about 40.5°); the secondary at about 51° is fainter with the colours reversed; the sky between them (Alexander's
+  band) is darker. With the sun low (morning), the bow stands high.
+- Lesson: Vector3.Angle(v, Vector3.zero) is 0, so "rebuild when the angle changed" never builds the first time.
+- Done: Rainbow builds two camera-relative bands round the sun's travel direction (Draho/Rainbow, additive,
+  spectrum across the band), rebuilt when the sun moves, faded in at dawn.

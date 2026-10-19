@@ -181,7 +181,7 @@ const steps = {
   // soft cones of lamplight; then rain: the cones grow stronger.
   cones: [
     ['02_cones', 'wait', '3'],
-    ['03_rain', 'call', 'Storm.TestStorm'],
+    ['03_rain', 'call', 'Rain.TestStorm'],
     ['04_cones_rain', 'wait', '6'],
   ],
   // Start with ?beat=48&at=14.4,4.6,180,11.9 : on the ridge in the storm; dry roofs, then soaked at once (wet look).

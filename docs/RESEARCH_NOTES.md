@@ -488,3 +488,25 @@ ear twitch). The cat sits down after 4 s standing still and stands up at any mov
 **What we do** (`NapSpot.cs`): the collectible uses the cat's own verb (sit). Spots are soft golden rings in every area,
 several on high roofs you can see from below before you can reach them. A found spot gives a few coins (a weak reward);
 **to do:** a lasting reward for finding all twelve (for example a new resting pose, or the cat's sun-warmed fur).
+
+## Round 56 — a lasting reward for a full set
+
+- Collectible essays (game-wisdom, itch.io comments): a full set should give a clear, lasting bonus that changes how
+  the game plays; a number alone does not feel like a reward. Players remember "all 20 gave a permanent speed bonus".
+- Done: all twelve nap spots make the cat "well rested": +15% jump height for the rest of the game and a soft warm
+  glow round the paws at night (a small point light, only in the dark, breathing slowly like a purr).
+
+## Round 57 — wet surfaces
+
+- Lagarde (fxguide, "Game environments part C") and the porous-media papers: wet surfaces are darker and glossier
+  because water fills the pores; do not add a new lighting model, change the dry BRDF values. Porous (rough)
+  materials darken most; every surface gets a smooth film on top.
+- Done: WetWeather darkens outdoor materials by up to 45% x roughness and raises smoothness to 0.82 in the storm
+  (20 s to soak, 150 s to dry). A raycast up from every renderer keeps covered (indoor) materials dry.
+
+## Round 58 — cones of lamplight
+
+- Fake volumetrics: an additive cone mesh fitted to the light, bright at the source, fading to the ground, with a
+  view-angle ("fresnel") fade so the silhouette is soft; in rain or mist the cones read stronger.
+- Done: LampCone under the garden lamp, the quay lamp and the three far-bank lamps (the sunbeam's additive
+  material); per-vertex alpha updated each frame (51 vertices per cone); x1.8 in the storm.

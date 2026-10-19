@@ -48,7 +48,7 @@ namespace Draho.World
             if (t >= 0f)
             {
                 t += Time.deltaTime / duration;
-                float bright = Mathf.Sin(Mathf.Clamp01(t) * Mathf.PI) * 2.2f;
+                float bright = Mathf.Sin(Mathf.Clamp01(t) * Mathf.PI) * 4f;
                 material.SetFloat(TId, Mathf.Min(t, 1f));
                 material.SetFloat(BrightId, bright);
                 if (t >= 1f) { t = -1f; view.enabled = false; }
@@ -67,7 +67,7 @@ namespace Draho.World
         void Fire(float az)
         {
             // Low enough to be in view, falling at a slant over 15-25 degrees of sky.
-            float el = Random.Range(12f, 28f);
+            float el = Random.Range(8f, 20f);
             Vector3 start = Quaternion.Euler(-el, az, 0f) * Vector3.forward;
             Vector3 end = Quaternion.Euler(-(el - Random.Range(5f, 10f)), az + Random.Range(12f, 22f) * (Random.value < 0.5f ? -1f : 1f), 0f) * Vector3.forward;
             material.SetVector(StartId, start);
@@ -89,7 +89,7 @@ namespace Draho.World
         {
             var cam = Camera.main;
             duration = 2.5f; // slow, so a screenshot catches it
-            Fire(cam != null ? cam.transform.eulerAngles.y : 0f);
+            Fire(cam != null ? cam.transform.eulerAngles.y + 25f : 0f);
         }
     }
 }

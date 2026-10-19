@@ -7,7 +7,7 @@ Shader "Draho/Meteor"
     {
         _Color ("Colour", Color) = (0.9, 0.95, 1, 1)
         _Distance ("Distance (m)", Float) = 150
-        _Width ("Width (m)", Float) = 0.5
+        _Width ("Width (m)", Float) = 2.5
         _Start ("Start direction", Vector) = (0, 1, 1, 0)
         _End ("End direction", Vector) = (1, 0.8, 1, 0)
         _T ("Progress", Float) = 0

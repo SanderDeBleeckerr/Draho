@@ -83,11 +83,21 @@ namespace Draho.World
             // Three thin claw lines on the surface in front of the cat (none when there is only air).
             Vector3 f = cat.transform.forward;
             Vector3 from = cat.transform.position + Vector3.up * 0.38f;
-            if (!Physics.Raycast(from, f, out RaycastHit hit, 0.7f, ~(1 << 2), QueryTriggerInteraction.Ignore)) { Debug.Log("STATE claw marks: nothing in front"); return; }
-            Debug.Log($"STATE claw marks on {hit.collider.name} at {hit.distance:0.00} m");
-            Vector3 basePos = hit.point + hit.normal * 0.004f;
-            var rot = Quaternion.LookRotation(-hit.normal, Vector3.up);
-            Vector3 along = Vector3.Cross(hit.normal, Vector3.up).normalized; // sideways on the surface
+            // The nearest upright surface within reach of the paws (a thin leg is easy to miss with one ray).
+            if (!NearestUpright(from, out Vector3 point, out Vector3 normal))
+            {
+                if (!Physics.SphereCast(from, 0.08f, f, out RaycastHit hit, 0.7f, ~(1 << 2), QueryTriggerInteraction.Ignore))
+                {
+                    Debug.Log("STATE claw marks: nothing in front");
+                    return;
+                }
+                point = hit.point;
+                normal = hit.normal;
+            }
+            Debug.Log($"STATE claw marks at {Vector3.Distance(from, point):0.00} m");
+            Vector3 basePos = point + normal * 0.004f;
+            var rot = Quaternion.LookRotation(-normal, Vector3.up);
+            Vector3 along = Vector3.Cross(normal, Vector3.up).normalized; // sideways on the surface
             for (int i = 0; i < 3; i++)
             {
                 var m = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -98,6 +108,26 @@ namespace Draho.World
                 m.transform.localScale = new Vector3(0.006f, 0.16f, 0.004f);
                 m.GetComponent<Renderer>().sharedMaterial = markMaterial;
             }
+        }
+
+        static bool NearestUpright(Vector3 from, out Vector3 point, out Vector3 normal)
+        {
+            point = normal = Vector3.zero;
+            float best = float.MaxValue;
+            foreach (var c in Physics.OverlapSphere(from, 0.6f, ~(1 << 2), QueryTriggerInteraction.Ignore))
+            {
+                if (c is MeshCollider mc && !mc.convex) continue; // ClosestPoint needs a convex shape
+                Vector3 p = c.ClosestPoint(from);
+                Vector3 n = from - p;
+                float d = n.magnitude;
+                if (d < 0.01f || d >= best) continue;
+                n /= d;
+                if (Mathf.Abs(n.y) > 0.5f) continue; // the ground or a table top, not something upright
+                best = d;
+                point = p;
+                normal = n;
+            }
+            return best < float.MaxValue;
         }
 
         /// <summary>Test hook: SendMessage('Scratch_sisal', 'TestFind').</summary>

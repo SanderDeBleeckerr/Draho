@@ -606,3 +606,12 @@ several on high roofs you can see from below before you can reach them. A found 
 - Done: eight ScratchSpots (a small tan ring at the foot of the sisal post, the sofa, a table leg, the fence, the
   old chair, the quay lamp-post, the bakery and church door frames); rear up in the ring for 0.2 s (rearing at a
   climbable surface turns into a climb after 0.25 s) and three claw marks appear on the surface in front.
+
+## Round 71 — the sniff sense
+
+- A cat's sense of smell is far better than ours (about 200 million scent receptors against our 5 million); cats
+  lower the head and sniff at the ground and at objects to read who passed. Games with many hidden collectables
+  add a player-started sense mode (a scan, a sniff, a whistle) so the search stays the player's choice.
+- Done: SniffSense on the cat: crouch still for 1.5 s (6 s cooldown) and a line names the nearest unfound thing
+  of any kind with distance and a camera-relative direction ("ahead to the left, up high"); a trail of faint scent
+  puffs drifts that way.

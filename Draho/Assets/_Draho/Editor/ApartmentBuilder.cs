@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1154,6 +1154,28 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Five viewpoints on the high roofs: a faint blue ring; stand still in it for a slow camera sweep.</summary>
+        static void BuildViewpoints()
+        {
+            var views = new (string id, string text, Vector3 pos)[]
+            {
+                ("view_ridge", "the ridge of the big roof. The whole street lies below, and the chimneys smoke.", new Vector3(14.4f, 12.4f, 4.6f)),
+                ("view_highroof", "the highest roof of the block. Gardens, roofs and the river, all yours.", new Vector3(-5.2f, 9.6f, -7.9f)),
+                ("view_flatroof", "the flat roof by the hatch. Every garden of the block in one look.", new Vector3(3.2f, 9.4f, 5.6f)),
+                ("view_gravel", "the big gravel roof. The geraniums, the light well and the maple.", new Vector3(-15.5f, 7.1f, -5.6f)),
+                ("view_riverhouse", "the riverhouse roof. The river, the quay and the far bank.", new Vector3(-25.6f, 7.0f, -12f)),
+            };
+            var mat = NoiseRingMaterial();
+            foreach (var (id, text, pos) in views)
+            {
+                var go = new GameObject($"Viewpoint_{id.Substring(5)}");
+                go.transform.SetParent(level, false);
+                go.transform.position = pos;
+                go.AddComponent<LineRenderer>().sharedMaterial = mat;
+                go.AddComponent<Viewpoint>().Configure(id, text);
+            }
         }
 
         /// <summary>Six gifts for the humans, one in each area, shown only in the epilogue (Gift).</summary>
@@ -2870,6 +2892,7 @@ namespace Draho.EditorTools
             BuildGlowWorms(layout.wild_garden);
             BuildCloudShadows();
             BuildGifts();
+            BuildViewpoints();
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

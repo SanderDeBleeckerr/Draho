@@ -736,3 +736,29 @@ several on high roofs you can see from below before you can reach them. A found 
   cosmetic that others would see (here, the humans' gift back) tells the story of the set.
 - Done: SetRewards: every scratching place → CatMotor.ClimbBoost 1.2 (sharp claws); every gift → a red collar
   (a 12 cm flat ring on the Neck bone, sized in world space) with a small gold bell.
+
+## Round 92 — sure-footed and the bell
+
+- A small cat bell is a ball rattling in a thin shell: a few bright partials (here 3.1, 4.4 and 6.8 kHz) that ring
+  briefly, in quick rattles. Sound tied to a cosmetic makes it felt even when the camera is behind the cat.
+- Done: all viewpoints → CatMotor.WindFactor 0.5 (sure-footed in the storm); the collar jingles on jumps and
+  landings and now and then while walking.
+
+## Round 93 — naming the rewards
+
+- Telling players that a set holds a reward (without saying what) raises the pull of the last few items; naming
+  the reward once earned reminds them what changed.
+- Done: the notes show "(all: a surprise)" for open sets and the reward name for finished ones.
+
+## Round 95 — teaching the rings
+
+- Teach a verb in context, the first time it can be used, once, in a few words; two hints at once hide each other,
+  so space them out.
+- Done: RingHints: the first time the cat comes within 1.5 m of an unfound ring of a kind, one line says what to do
+  (stand still to nap, rear up to scratch, stand still to look round); at most one hint per 6 s.
+
+## Round 96 — readable carried objects
+
+- Small held props read better a little larger than life and held where the camera can see them; the cat's body
+  still hides them from straight behind.
+- Done: a carried gift is drawn 1.5x and held a little higher, in front of the face; normal size again when given.

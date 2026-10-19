@@ -86,12 +86,13 @@ namespace Draho.CameraRig
         /// <summary>A slow turn round the cat, pulled back, to show a view (a viewpoint). Any swipe by the player ends it.</summary>
         public void Sweep(float seconds) => sweepTime = seconds;
 
-        /// <summary>Test hook: SendMessage('Main Camera', 'TestView', "pitch,distance"), e.g. "-5,1.2" to look up.</summary>
+        /// <summary>Test hook: SendMessage('Main Camera', 'TestView', "pitch,distance[,yaw]"), e.g. "-5,1.2" to look up.</summary>
         public void TestView(string args)
         {
             var parts = args.Split(',');
             pitch = Mathf.Clamp(float.Parse(parts[0], System.Globalization.CultureInfo.InvariantCulture), minPitch, maxPitch);
             if (parts.Length > 1) distance = float.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture);
+            if (parts.Length > 2) yaw = float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture);
         }
 
         void LateUpdate()

@@ -83,6 +83,28 @@ namespace Draho.World
         }
 
         /// <summary>Test hook: SendMessage('Rainbow', 'TestShow'): dawn now.</summary>
-        public void TestShow() => SkyMood.Set(SkyMood.Mood.Dawn, 0.5f);
+        public void TestShow()
+        {
+            SkyMood.Set(SkyMood.Mood.Dawn, 0.5f);
+            Invoke(nameof(Face), 1f);
+            Invoke(nameof(Report), 7f);
+        }
+
+        void Face()
+        {
+            // Turn the camera towards the antisolar point, a little up: where the bow stands.
+            if (sun == null) return;
+            Vector3 f = sun.transform.forward;
+            float az = Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg;
+            FindAnyObjectByType<Draho.CameraRig.OrbitCamera>()?.TestView($"-5,1.4,{az.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+        }
+
+        void Report()
+        {
+            Vector3 f = sun != null ? sun.transform.forward : Vector3.zero;
+            float az = Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg;
+            float el = Mathf.Asin(Mathf.Clamp(-f.y, -1f, 1f)) * Mathf.Rad2Deg;
+            Debug.Log($"STATE rainbow: shown {shown:0.00}, enabled {view.enabled}, antisolar azimuth {az:0}, sun elevation {el:0}, verts {mesh.vertexCount}, mood {SkyMood.Current}");
+        }
     }
 }

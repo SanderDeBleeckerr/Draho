@@ -372,16 +372,11 @@ const steps = {
     ['04_slates', 'wait', '4'],
   ],
   // Start with ?beat=42&at=-31,7.5,270 : the open river bank; dawn now (test hook): the rainbow fades in opposite
-  // the sun; turn round to find it.
+  // the sun; the hook turns the camera towards it.
   rainbow: [
     ['02_dawn', 'call', 'Rainbow.TestShow'],
-    ['03_west', 'wait', '7'],
-    ['04_turn', 'move', '1,0,0,1.2'],
-    ['05_north', 'wait', '1'],
-    ['06_turn', 'move', '1,0,0,1.2'],
-    ['07_east', 'wait', '1'],
-    ['08_turn', 'move', '1,0,0,1.2'],
-    ['09_south', 'wait', '1'],
+    ['03_bow', 'wait', '7'],
+    ['04_bow_later', 'wait', '2'],
   ],
   // Start with ?beat=6&at=-8,2.5,180 : a test meow, then a jump down from the table for a landing thump (log only:
   // the headless test cannot hear).

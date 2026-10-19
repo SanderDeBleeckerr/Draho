@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -176,6 +176,13 @@ const steps = {
     ['03_sit_on_it', 'wait', '6'],
     ['04_table', 'call', 'StoryDirector.TestTeleport:-1.4,2.6,90,0.8'],
     ['05_sit_table', 'wait', '6'],
+  ],
+  // Start with ?beat=42&at=-31,7.5,270 (the far-bank lamps) or ?beat=38&at=-2.2,1.2,90 (the garden lamp) at night:
+  // soft cones of lamplight; then rain: the cones grow stronger.
+  cones: [
+    ['02_cones', 'wait', '3'],
+    ['03_rain', 'call', 'Storm.TestStorm'],
+    ['04_cones_rain', 'wait', '6'],
   ],
   // Start with ?beat=48&at=14.4,4.6,180,11.9 : on the ridge in the storm; dry roofs, then soaked at once (wet look).
   wet: [

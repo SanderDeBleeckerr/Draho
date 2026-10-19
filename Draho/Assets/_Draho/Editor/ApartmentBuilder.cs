@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone),
             };
             bool IsDynamic(Transform t)
             {
@@ -498,6 +498,7 @@ namespace Draho.EditorTools
             light.enabled = false;
             light.shadows = LightShadows.None;
             root.AddComponent<NightLamp>().Configure(light, bulb.GetComponent<Renderer>());
+            AddLampCone(root.transform, root.transform.position + new Vector3(-0.17f, -0.14f, 0f), 1.8f, 0.9f, light);
 
             // Four moths: pale wings, a furry brown body, about 4 cm long. +Z is forward.
             var body = Mat("Moth_Body", new Color(0.42f, 0.34f, 0.26f), 0.1f);
@@ -560,6 +561,7 @@ namespace Draho.EditorTools
             var so = new SerializedObject(lamp);
             so.FindProperty("intensity").floatValue = 4.5f;
             so.ApplyModifiedPropertiesWithoutUndo();
+            AddLampCone(root.transform, root.transform.position + Vector3.up * (q.h + 0.03f), q.h, 1.7f, light);
             return light;
         }
 
@@ -570,7 +572,7 @@ namespace Draho.EditorTools
         static void BuildFarBankLamps(Layout layout)
         {
             if (layout.water == null) return;
-            var mat = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/SunBeam.mat");
+            var mat = AdditiveMaterial();
             float edge = layout.water.x0; // the far bank starts where the water ends (west side)
             int i = 0;
             foreach (float z in new[] { 8f, -6f, -22f })
@@ -1130,14 +1132,9 @@ namespace Draho.EditorTools
             root.gameObject.AddComponent<Fisherman>().Configure(torso, bucket, bobber);
         }
 
-        /// <summary>
-        /// A shaft of low sun through the sliding glass door, with dust motes (SunBeam builds the shaft at runtime from
-        /// the sun's direction). Additive, both faces, no shadows.
-        /// </summary>
-        static void BuildSunBeam(Layout layout)
+        /// <summary>The additive, two-sided glow material of the sunbeam, the glints and the lamp cones.</summary>
+        static Material AdditiveMaterial()
         {
-            var door = (layout.openings ?? new Opening[0]).FirstOrDefault(o => o.id == "sliding_door");
-            if (door == null) return;
             string path = $"{PlaygroundBuilder.MaterialDir}/SunBeam.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (mat == null)
@@ -1156,6 +1153,32 @@ namespace Draho.EditorTools
             mat.renderQueue = (int)RenderQueue.Transparent;
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        /// <summary>A soft cone of lamplight from a lamp down to the ground (LampCone).</summary>
+        static void AddLampCone(Transform parent, Vector3 apex, float height, float radius, Light light)
+        {
+            var go = new GameObject("LampCone");
+            go.transform.SetParent(parent, false);
+            go.transform.position = apex;
+            go.AddComponent<MeshFilter>();
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = AdditiveMaterial();
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            go.AddComponent<LampCone>().Configure(light, height, radius);
+        }
+
+        /// <summary>
+        /// A shaft of low sun through the sliding glass door, with dust motes (SunBeam builds the shaft at runtime from
+        /// the sun's direction). Additive, both faces, no shadows.
+        /// </summary>
+        static void BuildSunBeam(Layout layout)
+        {
+            var door = (layout.openings ?? new Opening[0]).FirstOrDefault(o => o.id == "sliding_door");
+            if (door == null) return;
+            var mat = AdditiveMaterial();
 
             var beam = new GameObject("SunBeam");
             beam.transform.SetParent(level, false);

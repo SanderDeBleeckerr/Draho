@@ -393,7 +393,7 @@ namespace Draho.EditorTools
         static void BuildCourt(Layout layout, Court c)
         {
             float h = c.glass_height > 0 ? c.glass_height : layout.wall.height;
-            var pebbles = Mat("Apt_Pebbles", Hex(c.color), 0.2f, PebbleTexture(), new Vector2(c.x1 - c.x0, c.z1 - c.z0) / 0.3f);
+            var pebbles = Mat("Apt_Pebbles", Hex(c.color), 0.2f, PebbleTexture(), new Vector2(c.x1 - c.x0, c.z1 - c.z0) / 0.9f); // cobbles about 11 cm
             Box("Court_Stones", new Vector3((c.x0 + c.x1) / 2, 0.005f, (c.z0 + c.z1) / 2),
                 new Vector3(c.x1 - c.x0, 0.01f, c.z1 - c.z0), pebbles, collider: false);
 
@@ -428,7 +428,7 @@ namespace Draho.EditorTools
         static void CourtShaft(Layout layout, Court c, float glassTop)
         {
             float t = layout.wall.thickness, top = c.shaft_height;
-            var plaster = Mat("Apt_CourtPlaster", new Color(0.85f, 0.83f, 0.79f), 0.08f);
+            var plaster = Mat("Apt_CourtPlaster", new Color(0.85f, 0.83f, 0.79f), 0.08f, PlasterTexture(), new Vector2(1f, 3f));
             // North and east: the outer walls of the house (the apartment wall below is 2.6 m high).
             float baseNE = layout.wall.height;
             WallSegment("Shaft_north", true, c.z1 + t / 2, c.x0 - t, c.x1 + t, baseNE, top, t, plaster);
@@ -1520,7 +1520,7 @@ namespace Draho.EditorTools
                 const float roofT = 0.12f, coping = 0.06f;
                 if (b.roof == "pitched") { PitchedHouse(root, b); continue; }
                 var brick = b.material == "plaster"
-                    ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f)
+                    ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f, PlasterTexture(), new Vector2(w, b.h - b.base_y) / 3f)
                     : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
                 var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 7f); // small stones
                 var stone = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
@@ -2105,7 +2105,7 @@ namespace Draho.EditorTools
         static void PitchedHouse(Transform root, Building b)
         {
             float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
-            var wallMat = b.material == "plaster" ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f) : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
+            var wallMat = b.material == "plaster" ? Mat($"Apt_{b.id}", Hex(b.color), 0.12f, PlasterTexture(), new Vector2(w, b.h) / 3f) : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
             Box("Walls", new Vector3(cx, b.h / 2, cz), new Vector3(w, b.h, d), wallMat).transform.SetParent(root, true);
             bool alongX = b.ridge_along == "x" || (b.ridge_along != "z" && w >= d); // the ridge runs along the long side unless set
             float span = alongX ? d : w, length = alongX ? w : d, ridge = b.ridge > 0f ? b.ridge : span * 0.4f;
@@ -3224,6 +3224,29 @@ namespace Draho.EditorTools
             float n = Mathf.PerlinNoise(x * 0.08f, y * 0.08f) * 0.06f;
             return grout ? new Color(0.62f, 0.6f, 0.57f) : new Color(0.93f + n, 0.92f + n, 0.9f + n);
         });
+
+        /// <summary>
+        /// Old plaster, 3 m square (white, tinted by the material): soft unevenness, a few faint damp stains and fine grit.
+        /// </summary>
+        static Texture2D PlasterTexture() => MakeTexture("Plaster.png", 256, (x, y, size) =>
+        {
+            float broad = TileNoise(x, y, size, 0.012f, 3.1f, 7.7f);
+            float stain = Mathf.Clamp01((TileNoise(x, y, size, 0.03f, 11f, 5f) - 0.62f) * 3f);
+            int h = (x * 73856093) ^ (y * 19349663);
+            float grit = ((h >> 5) & 15) / 15f * 0.05f;
+            float t = 0.9f + broad * 0.1f - stain * 0.12f - grit;
+            return new Color(t, t * 0.985f, t * 0.96f);
+        });
+
+        /// <summary>Perlin noise that wraps round at the texture edges (no seams when the texture repeats).</summary>
+        static float TileNoise(int x, int y, int size, float scale, float ox, float oy)
+        {
+            float fx = (float)x / size, fy = (float)y / size;
+            float N(float px, float py) => Mathf.PerlinNoise(px * scale + ox, py * scale + oy);
+            float top = Mathf.Lerp(N(x, y), N(x - size, y), fx);
+            float bottom = Mathf.Lerp(N(x, y - size), N(x - size, y - size), fx);
+            return Mathf.Lerp(top, bottom, fy);
+        }
 
         static Texture2D PebbleTexture() => MakeTexture("Pebbles.png", 256, (x, y, size) =>
         {

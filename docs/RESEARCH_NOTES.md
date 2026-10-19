@@ -457,3 +457,17 @@ ten minutes), then 40 s of rest before the bed works again.
 **What we do** (`WaterGlint.cs`): lamps across the river from the player (the far bank), each with a flat strip on
 the water that points at the camera, up to 13 m long; a dashed texture (ripple facets) scrolls slowly, the width
 wobbles a little and the light flickers. Additive, warm, only while the lamp is on.
+
+## Round 54 (2026-10-19): sitting down
+
+**Question:** what does a resting cat look like, so the idle cat looks alive?
+
+**Sources**
+- Catster, "Cat tail language" guides, https://www.catster.com/guides/cats-tail-meanings : a tail wrapped round the
+  body or the paws is a normal resting posture (the "loaf"); not a mood signal on its own.
+- Ohio State University, Indoor Pet Initiative, "Reading cat body language",
+  https://indoorpet.osu.edu/sites/indoorpet/files/assets/documents/hospital/indoorcat/Reading%20Cat%20Body%20Language.pdf
+
+**What we do:** a Sit clip (the body 43° nose-up about the hips and sunk 11.5 cm, straight front legs with flat paws
+under the shoulders, folded hind legs, the tail along the floor and round the paws, breathing, a slow look round, an
+ear twitch). The cat sits down after 4 s standing still and stands up at any move (Animator `IdleTime`).

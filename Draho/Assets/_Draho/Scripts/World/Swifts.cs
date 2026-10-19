@@ -68,7 +68,7 @@ namespace Draho.World
                 if (v.sqrMagnitude > 1e-6f) birds[i].rotation = Quaternion.LookRotation(v, Vector3.up);
                 // Flicker the wings in bursts, then glide.
                 float beat = Mathf.Sin(Time.time * 1.3f + seeds[i]) > 0.2f ? Mathf.Sin(Time.time * 40f + seeds[i]) : 0f;
-                birds[i].localScale = new Vector3(1f, 1f + 0.6f * beat, 1f);
+                birds[i].localScale = new Vector3(1.5f, 1.5f + 0.9f * beat, 1.5f); // a little larger than life: they are far away
             }
         }
 

@@ -667,3 +667,11 @@ several on high roofs you can see from below before you can reach them. A found 
   frustrated.
 - Done: LaserDot in the epilogue living room (day and evening): darts at 2.6 m/s with 0.4-1.6 s pauses and a
   wiggle; a pounce is a landing within reach; after five, the dot rests on a treat (+10 coins); 90 s rest.
+
+## Round 81 — swifts
+
+- Common swifts (Apus apus) spend May-August in Belgium and live in the air: they feed, drink and sleep on the
+  wing; on warm evenings groups race low round the roofs in screaming parties, then climb high at dusk. Long
+  sickle wings, bursts of fast flickering beats between glides.
+- Done: Swifts: 10 two-sided boomerang meshes on noise paths round the block at 24-34 m, a periodic low party at
+  13-15 m, wing flicker in bursts; only by day and evening; drawn 1.5x life size for the far view.

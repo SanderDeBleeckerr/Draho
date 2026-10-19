@@ -96,3 +96,5 @@ web for how good games solve each weak point before it changes anything. Finding
 | 54c-live | — | Verified live: normal size again; after 4 s the cat sits upright with the tail round the paws, stands up to walk | — |
 | 55 | Twelve nap spots (golden ring, sit 3 s on a warm or soft place), Naps counter in the HUD | Verified live: nap_rug and nap_table found, "Naps 1/2" in the HUD, the cat sits with the tail round the paws | Sitting becomes a side activity |
 | 56 | Well rested: all 12 nap spots give +15% jump height and a warm glow at night | Live: reward works (toast, jump), but the glow blew out to white on a near wall (56b: intensity 0.6 → 0.12, lower, range 0.9) | Lasting reward for the set |
+| 56b-live | — | Verified live: the glow is a soft warm pool on the ground round the paws, no hot spot | — |
+| 57 | Wet weather: 266 outdoor materials darken (porous most) and gloss in the storm, dry over 150 s | Verified live: dry slate is flat and dark; wet slate shows a broad sheen of the sky along the roof, the ridge stands out | Storm reads as wet |

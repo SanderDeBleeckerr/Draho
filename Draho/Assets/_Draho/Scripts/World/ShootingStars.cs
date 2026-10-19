@@ -50,7 +50,7 @@ namespace Draho.World
             {
                 t += Time.deltaTime / duration;
                 float bright = duration > 1000f ? 20f : Mathf.Sin(Mathf.Clamp01(t) * Mathf.PI) * 4f;
-                material.SetFloat(TId, Mathf.Min(t, 1f));
+                material.SetFloat(TId, duration > 1000f ? 0.6f : Mathf.Min(t, 1f)); // TestBig holds the streak half-way
                 material.SetFloat(BrightId, bright);
                 if (t >= 1f) { t = -1f; view.enabled = false; }
                 return;

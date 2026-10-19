@@ -405,3 +405,18 @@ crowded the cat. What do good third-person cameras do?
 **What we do** (`OrbitCamera`): keep "pull forward" (instant in, slow out), and add "preserve distance": after 0.3 s
 blocked below 60 % of the wanted distance, probe 7 nearby viewpoints and turn towards the freest at 70°/s, preferring
 small changes. Off while climbing; the player's swipe always wins.
+
+## Round 51 (2026-10-19): real-size cobbles, old plaster
+
+**Question:** the court's round stones read tiny and white. How big are Flemish cobbles ("kasseien")?
+
+**Sources**
+- Opalis, "Kasseien" (reclaimed building materials, Belgium), https://opalis.eu/sites/default/files/2022-01/1.11_nl_-_kasseien_v01_0.pdf :
+  mosaic cobbles (cube-like) have sides of 7-12 cm; square setts 13-20 cm.
+- Opalis, "Recuperatiekassei", https://opalis.eu/sites/default/files/2022-01/recuperatiekassei_0.pdf : old porphyry
+  mosaic cobbles 7/9, 9/10, 9/11 cm.
+
+**What we do:** the pebble texture now repeats every 0.9 m (stones of about 11 cm, at the top of the mosaic range;
+the round-11 commit text said "10-14 cm", corrected here), in a darker, warmer stone colour. A generated old-plaster
+texture (tileable noise: soft unevenness, faint damp stains, fine grit; one tile = 3 m) on the light-well walls and
+on every plaster building.

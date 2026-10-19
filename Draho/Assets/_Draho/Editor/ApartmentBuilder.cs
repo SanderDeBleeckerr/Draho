@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1183,6 +1183,38 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Rain splashes on the ground round the camera in the storm (RainSplashes): tiny fast drops.</summary>
+        static void BuildRainSplashes()
+        {
+            var puff = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat");
+            if (puff == null) return;
+            var go = new GameObject("RainSplashes");
+            go.transform.SetParent(level, false);
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.loop = true;
+            main.playOnAwake = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.12f, 0.22f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.4f, 0.9f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.012f, 0.03f);
+            main.startColor = new Color(0.75f, 0.82f, 0.95f, 0.7f);
+            main.gravityModifier = 1.5f;
+            main.maxParticles = 400;
+            var emission = ps.emission;
+            emission.enabled = false; // only Emit() at the hit points
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Hemisphere; // a little crown, up and out
+            shape.radius = 0.02f;
+            shape.rotation = new Vector3(-90f, 0f, 0f);
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            r.sharedMaterial = puff;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            go.AddComponent<RainSplashes>();
         }
 
         /// <summary>Eight places to scratch (ScratchSpot): upright, rough things that are not climbable.</summary>
@@ -3041,6 +3073,7 @@ namespace Draho.EditorTools
             BuildLightningBolt();
             BuildMorningMist(layout);
             BuildScratchSpots();
+            BuildRainSplashes();
             new GameObject("DayCycle").AddComponent<DayCycle>().transform.SetParent(level, false);
             BuildCatnip(layout);
             BuildFarBankLamps(layout);

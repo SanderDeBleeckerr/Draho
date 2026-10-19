@@ -368,6 +368,7 @@ const steps = {
   // Start with ?beat=48&at=14.4,4.6,180,11.9 : on the ridge in the storm; a test strike (held 3 s): a jagged bolt
   // with a branch in the side sky.
   bolt: [
+    ['02_look_up', 'call', 'Main Camera.TestView:-5,1.4'],
     ['02_storm', 'wait', '2'],
     ['03_strike', 'call', 'LightningBolt.TestStrike'],
     ['04_bolt', 'wait', '0.6'],

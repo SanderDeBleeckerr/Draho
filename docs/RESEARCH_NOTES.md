@@ -561,3 +561,12 @@ several on high roofs you can see from below before you can reach them. A found 
   shows, and the story panel covers the middle top: put sky events low and to the side.
 - Done: Draho/Meteor (camera-relative quad, no fog, additive), 16-26 degrees up, 25-40 degrees beside the view
   direction; a wish line the first time the cat sits still under one.
+
+## Round 66 — lightning bolts
+
+- A cloud-to-ground flash is several return strokes (often 3-4) down the same channel, about 40-60 ms apart, 0.2-0.5 s
+  in all: the flicker. The channel is jagged (steps of tens of metres) and forks; procedural bolts are usually
+  made by midpoint displacement of a line, with a few shorter branches.
+- Done: LightningBolt builds a new channel in sky angles at each SkyMood.Flash (5 levels of midpoint displacement,
+  one fork), a camera-relative ribbon (Draho/Bolt: no fog, additive, white core and soft glow) beside the view,
+  from 24 degrees up to below the roofs; brightness steps 1 / 0.15 / 0.9 / 0.1 / 0.7, then fades.

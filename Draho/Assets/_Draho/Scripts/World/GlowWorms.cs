@@ -15,8 +15,8 @@ namespace Draho.World
     {
         [SerializeField] Vector3 areaMin = new Vector3(-26f, 0f, 5.3f);
         [SerializeField] Vector3 areaMax = new Vector3(-2.5f, 0f, 9.3f);
-        [SerializeField] int grounded = 22;
-        [SerializeField] int flying = 7;
+        [SerializeField] int grounded = 30;
+        [SerializeField] int flying = 9;
         [SerializeField] Color glow = new Color(0.6f, 1f, 0.35f);
         [SerializeField] float shyDistance = 0.7f;
 
@@ -73,7 +73,7 @@ namespace Draho.World
                 light[i] = 1f;
                 points[i].remainingLifetime = 1e6f;
                 points[i].startLifetime = 1e6f;
-                points[i].startSize = i < grounded ? 0.05f : 0.04f;
+                points[i].startSize = i < grounded ? 0.14f : 0.11f;
                 points[i].position = homes[i];
             }
         }
@@ -109,14 +109,16 @@ namespace Draho.World
 
         static Texture2D Dot()
         {
-            const int size = 16;
+            const int size = 32;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
             for (int y = 0; y < size; y++)
                 for (int x = 0; x < size; x++)
                 {
                     float d = new Vector2(x + 0.5f - size / 2f, y + 0.5f - size / 2f).magnitude / (size / 2f);
-                    float a = Mathf.Clamp01(1f - d);
-                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a * a));
+                    // A bright core and a soft halo round it (the light on the grass).
+                    float core = Mathf.Clamp01(1f - d * 4f);
+                    float halo = Mathf.Clamp01(1f - d);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(core + 0.45f * halo * halo)));
                 }
             tex.Apply();
             return tex;

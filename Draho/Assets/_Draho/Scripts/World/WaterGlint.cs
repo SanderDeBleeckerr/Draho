@@ -13,7 +13,7 @@ namespace Draho.World
     {
         [SerializeField] Light lamp;
         [SerializeField] float maxLength = 13f;
-        [SerializeField] float width = 0.45f;
+        [SerializeField] float width = 0.7f;
         [SerializeField] Color tint = new Color(1f, 0.72f, 0.4f);
 
         static Mesh strip;
@@ -62,6 +62,7 @@ namespace Draho.World
             var m = new Mesh { name = "GlintStrip" };
             m.vertices = new[] { new Vector3(-0.5f, 0f, 0f), new Vector3(0.5f, 0f, 0f), new Vector3(0.5f, 0f, 1f), new Vector3(-0.5f, 0f, 1f) };
             m.uv = new[] { new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, 1f) };
+            m.colors = new[] { Color.white, Color.white, Color.white, Color.white }; // the particle shader multiplies by vertex colour
             m.triangles = new[] { 0, 2, 1, 0, 3, 2 };
             m.RecalculateNormals();
             m.bounds = new Bounds(new Vector3(0f, 0f, 0.5f), new Vector3(1f, 0.1f, 1f));

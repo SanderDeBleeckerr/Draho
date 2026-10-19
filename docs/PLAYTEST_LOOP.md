@@ -88,3 +88,5 @@ web for how good games solve each weak point before it changes anything. Finding
 | 51 | Cobbles at real size (about 11 cm), old-plaster texture on plaster walls | Live: stone size right, but the stones still read near-white against dark gaps (51b: darker stone tint) | — |
 | 51b | — | Verified live: the court reads as grey round cobbles | — |
 | 52 | Catnip bed (leaves, lilac flowers) and a green scent trail | Verified live: sniff → zoomies (6.8 m in 2.5 s) → beat 25; the wisps were too faint to follow (52b: bigger, brighter) | Chapter 5 grows from 4 to 5 beats: follow a smell |
+| 52b | — | Verified live: the green scent trail now reads as a line of glows to the bed | — |
+| 53 | Far-bank lamp-posts and glitter paths on the river | Live: no streaks visible on the dark water (53b: the strip had no vertex colours, which the particle shader multiplies by; wider strip) | — |

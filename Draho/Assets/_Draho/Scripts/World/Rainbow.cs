@@ -19,6 +19,7 @@ namespace Draho.World
         MeshRenderer view;
         Vector3 lastAxis;
         float shown;
+        bool built;
 
         void Awake()
         {
@@ -45,12 +46,14 @@ namespace Draho.World
             if (!view.enabled) return;
             material.SetFloat("_Bright", 0.55f * shown);
             Vector3 axis = sun.transform.forward; // the light travels towards the antisolar point
-            if (Vector3.Angle(axis, lastAxis) > 0.5f) Build(axis);
+            // (Vector3.Angle with the zero vector is 0, so the first build needs its own flag.)
+            if (!built || Vector3.Angle(axis, lastAxis) > 0.5f) Build(axis);
         }
 
         void Build(Vector3 axis)
         {
             lastAxis = axis;
+            built = true;
             var verts = new System.Collections.Generic.List<Vector3>();
             var uvs = new System.Collections.Generic.List<Vector2>();
             var tris = new System.Collections.Generic.List<int>();

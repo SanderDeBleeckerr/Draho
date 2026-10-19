@@ -438,3 +438,22 @@ on every plaster building.
 **What we do** (`Catnip.cs`): the grey cat "points" at the herb garden; a trail of faint green wisps leads there
 (a new skill: follow a smell). A sniff gives the zoomies: 1.6 × speed for 12 s (a game-sized burst of the real
 ten minutes), then 40 s of rest before the bed works again.
+
+## Round 53 (2026-10-19): glitter paths of lamps on the river
+
+**Question:** why do lamps make long streaks on water at night, and how do we fake it cheaply?
+
+**Sources**
+- NASA Earth Observatory, "A glittering path of San Francisco sunglint",
+  https://earthobservatory.nasa.gov/blogs/earthmatters/2016/11/09/ground-to-space-a-glittering-path-of-san-francisco-sunglint/ :
+  a glitter path is many bright points reflected by tiny ripples back to the viewer.
+- University of Colorado physics demo, "Rippled reflection",
+  https://physicslabs.colorado.edu/demos/optics/geometrical-optics/reflection-from-flat-surfaces/rippled-reflection/ :
+  rippled water turns a point light into a vertical pillar; its extent grows with the wave amplitude.
+- Atmospheric Optics, "Bent glitter paths", https://atoptics.co.uk/fz684.htm : the width depends on the light's
+  altitude and the slopes of the waves.
+- Astronomy.com, "The long track of the moon", https://www.astronomy.com/observing/the-long-track-of-the-moon/
+
+**What we do** (`WaterGlint.cs`): lamps across the river from the player (the far bank), each with a flat strip on
+the water that points at the camera, up to 13 m long; a dashed texture (ripple facets) scrolls slowly, the width
+wobbles a little and the light flickers. Additive, warm, only while the lamp is on.

@@ -30,20 +30,20 @@ namespace Draho.World
             if (!running) { running = true; phase = 0; left = Day[0].minutes * 60f; } // the epilogue starts by day
             left -= Time.deltaTime;
             if (left > 0f) return;
-            Advance();
+            Advance(false);
         }
 
-        void Advance()
+        void Advance(bool quick)
         {
             phase = (phase + 1) % Day.Length;
             var p = Day[phase];
             left = p.minutes * 60f;
-            SkyMood.Set(p.mood, p.blend);
+            SkyMood.Set(p.mood, quick ? 2f : p.blend);
             if (p.line != null) ProgressHud.Toast(p.line);
             Debug.Log($"SKY cycle: {p.mood} for {p.minutes} min");
         }
 
         /// <summary>Test hook: SendMessage('DayCycle', 'TestAdvance'): skip to the next part of the day.</summary>
-        public void TestAdvance() { if (running) Advance(); }
+        public void TestAdvance() { if (running) Advance(true); }
     }
 }

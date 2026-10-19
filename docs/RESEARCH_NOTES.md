@@ -534,3 +534,11 @@ several on high roofs you can see from below before you can reach them. A found 
 - Lessons: blending four shifted noise copies (to make it tile) pulls the values to the middle, so take the
   cloud thresholds from the percentiles of the noise; the builder puts the cookie on the sun in the scene.
 - Done: a 128 px cookie over 60 m, about 40% cloud at half shade, drifting about 1 m/s; off at night.
+
+## Round 62 — gifts
+
+- Cats bring their people "gifts": mostly small prey, also toys and odd finds; indoor cats bring what they can
+  find (a sock, a hair tie). Behaviourists read it as sharing food with the family group, or bringing prey to a
+  safe place, not as teaching.
+- Done: six gifts across the town (the wild garden, the quay, the bakery, the court, the begijnhof, the highest
+  roof), only in the epilogue; carried one at a time to the humans at the front door, each with a reaction line.

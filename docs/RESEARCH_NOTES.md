@@ -587,3 +587,13 @@ several on high roofs you can see from below before you can reach them. A found 
   back and forth; the motion starts at the head and travels down the body.
 - Done: CatShake twists head, neck, chest, spine and hips round the forward axis at 6 Hz for 0.9 s, each a little
   later than the one before, with a spray of drops; after the river and when coming home wet.
+
+## Round 69 — morning mist
+
+- Radiation fog forms on clear, calm nights as the ground cools; it lies in the lowest metre or two over grass and
+  low ground and "burns off" after sunrise as the sun warms the air. Games fake ground mist with large, very faint,
+  slowly drifting billboard puffs (flat sheets show hard lines where they cut walls).
+- Done: MorningMist over the garden and the wild garden: 3-6 m puffs, alpha 0.45 with fade in and out, drifting
+  down the gardens; thick at the start of a new game (thinning to nothing over 4 min) and at dawn in chapter 11.
+- Test note: the headless test browser runs at about 5 fps, so effects driven by "a chance per frame" can do
+  nothing in a short window: emit at a steady rate per second instead.

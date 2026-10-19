@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -169,6 +169,13 @@ const steps = {
     ['02_look', 'wait', '3'],
     ['03_turn', 'move', '-0.4,1,0,0.4'],
     ['04_settle', 'wait', '2'],
+  ],
+  // Start with ?beat=6&at=2.2,2.6,0&fresh=1 : on the rug nap spot; sit still until it is found; then the garden table spot.
+  naps: [
+    ['02_ring', 'wait', '1'],
+    ['03_sit_on_it', 'wait', '6'],
+    ['04_table', 'call', 'StoryDirector.TestTeleport:-1.4,2.6,90,0.8'],
+    ['05_sit_table', 'wait', '6'],
   ],
   // Start with ?beat=6&at=-8,2.5,180 : on the lawn by day; stand still: after 4 s the cat sits down; walk on.
   sit: [

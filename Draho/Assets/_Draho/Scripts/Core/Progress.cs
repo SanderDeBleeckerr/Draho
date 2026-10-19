@@ -39,7 +39,9 @@ namespace Draho.Core
 
         public event Action Changed;
         public int Coins => data.coins;
-        public int CollectedCount => data.collected.Count;
+        /// <summary>Feathers found (the nap spots, ids "nap_...", are counted apart).</summary>
+        public int CollectedCount => data.collected.FindAll(c => !c.StartsWith("nap_")).Count;
+        public int NapCount => data.collected.FindAll(c => c.StartsWith("nap_")).Count;
         public int TotalCollectables { get; private set; }
         public int SavedBeat => data.beat;
         public int CoinsPerBeat => coinsPerBeat;
@@ -57,7 +59,7 @@ namespace Draho.Core
             }
             cat = FindAnyObjectByType<CatMotor>();
             TotalCollectables = FindObjectsByType<Collectable>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length;
-            Debug.Log($"SAVE loaded: beat {data.beat}, coins {data.coins}, feathers {data.collected.Count}/{TotalCollectables}");
+            Debug.Log($"SAVE loaded: beat {data.beat}, coins {data.coins}, feathers {CollectedCount}/{TotalCollectables}, naps {NapCount}");
         }
 
         void Start()
@@ -120,8 +122,8 @@ namespace Draho.Core
         {
             if (IsCollected(id)) return;
             data.collected.Add(id);
-            AddCoins(coins, $"feather {id}");
-            Debug.Log($"COLLECT {id}: {data.collected.Count}/{TotalCollectables}");
+            AddCoins(coins, id.StartsWith("nap_") ? $"nap spot {id}" : $"feather {id}");
+            Debug.Log($"COLLECT {id}: feathers {CollectedCount}/{TotalCollectables}, naps {NapCount}");
             Save();
         }
 

@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot),
             };
             bool IsDynamic(Transform t)
             {
@@ -1269,6 +1269,38 @@ namespace Draho.EditorTools
                 wisps.Add(ps);
             }
             bed.AddComponent<Catnip>().Configure(wisps.ToArray());
+        }
+
+        /// <summary>
+        /// Twelve nap spots, the warmest places in every area (a side activity): sit in one to find it. Each spot drops
+        /// onto whatever is under it at run time (a rug, a table top, a roof).
+        /// </summary>
+        static void BuildNapSpots()
+        {
+            var spots = new (string id, string title, Vector3 pos)[]
+            {
+                ("nap_rug", "the red rug in the living room", new Vector3(2.2f, 0.5f, 2.6f)),
+                ("nap_cattree", "your own basket on the cat tree", new Vector3(4.1f, 1.2f, 4.35f)),
+                ("nap_table", "the garden table, still warm from the sun", new Vector3(-1.4f, 1.2f, 2.6f)),
+                ("nap_maple", "the shade under the maple", new Vector3(-21.2f, 0.5f, 3.3f)),
+                ("nap_gravel", "the warm gravel by the geraniums", new Vector3(-14.6f, 7f, -3.8f)),
+                ("nap_high", "the highest roof of the block", new Vector3(-5.6f, 9.1f, -7.5f)),
+                ("nap_chair", "the old chair in the wild garden", new Vector3(-17f, 1.2f, 7.6f)),
+                ("nap_quay", "the sunny quay stones", new Vector3(-32.4f, 0.5f, -24f)),
+                ("nap_church", "the church step of the begijnhof", new Vector3(51.2f, 0.8f, -208.8f)),
+                ("nap_bakery", "the bakery doorstep, smelling of bread", new Vector3(-57.1f, 0.5f, -100.6f)),
+                ("nap_court", "the sunny corner of the court", new Vector3(5.1f, 0.5f, 4.6f)),
+                ("nap_roof", "the flat roof of your own house", new Vector3(2.4f, 9.3f, 2.6f)),
+            };
+            var mat = NoiseRingMaterial();
+            foreach (var (id, title, pos) in spots)
+            {
+                var go = new GameObject($"NapSpot_{id.Substring(4)}");
+                go.transform.SetParent(level, false);
+                go.transform.position = pos;
+                go.AddComponent<LineRenderer>().sharedMaterial = mat;
+                go.AddComponent<NapSpot>().Configure(id, title);
+            }
         }
 
         static void BuildFox()
@@ -2713,6 +2745,7 @@ namespace Draho.EditorTools
             BuildSunBeam(layout);
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
+            BuildNapSpots();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

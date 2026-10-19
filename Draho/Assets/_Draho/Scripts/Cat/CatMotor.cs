@@ -57,6 +57,8 @@ namespace Draho.Cat
         public float SpeedBoost { get; set; } = 1f;
         /// <summary>Jump height factor (well rested after all the nap spots): 1 is normal.</summary>
         public float JumpBoost { get; set; } = 1f;
+        /// <summary>Climbing speed factor (sharp claws after every scratching place): 1 is normal.</summary>
+        public float ClimbBoost { get; set; } = 1f;
         public bool IsRearing => mode == Mode.Rearing;
         public bool IsClimbing => mode == Mode.Climbing || mode == Mode.Mantling;
         /// <summary>Raised after <see cref="Teleport"/> (the camera jumps behind the cat).</summary>
@@ -239,7 +241,7 @@ namespace Draho.Cat
             if (input != null && input.HoldUp) move.y = Mathf.Max(move.y, 1f); // hold the middle: climb up
             holdUpBefore = input != null && input.HoldUp;
             float feet = transform.position.y;
-            ClimbVelocity = move.y * stats.climbSpeed;
+            ClimbVelocity = move.y * stats.climbSpeed * ClimbBoost;
 
             if (ClimbVelocity > 0f && feet >= climbable.TopY - stats.mantleReach)
             {
@@ -252,7 +254,7 @@ namespace Draho.Cat
             // Stay just in front of the climbed surface: never press under an overhang (ivy above the ground).
             float gap = wallDistance - controller.radius - 0.02f;
             float toWall = Mathf.Clamp(gap * 6f, -0.5f, 0.3f);
-            Vector3 motion = Vector3.up * ClimbVelocity + right * (move.x * stats.climbSpeed * 0.5f) - wallNormal * toWall;
+            Vector3 motion = Vector3.up * ClimbVelocity + right * (move.x * stats.climbSpeed * ClimbBoost * 0.5f) - wallNormal * toWall;
             CollisionFlags flags = controller.Move(motion * dt);
             if ((flags & CollisionFlags.Above) != 0 && Time.frameCount % 30 == 0)
                 Debug.Log($"CAT climb blocked above at {transform.position.y:0.00}");

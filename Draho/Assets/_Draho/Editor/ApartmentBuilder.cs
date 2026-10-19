@@ -2295,7 +2295,7 @@ namespace Draho.EditorTools
             // flowing water. Put on the material here, so the build keeps the normal-map shader variant.
             var riverMat = water.GetComponent<Renderer>().sharedMaterial;
             riverMat.SetTexture("_BumpMap", RippleNormalTexture());
-            riverMat.SetFloat("_BumpScale", 0.7f);
+            riverMat.SetFloat("_BumpScale", 0.4f); // 0.7 was busy, almost moire, in the distance
             riverMat.EnableKeyword("_NORMALMAP");
             riverMat.SetFloat("_Smoothness", 0.8f);
             EditorUtility.SetDirty(riverMat);

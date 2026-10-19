@@ -675,3 +675,11 @@ several on high roofs you can see from below before you can reach them. A found 
   sickle wings, bursts of fast flickering beats between glides.
 - Done: Swifts: 10 two-sided boomerang meshes on noise paths round the block at 24-34 m, a periodic low party at
   13-15 m, wing flicker in bursts; only by day and evening; drawn 1.5x life size for the far view.
+
+## Round 82 — river ripples
+
+- Cheap water in forward renderers: a scrolling tiling normal map on a glossy surface gives moving highlights of
+  the sun and lights; the same tiling as the colour texture keeps both in step. Strong normals at a distance turn
+  into noise and moire, so keep the strength modest (or fade it with distance).
+- Done: a 128 px ripple normal map made from the slopes of the ripple waves, imported as a normal map, put on the
+  river material in the builder (the build keeps the _NORMALMAP variant); it flows with the base texture.

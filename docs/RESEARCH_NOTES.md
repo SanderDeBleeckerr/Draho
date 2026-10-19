@@ -385,3 +385,23 @@ first squeak. The noise ring round the cat (round 20s) still shows how loud the 
 floor or the far wall, rebuilt from the real sun direction; additive, warm, bright at the glass and 15 % at the far
 end; 60 dust motes drift in the room while the sun shines in. In this block only the low morning sun comes in
 through that door, so the shaft belongs to the dawn of chapter 11.
+
+## Round 50 (2026-10-19): the camera in tight places
+
+**Question:** the camera only pulled in when a wall was behind the cat; in the light well and under roof edges it
+crowded the cat. What do good third-person cameras do?
+
+**Sources**
+- Unity Cinemachine Collider (2.x) and Deoccluder (3.x) docs,
+  https://docs.unity3d.com/Packages/com.unity.cinemachine@2.7/manual/CinemachineCollider.html and
+  https://docs.unity3d.com/Packages/com.unity.cinemachine@3.0/manual/CinemachineDeoccluder.html : strategies "pull
+  camera forward", "preserve camera height", "preserve camera distance" (find another viewpoint); "minimum occlusion
+  time" ignores brief occluders (Unity forum: https://discussions.unity.com/t/pull-camera-forward-and-player-occlusion/761274).
+- StraySpark, "Third person and deocclusion" (Godot), https://www.strayspark.studio/docs/godot-camera-system/third-person-and-deocclusion :
+  occlusion hysteresis, asymmetric damping, pitch-coupled distance.
+- John Nesky, "50 Camera Mistakes", GDC 2014, https://gdcvault.com/play/1020460/50-Camera : breaking line of sight is a
+  failure case.
+
+**What we do** (`OrbitCamera`): keep "pull forward" (instant in, slow out), and add "preserve distance": after 0.3 s
+blocked below 60 % of the wanted distance, probe 7 nearby viewpoints and turn towards the freest at 70°/s, preferring
+small changes. Off while climbing; the player's swipe always wins.

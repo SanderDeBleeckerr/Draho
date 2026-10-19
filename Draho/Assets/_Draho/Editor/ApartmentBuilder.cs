@@ -905,7 +905,9 @@ namespace Draho.EditorTools
             Panel("SideBack", new Vector3(0f, 0.08f, 0.22f), new Vector3(0.72f, 0.16f, 0.025f), shell);
             Panel("SideLeft", new Vector3(-0.35f, 0.08f, 0f), new Vector3(0.025f, 0.16f, 0.46f), shell);
             Panel("SideRight", new Vector3(0.35f, 0.08f, 0f), new Vector3(0.025f, 0.16f, 0.46f), shell);
-            Panel("Lid", new Vector3(0f, 0.2f, 0.36f), new Vector3(0.72f, 0.46f, 0.03f), shell, new Vector3(-25f, 0f, 0f), solid: false);
+            // The lid lies open, flat on the floor behind (a standing lid walled off the camera).
+            Panel("Lid", new Vector3(0f, 0.015f, 0.46f), new Vector3(0.72f, 0.03f, 0.46f), shell, solid: false);
+            Panel("LidLining", new Vector3(0f, 0.032f, 0.46f), new Vector3(0.66f, 0.005f, 0.4f), lining, solid: false);
             Panel("Jumper", new Vector3(0.18f, 0.05f, 0.05f), new Vector3(0.22f, 0.04f, 0.2f), Mat("Suitcase_Jumper", new Color(0.3f, 0.45f, 0.35f), 0.05f), new Vector3(0f, 12f, 0f), solid: false);
             suitcase.gameObject.SetActive(false);
         }

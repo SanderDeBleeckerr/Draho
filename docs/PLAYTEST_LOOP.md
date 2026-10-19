@@ -105,3 +105,4 @@ web for how good games solve each weak point before it changes anything. Finding
 | 60b-live | — | Verified live: soft green points scattered in the long grass, a flying one close to the camera with a halo; quiet, not busy | Night garden feels alive |
 | 61 | Cloud shadows: a tiling noise cookie on the sun, drifting with the wind | Live: no change in lawn brightness over 12 s; the cookie does not show (guess: the cookie shader variant is stripped; 61b puts the cookie on the sun in the scene) | — |
 | 61b/c | — | Live: the cookie renders (TestDark: lawn 77 → 35), but the blended tiling noise stayed near its middle, so almost no cloud passed the threshold (61d: thresholds from the noise percentiles, ~40% cloud, shade 0.5; cookie asset remade every build) | — |
+| 61d-live | — | Verified live: a soft cloud shadow drifts in over the left of the lawn within 12 s (brightness 81 → 67), the sunlit area by the cat stays bright | Day scenes move |

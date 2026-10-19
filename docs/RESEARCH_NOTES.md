@@ -525,3 +525,12 @@ several on high roofs you can see from below before you can reach them. A found 
   glow-worm, Lamprohiza splendidula, has flying males with a steady glow, low over the vegetation.
 - Done: GlowWorms in the wild garden: points on the ground (dim when the cat comes within 0.7 m, back slowly) and a
   few slow flying ones; one particle system, positions and colours set by hand; only at night.
+
+## Round 61 — cloud shadows
+
+- Fake cloud shadows (Mirza Beig's tutorial, Unity forums): a tiling noise texture as a cookie on the directional
+  light, scrolled through UniversalAdditionalLightData.lightCookieOffset; scale with the cookie size, not the
+  UVs; the texture must wrap (Repeat).
+- Lessons: blending four shifted noise copies (to make it tile) pulls the values to the middle, so take the
+  cloud thresholds from the percentiles of the noise; the builder puts the cookie on the sun in the scene.
+- Done: a 128 px cookie over 60 m, about 40% cloud at half shade, drifting about 1 m/s; off at night.

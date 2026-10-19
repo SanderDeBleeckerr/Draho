@@ -55,6 +55,8 @@ namespace Draho.Story
         Pigeon[] pigeons;
         Pigeon gull;
         StoryItem croissant, breakfast;
+        Transform suitcase;
+        float suitcaseTime;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
         static Vector3? P(float x, float y, float z) => new Vector3(x, y, z);
@@ -166,6 +168,7 @@ namespace Draho.Story
             var allItems = FindObjectsByType<StoryItem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             croissant = Array.Find(allItems, i => i.name == "Croissant");
             breakfast = Array.Find(allItems, i => i.name == "Breakfast");
+            suitcase = Array.Find(FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None), t => t.name == "Suitcase");
             bakeryMouse = Array.Find(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None), m => m.name == "BakeryMouse");
             maple = Array.Find(FindObjectsByType<Climbable>(FindObjectsSortMode.None), c => c.name == "maple");
             if (mouse != null) mouse.gameObject.SetActive(false);
@@ -581,7 +584,22 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Purrrr. They smell of trains and coffee. The sun climbs over the roofs, and something rattles in the kitchen: the food box!",
+                    Story = "Purrrr. They smell of trains and coffee. One of them drops a suitcase on the living-room floor and opens it. A box! With a jumper in it!",
+                    Goal = "If it fits, I sits: get into the open suitcase in the sunny living room and sit down.",
+                    Begin = () => { if (suitcase != null) suitcase.gameObject.SetActive(true); suitcaseTime = 0f; },
+                    Target = () => suitcase != null && suitcase.gameObject.activeSelf ? suitcase.position + Vector3.up * 0.3f : (Vector3?)null,
+                    Done = () =>
+                    {
+                        if (suitcase == null) return true;
+                        Vector3 local = suitcase.InverseTransformPoint(cat.transform.position);
+                        bool inside = Mathf.Abs(local.x) < 0.33f && Mathf.Abs(local.z) < 0.2f && local.y < 0.35f;
+                        suitcaseTime = inside && cat.Speed < 0.05f ? suitcaseTime + Time.deltaTime : 0f;
+                        return suitcaseTime > 2f;
+                    },
+                },
+                new Beat
+                {
+                    Story = "It fits. You sit. \"Drahomil! That's my clean jumper!\" They laugh. Then something rattles in the kitchen: the food box!",
                     Goal = "Breakfast! Go to your bowl between the counter and the island.",
                     Begin = () => { if (breakfast != null) breakfast.gameObject.SetActive(true); }, // the golden morning light stays: a patch of sun for the ending
                     Target = () => breakfast != null && breakfast.gameObject.activeSelf ? breakfast.transform.position : (Vector3?)null,

@@ -881,6 +881,33 @@ namespace Draho.EditorTools
             food.GetComponent<MeshFilter>().sharedMesh = LowSphere();
             bowl.AddComponent<StoryItem>().Configure("Breakfast! Crunch, crunch, purr.", 0.5f);
             bowl.SetActive(false);
+
+            // The humans' suitcase, open on the living-room floor in the morning sun (hidden until they unpack).
+            // Low walls with colliders: the cat steps or hops in. +X is the long side.
+            var suitcase = new GameObject("Suitcase").transform;
+            suitcase.SetParent(level, false);
+            suitcase.SetPositionAndRotation(new Vector3(1.4f, 0f, 1.3f), Quaternion.Euler(0f, 20f, 0f));
+            var shell = Mat("Suitcase_Shell", new Color(0.55f, 0.12f, 0.1f), 0.5f);
+            var lining = Mat("Suitcase_Lining", new Color(0.82f, 0.76f, 0.62f), 0.1f);
+            void Panel(string name, Vector3 local, Vector3 size, Material m, Vector3 euler = default, bool solid = true)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = name;
+                if (!solid) Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(suitcase, false);
+                go.transform.localPosition = local;
+                go.transform.localEulerAngles = euler;
+                go.transform.localScale = size;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+            }
+            Panel("Bottom", new Vector3(0f, 0.015f, 0f), new Vector3(0.72f, 0.03f, 0.46f), lining);
+            Panel("SideFront", new Vector3(0f, 0.08f, -0.22f), new Vector3(0.72f, 0.16f, 0.025f), shell);
+            Panel("SideBack", new Vector3(0f, 0.08f, 0.22f), new Vector3(0.72f, 0.16f, 0.025f), shell);
+            Panel("SideLeft", new Vector3(-0.35f, 0.08f, 0f), new Vector3(0.025f, 0.16f, 0.46f), shell);
+            Panel("SideRight", new Vector3(0.35f, 0.08f, 0f), new Vector3(0.025f, 0.16f, 0.46f), shell);
+            Panel("Lid", new Vector3(0f, 0.2f, 0.36f), new Vector3(0.72f, 0.46f, 0.03f), shell, new Vector3(-25f, 0f, 0f), solid: false);
+            Panel("Jumper", new Vector3(0.18f, 0.05f, 0.05f), new Vector3(0.22f, 0.04f, 0.2f), Mat("Suitcase_Jumper", new Color(0.3f, 0.45f, 0.35f), 0.05f), new Vector3(0f, 12f, 0f), solid: false);
+            suitcase.gameObject.SetActive(false);
         }
 
         /// <summary>

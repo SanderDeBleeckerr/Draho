@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -192,7 +192,7 @@ const steps = {
     ['04_sweep_more', 'wait', '4'],
     ['05_back', 'wait', '5'],
   ],
-  // Start with ?beat=54&at=5.0,4.0,90 : the epilogue in the court, facing the bottle cap; walk into it (picked up in
+  // Start with ?beat=55&at=5.0,4.0,90 : the epilogue in the court, facing the bottle cap; walk into it (picked up in
   // the mouth), then jump to the front door: the humans react, Gifts 1/6.
   gifts: [
     ['02_cap', 'wait', '2'],
@@ -216,7 +216,7 @@ const steps = {
     ['04_walk', 'move', '0,1,0,2.5'],
     ['05_after', 'wait', '1'],
   ],
-  // Start with ?beat=53&at=3.4,3.4,60 : THE END; after 14 s the free-roam epilogue (day, the board works again).
+  // Start with ?beat=54&at=3.4,3.4,60 : THE END; after 14 s the free-roam epilogue (day, the board works again).
   epilogue: [
     ['02_the_end', 'wait', '3'],
     ['03_epilogue', 'wait', '14'],
@@ -365,7 +365,14 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=52&at=2.2,2.4,270 : breakfast time at dawn, in the living room facing the sliding door: the
+  // Start with ?beat=52&at=2.3,1.6,250 : the open suitcase in the living room; walk to it, then sit in it (2 s).
+  suitcase: [
+    ['02_suitcase', 'wait', '2'],
+    ['03_hop_in', 'movejump', '0,1,0,1.0,0.35'],
+    ['04_in', 'call', 'StoryDirector.TestTeleport:1.4,1.3,200,0.1'],
+    ['05_sits', 'wait', '4'],
+  ],
+  // Start with ?beat=53&at=2.2,2.4,270 : breakfast time at dawn, in the living room facing the sliding door: the
   // morning sun shines in (a shaft of light, dust motes). Turn round to see it from the side.
   sunbeam: [
     ['02_look', 'wait', '2'],

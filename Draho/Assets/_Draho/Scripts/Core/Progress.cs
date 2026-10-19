@@ -40,8 +40,9 @@ namespace Draho.Core
         public event Action Changed;
         public int Coins => data.coins;
         /// <summary>Feathers found (the nap spots "nap_..." and the gifts "gift_..." are counted apart).</summary>
-        public int CollectedCount => data.collected.FindAll(c => !c.StartsWith("nap_") && !c.StartsWith("gift_") && !c.StartsWith("view_")).Count;
+        public int CollectedCount => data.collected.FindAll(c => !c.StartsWith("nap_") && !c.StartsWith("gift_") && !c.StartsWith("view_") && !c.StartsWith("scratch_")).Count;
         public int NapCount => data.collected.FindAll(c => c.StartsWith("nap_")).Count;
+        public int ScratchCount => data.collected.FindAll(c => c.StartsWith("scratch_")).Count;
         public int ViewCount => data.collected.FindAll(c => c.StartsWith("view_")).Count;
         public int GiftCount => data.collected.FindAll(c => c.StartsWith("gift_")).Count;
         public int TotalCollectables { get; private set; }
@@ -124,7 +125,7 @@ namespace Draho.Core
         {
             if (IsCollected(id)) return;
             data.collected.Add(id);
-            AddCoins(coins, id.StartsWith("nap_") ? $"nap spot {id}" : id.StartsWith("gift_") ? $"gift {id}" : id.StartsWith("view_") ? $"viewpoint {id}" : $"feather {id}");
+            AddCoins(coins, id.StartsWith("nap_") ? $"nap spot {id}" : id.StartsWith("gift_") ? $"gift {id}" : id.StartsWith("view_") ? $"viewpoint {id}" : id.StartsWith("scratch_") ? $"scratch {id}" : $"feather {id}");
             Debug.Log($"COLLECT {id}: feathers {CollectedCount}/{TotalCollectables}, naps {NapCount}");
             Save();
         }

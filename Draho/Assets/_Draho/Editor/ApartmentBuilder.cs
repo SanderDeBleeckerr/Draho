@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1183,6 +1183,32 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Eight places to scratch (ScratchSpot): upright, rough things that are not climbable.</summary>
+        static void BuildScratchSpots()
+        {
+            var spots = new (string id, string title, Vector3 pos)[]
+            {
+                ("scratch_sisal", "your own scratching post (the only one you are allowed)", new Vector3(4.1f, 0.5f, 4.0f)),
+                ("scratch_sofa", "the sofa. The humans will not be pleased", new Vector3(2.0f, 0.5f, 3.9f)),
+                ("scratch_table", "a leg of the garden table", new Vector3(-2.35f, 0.5f, 1.8f)),
+                ("scratch_fence", "the old garden fence", new Vector3(-10f, 0.5f, 4.7f)),
+                ("scratch_chair", "the old chair in the wild garden", new Vector3(-17.5f, 0.5f, 7.1f)),
+                ("scratch_lamp", "the iron lamp-post on the quay", new Vector3(-33.6f, 0.5f, 3.2f)),
+                ("scratch_bakery", "the bakery's wooden door frame", new Vector3(-57.6f, 0.5f, -100.9f)),
+                ("scratch_church", "the church door of the begijnhof", new Vector3(51.6f, 0.8f, -208.6f)),
+            };
+            var ringMat = NoiseRingMaterial();
+            var marks = Mat("Claw_Marks", new Color(0.12f, 0.09f, 0.07f), 0.05f);
+            foreach (var (id, title, pos) in spots)
+            {
+                var go = new GameObject($"Scratch_{id.Substring(8)}");
+                go.transform.SetParent(level, false);
+                go.transform.position = pos;
+                go.AddComponent<LineRenderer>().sharedMaterial = ringMat;
+                go.AddComponent<ScratchSpot>().Configure(id, title, marks);
+            }
         }
 
         /// <summary>Morning mist over the gardens: big faint billboard puffs (MorningMist), prewarmed.</summary>
@@ -3014,6 +3040,7 @@ namespace Draho.EditorTools
             BuildShootingStars();
             BuildLightningBolt();
             BuildMorningMist(layout);
+            BuildScratchSpots();
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

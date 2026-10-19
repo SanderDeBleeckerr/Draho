@@ -128,3 +128,4 @@ web for how good games solve each weak point before it changes anything. Finding
 | 70c-live | — | Verified live: "claw marks at 0.40 m" (the nearest upright surface: the table leg) | — |
 | 72 | Day-night cycle in the epilogue (day 8 min, evening 2, night 5, dawn 1.5) with a line at each change | Verified live: evening, then night on the lawn; a shooting star and the wish line at once; the Gifts counter shows | Night content returns in free roam |
 | 73 | Story panel fades after reading time (≥8 s, 0.33 s per word) and comes back when the cat stands still 2.5 s or a new beat starts | Verified live: gone while walking (clear view, the target marker and counters stay), back when the cat sits | The view is free |
+| 74 | Rain splashes in the storm (raycasts round the camera, a crown of drops on surfaces facing up) | Live by log: 14 splash drops alive in the storm; too small to see at 2-4 m in the screenshot (74b: 2.5-5.5 cm, 5 drops a splash, 110 splashes/s) | — |

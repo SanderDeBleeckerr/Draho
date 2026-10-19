@@ -1200,7 +1200,7 @@ namespace Draho.EditorTools
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = new ParticleSystem.MinMaxCurve(0.12f, 0.22f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.4f, 0.9f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.012f, 0.03f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.055f);
             main.startColor = new Color(0.75f, 0.82f, 0.95f, 0.7f);
             main.gravityModifier = 1.5f;
             main.maxParticles = 400;

@@ -629,3 +629,11 @@ several on high roofs you can see from below before you can reach them. A found 
   keep the view free while the player moves; the marker on screen carries the direction meanwhile.
 - Done: StoryHud shows a new beat for max(8 s, 0.33 s per word), then fades; it fades back in when the cat stands
   still for 2.5 s. The target marker and the counters stay.
+
+## Round 74 — rain splashes
+
+- Games fake rain impacts with short splash particles near the viewer, placed by raycasts (or a depth-map lookup)
+  instead of colliding every drop; a drop on a hard surface or water throws up a small crown and droplets for
+  about a tenth of a second.
+- Done: RainSplashes casts rays down from random points round the camera (110 per second in the storm), skips
+  walls and steep slopes, and emits a 0.1-0.2 s crown of five small drops at each hit.

@@ -12,7 +12,7 @@ namespace Draho.World
     public class RainSplashes : MonoBehaviour
     {
         [SerializeField] float radius = 4f;
-        [SerializeField] float perSecond = 70f;
+        [SerializeField] float perSecond = 110f;
 
         ParticleSystem system;
         Transform cam;
@@ -39,7 +39,7 @@ namespace Draho.World
                 if (!Physics.Raycast(top, Vector3.down, out RaycastHit hit, 20f, ~(1 << 2), QueryTriggerInteraction.Ignore)) continue;
                 if (hit.normal.y < 0.5f) continue; // walls and steep slate: the drops run off
                 var e = new ParticleSystem.EmitParams { position = hit.point + Vector3.up * 0.01f, applyShapeToPosition = true };
-                system.Emit(e, 3);
+                system.Emit(e, 5);
             }
         }
 

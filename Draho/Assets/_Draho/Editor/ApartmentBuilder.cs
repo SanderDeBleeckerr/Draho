@@ -2291,6 +2291,14 @@ namespace Draho.EditorTools
             var water = Box("River", new Vector3((w.x0 + w.x1) / 2, w.top - 0.05f, (w.z0 + w.z1) / 2),
                 new Vector3(w.x1 - w.x0, 0.1f, w.z1 - w.z0),
                 Mat("Apt_River", Hex(w.color), 0.62f, RippleTexture(), new Vector2((w.x1 - w.x0) / 4f, (w.z1 - w.z0) / 4f)), collider: false);
+            // A ripple normal map from the same waves as the ripple texture: the sun and the lamps sparkle on the
+            // flowing water. Put on the material here, so the build keeps the normal-map shader variant.
+            var riverMat = water.GetComponent<Renderer>().sharedMaterial;
+            riverMat.SetTexture("_BumpMap", RippleNormalTexture());
+            riverMat.SetFloat("_BumpScale", 0.7f);
+            riverMat.EnableKeyword("_NORMALMAP");
+            riverMat.SetFloat("_Smoothness", 0.8f);
+            EditorUtility.SetDirty(riverMat);
             water.AddComponent<WaterRipples>();
             water.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
             var respawn = water.AddComponent<WaterRespawn>();
@@ -3809,6 +3817,31 @@ namespace Draho.EditorTools
             float t = 0.75f + 0.35f * r;
             return new Color(t, t, t);
         });
+
+        /// <summary>The slope of the ripple waves as a tangent-space normal map (imported as a normal map).</summary>
+        static Texture2D RippleNormalTexture()
+        {
+            float Height(float x, float y, int size)
+            {
+                float u = x * 2f * Mathf.PI / size, v = y * 2f * Mathf.PI / size;
+                return 0.25f * Mathf.Sin(v * 3f + Mathf.Sin(u * 2f) * 1.5f) + 0.15f * Mathf.Sin(u * 5f + v * 7f) + 0.1f * Mathf.Sin(v * 11f - u * 3f);
+            }
+            var tex = MakeTexture("RippleNormal.png", 128, (x, y, size) =>
+            {
+                float dx = (Height(x + 1, y, size) - Height(x - 1, y, size)) * 6f;
+                float dy = (Height(x, y + 1, size) - Height(x, y - 1, size)) * 6f;
+                var n = new Vector3(-dx, -dy, 1f).normalized;
+                return new Color(n.x * 0.5f + 0.5f, n.y * 0.5f + 0.5f, n.z * 0.5f + 0.5f);
+            });
+            string path = AssetDatabase.GetAssetPath(tex);
+            if (AssetImporter.GetAtPath(path) is TextureImporter importer && importer.textureType != TextureImporterType.NormalMap)
+            {
+                importer.textureType = TextureImporterType.NormalMap;
+                importer.SaveAndReimport();
+                tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            }
+            return tex;
+        }
 
         static Texture2D GrassTexture() => MakeTexture("Grass.png", 256, (x, y, size) =>
         {

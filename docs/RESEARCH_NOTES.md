@@ -615,3 +615,10 @@ several on high roofs you can see from below before you can reach them. A found 
 - Done: SniffSense on the cat: crouch still for 1.5 s (6 s cooldown) and a line names the nearest unfound thing
   of any kind with distance and a camera-relative direction ("ahead to the left, up high"); a trail of faint scent
   puffs drifts that way.
+
+## Round 72 — a day in the epilogue
+
+- Open-world games compress a day into tens of minutes (often 20-50) and keep most of it light; night is a change
+  of mood and of what is out and about, not a long dark stretch.
+- Done: DayCycle runs only in the epilogue: day 8 min, evening 2, night 5, dawn 1.5 (SkyMood blends of 20-40 s),
+  so the moths, glow-worms, lamp cones, shooting stars and eyeshine come back after the story.

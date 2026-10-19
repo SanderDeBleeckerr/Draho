@@ -471,3 +471,20 @@ wobbles a little and the light flickers. Additive, warm, only while the lamp is 
 **What we do:** a Sit clip (the body 43° nose-up about the hips and sunk 11.5 cm, straight front legs with flat paws
 under the shoulders, folded hind legs, the tail along the floor and round the paws, breathing, a slow look round, an
 ear twitch). The cat sits down after 4 s standing still and stands up at any move (Animator `IdleTime`).
+
+## Round 55 (2026-10-19): nap spots (a collectible that uses the sit)
+
+**Question:** what makes a collectible worth finding?
+
+**Sources**
+- Game Wisdom, "The craft of collectible design in videogames", https://game-wisdom.com/critical/collectible-design-videogames :
+  the hunt needs a reason (extrinsic motivation); rewards must keep their value (money loses value late in a game).
+- Game Developer, "How to make catchy collectibles", https://www.gamedeveloper.com/design/how-to-make-catchy-collectibles
+- TechRaptor, "IMO: the case of collectibles", https://techraptor.net/content/imo-case-collectibles : knowing exactly
+  where everything is kills the search.
+- Collectathon design notes, https://summerengine.com/templates/platformer/collectathon-platformer/collectathon-platformer :
+  items you can see but not yet reach are a promise to come back.
+
+**What we do** (`NapSpot.cs`): the collectible uses the cat's own verb (sit). Spots are soft golden rings in every area,
+several on high roofs you can see from below before you can reach them. A found spot gives a few coins (a weak reward);
+**to do:** a lasting reward for finding all twelve (for example a new resting pose, or the cat's sun-warmed fur).

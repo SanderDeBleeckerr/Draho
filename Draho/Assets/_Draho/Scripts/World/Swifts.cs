@@ -91,7 +91,8 @@ namespace Draho.World
                 both[one.Length + i] = one[i]; both[one.Length + i + 1] = one[i + 2]; both[one.Length + i + 2] = one[i + 1];
             }
             m.triangles = both;
-            m.RecalculateNormals();
+            // Both sides share the vertices, so computed normals would cancel to zero: point them up (a silhouette).
+            m.normals = new[] { Vector3.up, Vector3.up, Vector3.up, Vector3.up, Vector3.up, Vector3.up };
             m.RecalculateBounds();
             return m;
         }

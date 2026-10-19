@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1183,6 +1183,54 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Morning mist over the gardens: big faint billboard puffs (MorningMist), prewarmed.</summary>
+        static void BuildMorningMist(Layout layout)
+        {
+            var puff = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat"); // made with the cat
+            if (puff == null) { Debug.LogWarning("Dust.mat not found: no morning mist"); return; }
+            var w = layout.wild_garden;
+            float x0 = w != null ? w.x0 : -26f, x1 = 0f, z0 = 0.3f, z1 = w != null ? w.z1 : 9.5f;
+            var go = new GameObject("MorningMist");
+            go.transform.SetParent(level, false);
+            go.transform.position = new Vector3((x0 + x1) / 2f, 0.6f, (z0 + z1) / 2f);
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.loop = true;
+            main.prewarm = true;
+            main.playOnAwake = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(16f, 24f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.08f);
+            main.startSize = new ParticleSystem.MinMaxCurve(2.5f, 4.5f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.startColor = new Color(0.92f, 0.94f, 0.97f, 1f);
+            main.maxParticles = 90;
+            var emission = ps.emission;
+            emission.rateOverTime = 4f;
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(x1 - x0, 0.8f, z1 - z0);
+            var vel = ps.velocityOverLifetime;
+            vel.enabled = true;
+            vel.space = ParticleSystemSimulationSpace.World;
+            vel.x = new ParticleSystem.MinMaxCurve(0.05f, 0.12f); // a faint drift down the gardens
+            vel.y = new ParticleSystem.MinMaxCurve(0f, 0f);
+            vel.z = new ParticleSystem.MinMaxCurve(0f, 0f);
+            var fade = ps.colorOverLifetime;
+            fade.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                      new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.3f), new GradientAlphaKey(1f, 0.7f), new GradientAlphaKey(0f, 1f) });
+            fade.color = g;
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            r.sharedMaterial = puff; // soft round puffs, alpha blend
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            r.maxParticleSize = 3f;
+            go.AddComponent<MorningMist>();
         }
 
         /// <summary>The visible bolt of each lightning flash in the storm (LightningBolt, the Draho/Bolt shader).</summary>
@@ -2965,6 +3013,7 @@ namespace Draho.EditorTools
             BuildViewpoints();
             BuildShootingStars();
             BuildLightningBolt();
+            BuildMorningMist(layout);
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

@@ -39,9 +39,10 @@ namespace Draho.Core
 
         public event Action Changed;
         public int Coins => data.coins;
-        /// <summary>Feathers found (the nap spots, ids "nap_...", are counted apart).</summary>
-        public int CollectedCount => data.collected.FindAll(c => !c.StartsWith("nap_")).Count;
+        /// <summary>Feathers found (the nap spots "nap_..." and the gifts "gift_..." are counted apart).</summary>
+        public int CollectedCount => data.collected.FindAll(c => !c.StartsWith("nap_") && !c.StartsWith("gift_")).Count;
         public int NapCount => data.collected.FindAll(c => c.StartsWith("nap_")).Count;
+        public int GiftCount => data.collected.FindAll(c => c.StartsWith("gift_")).Count;
         public int TotalCollectables { get; private set; }
         public int SavedBeat => data.beat;
         public int CoinsPerBeat => coinsPerBeat;
@@ -122,7 +123,7 @@ namespace Draho.Core
         {
             if (IsCollected(id)) return;
             data.collected.Add(id);
-            AddCoins(coins, id.StartsWith("nap_") ? $"nap spot {id}" : $"feather {id}");
+            AddCoins(coins, id.StartsWith("nap_") ? $"nap spot {id}" : id.StartsWith("gift_") ? $"gift {id}" : $"feather {id}");
             Debug.Log($"COLLECT {id}: feathers {CollectedCount}/{TotalCollectables}, naps {NapCount}");
             Save();
         }

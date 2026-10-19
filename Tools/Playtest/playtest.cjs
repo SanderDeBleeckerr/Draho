@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -176,6 +176,15 @@ const steps = {
     ['03_sit_on_it', 'wait', '6'],
     ['04_table', 'call', 'StoryDirector.TestTeleport:-1.4,2.6,90,0.8'],
     ['05_sit_table', 'wait', '6'],
+  ],
+  // Start with ?beat=54&at=5.0,4.0,90 : the epilogue in the court, facing the bottle cap; walk into it (picked up in
+  // the mouth), then jump to the front door: the humans react, Gifts 1/6.
+  gifts: [
+    ['02_cap', 'wait', '2'],
+    ['03_pick', 'move', '0,1,0,1'],
+    ['04_carry', 'wait', '1'],
+    ['05_door', 'call', 'StoryDirector.TestTeleport:6.3,1.0,90'],
+    ['06_given', 'wait', '2'],
   ],
   // Start with ?beat=6&at=-10,2.5,0 : the lawn by day; cloud shadows drift over the garden (look down a little).
   clouds: [

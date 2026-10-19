@@ -14,6 +14,9 @@ namespace Draho.Story
     /// </summary>
     public class StoryDirector : MonoBehaviour
     {
+        /// <summary>True in the free-roam epilogue after THE END (the gifts for the humans appear).</summary>
+        public static bool InEpilogue { get; private set; }
+
         [SerializeField] StoryHud hud;
         [SerializeField] Mouse mouse;
         [Tooltip("x below this value is outside, in the garden.")]
@@ -128,6 +131,7 @@ namespace Draho.Story
 
         void Start()
         {
+            InEpilogue = false;
             cat = FindAnyObjectByType<CatMotor>();
             door = FindAnyObjectByType<SlidingDoor>();
             birds = FindObjectsByType<Bird>(FindObjectsSortMode.None);
@@ -593,10 +597,11 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "Epilogue: a new day. Your humans are home, the cat flap is open and the whole town is yours again.",
-                    Goal = "Free roam: find every feather and nap spot, fill the bounty board, or just sleep in the sun.",
+                    Goal = "Free roam: bring your humans a gift from every corner of town (6), find every feather and nap spot, fill the bounty board.",
                     Begin = () =>
                     {
                         humans?.SettleIn();
+                        InEpilogue = true;
                         SkyMood.Set(SkyMood.Mood.Day, 20f);
                         var p = Draho.Core.Progress.Instance;
                         if (p != null)

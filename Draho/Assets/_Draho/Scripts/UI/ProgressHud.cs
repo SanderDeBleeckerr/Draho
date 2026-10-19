@@ -67,7 +67,7 @@ namespace Draho.UI
             if (p != null && counters != null && p.Coins != shownCoins)
             {
                 shownCoins = p.Coins;
-                counters.text = $"Coins {p.Coins}     Feathers {p.CollectedCount}/{p.TotalCollectables}     Naps {p.NapCount}{(p.NapCount >= 12 ? " - well rested" : "")}";
+                counters.text = $"Coins {p.Coins}     Feathers {p.CollectedCount}/{p.TotalCollectables}     Naps {p.NapCount}{(p.NapCount >= 12 ? " - well rested" : "")}{(Draho.Story.StoryDirector.InEpilogue ? $"     Gifts {p.GiftCount}/6" : "")}";
             }
             bool atBoard = boardSpot != null && cat != null
                 && Vector3.Distance(new Vector3(cat.position.x, 0f, cat.position.z), new Vector3(boardSpot.position.x, 0f, boardSpot.position.z)) < 1.6f

@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1154,6 +1154,68 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Six gifts for the humans, one in each area, shown only in the epilogue (Gift).</summary>
+        static void BuildGifts()
+        {
+            var red = Mat("Float_Red", new Color(0.9f, 0.15f, 0.1f), 0.4f);
+            var white = Mat("Feather_White", new Color(0.95f, 0.94f, 0.9f), 0.3f);
+            var crust = Mat("Croissant", new Color(0.8f, 0.52f, 0.2f), 0.35f);
+            var gold = Mat("Apt_Gold", new Color(0.85f, 0.65f, 0.2f), 0.7f);
+            var sock = Mat("Gift_Sock", new Color(0.75f, 0.2f, 0.35f), 0.1f);
+            var ribbon = Mat("Gift_Ribbon", new Color(0.2f, 0.35f, 0.8f), 0.5f);
+            void Piece(Transform parent, PrimitiveType type, Vector3 pos, Vector3 euler, Vector3 scale, Material m)
+            {
+                var go = GameObject.CreatePrimitive(type);
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = pos;
+                go.transform.localEulerAngles = euler;
+                go.transform.localScale = scale;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                go.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            }
+            var gifts = new (string id, string title, string reaction, Vector3 pos)[]
+            {
+                ("gift_sock", "an odd sock from the wild garden", "\"Wait, that's not even our sock!\"", new Vector3(-16.4f, 1.2f, 7.4f)),
+                ("gift_float", "a red fishing float from the quay", "\"The fisherman will be looking for this...\"", new Vector3(-31.8f, 0.6f, -23.6f)),
+                ("gift_crust", "a croissant crust from the bakery", "\"Breakfast in bed? How kind.\"", new Vector3(-56.4f, 0.6f, -101.4f)),
+                ("gift_cap", "a shiny bottle cap from the court", "\"Ooh, shiny. Thank you, Drahomil.\"", new Vector3(5.6f, 0.6f, 4.0f)),
+                ("gift_ribbon", "a blue ribbon from the begijnhof", "\"From the begijnhof? You went all that way?\"", new Vector3(50.4f, 0.9f, -208.2f)),
+                ("gift_gullfeather", "a gull feather from the highest roof", "\"You were on the ROOF?\"", new Vector3(-5.0f, 9.2f, -7.2f)),
+            };
+            foreach (var (id, title, reaction, pos) in gifts)
+            {
+                var root = new GameObject($"Gift_{id.Substring(5)}").transform;
+                root.SetParent(level, false);
+                root.position = pos;
+                switch (id)
+                {
+                    case "gift_sock":
+                        Piece(root, PrimitiveType.Cube, new Vector3(0f, 0.015f, 0f), Vector3.zero, new Vector3(0.05f, 0.025f, 0.14f), sock);
+                        Piece(root, PrimitiveType.Cube, new Vector3(0f, 0.015f, 0.08f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.025f, 0.05f), white);
+                        break;
+                    case "gift_float":
+                        Piece(root, PrimitiveType.Sphere, new Vector3(0f, 0.03f, 0f), Vector3.zero, Vector3.one * 0.05f, red);
+                        Piece(root, PrimitiveType.Cylinder, new Vector3(0f, 0.03f, 0f), new Vector3(90f, 0f, 0f), new Vector3(0.008f, 0.05f, 0.008f), white);
+                        break;
+                    case "gift_crust":
+                        Piece(root, PrimitiveType.Capsule, new Vector3(0f, 0.02f, 0f), new Vector3(0f, 0f, 90f), new Vector3(0.035f, 0.05f, 0.035f), crust);
+                        break;
+                    case "gift_cap":
+                        Piece(root, PrimitiveType.Cylinder, new Vector3(0f, 0.006f, 0f), Vector3.zero, new Vector3(0.035f, 0.006f, 0.035f), gold);
+                        break;
+                    case "gift_ribbon":
+                        Piece(root, PrimitiveType.Cube, new Vector3(0f, 0.005f, 0f), new Vector3(0f, 20f, 0f), new Vector3(0.025f, 0.006f, 0.16f), ribbon);
+                        Piece(root, PrimitiveType.Cube, new Vector3(0.02f, 0.008f, 0.03f), new Vector3(0f, -35f, 0f), new Vector3(0.025f, 0.006f, 0.12f), ribbon);
+                        break;
+                    default:
+                        Piece(root, PrimitiveType.Cube, new Vector3(0f, 0.005f, 0f), Vector3.zero, new Vector3(0.035f, 0.004f, 0.2f), white);
+                        break;
+                }
+                root.gameObject.AddComponent<Gift>().Configure(id, title, reaction);
+            }
         }
 
         /// <summary>
@@ -2807,6 +2869,7 @@ namespace Draho.EditorTools
             BuildSunBeam(layout);
             BuildGlowWorms(layout.wild_garden);
             BuildCloudShadows();
+            BuildGifts();
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

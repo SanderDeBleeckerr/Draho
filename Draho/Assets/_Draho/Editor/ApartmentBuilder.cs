@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1154,6 +1154,26 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Shooting stars on clear nights (ShootingStars, the Draho/Meteor shader).</summary>
+        static void BuildShootingStars()
+        {
+            var shader = Shader.Find("Draho/Meteor");
+            if (shader == null) { Debug.LogWarning("Draho/Meteor not found: no shooting stars"); return; }
+            string path = $"{PlaygroundBuilder.MaterialDir}/Meteor.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
+            m.shader = shader;
+            EditorUtility.SetDirty(m);
+            var go = new GameObject("ShootingStars");
+            go.transform.SetParent(level, false);
+            go.AddComponent<MeshFilter>();
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = m;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            go.AddComponent<ShootingStars>();
         }
 
         /// <summary>Five viewpoints on the high roofs: a faint blue ring; stand still in it for a slow camera sweep.</summary>
@@ -2893,6 +2913,7 @@ namespace Draho.EditorTools
             BuildCloudShadows();
             BuildGifts();
             BuildViewpoints();
+            BuildShootingStars();
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

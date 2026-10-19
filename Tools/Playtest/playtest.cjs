@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -176,6 +176,13 @@ const steps = {
     ['03_sit_on_it', 'wait', '6'],
     ['04_table', 'call', 'StoryDirector.TestTeleport:-1.4,2.6,90,0.8'],
     ['05_sit_table', 'wait', '6'],
+  ],
+  // Start with ?beat=38&at=-8,2.5,180 : night on the lawn; a slow test shooting star in front of the camera.
+  meteor: [
+    ['02_look_up', 'call', 'Main Camera.TestView:-5,1.4'],
+    ['03_fire', 'call', 'ShootingStars.TestFire'],
+    ['04_streak', 'wait', '0.8'],
+    ['05_streak_more', 'wait', '0.8'],
   ],
   // Start with ?beat=6&at=14.4,4.6,180,12.4&fresh=1 : by day on the big roof's ridge viewpoint; stand still: the camera
   // pulls back and sweeps round the cat.

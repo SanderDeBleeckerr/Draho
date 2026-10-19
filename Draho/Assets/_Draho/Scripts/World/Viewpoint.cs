@@ -69,6 +69,7 @@ namespace Draho.World
             ring.startColor = ring.endColor = new Color(0.55f, 0.8f, 1f, alpha);
 
             Vector3 d = cat.transform.position - transform.position;
+            if (!found && new Vector2(d.x, d.z).sqrMagnitude < 2.25f && Mathf.Abs(d.y) < 1f) RingHints.Near("view"); // within 1.5 m
             bool inside = new Vector2(d.x, d.z).magnitude < radius && Mathf.Abs(d.y) < 0.6f;
             still = inside && cat.Speed < 0.05f && cat.IsGrounded ? still + Time.deltaTime : 0f;
             if (still < stillTime || cooldown > 0f) return;

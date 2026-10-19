@@ -64,6 +64,7 @@ namespace Draho.World
             ring.startColor = ring.endColor = new Color(0.85f, 0.65f, 0.4f, 0.45f + 0.15f * Mathf.Sin(phase * 1.4f));
 
             Vector3 d = cat.transform.position - transform.position;
+            if (!found && new Vector2(d.x, d.z).sqrMagnitude < 2.25f && Mathf.Abs(d.y) < 1f) RingHints.Near("scratch"); // within 1.5 m
             bool inside = new Vector2(d.x, d.z).magnitude < radius + 0.15f && Mathf.Abs(d.y) < 0.5f;
             rearing = inside && cat.IsRearing ? rearing + Time.deltaTime : 0f;
             if (rearing < 0.2f && !test) return; // short: rearing at something climbable turns into a climb after 0.25 s

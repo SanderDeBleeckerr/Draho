@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -135,7 +135,7 @@ const steps = {
     ['02_walk', 'move', '0,1,0,4'],
     ['03_welcome', 'wait', '2'],
   ],
-  // Start with ?beat=24&at=-30.5,-114.85,0 : inside the begijnhof, at the garden shed; climb it, jump onto the wall, out to the quay.
+  // Start with ?beat=25&at=-30.5,-114.85,0 : inside the begijnhof, at the garden shed; climb it, jump onto the wall, out to the quay.
   exit: [
     ['02_climb_shed', 'hold', '4.5'],
     ['03_on_shed', 'wait', '1'],
@@ -145,7 +145,7 @@ const steps = {
     ['07_drop_out', 'move', '0,1,0,1.5'],
     ['08_quay', 'wait', '1'],
   ],
-  // Start with ?beat=24&at=-33,-93,270 : on the quay at the footbridge; cross it, find the bakery, hunt its mouse.
+  // Start with ?beat=25&at=-33,-93,270 : on the quay at the footbridge; cross it, find the bakery, hunt its mouse.
   bakery: [
     ['02_cross', 'move', '0,1,1,11'],
     ['03_to_shop', 'move', '-1,0,0,9'],
@@ -162,6 +162,15 @@ const steps = {
     ['03_drop', 'move', '0,1,1,1.5'],
     ['04_off_shed', 'move', '0,1,1,1.5'],
     ['05_quay', 'wait', '1.5'],
+  ],
+  // Start with ?beat=24&at=52.6,-210.6,0 : at the grey cat's church step; follow the scent trail to the catnip (zoomies),
+  // then run a little to see the speed.
+  catnip: [
+    ['02_trail', 'wait', '2'],
+    ['03_to_bed', 'call', 'StoryDirector.TestTeleport:59.6,-216.4,135'],
+    ['04_sniff', 'move', '0,1,0,0.8'],
+    ['05_zoomies', 'move', '0,1,1,2.5'],
+    ['06_next', 'wait', '2'],
   ],
   // Start with ?beat=20&at=-34.78,-36,180 : on the quay; run along the narrow edge to the begijnhof wall.
   ledge: [
@@ -217,7 +226,7 @@ const steps = {
     ['07_duck', 'duck', ''],
     ['08_nap', 'wait', '7'],
   ],
-  // Start with ?beat=31 : performance stations (teleport, settle, log fps and render counters).
+  // Start with ?beat=32 : performance stations (teleport, settle, log fps and render counters).
   perf: [
     ['02_apartment', 'call', 'StoryDirector.TestTeleport:2,2.5,0'], ['02b', 'wait', '6'],
     ['03_garden', 'call', 'StoryDirector.TestTeleport:-3,2.5,270'], ['03b', 'wait', '6'],
@@ -234,7 +243,7 @@ const steps = {
     ['05_to_board', 'call', 'StoryDirector.TestTeleport:7.0,2.0,90'],
     ['06_board', 'wait', '2'],
   ],
-  // Start with ?beat=29&at=-4,7.1,90 : in the wild garden before the neighbour's window; jump in, sneak to the toy.
+  // Start with ?beat=30&at=-4,7.1,90 : in the wild garden before the neighbour's window; jump in, sneak to the toy.
   flat: [
     ['02_jump_in', 'movejump', '0,1,0,5,3.4'],
     ['03_inside', 'wait', '1'],
@@ -244,7 +253,7 @@ const steps = {
     ['07_got_it', 'wait', '2'],
     ['08_sneak_out', 'move', '0,-1,0,6'],
   ],
-  // Start with ?beat=32&at=3.8,4.05,90 : in the living room by the court door, facing the gap. Walk into the court,
+  // Start with ?beat=33&at=3.8,4.05,90 : in the living room by the court door, facing the gap. Walk into the court,
   // walk straight at the pigeons (they fly), sneak, then (test hook) touch one and climb the court pipe to the jingle ball.
   court: [
     ['02_squeeze_in', 'move', '0,1,0,2.5'],
@@ -263,14 +272,14 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=51&at=2.2,2.4,270 : breakfast time at dawn, in the living room facing the sliding door: the
+  // Start with ?beat=52&at=2.2,2.4,270 : breakfast time at dawn, in the living room facing the sliding door: the
   // morning sun shines in (a shaft of light, dust motes). Turn round to see it from the side.
   sunbeam: [
     ['02_look', 'wait', '2'],
     ['03_side', 'move', '0,-1,0,0.6'],
     ['04_settle', 'wait', '2'],
   ],
-  // Start with ?beat=30&at=-0.6,6.6,90 : inside the neighbour's flat by the window; walk onto the rubber duck: it
+  // Start with ?beat=31&at=-0.6,6.6,90 : inside the neighbour's flat by the window; walk onto the rubber duck: it
   // squeaks (ring, toast) and Hrozna wakes and chases the cat out.
   squeak: [
     ['02_walk_onto_duck', 'move', '0,1,0,2.2'],
@@ -304,7 +313,7 @@ const steps = {
     ['09_catch', 'call', 'Butterfly_Admiral.TestCatch'],
     ['10_next', 'wait', '3'],
   ],
-  // Start with ?beat=26&at=-54.5,-99,270 : on the far bank by the bakery; walk at the gull (it flees), then sneak in
+  // Start with ?beat=27&at=-54.5,-99,270 : on the far bank by the bakery; walk at the gull (it flees), then sneak in
   // from the side and touch it, eat the croissant it drops.
   gull: [
     ['02_walk_at_it', 'move', '0,1,0,2'],
@@ -316,13 +325,13 @@ const steps = {
     ['08_crumbs', 'call', 'StoryDirector.TestTeleport:-57.1,-99,270'],
     ['09_eaten', 'wait', '3'],
   ],
-  // Start with ?beat=37&at=-8,2.5,270 : night on the lawn; turn to face the camera: the eyes should glow (eyeshine).
+  // Start with ?beat=38&at=-8,2.5,270 : night on the lawn; turn to face the camera: the eyes should glow (eyeshine).
   eyes: [
     ['02_turn', 'move', '0,-1,0,0.5'],
     ['03_facing', 'wait', '0.2'],
     ['04_away', 'move', '0,1,0,0.8'],
   ],
-  // Start with ?beat=48&at=3.2,6.5,270,8.9 : on the flat roof by the hatch after the storm; slip in, dry off on the
+  // Start with ?beat=49&at=3.2,6.5,270,8.9 : on the flat roof by the hatch after the storm; slip in, dry off on the
   // cat tree, morning, greet the humans at the front door, the end.
   homecoming: [
     ['02_to_hatch', 'move', '0,1,0,1'],
@@ -336,7 +345,7 @@ const steps = {
     ['10_eat', 'move', '0,1,0,1.2'],
     ['11_end', 'wait', '4'],
   ],
-  // Start with ?beat=47&at=14.4,4.6,180,11.9 : on the ridge by the front chimney in the storm; walk north along the
+  // Start with ?beat=48&at=14.4,4.6,180,11.9 : on the ridge by the front chimney in the storm; walk north along the
   // ridge, standing through one gust and ducking through the next, then to the neighbour's chimney.
   storm: [
     ['02_rain', 'wait', '3'],
@@ -351,7 +360,7 @@ const steps = {
     ['11_chimney', 'call', 'StoryDirector.TestTeleport:14.4,11.9,0,11.9'],
     ['12_shelter', 'wait', '3'],
   ],
-  // Start with ?beat=44&at=7.3,4.15,90 : at the court drainpipe; climb to the roof, walk up the slate to the
+  // Start with ?beat=45&at=7.3,4.15,90 : at the court drainpipe; climb to the roof, walk up the slate to the
   // chimney on the ridge (a teleport at the end in case the walk misses it).
   highroof: [
     ['02_climb', 'hold', '5'],
@@ -364,7 +373,7 @@ const steps = {
     ['09_ridge', 'call', 'StoryDirector.TestTeleport:14.4,5.4,0,11.9'],
     ['10_view', 'wait', '3'],
   ],
-  // Start with ?beat=40&at=-24.9,6.3,270 : at the fox's den; through the broken fence to the river bank,
+  // Start with ?beat=41&at=-24.9,6.3,270 : at the fox's den; through the broken fence to the river bank,
   // up the ivy on the end shed, over its roof and down into the own garden, home to the lamp.
   home: [
     ['02_to_gap', 'move', '0,1,0,3'],
@@ -380,7 +389,7 @@ const steps = {
     ['11_to_lamp', 'call', 'StoryDirector.TestTeleport:-1.3,1.4,90'],
     ['12_home', 'wait', '3'],
   ],
-  // Start with ?beat=39&at=-2.6,7.4,270 : in the wild garden behind the fox's start; follow it west, sneaking
+  // Start with ?beat=40&at=-2.6,7.4,270 : in the wild garden behind the fox's start; follow it west, sneaking
   // first, then walking (it should stop and stare), then let it go to its den (test hook).
   fox: [
     ['02_fox_starts', 'wait', '2'],
@@ -394,7 +403,7 @@ const steps = {
     ['10_to_den', 'call', 'Fox.TestToDen'],
     ['11_den', 'wait', '5'],
   ],
-  // Start with ?beat=37&at=-0.9,2.0,180,0.8 : on the garden table at night, facing the lamp. Real jumps at
+  // Start with ?beat=38&at=-0.9,2.0,180,0.8 : on the garden table at night, facing the lamp. Real jumps at
   // diving moths first, then test catches so the beat can finish.
   moths: [
     ['02_night_lamp', 'wait', '2'],
@@ -430,13 +439,13 @@ const steps = {
     ['08_still', 'wait', '4'],
     ['09_stand', 'duck', ''],
   ],
-  // Start with ?beat=30&at=0,6.8,90 : inside the flat; run at the basket: Hrozna wakes and throws the cat out.
+  // Start with ?beat=31&at=0,6.8,90 : inside the flat; run at the basket: Hrozna wakes and throws the cat out.
   flatloud: [
     ['02_run', 'move', '0,1,1,3'],
     ['03_barking', 'wait', '3'],
     ['04_out', 'wait', '3'],
   ],
-  // Start with ?beat=28&at=-33.85,-9.5,90 : on the quay, facing the shed pipe; climb back up to the riverhouse roof.
+  // Start with ?beat=29&at=-33.85,-9.5,90 : on the quay, facing the shed pipe; climb back up to the riverhouse roof.
   wayback: [
     ['02_climb_shed', 'hold', '6.5'],
     ['03_on_shed', 'wait', '1'],

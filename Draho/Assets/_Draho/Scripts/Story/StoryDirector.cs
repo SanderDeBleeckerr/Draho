@@ -47,6 +47,7 @@ namespace Draho.Story
         Transform frontChimney, northChimney, roofHatch, catTree;
         Humans humans;
         Fisherman fisherman;
+        Catnip catnip;
         float greetTime;
         Pigeon[] pigeons;
         Pigeon gull;
@@ -154,6 +155,7 @@ namespace Draho.Story
             if (treeGo != null) catTree = treeGo.transform;
             humans = FindAnyObjectByType<Humans>();
             fisherman = FindAnyObjectByType<Fisherman>();
+            catnip = FindAnyObjectByType<Catnip>();
             var birdsOfStone = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
             pigeons = Array.FindAll(birdsOfStone, p => p.name.StartsWith("Pigeon_"));
             gull = Array.Find(birdsOfStone, p => p.name == "Gull");
@@ -348,7 +350,15 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "She blinks slowly: you may stay. Then she sniffs the air. Across the river: fresh bread!",
+                    Story = "She blinks slowly: you may stay. Then she lifts her nose towards the gardens behind the church. A green, wild smell drifts on the air...",
+                    Goal = "Follow the green scent trail to where it comes from.",
+                    Begin = () => catnip?.ShowTrail(true),
+                    Target = () => catnip != null ? catnip.transform.position : (Vector3?)null,
+                    Done = () => catnip == null || catnip.Sniffed,
+                },
+                new Beat
+                {
+                    Story = "CATNIP! You sniff, rub, roll and race round the lawn like a kitten. When the zoomies fade, the grey cat sniffs the air again. Across the river: fresh bread!",
                     Goal = "Leave over the wall (rain barrel, shed, wall), cross the footbridge and find the bakery.",
                     Target = () => InBegijnhof(cat.transform.position) ? P(-30.5f, 0f, -114.6f) : (bakery != null ? bakery.position : (Vector3?)null),
                     Done = () => bakery == null || Vector3.Distance(Flat(bakery.position), Flat(cat.transform.position)) < 5f,

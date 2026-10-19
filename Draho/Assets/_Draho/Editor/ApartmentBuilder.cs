@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip),
             };
             bool IsDynamic(Transform t)
             {
@@ -1172,6 +1172,76 @@ namespace Draho.EditorTools
             var dust = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat");
             if (dust != null) pr.sharedMaterial = dust;
             beam.AddComponent<SunBeam>().Configure(opening, 4.4f, ps);
+        }
+
+        /// <summary>
+        /// Chapter 5: a raised bed of catnip in the begijnhof herb garden behind the church, and a scent trail of faint
+        /// green wisps from the grey cat's step to it (shown by the story).
+        /// </summary>
+        static void BuildCatnip(Layout layout)
+        {
+            if (layout.begijnhof == null) return;
+            var bedPos = new Vector3(60.4f, 0f, -217.2f);
+            var wood = Mat("Bed_Wood", new Color(0.42f, 0.3f, 0.2f), 0.15f);
+            var leaf = Mat("Catnip_Leaf", new Color(0.45f, 0.62f, 0.38f), 0.2f);
+            var flower = Mat("Catnip_Flower", new Color(0.78f, 0.7f, 0.9f), 0.3f);
+            var bed = new GameObject("CatnipBed");
+            bed.transform.SetParent(level, false);
+            bed.transform.position = bedPos;
+            Box("BedFrame", bedPos + Vector3.up * 0.12f, new Vector3(1.2f, 0.24f, 0.7f), wood).transform.SetParent(bed.transform, true);
+            var rng = new System.Random(52);
+            for (int i = 0; i < 14; i++)
+            {
+                var p = new Vector3(-0.5f + (float)rng.NextDouble(), 0.3f, -0.27f + 0.54f * (float)rng.NextDouble());
+                foreach (var (m, dy, size) in new[] { (leaf, 0f, 0.16f), (flower, 0.1f, 0.05f) })
+                {
+                    var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.DestroyImmediate(ball.GetComponent<Collider>());
+                    ball.transform.SetParent(bed.transform, false);
+                    ball.transform.localPosition = p + Vector3.up * dy;
+                    ball.transform.localScale = Vector3.one * size * (0.8f + 0.4f * (float)rng.NextDouble());
+                    ball.GetComponent<Renderer>().sharedMaterial = m;
+                    ball.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                }
+            }
+            // The scent trail: a few soft green wisps rising along a curve from the church step to the bed.
+            var dust = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat");
+            var points = new[] { new Vector3(54.6f, 0f, -210.8f), new Vector3(56.6f, 0f, -212.2f), new Vector3(58.2f, 0f, -213.9f),
+                                 new Vector3(59.4f, 0f, -215.5f), new Vector3(60.1f, 0f, -216.6f) };
+            var wisps = new List<ParticleSystem>();
+            foreach (var point in points)
+            {
+                var go = new GameObject("ScentWisp");
+                go.transform.SetParent(bed.transform, true);
+                go.transform.position = point + Vector3.up * 0.15f;
+                var ps = go.AddComponent<ParticleSystem>();
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                var main = ps.main;
+                main.playOnAwake = false;
+                main.loop = true;
+                main.simulationSpace = ParticleSystemSimulationSpace.World;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(2f, 3f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0.08f, 0.18f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.25f);
+                main.startColor = new Color(0.62f, 0.95f, 0.52f, 0.35f);
+                main.maxParticles = 12;
+                var emission = ps.emission;
+                emission.rateOverTime = 3f;
+                var shape = ps.shape;
+                shape.shapeType = ParticleSystemShapeType.Sphere;
+                shape.radius = 0.25f;
+                var fade = ps.colorOverLifetime;
+                fade.enabled = true;
+                var g = new Gradient();
+                g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                          new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.3f), new GradientAlphaKey(0f, 1f) });
+                fade.color = g;
+                var pr = go.GetComponent<ParticleSystemRenderer>();
+                pr.shadowCastingMode = ShadowCastingMode.Off;
+                if (dust != null) pr.sharedMaterial = dust;
+                wisps.Add(ps);
+            }
+            bed.AddComponent<Catnip>().Configure(wisps.ToArray());
         }
 
         static void BuildFox()
@@ -2614,6 +2684,7 @@ namespace Draho.EditorTools
             BuildButterflies(layout);
             BuildFisherman(layout);
             BuildSunBeam(layout);
+            BuildCatnip(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

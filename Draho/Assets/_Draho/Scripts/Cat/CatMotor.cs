@@ -53,6 +53,8 @@ namespace Draho.Cat
         public bool IsCrouching { get; private set; }
         /// <summary>A storm gust (m/s, horizontal). A crouched cat feels only a little of it.</summary>
         public Vector3 Wind { get; set; }
+        /// <summary>A short burst of speed (catnip zoomies): 1 is normal.</summary>
+        public float SpeedBoost { get; set; } = 1f;
         public bool IsRearing => mode == Mode.Rearing;
         public bool IsClimbing => mode == Mode.Climbing || mode == Mode.Mantling;
         /// <summary>Raised after <see cref="Teleport"/> (the camera jumps behind the cat).</summary>
@@ -133,6 +135,7 @@ namespace Draho.Cat
             {
                 if (IsCrouching) targetSpeed = stats.crouchSpeed * wishMagnitude;
                 else targetSpeed = input.Run ? stats.runSpeed : stats.walkSpeed * wishMagnitude;
+                targetSpeed *= SpeedBoost;
                 Quaternion look = Quaternion.LookRotation(wish, Vector3.up);
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, look, stats.turnSpeed * dt);
             }

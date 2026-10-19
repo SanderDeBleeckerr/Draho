@@ -180,7 +180,7 @@ const steps = {
   // Start with ?beat=38&at=-8,2.5,180 : night on the lawn; a slow test shooting star in front of the camera.
   meteor: [
     ['02_look_up', 'call', 'Main Camera.TestView:-5,1.4'],
-    ['03_fire', 'call', 'ShootingStars.TestFire'],
+    ['03_fire', 'call', 'ShootingStars.TestBig'],
     ['04_streak', 'wait', '0.8'],
     ['05_streak_more', 'wait', '0.8'],
   ],

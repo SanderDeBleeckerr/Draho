@@ -49,7 +49,7 @@ namespace Draho.World
             if (t >= 0f)
             {
                 t += Time.deltaTime / duration;
-                float bright = Mathf.Sin(Mathf.Clamp01(t) * Mathf.PI) * 4f;
+                float bright = duration > 1000f ? 20f : Mathf.Sin(Mathf.Clamp01(t) * Mathf.PI) * 4f;
                 material.SetFloat(TId, Mathf.Min(t, 1f));
                 material.SetFloat(BrightId, bright);
                 if (t >= 1f) { t = -1f; view.enabled = false; }
@@ -83,6 +83,23 @@ namespace Draho.World
                 wished = true;
                 ProgressHud.Toast("A shooting star! Drahomil makes a wish. (Tuna. It is always tuna.)");
             }
+        }
+
+        /// <summary>Test hook: SendMessage('ShootingStars', 'TestBig'): a huge, bright streak that stays (render check).</summary>
+        public void TestBig()
+        {
+            TestFire();
+            duration = 1e6f;
+            material.SetFloat("_Width", 30f);
+            material.SetFloat(BrightId, 20f);
+            Invoke(nameof(Report), 0.5f);
+        }
+
+        void Report()
+        {
+            Debug.Log($"STATE meteor: enabled {view.enabled}, visible {view.isVisible}, layer {gameObject.layer}, active {gameObject.activeInHierarchy}, " +
+                      $"shader {material.shader.name} supported {material.shader.isSupported}, night {Shader.GetGlobalFloat("_DrahoNight"):0.00}, " +
+                      $"pos {transform.position}, bounds {view.bounds.size}, t {t:0.000}");
         }
 
         /// <summary>Test hook: SendMessage('ShootingStars', 'TestFire').</summary>

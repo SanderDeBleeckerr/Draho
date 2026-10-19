@@ -729,3 +729,10 @@ several on high roofs you can see from below before you can reach them. A found 
 - Lesson: Vector3.Angle(v, Vector3.zero) is 0, so "rebuild when the angle changed" never builds the first time.
 - Done: Rainbow builds two camera-relative bands round the sun's travel direction (Draho/Rainbow, additive,
   spectrum across the band), rebuilt when the sun moves, faded in at dawn.
+
+## Round 91 — rewards for full sets
+
+- As in round 56: a completed set should change the game (a power, a look) rather than give only a number; a
+  cosmetic that others would see (here, the humans' gift back) tells the story of the set.
+- Done: SetRewards: every scratching place → CatMotor.ClimbBoost 1.2 (sharp claws); every gift → a red collar
+  (a 12 cm flat ring on the Neck bone, sized in world space) with a small gold bell.

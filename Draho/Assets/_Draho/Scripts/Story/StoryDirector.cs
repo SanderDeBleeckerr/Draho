@@ -579,6 +579,7 @@ namespace Draho.Story
                         bool close = false;
                         foreach (Transform person in humans.transform)
                             if (Vector3.Distance(Flat(cat.transform.position), Flat(person.position)) < 0.55f) close = true;
+                        if (close && greetTime <= 0f) CatVoice.Meow(); // hello!
                         greetTime = close ? greetTime + Time.deltaTime : Mathf.Max(0f, greetTime - Time.deltaTime);
                         return greetTime > 2.5f;
                     },

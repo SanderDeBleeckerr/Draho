@@ -105,6 +105,7 @@ namespace Draho.World
             var p = Progress.Instance;
             p?.Collect(id, coins);
             int n = p != null ? p.GiftCount : 1;
+            CatVoice.Meow();
             ProgressHud.Toast($"You drop {title} at their feet. {reaction} ({n}/6)");
             Debug.Log($"STORY gift delivered: {id} ({n}/6)");
         }

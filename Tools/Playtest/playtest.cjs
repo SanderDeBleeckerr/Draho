@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -370,6 +370,12 @@ const steps = {
     ['02_look_down', 'call', 'Main Camera.TestView:35,1.4'],
     ['03_evening', 'call', 'SkyMood.TestMood:Evening'],
     ['04_slates', 'wait', '4'],
+  ],
+  // Start with ?beat=6&at=-8,2.5,180 : a test meow, then a jump down from the table for a landing thump (log only:
+  // the headless test cannot hear).
+  voice: [
+    ['02_meow', 'call', 'Drahomil.TestMeow'],
+    ['03_wait', 'wait', '1'],
   ],
   // Start with ?beat=6&at=-6,0.7,200 : close to the garden brick wall; by day, then evening light: brick relief.
   bricks: [

@@ -17,6 +17,7 @@ namespace Draho.Cat
         static readonly int RearId = Animator.StringToHash("Rear");
         static readonly int ClimbId = Animator.StringToHash("Climb");
         static readonly int ClimbSpeedId = Animator.StringToHash("ClimbSpeed");
+        static readonly int IdleTimeId = Animator.StringToHash("IdleTime");
 
         [SerializeField] CatMotor motor;
         [SerializeField] Animator animator;
@@ -31,6 +32,7 @@ namespace Draho.Cat
         float squash;          // > 0 squashed (landing), < 0 stretched (take-off)
         bool wasAirborne;
         float lowestFall;      // most negative vertical speed during this jump
+        float idle;            // seconds standing still (the cat sits down after a while)
 
         void Start() => baseScale = animator.transform.localScale;
 
@@ -45,6 +47,9 @@ namespace Draho.Cat
             animator.SetBool(ClimbId, motor.IsClimbing);
             // The Climb clip plays at the speed that matches the paws; negative plays it backwards (down).
             animator.SetFloat(ClimbSpeedId, motor.ClimbVelocity / motor.Stats.climbClipSpeed, 0.05f, Time.deltaTime);
+            bool still = motor.Speed < 0.05f && motor.IsGrounded && !motor.IsCrouching && !motor.IsRearing && !motor.IsClimbing;
+            idle = still ? idle + Time.deltaTime : 0f;
+            animator.SetFloat(IdleTimeId, idle);
             GameFeel();
         }
 

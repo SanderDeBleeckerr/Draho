@@ -259,6 +259,7 @@ namespace Draho.EditorTools
             controller.AddParameter("Rear", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Climb", AnimatorControllerParameterType.Bool);
             controller.AddParameter("ClimbSpeed", AnimatorControllerParameterType.Float);
+            controller.AddParameter("IdleTime", AnimatorControllerParameterType.Float);
 
             // Standing: Idle / Walk / Run on Speed. Walk and Run play faster so the paws match the speed.
             AnimatorState locomotion = controller.CreateBlendTreeInController("Locomotion", out BlendTree tree, 0);
@@ -325,6 +326,20 @@ namespace Draho.EditorTools
             toClimb.AddCondition(AnimatorConditionMode.If, 0f, "Climb");
             Link(climb, locomotion, 0.2f, (AnimatorConditionMode.IfNot, "Climb"), (AnimatorConditionMode.IfNot, "Airborne"));
             Link(climb, air, 0.1f, (AnimatorConditionMode.IfNot, "Climb"), (AnimatorConditionMode.If, "Airborne"));
+
+            // Standing still for a while: the cat sits down; any move and it stands up again.
+            AnimatorState sit = machine.AddState("Sit");
+            sit.motion = Clip("Sit");
+            var toSit = locomotion.AddTransition(sit);
+            toSit.hasExitTime = false;
+            toSit.duration = 0.6f;
+            toSit.AddCondition(AnimatorConditionMode.Greater, 4f, "IdleTime");
+            var standUp = sit.AddTransition(locomotion);
+            standUp.hasExitTime = false;
+            standUp.duration = 0.25f;
+            standUp.AddCondition(AnimatorConditionMode.Less, 0.1f, "IdleTime");
+            Link(sit, air, 0.1f, (AnimatorConditionMode.If, "Airborne"));
+            Link(sit, crouch, 0.2f, (AnimatorConditionMode.If, "Crouch"));
             return controller;
         }
 

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -169,6 +169,14 @@ const steps = {
     ['02_look', 'wait', '3'],
     ['03_turn', 'move', '-0.4,1,0,0.4'],
     ['04_settle', 'wait', '2'],
+  ],
+  // Start with ?beat=6&at=-8,2.5,180 : on the lawn by day; stand still: after 4 s the cat sits down; walk on.
+  sit: [
+    ['02_standing', 'wait', '2'],
+    ['03_sits', 'wait', '4'],
+    ['04_side', 'call', 'StoryDirector.TestTeleport:-8,2.5,90'],
+    ['05_sits_side', 'wait', '5.5'],
+    ['06_walks_on', 'move', '0,1,0,1'],
   ],
   // Start with ?beat=24&at=52.6,-210.6,0 : at the grey cat's church step; follow the scent trail to the catnip (zoomies),
   // then run a little to see the speed.

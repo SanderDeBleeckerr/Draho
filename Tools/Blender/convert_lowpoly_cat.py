@@ -487,6 +487,34 @@ def climb_pose(t, f):
         rot_world(pb[name], UP, 0.15 * math.sin(w - 0.6 * i))
 
 
+SIT_ANGLE, SIT_DROP = 0.75, 0.115  # body nose-up about the hips (43 degrees); the hips sink onto the ground
+
+
+def sit_pose(t, f):
+    """Sitting upright: front legs straight under the chest, hind legs folded, tail curled round the paws (round 54)."""
+    pb = arm.pose.bones
+    w = 2 * math.pi * t
+    drop = UP * -SIT_DROP
+    for owner, (e, base) in targets.items():
+        if owner.startswith("Shin"):
+            e.location = base + FWD * 0.03                        # hind paws a little forward, under the hips
+        else:                                                    # front paws on the floor, straight under the shoulders
+            side = owner.split(".")[1]
+            shoulder = turned(arm.matrix_world @ arm.data.bones[f"UpperArm.{side}"].head_local, SIT_ANGLE, HIP_PIVOT, drop)
+            e.location = Vector((base.x, shoulder.y + 0.01, base.z))
+        e.keyframe_insert("location", frame=f)
+    move_world(pb["Root"], drop)
+    rot_about(pb["Root"], SIDE, SIT_ANGLE, HIP_PIVOT + drop)
+    rot_world(pb["Neck"], SIDE, -0.35)                         # head back to level
+    rot_world(pb["Head"], UP, 0.3 * math.sin(w))               # looks round slowly
+    rot_world(pb["Chest"], SIDE, 0.012 * math.sin(4 * w))      # breathing
+    twitch = max(0.0, math.sin(5 * w + 1)) ** 10
+    rot_world(pb["Ear.R"], FWD, 0.3 * twitch)
+    for i, name in enumerate(TAILS):                           # along the floor, then round the front paws
+        rot_world(pb[name], SIDE, -0.8 if i == 0 else -0.04)
+        rot_world(pb[name], UP, 0.55 + 0.03 * math.sin(w - 0.5 * i) if i > 0 else 0.25)
+
+
 walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True)
 idle = bake_clip("Idle", IDLE_FRAMES, idle_pose, use_ik=True)
 crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True, flat_paws=True)
@@ -494,6 +522,7 @@ crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=Tr
 jump = bake_clip("Jump", AIR_FRAMES, jump_pose, use_ik=False)
 fall = bake_clip("Fall", AIR_FRAMES, fall_pose, use_ik=False)
 rear = bake_clip("Rear", IDLE_FRAMES // 2, rear_pose, use_ik=True)
+sit = bake_clip("Sit", IDLE_FRAMES, sit_pose, use_ik=True, flat_paws=True)
 # While climbing the paws lie flat on the wall, toes up: track a point high up, just off the wall.
 up_target = bpy.data.objects.new("PawsUp", None)
 scene.collection.objects.link(up_target)
@@ -516,7 +545,7 @@ bpy.ops.object.mode_set(mode="OBJECT")
 for owner, (e, base) in targets.items():
     bpy.data.objects.remove(e, do_unlink=True)
 run = bpy.data.actions["Run"]
-CLIPS = ("Run", "Walk", "Idle", "CrouchIdle", "CrouchWalk", "Jump", "Fall", "Rear", "Climb")
+CLIPS = ("Run", "Walk", "Idle", "CrouchIdle", "CrouchWalk", "Jump", "Fall", "Rear", "Climb", "Sit")
 for a in list(bpy.data.actions):
     if a.name not in CLIPS:
         bpy.data.actions.remove(a)
@@ -960,7 +989,7 @@ if args.renders:
                   res=(500, 400))
             if name == "climb":
                 scene.collection.objects.unlink(wall)
-    for name, action in (("crouchidle", crouch_idle), ("jump", jump), ("fall", fall)):
+    for name, action in (("crouchidle", crouch_idle), ("jump", jump), ("fall", fall), ("sit", sit)):
         arm.animation_data.action = action
         scene.frame_set(0)
         shoot(os.path.join(args.renders, f"lowpoly_cat_pose_{name}.png"), (0.9, 0.0, 0.2), (0, 0, 0.14),

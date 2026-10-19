@@ -13,7 +13,7 @@ namespace Draho.World
     {
         [SerializeField] Light lamp;
         [SerializeField] float maxLength = 13f;
-        [SerializeField] float width = 0.7f;
+        [SerializeField] float width = 1.0f;
         [SerializeField] Color tint = new Color(1f, 0.72f, 0.4f);
 
         static Mesh strip;
@@ -53,7 +53,7 @@ namespace Draho.World
             material.SetTextureOffset("_BaseMap", new Vector2(0f, -phase * 0.35f));
             material.SetTextureScale("_BaseMap", new Vector2(1f, length / 2f));
             float flicker = 0.8f + 0.2f * Mathf.Sin(phase * 5.3f) * Mathf.Sin(phase * 2.1f);
-            material.SetColor("_BaseColor", new Color(tint.r, tint.g, tint.b, 0.55f * on * flicker));
+            material.SetColor("_BaseColor", new Color(tint.r, tint.g, tint.b, 0.9f * on * flicker));
         }
 
         static Mesh MakeStrip()

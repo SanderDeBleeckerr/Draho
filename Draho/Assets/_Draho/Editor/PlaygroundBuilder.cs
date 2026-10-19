@@ -509,10 +509,26 @@ namespace Draho.EditorTools
                 model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
                 Debug.LogWarning("Draho: cat model faced backwards; rotated it 180°.");
             }
-            var renderers = model.GetComponentsInChildren<Renderer>();
-            if (renderers.Length == 0) return;
-            Bounds bounds = renderers[0].bounds;
-            foreach (var r in renderers) bounds.Encapsulate(r.bounds);
+            // Measure the mesh in its rest pose (the renderer bounds of a skinned mesh also cover the animation
+            // clips: the Sit clip made the cat look too tall and it was shrunk to a quarter).
+            var meshes = model.GetComponentsInChildren<SkinnedMeshRenderer>().Where(r => r.sharedMesh != null).ToArray();
+            if (meshes.Length == 0) return;
+            float low = float.MaxValue, high = float.MinValue;
+            var baked = new Mesh();
+            foreach (var r in meshes)
+            {
+                r.BakeMesh(baked); // the current pose, in the renderer's space (without its scale)
+                foreach (var v in baked.vertices)
+                {
+                    float y = r.transform.TransformPoint(v).y;
+                    low = Mathf.Min(low, y);
+                    high = Mathf.Max(high, y);
+                }
+            }
+            Object.DestroyImmediate(baked);
+            float height = high - low;
+            var bounds = new Bounds(Vector3.zero, new Vector3(0f, height, 0f));
+            Debug.Log($"Draho: cat model rest height {height:0.###} m");
             if (bounds.size.y < 0.15f || bounds.size.y > 0.7f)
             {
                 model.transform.localScale *= 0.35f / bounds.size.y;

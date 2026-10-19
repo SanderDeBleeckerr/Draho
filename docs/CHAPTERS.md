@@ -16,10 +16,11 @@ surface and terrain models). Only relative game metres go into this repository.
 | 8 | The inner court | The round-stone court: a light well in the house (8.8 m) | Pigeons that flee a straight approach (sneak past from the side), a flock that flies up together, a drainpipe to the lost jingle ball | 15 min | First part playable |
 | 9 | Night | All areas after sunset | Moths at the garden lamp, follow a fox to its den, through a broken fence to the river bank and its lamp-post, home over the shed | 35 min | Playable (to polish) |
 | 10 | The high roofs | The cat's house and its neighbour on the street (8.8–11.8 m) | Up the light well, slate and tiles, chimneys, a storm with gusts (DUCK), the roof hatch | 40 min | Playable (to grow) |
-| 11 | Home | Back to the apartment | Dry off on the cat tree, morning, the humans come home; greet them | 15 min | Playable (to grow) |
+| 11 | Home | Back to the apartment | Dry off on the cat tree (the wet shake), morning mist and a rainbow, the humans come home; greet them (a meow), sit in their suitcase, breakfast | 20 min | Playable |
 |   | Side activities | Everywhere | 24 feathers to find, a bounty board with 5 mouse territories (mice come back warier), coins | 40 min | First part playable |
-|   | More side activities | Everywhere | 12 nap spots (all: well rested), 5 viewpoints on the high roofs, catnip zoomies, squeaky toys | 30 min | Playable |
-|   | Epilogue (free roam) | Everywhere, a new day | After THE END: 6 gifts for the humans across town, and everything not yet found | 30 min | Playable |
+|   | More side activities | Everywhere | 12 nap spots, 5 viewpoints on the high roofs (a camera sweep), 8 scratching places (rear up: claw marks), catnip zoomies, squeaky toys; the sniff sense (crouch still) points at what is left; Drahomil's notes (sit 10 s) list every set | 40 min | Playable |
+|   | Set rewards | Everywhere | All nap spots: well rested (higher jumps, a warm glow at night); all viewpoints: sure-footed (half the wind); all scratching places: sharp claws (faster climbing); all gifts: a red collar with a bell | — | Playable |
+|   | Epilogue (free roam) | Everywhere, a new day | After THE END: a 16-minute day-night cycle (the night things come back), 6 gifts for the humans across town, the laser-dot game in the living room, the humans' TV at night, and everything not yet found | 40 min | Playable |
 
 Rules for each chapter:
 - Every new area comes from the real block (survey first, then the blueprint, then the scene).

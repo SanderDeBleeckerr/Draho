@@ -78,10 +78,13 @@ namespace Draho.UI
             foreach (var m in mice) caught += p.BountyCount(m.DisplayName);
             var sb = new System.Text.StringBuilder("DRAHOMIL'S NOTES\n");
             sb.Append($"\nFeathers: {p.CollectedCount}/{p.TotalCollectables}");
-            sb.Append($"\nNap spots: {p.NapCount}/{napTotal}{(p.NapCount >= napTotal ? "  (well rested)" : "")}");
-            sb.Append($"\nViewpoints: {p.ViewCount}/{viewTotal}");
-            sb.Append($"\nScratching places: {p.ScratchCount}/{scratchTotal}");
-            if (Draho.Story.StoryDirector.InEpilogue) sb.Append($"\nGifts for the humans: {p.GiftCount}/{giftTotal}");
+            // A finished set names its reward; an open one hints that the full set is worth it (round 93).
+            string Reward(bool done, string what) => done ? $"  ({what})" : "  (all: a surprise)";
+            sb.Append($"\nNap spots: {p.NapCount}/{napTotal}{Reward(p.NapCount >= napTotal, "well rested: higher jumps")}");
+            sb.Append($"\nViewpoints: {p.ViewCount}/{viewTotal}{Reward(p.ViewCount >= viewTotal, "sure-footed in the wind")}");
+            sb.Append($"\nScratching places: {p.ScratchCount}/{scratchTotal}{Reward(p.ScratchCount >= scratchTotal, "sharp claws: faster climbing")}");
+            if (Draho.Story.StoryDirector.InEpilogue)
+                sb.Append($"\nGifts for the humans: {p.GiftCount}/{giftTotal}{Reward(p.GiftCount >= giftTotal, "a red collar with a bell")}");
             sb.Append($"\nMice caught: {caught}    Coins: {p.Coins}");
             sb.Append("\n\nCrouch and keep still to sniff for what is left.");
             return sb.ToString();

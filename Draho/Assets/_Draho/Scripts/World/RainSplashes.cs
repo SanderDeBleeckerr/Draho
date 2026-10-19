@@ -17,6 +17,7 @@ namespace Draho.World
         ParticleSystem system;
         Transform cam;
         float owed;
+        int rays, hits, splashes;
 
         void Awake()
         {
@@ -36,14 +37,17 @@ namespace Draho.World
             {
                 Vector2 r = Random.insideUnitCircle * radius;
                 Vector3 top = cam.position + cam.forward * 1.5f + new Vector3(r.x, 6f, r.y);
-                if (!Physics.Raycast(top, Vector3.down, out RaycastHit hit, 20f, ~(1 << 2), QueryTriggerInteraction.Ignore)) continue;
+                rays++;
+                if (!Physics.Raycast(top, Vector3.down, out RaycastHit hit, 30f, ~(1 << 2), QueryTriggerInteraction.Ignore)) continue;
+                hits++;
                 if (hit.normal.y < 0.5f) continue; // walls and steep slate: the drops run off
+                splashes++;
                 var e = new ParticleSystem.EmitParams { position = hit.point + Vector3.up * 0.01f, applyShapeToPosition = true };
                 system.Emit(e, 5);
             }
         }
 
         /// <summary>Test hook: SendMessage('RainSplashes', 'TestReport').</summary>
-        public void TestReport() => Debug.Log($"STATE rain splashes: {system.particleCount} alive, storm {Storm.Active}");
+        public void TestReport() => Debug.Log($"STATE rain splashes: {rays} rays, {hits} hits, {splashes} splashes, {system.particleCount} alive, storm {Storm.Active}");
     }
 }

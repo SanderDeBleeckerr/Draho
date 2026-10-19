@@ -637,3 +637,10 @@ several on high roofs you can see from below before you can reach them. A found 
   about a tenth of a second.
 - Done: RainSplashes casts rays down from random points round the camera (110 per second in the storm), skips
   walls and steep slopes, and emits a 0.1-0.2 s crown of five small drops at each hit.
+
+## Round 75 — a completion list
+
+- Collect-a-thon games keep a per-category completion list (a pause-menu journal or map legend); players who go
+  for 100% use it to plan, and it shows the size of what is left without spoilers.
+- Done: "Drahomil's notes" on the board panel when the cat sits for 6 s: every category with found/total, mice
+  caught and coins, and the reminder to sniff.

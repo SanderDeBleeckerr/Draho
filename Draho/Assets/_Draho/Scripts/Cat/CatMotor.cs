@@ -53,6 +53,8 @@ namespace Draho.Cat
         public bool IsCrouching { get; private set; }
         /// <summary>A storm gust (m/s, horizontal). A crouched cat feels only a little of it.</summary>
         public Vector3 Wind { get; set; }
+        /// <summary>How much of the wind reaches the cat (sure-footed after every viewpoint): 1 is all of it.</summary>
+        public float WindFactor { get; set; } = 1f;
         /// <summary>A short burst of speed (catnip zoomies): 1 is normal.</summary>
         public float SpeedBoost { get; set; } = 1f;
         /// <summary>Jump height factor (well rested after all the nap spots): 1 is normal.</summary>
@@ -183,7 +185,7 @@ namespace Draho.Cat
                 verticalVelocity = Mathf.Max(verticalVelocity + stats.gravity * dt, -stats.maxFallSpeed);
 
             Vector3 velocity = transform.forward * speed + Vector3.up * verticalVelocity
-                + Wind * (IsCrouching ? 0.15f : 1f); // low cats do not blow away
+                + Wind * (IsCrouching ? 0.15f : 1f) * WindFactor; // low cats do not blow away
             CollisionFlags hit = controller.Move(velocity * dt);
             if ((hit & CollisionFlags.Above) != 0 && verticalVelocity > 0f) verticalVelocity = 0f;
         }

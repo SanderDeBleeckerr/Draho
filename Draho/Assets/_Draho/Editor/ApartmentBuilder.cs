@@ -3770,7 +3770,7 @@ namespace Draho.EditorTools
         static Texture2D TileNormal() => NormalMap("FloorTileNormal.png", 128, 1.0f, (x, y) =>
             Mathf.Clamp01((Mathf.Min(Mathf.Min(x, y), Mathf.Min(128 - x, 128 - y) + 2) - 1.5f) / 2f));
 
-        static Texture2D SlateNormal(bool vertical) => NormalMap(vertical ? "RoofSlatesVNormal.png" : "RoofSlatesNormal.png", 256, 3f, (px, py) =>
+        static Texture2D SlateNormal(bool vertical) => NormalMap(vertical ? "RoofSlatesVNormal.png" : "RoofSlatesNormal.png", 256, 5f, (px, py) =>
         {
             // The same layout as RoofTexture: each slate is a wedge, thin under the row above and thickest at its
             // lower edge, then a step down to the next row; the gaps between slates are low.
@@ -3779,7 +3779,10 @@ namespace Draho.EditorTools
             int row = y / rowH;
             int shifted = x + (row % 2) * slateW / 2;
             if (shifted % slateW < 2) return 0f;
-            return 0.3f + 0.7f * (y % rowH) / (float)rowH;
+            int inRow = y % rowH;
+            float h = 0.3f + 0.7f * inRow / rowH;
+            // A soft 6 px step down at the lower edge (a 1 px step averages away at a distance).
+            return inRow < rowH - 6 ? h : Mathf.Lerp(h, 0.3f, (inRow - (rowH - 6)) / 6f);
         });
 
         static Texture2D PlasterNormal() => NormalMap("PlasterNormal.png", 256, 6f, (x, y) =>

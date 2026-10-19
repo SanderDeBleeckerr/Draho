@@ -597,3 +597,12 @@ several on high roofs you can see from below before you can reach them. A found 
   down the gardens; thick at the start of a new game (thinning to nothing over 4 min) and at dawn in chapter 11.
 - Test note: the headless test browser runs at about 5 fps, so effects driven by "a chance per frame" can do
   nothing in a short window: emit at a steady rate per second instead.
+
+## Round 70 — scratching
+
+- Cats scratch to shed old claw sheaths, to stretch, and to mark territory: visibly and with scent from glands
+  between the toes. They prefer sturdy, upright, rough surfaces they can stretch up against, near the routes they
+  use and near where they sleep (which is why sofas suffer).
+- Done: eight ScratchSpots (a small tan ring at the foot of the sisal post, the sofa, a table leg, the fence, the
+  old chair, the quay lamp-post, the bakery and church door frames); rear up in the ring for 0.2 s (rearing at a
+  climbable surface turns into a climb after 0.25 s) and three claw marks appear on the surface in front.

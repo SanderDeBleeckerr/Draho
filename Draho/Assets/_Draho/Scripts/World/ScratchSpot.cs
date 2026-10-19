@@ -77,17 +77,20 @@ namespace Draho.World
         void Marks()
         {
             if (markMaterial == null) return;
-            // Three thin claw lines just in front of the cat's face, upright, facing the cat.
+            // Three thin claw lines on the surface in front of the cat (none when there is only air).
             Vector3 f = cat.transform.forward;
-            Vector3 basePos = cat.transform.position + f * 0.24f + Vector3.up * 0.38f;
-            var rot = Quaternion.LookRotation(-f, Vector3.up);
+            Vector3 from = cat.transform.position + Vector3.up * 0.38f;
+            if (!Physics.Raycast(from, f, out RaycastHit hit, 0.7f, ~(1 << 2), QueryTriggerInteraction.Ignore)) return;
+            Vector3 basePos = hit.point + hit.normal * 0.004f;
+            var rot = Quaternion.LookRotation(-hit.normal, Vector3.up);
+            Vector3 along = Vector3.Cross(hit.normal, Vector3.up).normalized; // sideways on the surface
             for (int i = 0; i < 3; i++)
             {
                 var m = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 Destroy(m.GetComponent<Collider>());
                 m.name = "ClawMark";
                 m.transform.SetParent(transform, true);
-                m.transform.SetPositionAndRotation(basePos + cat.transform.right * ((i - 1) * 0.025f) + Vector3.up * (i == 1 ? 0.01f : 0f), rot * Quaternion.Euler(0f, 0f, 6f));
+                m.transform.SetPositionAndRotation(basePos + along * ((i - 1) * 0.025f) + Vector3.up * (i == 1 ? 0.01f : 0f), rot * Quaternion.Euler(0f, 0f, 6f));
                 m.transform.localScale = new Vector3(0.006f, 0.16f, 0.004f);
                 m.GetComponent<Renderer>().sharedMaterial = markMaterial;
             }

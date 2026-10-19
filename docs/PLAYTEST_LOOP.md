@@ -91,3 +91,4 @@ web for how good games solve each weak point before it changes anything. Finding
 | 52b | — | Verified live: the green scent trail now reads as a line of glows to the bed | — |
 | 53 | Far-bank lamp-posts and glitter paths on the river | Live: no streaks visible on the dark water (53b: the strip had no vertex colours, which the particle shader multiplies by; wider strip) | — |
 | 53b | — | Live: the glitter paths now show as short bright dashes at the far bank (foreshortened from the low camera) but faint (54: alpha 0.55 → 0.9, width 0.7 → 1.0) | — |
+| 54 | Sit clip (Blender, 3 tries), idle → sit after 4 s | Live: the cat was a quarter of its size (a stick when sitting): the import rescale used animated bounds (54b: measure the baked rest pose) | — |

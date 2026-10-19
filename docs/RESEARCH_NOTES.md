@@ -659,3 +659,11 @@ several on high roofs you can see from below before you can reach them. A found 
   seconds), with small flicker between; in a dark room it is the main light, on the walls and the faces.
 - Done: TvGlow in the epilogue at night: an emissive screen and a point light (range 4.5 m) that jump to a new
   level and colour at each "cut" (0.6-4 s) and flicker a little in between.
+
+## Round 79 — the laser dot
+
+- Laser play works because the dot moves like small prey: quick darts, sudden stops, a little tremble, hiding
+  under things. Behaviourists advise ending each game on a real "catch" (a toy or a treat) so the cat is not left
+  frustrated.
+- Done: LaserDot in the epilogue living room (day and evening): darts at 2.6 m/s with 0.4-1.6 s pauses and a
+  wiggle; a pounce is a landing within reach; after five, the dot rests on a treat (+10 coins); 90 s rest.

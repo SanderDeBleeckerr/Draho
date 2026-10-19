@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1183,6 +1183,26 @@ namespace Draho.EditorTools
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>The visible bolt of each lightning flash in the storm (LightningBolt, the Draho/Bolt shader).</summary>
+        static void BuildLightningBolt()
+        {
+            var shader = Shader.Find("Draho/Bolt");
+            if (shader == null) { Debug.LogWarning("Draho/Bolt not found: no lightning bolts"); return; }
+            string path = $"{PlaygroundBuilder.MaterialDir}/Bolt.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
+            m.shader = shader;
+            EditorUtility.SetDirty(m);
+            var go = new GameObject("LightningBolt");
+            go.transform.SetParent(level, false);
+            go.AddComponent<MeshFilter>();
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = m;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            go.AddComponent<LightningBolt>();
         }
 
         /// <summary>Shooting stars on clear nights (ShootingStars, the Draho/Meteor shader).</summary>
@@ -2944,6 +2964,7 @@ namespace Draho.EditorTools
             BuildGifts();
             BuildViewpoints();
             BuildShootingStars();
+            BuildLightningBolt();
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

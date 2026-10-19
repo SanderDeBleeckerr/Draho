@@ -173,10 +173,14 @@ namespace Draho.World
         }
 
         /// <summary>A lightning flash: a short, bright cold light over everything (the storm calls it).</summary>
+        /// <summary>Raised with every lightning flash (the visible bolt).</summary>
+        public static event System.Action Flashed;
+
         public static void Flash()
         {
             if (instance == null) return;
             instance.flash = 1f;
+            Flashed?.Invoke();
             Debug.Log("SKY lightning");
         }
 

@@ -91,7 +91,9 @@ namespace Draho.World
             carried = this;
             var anchor = head != null ? head : cat.transform;
             transform.SetParent(anchor, true);
-            transform.position = cat.transform.position + cat.transform.forward * 0.17f + Vector3.up * 0.15f;
+            // In the mouth: a little in front of the face and drawn larger, so a 3 cm cap still reads on screen.
+            transform.position = cat.transform.position + cat.transform.forward * 0.2f + Vector3.up * 0.19f;
+            transform.localScale *= 1.5f;
             ProgressHud.Toast($"You pick up {title}. Carry it home to your humans at the front door.");
             Debug.Log($"STORY gift picked up: {id}");
         }
@@ -101,6 +103,7 @@ namespace Draho.World
             carried = null;
             done = true;
             transform.SetParent(null, true);
+            transform.localScale /= 1.5f;
             Show(false);
             var p = Progress.Instance;
             p?.Collect(id, coins);

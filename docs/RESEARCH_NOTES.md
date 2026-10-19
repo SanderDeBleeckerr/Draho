@@ -705,3 +705,11 @@ several on high roofs you can see from below before you can reach them. A found 
 - Done: Soundscape makes three AudioClips at start (no sound files): a 2 s rain loop (low-passed noise, rare drops,
   crossfaded seam), a 4 s thunder (crack + brown-noise rumble with swells, exponential decay) played after each
   SkyMood flash, and a 2 s purr loop (pulses at 24-27 Hz shaped by a breath curve) faded in while the cat sits.
+
+## Round 86 — day and night sounds
+
+- Blackbird song: rich fluting phrases of a few notes with pauses, mostly 1.5-4 kHz; bush-crickets on summer
+  nights: short repeated chirps, many singers out of step, high (often 6-15 kHz); swifts: shrill buzzing screams
+  in the low "screaming parties".
+- Done: Soundscape adds four generated song phrases (glides between 1.5 and 3.5 kHz), a 3 s cricket loop and a
+  0.55 s scream (a rough trill near 5 kHz), played by day, at night, and while Swifts.PartyLow.

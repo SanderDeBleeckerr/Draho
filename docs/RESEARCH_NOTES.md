@@ -570,3 +570,12 @@ several on high roofs you can see from below before you can reach them. A found 
 - Done: LightningBolt builds a new channel in sky angles at each SkyMood.Flash (5 levels of midpoint displacement,
   one fork), a camera-relative ribbon (Draho/Bolt: no fog, additive, white core and soft glow) beside the view,
   from 24 degrees up to below the roofs; brightness steps 1 / 0.15 / 0.9 / 0.1 / 0.7, then fades.
+
+## Round 67 — tail and ear body language
+
+- Cat body language: a tail held up (often with a curved tip) is a relaxed, friendly cat, typical when walking up
+  to people; a low tail with a twitching tip is hunting focus; a slow side-to-side sway is calm interest; ears
+  flick at sounds; flattened or sideways ("airplane") ears show unease, as in rain and wind.
+- Done: CatTailLife adds small rotations after the Animator, round the cat's own axes in world space (no reliance
+  on bone axes): tail base up to 18° while walking, tip twitch bursts while crouched, lazy sway when standing (not
+  when sitting: the Sit clip curls the tail), random ear flicks, ears out 28° in the storm.

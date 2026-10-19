@@ -371,7 +371,7 @@ const steps = {
     ['03_evening', 'call', 'SkyMood.TestMood:Evening'],
     ['04_slates', 'wait', '4'],
   ],
-  // Start with ?beat=42&at=-31,7.5,270 : the open river bank; dawn now (test hook): the rainbow fades in opposite
+  // Start with ?beat=17&at=-25,-12,90,6.5 : the riverhouse roof (open to the east); dawn now (test hook): the rainbow fades in opposite
   // the sun; the hook turns the camera towards it.
   rainbow: [
     ['02_dawn', 'call', 'Rainbow.TestShow'],

@@ -561,6 +561,7 @@ namespace Draho.Story
                             if (index != at) return;
                             SkyMood.Set(SkyMood.Mood.Night, 0.1f);
                             cat.Teleport(new Vector3(3.4f, 0.05f, 3.4f), Quaternion.Euler(0f, 60f, 0f));
+                            cat.GetComponent<Draho.Cat.CatShake>()?.Shake(0.8f); // wet to the bone
                         });
                     },
                     Target = () => catTree != null ? catTree.position + Vector3.up * 0.8f : (Vector3?)null,

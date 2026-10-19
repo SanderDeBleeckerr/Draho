@@ -33,6 +33,7 @@ namespace Draho.World
             var to = new Vector3(area.xMax + 0.22f, 0.05f, Mathf.Clamp(p.z, quayZ.x, quayZ.y));
             cat.Teleport(to, Quaternion.Euler(0f, 90f, 0f));
             Debug.Log($"CAT splash! Out of the river at z {p.z:0.0}");
+            cat.GetComponent<CatShake>()?.Shake();
         }
     }
 }

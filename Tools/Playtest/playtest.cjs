@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -364,6 +364,14 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=6&at=-8,2.5,90 : the lawn, side view; the wet shake (6 Hz twist from head to hips, drops fly).
+  shake: [
+    ['02_still', 'wait', '1'],
+    ['03_shake', 'call', 'Drahomil.TestShake'],
+    ['04_shaking', 'wait', '0.4'],
+    ['05_shaking_more', 'wait', '0.3'],
+    ['06_after', 'wait', '1'],
   ],
   // Start with ?beat=6&at=-10,2.5,0 : the lawn by day; walk (tail up), stand (lazy sway), crouch still (tip twitch).
   tail: [

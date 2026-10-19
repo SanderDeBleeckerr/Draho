@@ -3712,9 +3712,80 @@ namespace Draho.EditorTools
         {
             if (materials.TryGetValue(name, out var m)) return m;
             m = PlaygroundBuilder.LitMaterial(name, color, smoothness, tex, tiling);
+            // Bricks, tiles and gravel get a normal map from their own pattern (round 83): mortar and grout lie
+            // lower, pebbles bulge, so low light shows the relief.
+            var normal = tex == null ? null : tex.name switch
+            {
+                "Bricks" => BrickNormal(),
+                "FloorTile" => TileNormal(),
+                "Pebbles" => PebbleNormal(),
+                _ => null,
+            };
+            if (normal != null)
+            {
+                m.SetTexture("_BumpMap", normal);
+                m.SetFloat("_BumpScale", 0.8f);
+                m.EnableKeyword("_NORMALMAP");
+                EditorUtility.SetDirty(m);
+            }
             materials[name] = m;
             return m;
         }
+
+        /// <summary>A normal map from a tiling height function (0 low, 1 high), imported as a normal map.</summary>
+        static Texture2D NormalMap(string file, int size, float strength, Func<int, int, float> height)
+        {
+            int Wrap(int v) => (v % size + size) % size;
+            var tex = MakeTexture(file, size, (x, y, n) =>
+            {
+                float dx = (height(Wrap(x + 1), y) - height(Wrap(x - 1), y)) * strength;
+                float dy = (height(x, Wrap(y + 1)) - height(x, Wrap(y - 1))) * strength;
+                var v = new Vector3(-dx, -dy, 1f).normalized;
+                return new Color(v.x * 0.5f + 0.5f, v.y * 0.5f + 0.5f, v.z * 0.5f + 0.5f);
+            });
+            string path = AssetDatabase.GetAssetPath(tex);
+            if (AssetImporter.GetAtPath(path) is TextureImporter importer && importer.textureType != TextureImporterType.NormalMap)
+            {
+                importer.textureType = TextureImporterType.NormalMap;
+                importer.SaveAndReimport();
+                tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            }
+            return tex;
+        }
+
+        static Texture2D BrickNormal() => NormalMap("BricksNormal.png", 256, 1.2f, (x, y) =>
+        {
+            // The same layout as BrickTexture: mortar 2 px, a soft bevel of 2 px on each brick edge.
+            const int rowH = 16, brickW = 64;
+            int row = y / rowH;
+            int shifted = x + (row % 2) * brickW / 2;
+            int ey = y % rowH, ex = shifted % brickW;
+            int edge = Mathf.Min(Mathf.Min(ey, rowH - 1 - ey + 2), Mathf.Min(ex, brickW - 1 - ex + 2));
+            return Mathf.Clamp01((edge - 1.5f) / 2.5f);
+        });
+
+        static Texture2D TileNormal() => NormalMap("FloorTileNormal.png", 128, 1.0f, (x, y) =>
+            Mathf.Clamp01((Mathf.Min(Mathf.Min(x, y), Mathf.Min(128 - x, 128 - y) + 2) - 1.5f) / 2f));
+
+        static Texture2D PebbleNormal() => NormalMap("PebblesNormal.png", 256, 2.5f, (x, y) =>
+        {
+            // Domes on the same jittered grid as PebbleTexture.
+            const int cell = 32, size = 256;
+            float best = 9f;
+            int cx = x / cell, cy = y / cell;
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                int gx = cx + dx, gy = cy + dy;
+                int hash = ((gx & 7) * 73856093) ^ ((gy & 7) * 19349663);
+                float jx = ((hash >> 3) & 15) / 15f, jy = ((hash >> 7) & 15) / 15f;
+                float px = (gx + 0.25f + 0.5f * jx) * cell, py = (gy + 0.25f + 0.5f * jy) * cell;
+                float r = cell * (0.42f + 0.12f * (((hash >> 11) & 7) / 7f));
+                float dist = Vector2.Distance(new Vector2(x, y), new Vector2(Repeat(px, x, size), Repeat(py, y, size))) / r;
+                best = Mathf.Min(best, dist);
+            }
+            return Mathf.Sqrt(Mathf.Clamp01(1f - best * best));
+        });
 
         static Material GlassMat()
         {

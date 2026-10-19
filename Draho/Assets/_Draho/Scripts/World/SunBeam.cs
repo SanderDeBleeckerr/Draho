@@ -16,7 +16,7 @@ namespace Draho.World
         [Tooltip("The far wall of the room (world x).")]
         [SerializeField] float endX = 4.4f;
         [SerializeField] Color tint = new Color(1f, 0.78f, 0.5f);
-        [SerializeField] float strength = 0.32f;
+        [SerializeField] float strength = 0.55f;
         [SerializeField] ParticleSystem motes;
 
         Light sun;

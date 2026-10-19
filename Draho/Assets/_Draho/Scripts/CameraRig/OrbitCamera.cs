@@ -9,7 +9,10 @@ namespace Draho.CameraRig
     /// Third-person camera that orbits the cat. Swipe on the look area (phone) or drag with the
     /// right mouse button (editor). The camera moves closer when a wall is between it and the cat:
     /// at once when something blocks the view, slowly when the view is free again (no popping when
-    /// the cat jumps over low furniture).
+    /// the cat jumps over low furniture). When the view stays blocked in a tight place (a light well, under a roof
+    /// edge), the camera also looks for a free viewpoint at the same distance nearby (left, right, a little higher)
+    /// and turns slowly towards it, like Cinemachine's "preserve camera distance" with a minimum occlusion time
+    /// (research round 50). The player's own swipe always wins.
     /// </summary>
     public class OrbitCamera : MonoBehaviour
     {
@@ -39,6 +42,10 @@ namespace Draho.CameraRig
         [SerializeField] LayerMask collisionMask = ~(1 << 2); // everything except Ignore Raycast
         [Tooltip("Metres per second at which the camera moves back out after a collision.")]
         [SerializeField] float returnSpeed = 1.2f;
+        [Tooltip("Seconds the view must stay blocked before the camera looks for another viewpoint (thin posts pass by).")]
+        [SerializeField] float minOcclusionTime = 0.3f;
+        [Tooltip("Degrees per second at which the camera turns to a free viewpoint.")]
+        [SerializeField] float avoidSpeed = 70f;
 
         [Header("Climbing")]
         [Tooltip("While the cat climbs, the camera moves back and looks more level, so the wall does not fill the view.")]
@@ -52,6 +59,12 @@ namespace Draho.CameraRig
         Vector3 lookahead;
         Vector3 focus;
         float currentDistance;
+        float occludedTime;
+        static readonly Vector2[] Probes =
+        {
+            new Vector2(25f, 0f), new Vector2(-25f, 0f), new Vector2(0f, 20f), new Vector2(25f, 15f),
+            new Vector2(-25f, 15f), new Vector2(50f, 0f), new Vector2(-50f, 0f),
+        };
 
         void Start()
         {
@@ -107,6 +120,25 @@ namespace Draho.CameraRig
                     collisionMask, QueryTriggerInteraction.Ignore))
             {
                 allowed = Mathf.Max(0.1f, hit.distance);
+            }
+
+            // Blocked for a while (and the player is not turning the view): look for a freer viewpoint nearby.
+            occludedTime = allowed < wantDistance * 0.6f ? occludedTime + dt : 0f;
+            if (occludedTime > minOcclusionTime && look.sqrMagnitude < 0.01f && blend < 0.1f) // climbing has its own framing
+            {
+                float best = allowed * 1.3f;
+                Vector2 turn = Vector2.zero;
+                foreach (var probe in Probes)
+                {
+                    float probePitch = Mathf.Clamp(pitch + probe.y, minPitch, maxPitch);
+                    Vector3 dir = Quaternion.Euler(Mathf.Lerp(probePitch, climbPitch, blend), yaw + probe.x, 0f) * Vector3.back;
+                    float free = Physics.SphereCast(focus, collisionRadius, dir, out RaycastHit h, wantDistance, collisionMask, QueryTriggerInteraction.Ignore)
+                        ? h.distance : wantDistance;
+                    free -= (Mathf.Abs(probe.x) + probe.y) * 0.002f; // prefer the smallest change
+                    if (free > best) { best = free; turn = probe; }
+                }
+                yaw = Mathf.MoveTowardsAngle(yaw, yaw + turn.x, avoidSpeed * dt);
+                pitch = Mathf.Clamp(Mathf.MoveTowards(pitch, pitch + turn.y, avoidSpeed * 0.6f * dt), minPitch, maxPitch);
             }
 
             currentDistance = allowed < currentDistance

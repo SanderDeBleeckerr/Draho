@@ -107,6 +107,7 @@ namespace Draho.EditorTools
             SetIfFound(so, "m_MainLightShadowmapResolution", 2048);
             SetIfFound(so, "m_SoftShadowsSupported", true);
             SetIfFound(so, "m_SupportsHDR", true);
+            SetIfFound(so, "m_SupportsLightCookies", true); // cloud shadows on the sun (keep the cookie shader variants)
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(urp);
 

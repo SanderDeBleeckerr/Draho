@@ -158,3 +158,28 @@ web for how good games solve each weak point before it changes anything. Finding
 | 93-live | — | Verified live: the notes show "Nap spots: 0/12 (all: a surprise)" and the same for viewpoints and scratching places | Sets promise a reward |
 | 98 | Final regression: all 31 chapter tests from both batches on the newest build + a night-storm perf run | Verified live: 0 exceptions in 31/31; the story moved on in 22 (the other 9 test effects, or have no story step in their test); the fence test left no log in the batch (3 browsers at once) and passed alone (12→13). Perf in the night storm: max 275 batches, 129k tris (budget ≈300 / 150k) | Ready for the last rounds |
 | 99 | A start test: the first minutes of a new game (no beat, fresh save) | Verified live: beat 0 "Morning..." shows, the panel fades while walking, the rings are visible, the first hints come one at a time (scratch at 37 s by the sisal post, nap at 44 s by the rug); no exceptions | A new player is guided |
+| 100 | Summary of the loop (below) | — | 100 rounds done |
+
+## Summary after 100 rounds
+
+**Playtime (target about 4 hours).** Eleven chapters are playable from start to end (planned at about 4 h 20 min),
+plus side activities and an epilogue. Rounds 55-100 added: 12 nap spots, 5 viewpoints, 8 scratching places,
+the sniff sense, Drahomil's notes, four set rewards (well rested, sure-footed, sharp claws, the collar), the
+suitcase in chapter 11, and a free-roam epilogue with a day-night cycle, 6 gifts, the laser-dot game and the TV.
+
+**Graphics and light.** Wet surfaces in the storm, lamp cones, glow-worms, cloud shadows, shooting stars,
+lightning bolts, morning mist, rain splashes, chimney smoke, street lamps, swifts, a rainbow after the storm,
+river ripples, and relief on bricks, tiles, gravel, slate and plaster.
+
+**The cat.** The crawl and stalk (round 32), sitting (round 54), tail and ear body language, the wet shake, a
+meow, landing thumps, and the purr.
+
+**Sound (made in code).** Rain, thunder, wind on the roofs, the river, birdsong, crickets, swift screams, the purr,
+the meow and the collar bell.
+
+**Checks.** Final regression (round 98): 31 chapter tests, 0 exceptions; perf in the night storm 275 batches,
+129k triangles (budget about 300 / 150k).
+
+**Open points.** The sounds cannot be checked in the headless test (someone must listen on a phone); the real
+playtime needs a person playing from start to end; a gift held in the mouth is hidden by the cat from behind; the
+story line at the top of the epilogue always says "a new day".

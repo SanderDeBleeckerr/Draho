@@ -8,6 +8,9 @@ namespace Draho.World
     public class Collectable : MonoBehaviour
     {
         [SerializeField] string id;
+
+        /// <summary>The save id (the sniff sense looks for ids not yet collected).</summary>
+        public string Id => id;
         [SerializeField] int coins = 2;
         [SerializeField] Transform visual;
         [SerializeField] float pickRadius = 0.45f;

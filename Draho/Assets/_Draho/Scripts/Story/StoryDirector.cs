@@ -616,7 +616,7 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "Epilogue: a new day. Your humans are home, the cat flap is open and the whole town is yours again.",
-                    Goal = "Free roam: bring your humans a gift from every corner of town (6), find every feather and nap spot, fill the bounty board.",
+                    Goal = "Free roam: bring your humans a gift from every corner of town (6), find every feather and nap spot, fill the bounty board. Lost? Crouch and keep still to sniff.",
                     Begin = () =>
                     {
                         humans?.SettleIn();

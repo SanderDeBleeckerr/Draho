@@ -14,6 +14,9 @@ namespace Draho.World
     public class NapSpot : MonoBehaviour
     {
         [SerializeField] string id;
+
+        /// <summary>The save id (the sniff sense looks for ids not yet collected).</summary>
+        public string Id => id;
         [SerializeField] string title = "a warm spot";
         [SerializeField] float radius = 0.45f;
         [SerializeField] float sitTime = 4.5f;

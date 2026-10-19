@@ -16,6 +16,9 @@ namespace Draho.World
     public class Viewpoint : MonoBehaviour
     {
         [SerializeField] string id;
+
+        /// <summary>The save id (the sniff sense looks for ids not yet collected).</summary>
+        public string Id => id;
         [SerializeField] string view = "the town";
         [SerializeField] float radius = 0.55f;
         [SerializeField] float stillTime = 1.5f;

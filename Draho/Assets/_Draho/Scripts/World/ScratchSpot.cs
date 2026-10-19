@@ -15,6 +15,9 @@ namespace Draho.World
     public class ScratchSpot : MonoBehaviour
     {
         [SerializeField] string id;
+
+        /// <summary>The save id (the sniff sense looks for ids not yet collected).</summary>
+        public string Id => id;
         [SerializeField] string title = "a post";
         [SerializeField] float radius = 0.32f;
         [SerializeField] int coins = 4;
@@ -80,7 +83,8 @@ namespace Draho.World
             // Three thin claw lines on the surface in front of the cat (none when there is only air).
             Vector3 f = cat.transform.forward;
             Vector3 from = cat.transform.position + Vector3.up * 0.38f;
-            if (!Physics.Raycast(from, f, out RaycastHit hit, 0.7f, ~(1 << 2), QueryTriggerInteraction.Ignore)) return;
+            if (!Physics.Raycast(from, f, out RaycastHit hit, 0.7f, ~(1 << 2), QueryTriggerInteraction.Ignore)) { Debug.Log("STATE claw marks: nothing in front"); return; }
+            Debug.Log($"STATE claw marks on {hit.collider.name} at {hit.distance:0.00} m");
             Vector3 basePos = hit.point + hit.normal * 0.004f;
             var rot = Quaternion.LookRotation(-hit.normal, Vector3.up);
             Vector3 along = Vector3.Cross(hit.normal, Vector3.up).normalized; // sideways on the surface

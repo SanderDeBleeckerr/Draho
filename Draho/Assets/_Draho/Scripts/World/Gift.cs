@@ -14,6 +14,9 @@ namespace Draho.World
     public class Gift : MonoBehaviour
     {
         [SerializeField] string id;
+
+        /// <summary>The save id (the sniff sense looks for ids not yet collected).</summary>
+        public string Id => id;
         [SerializeField] string title = "a gift";
         [SerializeField] string reaction = "\"For us? Thank you, Drahomil!\"";
         [SerializeField] int coins = 8;
@@ -21,6 +24,7 @@ namespace Draho.World
         [SerializeField] float deliverRadius = 1.1f;
 
         static Gift carried;
+        public bool Carried => carried == this;
         CatMotor cat;
         Transform head, door;
         Renderer[] renderers;

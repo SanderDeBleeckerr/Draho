@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -365,7 +365,16 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=6&at=14.4,4.6,0,12.4 : on the big roof's ridge by day, looking at the front chimney: smoke.
+  // Start with ?beat=55&at=2.6,3.6,180 : the epilogue in the living room facing the TV; skip to night: the TV
+  // flickers blue on the walls.
+  tv: [
+    ['02_day', 'wait', '1'],
+    ['03_evening', 'call', 'DayCycle.TestAdvance'],
+    ['04_night', 'call', 'DayCycle.TestAdvance'],
+    ['05_tv', 'wait', '5'],
+    ['06_tv_later', 'wait', '2'],
+  ],
+  // Start with ?beat=6&at=14.4,2.6,0,12.4 : on the big roof's ridge by day, looking at the front chimney: smoke.
   smoke: [
     ['02_look_up', 'call', 'Main Camera.TestView:5,2.2'],
     ['03_smoke', 'wait', '4'],

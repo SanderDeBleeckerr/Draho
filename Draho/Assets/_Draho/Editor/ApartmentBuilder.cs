@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -910,6 +910,29 @@ namespace Draho.EditorTools
             Panel("LidLining", new Vector3(0f, 0.032f, 0.46f), new Vector3(0.66f, 0.005f, 0.4f), lining, solid: false);
             Panel("Jumper", new Vector3(0.18f, 0.05f, 0.05f), new Vector3(0.22f, 0.04f, 0.2f), Mat("Suitcase_Jumper", new Color(0.3f, 0.45f, 0.35f), 0.05f), new Vector3(0f, 12f, 0f), solid: false);
             suitcase.gameObject.SetActive(false);
+
+            // The TV on a low stand by the front wall, facing the sofa (TvGlow: on at night in the epilogue).
+            var tv = new GameObject("TV").transform;
+            tv.SetParent(level, false);
+            tv.position = new Vector3(3.4f, 0f, 0.3f);
+            var tvDark = Mat("TV_Case", new Color(0.06f, 0.06f, 0.07f), 0.6f);
+            Box("TV_Stand", tv.position + new Vector3(0f, 0.2f, 0f), new Vector3(1.0f, 0.4f, 0.38f), Mat("TV_Stand", new Color(0.35f, 0.26f, 0.18f), 0.3f)).transform.SetParent(tv, true);
+            Box("TV_Case", tv.position + new Vector3(0f, 0.72f, 0f), new Vector3(0.9f, 0.52f, 0.05f), tvDark, collider: false).transform.SetParent(tv, true);
+            var screenMat = Mat("TV_Screen", new Color(0.02f, 0.02f, 0.03f), 0.9f);
+            screenMat.EnableKeyword("_EMISSION");
+            screenMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            screenMat.SetColor("_EmissionColor", Color.black);
+            var tvScreen = Box("TV_Screen", tv.position + new Vector3(0f, 0.72f, 0.027f), new Vector3(0.84f, 0.46f, 0.005f), screenMat, collider: false);
+            tvScreen.transform.SetParent(tv, true);
+            var tvLight = new GameObject("TV_Light").AddComponent<Light>();
+            tvLight.transform.SetParent(tv, false);
+            tvLight.transform.localPosition = new Vector3(0f, 0.75f, 0.6f);
+            tvLight.type = LightType.Point;
+            tvLight.range = 4.5f;
+            tvLight.intensity = 0f;
+            tvLight.enabled = false;
+            tvLight.shadows = LightShadows.None;
+            tv.gameObject.AddComponent<TvGlow>().Configure(tvLight, tvScreen.GetComponent<Renderer>());
         }
 
         /// <summary>

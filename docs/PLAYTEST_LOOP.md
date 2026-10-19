@@ -94,3 +94,4 @@ web for how good games solve each weak point before it changes anything. Finding
 | 54 | Sit clip (Blender, 3 tries), idle → sit after 4 s | Live: the cat was a quarter of its size (a stick when sitting): the import rescale used animated bounds (54b: measure the baked rest pose) | — |
 | 54c | The real cause: the Sit tail rotations (and the Climb clip baked after them) gave the last tail bone a scale of about 26 (a giant 'stick'), and its bounds made the builder shrink the cat. rot_world now resets the bone scale; a CHECK prints the worst bone scale of every clip (all 1.000) | — | — |
 | 54c-live | — | Verified live: normal size again; after 4 s the cat sits upright with the tail round the paws, stands up to walk | — |
+| 55 | Twelve nap spots (golden ring, sit 3 s on a warm or soft place), Naps counter in the HUD | Verified live: nap_rug and nap_table found, "Naps 1/2" in the HUD, the cat sits with the tail round the paws | Sitting becomes a side activity |

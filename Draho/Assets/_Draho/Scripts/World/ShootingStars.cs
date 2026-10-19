@@ -36,6 +36,7 @@ namespace Draho.World
             mesh.bounds = new Bounds(Vector3.zero, Vector3.one * 4000f); // the shader moves it round the camera
             GetComponent<MeshFilter>().sharedMesh = mesh;
             view = GetComponent<MeshRenderer>();
+            gameObject.layer = 0; // the builder saw no mesh (made here) and put it on the near-only Detail layer
             material = view.material;
             view.enabled = false;
             wait = Random.Range(interval.x * 0.3f, interval.y * 0.5f);

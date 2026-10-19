@@ -39,6 +39,7 @@ namespace Draho.World
         void Awake()
         {
             view = GetComponent<MeshRenderer>();
+            gameObject.layer = 0; // the builder saw no mesh (made here) and put it on the near-only Detail layer
             mesh = new Mesh { name = "LampCone" };
             int n = Segments + 1;
             var verts = new Vector3[n * Rings.Length];

@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint),
             };
             bool IsDynamic(Transform t)
             {
@@ -528,12 +528,12 @@ namespace Draho.EditorTools
         /// garden, from the workshop end to a den under the bushes in the far corner. +Z is forward.
         /// </summary>
         /// <summary>Chapter 9: an old cast-iron lamp-post at the north end of the quay; on at night.</summary>
-        static void BuildQuayLamp(QuayLampInfo q)
+        static Light BuildQuayLamp(QuayLampInfo q, string name = "QuayLamp")
         {
-            if (q == null || q.h <= 0f) return;
+            if (q == null || q.h <= 0f) return null;
             var iron = Mat("QuayLamp_Iron", new Color(0.13f, 0.17f, 0.15f), 0.35f); // old dark green paint
             var glass = Mat("Lamp_Glow", new Color(1f, 0.85f, 0.6f), 0.6f);
-            var root = new GameObject("QuayLamp");
+            var root = new GameObject(name);
             root.transform.SetParent(level, false);
             root.transform.position = new Vector3(q.x, 0f, q.z);
             Box("Foot", root.transform.position + Vector3.up * 0.2f, new Vector3(0.26f, 0.4f, 0.26f), iron).transform.SetParent(root.transform, true);
@@ -560,6 +560,33 @@ namespace Draho.EditorTools
             var so = new SerializedObject(lamp);
             so.FindProperty("intensity").floatValue = 4.5f;
             so.ApplyModifiedPropertiesWithoutUndo();
+            return light;
+        }
+
+        /// <summary>
+        /// Three old lamp-posts along the far bank of the river, each with a glitter path on the water towards the
+        /// viewer at night (WaterGlint; additive, the sunbeam's material).
+        /// </summary>
+        static void BuildFarBankLamps(Layout layout)
+        {
+            if (layout.water == null) return;
+            var mat = AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/SunBeam.mat");
+            float edge = layout.water.x0; // the far bank starts where the water ends (west side)
+            int i = 0;
+            foreach (float z in new[] { 8f, -6f, -22f })
+            {
+                var light = BuildQuayLamp(new QuayLampInfo { x = edge - 0.6f, z = z, h = 4.2f }, $"FarBankLamp_{++i}");
+                if (light == null || mat == null) continue;
+                var glint = new GameObject($"Glint_{i}");
+                glint.transform.SetParent(level, false);
+                glint.transform.position = new Vector3(edge + 0.05f, layout.water.top + 0.015f, z);
+                glint.AddComponent<MeshFilter>();
+                var r = glint.AddComponent<MeshRenderer>();
+                r.sharedMaterial = mat;
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                r.receiveShadows = false;
+                glint.AddComponent<WaterGlint>().Configure(light);
+            }
         }
 
         /// <summary>
@@ -2685,6 +2712,7 @@ namespace Draho.EditorTools
             BuildFisherman(layout);
             BuildSunBeam(layout);
             BuildCatnip(layout);
+            BuildFarBankLamps(layout);
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -162,6 +162,13 @@ const steps = {
     ['03_drop', 'move', '0,1,1,1.5'],
     ['04_off_shed', 'move', '0,1,1,1.5'],
     ['05_quay', 'wait', '1.5'],
+  ],
+  // Start with ?beat=42&at=-31,7.5,270 : on the river bank at night, looking across the water: the far-bank lamps and
+  // their glitter paths on the river; then turn a little.
+  glint: [
+    ['02_look', 'wait', '3'],
+    ['03_turn', 'move', '-0.4,1,0,0.4'],
+    ['04_settle', 'wait', '2'],
   ],
   // Start with ?beat=24&at=52.6,-210.6,0 : at the grey cat's church step; follow the scent trail to the catnip (zoomies),
   // then run a little to see the speed.

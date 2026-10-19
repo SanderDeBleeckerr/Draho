@@ -18,6 +18,7 @@ namespace Draho.Cat
         ParticleSystem drops;
         float t = -1f, delay;
         int emitted;
+        float owed;
 
         void Start()
         {
@@ -57,9 +58,12 @@ namespace Draho.Cat
             Twist(chest, 0.06f, env, axis, 1f);
             Twist(spine, 0.09f, env, axis, 0.9f);
             Twist(hips, 0.12f, env, axis, 0.5f);
-            if (drops != null && Random.value < 0.6f)
+            // About 40 drops a second at the peak, the same at any frame rate.
+            owed += 40f * env * Time.deltaTime;
+            int n = Mathf.FloorToInt(owed);
+            if (drops != null && n > 0)
             {
-                int n = Mathf.CeilToInt(5 * env);
+                owed -= n;
                 drops.Emit(n);
                 emitted += n;
             }
@@ -102,7 +106,7 @@ namespace Draho.Cat
         public void TestShake()
         {
             Shake(0.1f);
-            Invoke(nameof(Report), 0.6f);
+            Invoke(nameof(Report), 1.1f);
         }
 
         void Report() => Debug.Log($"STATE shake drops: {(drops != null ? drops.particleCount : -1)} alive, {emitted} emitted, playing {(drops != null && drops.isPlaying)}, head {(head != null)}, chest {(chest != null)}");

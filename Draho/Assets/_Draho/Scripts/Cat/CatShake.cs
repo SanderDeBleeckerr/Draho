@@ -17,6 +17,7 @@ namespace Draho.Cat
         Transform head, neck, chest, spine, hips;
         ParticleSystem drops;
         float t = -1f, delay;
+        int emitted;
 
         void Start()
         {
@@ -57,7 +58,11 @@ namespace Draho.Cat
             Twist(spine, 0.09f, env, axis, 0.9f);
             Twist(hips, 0.12f, env, axis, 0.5f);
             if (drops != null && Random.value < 0.6f)
-                drops.Emit(Mathf.CeilToInt(5 * env));
+            {
+                int n = Mathf.CeilToInt(5 * env);
+                drops.Emit(n);
+                emitted += n;
+            }
         }
 
         void Twist(Transform bone, float lag, float env, Vector3 axis, float weight)
@@ -87,6 +92,9 @@ namespace Draho.Cat
             shape.rotation = Vector3.zero;
             var grow = ps.sizeOverLifetime;
             grow.enabled = false;
+            var emission = ps.emission;
+            emission.enabled = false;
+            ps.Play(); // a stopped copy does not simulate what Emit() adds; with emission off, Play() adds nothing itself
             return ps;
         }
 
@@ -97,6 +105,6 @@ namespace Draho.Cat
             Invoke(nameof(Report), 0.6f);
         }
 
-        void Report() => Debug.Log($"STATE shake drops: {(drops != null ? drops.particleCount : -1)}, head {(head != null)}, chest {(chest != null)}");
+        void Report() => Debug.Log($"STATE shake drops: {(drops != null ? drops.particleCount : -1)} alive, {emitted} emitted, playing {(drops != null && drops.isPlaying)}, head {(head != null)}, chest {(chest != null)}");
     }
 }

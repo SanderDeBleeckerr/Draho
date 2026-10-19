@@ -1204,12 +1204,12 @@ namespace Draho.EditorTools
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = new ParticleSystem.MinMaxCurve(16f, 24f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.08f);
-            main.startSize = new ParticleSystem.MinMaxCurve(2.5f, 4.5f);
+            main.startSize = new ParticleSystem.MinMaxCurve(3f, 6f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             main.startColor = new Color(0.92f, 0.94f, 0.97f, 1f);
-            main.maxParticles = 90;
+            main.maxParticles = 160;
             var emission = ps.emission;
-            emission.rateOverTime = 4f;
+            emission.rateOverTime = 7f;
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
             shape.scale = new Vector3(x1 - x0, 0.8f, z1 - z0);

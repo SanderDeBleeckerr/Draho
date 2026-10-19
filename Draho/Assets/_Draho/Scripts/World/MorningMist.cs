@@ -13,7 +13,7 @@ namespace Draho.World
     public class MorningMist : MonoBehaviour
     {
         [SerializeField] float burnOff = 240f;
-        [SerializeField] float alpha = 0.35f;
+        [SerializeField] float alpha = 0.45f;
 
         ParticleSystem system;
         Material material;

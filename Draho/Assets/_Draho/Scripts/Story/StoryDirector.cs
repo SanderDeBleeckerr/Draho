@@ -534,12 +534,18 @@ namespace Draho.Story
                 {
                     Story = "Chapter 11: Home. Through the hatch, down a dusty attic ladder and the dark stairs, and in through your own cat flap. Home, and wet to the bone.",
                     Goal = "Dry off: climb into your basket on top of the cat tree.",
-                    Begin = () => ScreenFade.Run(() =>
+                    Begin = () =>
                     {
                         Storm.End();
-                        SkyMood.Set(SkyMood.Mood.Night, 0.1f);
-                        cat.Teleport(new Vector3(3.4f, 0.05f, 3.4f), Quaternion.Euler(0f, 60f, 0f));
-                    }),
+                        if (index < 0) return; // replayed at the start of a later saved game or test: no fade, no jump home
+                        int at = index;
+                        ScreenFade.Run(() =>
+                        {
+                            if (index != at) return;
+                            SkyMood.Set(SkyMood.Mood.Night, 0.1f);
+                            cat.Teleport(new Vector3(3.4f, 0.05f, 3.4f), Quaternion.Euler(0f, 60f, 0f));
+                        });
+                    },
                     Target = () => catTree != null ? catTree.position + Vector3.up * 0.8f : (Vector3?)null,
                     Done = () => catTree != null && cat.transform.position.y > 0.5f && Vector3.Distance(Flat(cat.transform.position), Flat(catTree.position)) < 0.6f,
                 },

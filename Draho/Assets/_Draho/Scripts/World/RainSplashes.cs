@@ -42,7 +42,7 @@ namespace Draho.World
                 system.Emit(e, 3);
             }
         }
-    
+
         /// <summary>Test hook: SendMessage('RainSplashes', 'TestReport').</summary>
         public void TestReport() => Debug.Log($"STATE rain splashes: {system.particleCount} alive, storm {Storm.Active}");
     }

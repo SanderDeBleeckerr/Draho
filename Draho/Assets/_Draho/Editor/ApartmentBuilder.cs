@@ -1156,6 +1156,29 @@ namespace Draho.EditorTools
             return mat;
         }
 
+        /// <summary>
+        /// Cloud shadows: the cookie is saved as an asset and put on the sun in the scene, so the build keeps the light
+        /// cookie shader variant; CloudShadows slides it with the wind by day.
+        /// </summary>
+        static void BuildCloudShadows()
+        {
+            new GameObject("CloudShadows").AddComponent<CloudShadows>().transform.SetParent(level, false);
+            var sunGo = GameObject.Find("Sun");
+            if (sunGo == null) return;
+            string path = $"{PlaygroundBuilder.MaterialDir}/CloudCookie.asset";
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            if (tex == null)
+            {
+                tex = CloudShadows.MakeCookie(128, 0.45f);
+                AssetDatabase.CreateAsset(tex, path);
+            }
+            var sun = sunGo.GetComponent<Light>();
+            sun.cookie = tex;
+            var data = sunGo.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>();
+            if (data == null) data = sunGo.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>();
+            data.lightCookieSize = new Vector2(60f, 60f);
+        }
+
         /// <summary>Glow-worms in the wild garden's long grass at night (GlowWorms; the additive glow material).</summary>
         static void BuildGlowWorms(WildGarden w)
         {
@@ -2786,7 +2809,7 @@ namespace Draho.EditorTools
             BuildFisherman(layout);
             BuildSunBeam(layout);
             BuildGlowWorms(layout.wild_garden);
-            new GameObject("CloudShadows").AddComponent<CloudShadows>().transform.SetParent(level, false);
+            BuildCloudShadows();
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildNapSpots();

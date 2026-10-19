@@ -27,7 +27,9 @@ namespace Draho.World
             sun = go.GetComponent<Light>();
             sunData = go.GetComponent<UniversalAdditionalLightData>();
             if (sunData == null) sunData = go.AddComponent<UniversalAdditionalLightData>();
-            cookie = MakeCookie(128, shade);
+            // The builder puts the cookie on the sun in the scene (so the build keeps the cookie shader variant).
+            cookie = sun.cookie as Texture2D;
+            if (cookie == null) cookie = MakeCookie(128, shade);
             sunData.lightCookieSize = new Vector2(size, size);
             Debug.Log("STATE cloud shadows on the sun");
         }
@@ -47,7 +49,7 @@ namespace Draho.World
             if (sun != null) sun.cookie = null;
         }
 
-        static Texture2D MakeCookie(int n, float shade)
+        public static Texture2D MakeCookie(int n, float shade)
         {
             // Tiling noise: sample Perlin noise on a torus-like wrap (blend four shifted copies) so the edges meet.
             var tex = new Texture2D(n, n, TextureFormat.RGBA32, true) { wrapMode = TextureWrapMode.Repeat, name = "CloudCookie" };

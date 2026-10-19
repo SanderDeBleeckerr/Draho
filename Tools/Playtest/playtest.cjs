@@ -365,7 +365,7 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=55&at=2.6,3.6,180 : the epilogue in the living room facing the TV; skip to night: the TV
+  // Start with ?beat=55&at=3.4,1.7,180 : the epilogue in the living room facing the TV; skip to night: the TV
   // flickers blue on the walls.
   tv: [
     ['02_day', 'wait', '1'],

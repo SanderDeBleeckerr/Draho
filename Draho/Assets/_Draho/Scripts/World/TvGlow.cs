@@ -48,7 +48,7 @@ namespace Draho.World
                 glow.intensity = intensity * level;
                 glow.color = shot;
             }
-            if (screenMat != null) screenMat.SetColor("_EmissionColor", shot * (level * 2.2f));
+            if (screenMat != null) screenMat.SetColor("_EmissionColor", shot * (level * 1.0f));
         }
     }
 }

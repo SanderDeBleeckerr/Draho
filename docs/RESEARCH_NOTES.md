@@ -652,3 +652,10 @@ several on high roofs you can see from below before you can reach them. A found 
   reads by being darker than the sky; against a dark sky by being lit.
 - Done: ChimneySmoke puts a plume on each chimney (cone up, growing 0.7 → 3.5x, fade in and out over 5-8 s), with
   a wind force that sways slowly; 1.2/s by day, 3/s at night, 6/s blown flat and fast in the storm.
+
+## Round 77 — TV light
+
+- Light from a TV reads cool (blue-white) and changes brightness and colour at each cut of the picture (every few
+  seconds), with small flicker between; in a dark room it is the main light, on the walls and the faces.
+- Done: TvGlow in the epilogue at night: an emissive screen and a point light (range 4.5 m) that jump to a new
+  level and colour at each "cut" (0.6-4 s) and flicker a little in between.

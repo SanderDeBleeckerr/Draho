@@ -644,3 +644,11 @@ several on high roofs you can see from below before you can reach them. A found 
   for 100% use it to plan, and it shows the size of what is left without spoilers.
 - Done: "Drahomil's notes" on the board panel when the cat sits for 6 s: every category with found/total, mice
   caught and coins, and the reminder to sniff.
+
+## Round 76 — chimney smoke
+
+- A smoke plume rises fast and narrow from the flue, then widens and slows as it cools and mixes with the air,
+  and leans downwind; in a strong wind it is pressed down over the roof (downwash). Against a bright sky, smoke
+  reads by being darker than the sky; against a dark sky by being lit.
+- Done: ChimneySmoke puts a plume on each chimney (cone up, growing 0.7 → 3.5x, fade in and out over 5-8 s), with
+  a wind force that sways slowly; 1.2/s by day, 3/s at night, 6/s blown flat and fast in the storm.

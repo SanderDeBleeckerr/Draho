@@ -42,9 +42,9 @@ namespace Draho.World
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = new ParticleSystem.MinMaxCurve(5f, 8f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.25f, 0.45f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.35f, 0.6f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.45f, 0.75f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
-            main.startColor = new Color(0.6f, 0.6f, 0.63f, 0.4f);
+            main.startColor = new Color(0.42f, 0.42f, 0.45f, 0.6f); // darker than the sky, or it vanishes against it
             main.maxParticles = 60;
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Cone;

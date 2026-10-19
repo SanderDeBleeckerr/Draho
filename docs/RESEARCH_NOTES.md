@@ -691,3 +691,17 @@ several on high roofs you can see from below before you can reach them. A found 
   Deriving the height from the same rules as the colour texture keeps the two in register.
 - Done: NormalMap() builds a tangent-space normal map from a height function by central differences and imports it
   as a normal map; Mat() adds it to every material using Bricks, FloorTile or Pebbles (bump 0.8).
+
+## Round 84 — slate and plaster relief
+
+- A one-pixel step averages away under mip-mapping and distance; relief that must read from a few metres needs a
+  wider bevel (here 6 px of 64 per slate row) and more strength.
+
+## Round 85 — sounds made in code
+
+- Rain is broadband noise with soft drop transients; thunder is a short crack and a long, rolling low rumble that
+  arrives about 3 s per km after the flash; a cat purrs at about 25 Hz (pulses of the larynx muscles) on both the
+  in- and the out-breath, louder on the out-breath.
+- Done: Soundscape makes three AudioClips at start (no sound files): a 2 s rain loop (low-passed noise, rare drops,
+  crossfaded seam), a 4 s thunder (crack + brown-noise rumble with swells, exponential decay) played after each
+  SkyMood flash, and a 2 s purr loop (pulses at 24-27 Hz shaped by a breath curve) faded in while the cat sits.

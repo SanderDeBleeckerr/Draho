@@ -19,6 +19,8 @@ namespace Draho.UI
         float toastTime;
         Transform boardSpot, cat;
         Mouse[] mice;
+        Cat.CatAnimator catAnimator;
+        int napTotal, viewTotal, scratchTotal, giftTotal;
         float boardAlpha;
         int shownCoins = -1;
 
@@ -59,6 +61,30 @@ namespace Draho.UI
             boardSpot = GameObject.Find("Marker_BountyBoard")?.transform;
             cat = FindAnyObjectByType<Cat.CatMotor>()?.transform;
             mice = FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            catAnimator = cat != null ? cat.GetComponent<Cat.CatAnimator>() : null;
+            napTotal = FindObjectsByType<NapSpot>(FindObjectsSortMode.None).Length;
+            viewTotal = FindObjectsByType<Viewpoint>(FindObjectsSortMode.None).Length;
+            scratchTotal = FindObjectsByType<ScratchSpot>(FindObjectsSortMode.None).Length;
+            giftTotal = FindObjectsByType<Gift>(FindObjectsSortMode.None).Length;
+        }
+
+        /// <summary>
+        /// Drahomil's notes: everything there is to find and how much is found, shown on the board panel while the
+        /// cat sits a while (research round 75: a completion list helps players who play for 100%).
+        /// </summary>
+        string Notes(Progress p)
+        {
+            int caught = 0;
+            foreach (var m in mice) caught += p.BountyCount(m.DisplayName);
+            var sb = new System.Text.StringBuilder("DRAHOMIL'S NOTES\n");
+            sb.Append($"\nFeathers: {p.CollectedCount}/{p.TotalCollectables}");
+            sb.Append($"\nNap spots: {p.NapCount}/{napTotal}{(p.NapCount >= napTotal ? "  (well rested)" : "")}");
+            sb.Append($"\nViewpoints: {p.ViewCount}/{viewTotal}");
+            sb.Append($"\nScratching places: {p.ScratchCount}/{scratchTotal}");
+            if (Draho.Story.StoryDirector.InEpilogue) sb.Append($"\nGifts for the humans: {p.GiftCount}/{giftTotal}");
+            sb.Append($"\nMice caught: {caught}    Coins: {p.Coins}");
+            sb.Append("\n\nCrouch and keep still to sniff for what is left.");
+            return sb.ToString();
         }
 
         void Update()
@@ -73,6 +99,8 @@ namespace Draho.UI
                 && Vector3.Distance(new Vector3(cat.position.x, 0f, cat.position.z), new Vector3(boardSpot.position.x, 0f, boardSpot.position.z)) < 1.6f
                 && Mathf.Abs(cat.position.y - boardSpot.position.y) < 2f
                 && !Draho.World.Humans.AnyHome; // the board stays quiet while the humans are at the door
+            bool notes = !atBoard && p != null && catAnimator != null && catAnimator.IdleTime > 6f;
+            if (notes && board != null) board.text = Notes(p);
             if (atBoard && board != null)
             {
                 var sb = new System.Text.StringBuilder("BOUNTY BOARD — mice wanted\n");
@@ -88,7 +116,7 @@ namespace Draho.UI
                 c.a = Mathf.Clamp01(toastTime);
                 toast.color = c;
             }
-            boardAlpha = Mathf.MoveTowards(boardAlpha, atBoard ? 1f : 0f, 3f * Time.deltaTime);
+            boardAlpha = Mathf.MoveTowards(boardAlpha, atBoard || notes ? 1f : 0f, 3f * Time.deltaTime);
             if (boardGroup != null) boardGroup.alpha = boardAlpha;
         }
     }

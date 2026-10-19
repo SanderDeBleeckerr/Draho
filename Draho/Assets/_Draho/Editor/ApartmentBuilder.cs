@@ -592,6 +592,17 @@ namespace Draho.EditorTools
         }
 
         /// <summary>
+        /// Lamp-posts along the street in front of the house (east of the facade), seen from the roofs at night: the
+        /// quay lamp's post, light and cone.
+        /// </summary>
+        static void BuildStreetLamps()
+        {
+            int i = 0;
+            foreach (float z in new[] { -4f, 6f, 16f, 26f })
+                BuildQuayLamp(new QuayLampInfo { x = 21.6f, z = z, h = 4.5f }, $"StreetLamp_{++i}");
+        }
+
+        /// <summary>
         /// Windows on the scenery blocks: flat panes in rows (one floor = 3 m), about a third of them lit at
         /// night. All panes are in two meshes (lit and dark), so the whole block costs two draw calls.
         /// </summary>
@@ -3103,6 +3114,7 @@ namespace Draho.EditorTools
             new GameObject("DayCycle").AddComponent<DayCycle>().transform.SetParent(level, false);
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
+            BuildStreetLamps();
             BuildNapSpots();
             BountyBoard(layout.bounty_board);
             ProgressPanel(hud);

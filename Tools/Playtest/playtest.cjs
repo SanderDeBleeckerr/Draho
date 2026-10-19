@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -364,6 +364,12 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=47&at=14.4,4.6,90,12.4 : on the ridge at night, looking east down at the street: lamp-posts
+  // with soft cones along the house front.
+  street: [
+    ['02_look_down', 'call', 'Main Camera.TestView:28,2.4'],
+    ['03_street', 'wait', '4'],
   ],
   // Start with ?beat=55&at=3.4,1.7,180 : the epilogue in the living room facing the TV; skip to night: the TV
   // flickers blue on the walls.

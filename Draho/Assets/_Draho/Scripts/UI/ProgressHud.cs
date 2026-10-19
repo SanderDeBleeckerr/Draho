@@ -99,7 +99,7 @@ namespace Draho.UI
                 && Vector3.Distance(new Vector3(cat.position.x, 0f, cat.position.z), new Vector3(boardSpot.position.x, 0f, boardSpot.position.z)) < 1.6f
                 && Mathf.Abs(cat.position.y - boardSpot.position.y) < 2f
                 && !Draho.World.Humans.AnyHome; // the board stays quiet while the humans are at the door
-            bool notes = !atBoard && p != null && catAnimator != null && catAnimator.IdleTime > 6f;
+            bool notes = !atBoard && p != null && catAnimator != null && catAnimator.IdleTime > 10f; // only after a real rest: players stop to look around too
             if (notes && board != null) board.text = Notes(p);
             if (atBoard && board != null)
             {

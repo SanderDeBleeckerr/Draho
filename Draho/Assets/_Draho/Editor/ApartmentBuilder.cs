@@ -205,7 +205,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -944,6 +944,30 @@ namespace Draho.EditorTools
             tvLight.enabled = false;
             tvLight.shadows = LightShadows.None;
             tv.gameObject.AddComponent<TvGlow>().Configure(tvLight, tvScreen.GetComponent<Renderer>());
+
+            // The laser game (LaserDot): a small bright red disc on the floor and a tiny red light.
+            var laser = new GameObject("LaserDot").transform;
+            laser.SetParent(level, false);
+            var dotMat = Mat("Laser_Dot", new Color(1f, 0.05f, 0.05f), 0.9f);
+            dotMat.EnableKeyword("_EMISSION");
+            dotMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            dotMat.SetColor("_EmissionColor", new Color(3f, 0.1f, 0.1f));
+            var dotGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(dotGo.GetComponent<Collider>());
+            dotGo.name = "Dot";
+            dotGo.transform.SetParent(laser, false);
+            dotGo.transform.localScale = new Vector3(0.035f, 0.001f, 0.035f);
+            dotGo.GetComponent<Renderer>().sharedMaterial = dotMat;
+            dotGo.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            var dotLight = new GameObject("DotLight").AddComponent<Light>();
+            dotLight.transform.SetParent(dotGo.transform, false);
+            dotLight.transform.localPosition = Vector3.up * 40f; // 4 cm above the floor (the dot is scaled flat)
+            dotLight.type = LightType.Point;
+            dotLight.color = new Color(1f, 0.1f, 0.1f);
+            dotLight.range = 0.4f;
+            dotLight.intensity = 0.8f;
+            dotLight.shadows = LightShadows.None;
+            laser.gameObject.AddComponent<LaserDot>().Configure(dotGo.transform, dotLight);
         }
 
         /// <summary>

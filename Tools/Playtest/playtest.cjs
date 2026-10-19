@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -364,6 +364,16 @@ const steps = {
     ['14_top', 'hold', '2'],
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
+  ],
+  // Start with ?beat=55&at=1.2,2.0,90 : the epilogue in the living room: the laser dot appears; five test pounces.
+  laser: [
+    ['02_dot', 'wait', '2'],
+    ['03_pounce', 'call', 'LaserDot.TestCatch'],
+    ['04_pounce', 'call', 'LaserDot.TestCatch'],
+    ['05_pounce', 'call', 'LaserDot.TestCatch'],
+    ['06_pounce', 'call', 'LaserDot.TestCatch'],
+    ['07_won', 'call', 'LaserDot.TestCatch'],
+    ['08_after', 'wait', '1'],
   ],
   // Start with ?beat=42&at=21,-12,0 : in the street south of the house at night, looking north: lamp-posts
   // with soft cones along the house front.

@@ -396,6 +396,9 @@ namespace Draho.EditorTools
             SetField(catAnimator, "motor", motor);
             SetField(catAnimator, "animator", animator);
             SetField(catAnimator, "dust", DustPuff(root.transform));
+            var tailLife = root.AddComponent<CatTailLife>();
+            SetField(tailLife, "motor", motor);
+            SetField(tailLife, "catAnimator", catAnimator);
 
             foreach (var t in root.GetComponentsInChildren<Transform>(true))
                 t.gameObject.layer = IgnoreRaycastLayer;

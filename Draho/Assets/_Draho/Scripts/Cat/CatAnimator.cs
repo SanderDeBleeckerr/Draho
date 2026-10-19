@@ -34,6 +34,9 @@ namespace Draho.Cat
         float lowestFall;      // most negative vertical speed during this jump
         float idle;            // seconds standing still (the cat sits down after a while)
 
+        /// <summary>Seconds standing still (after about 4 s the cat sits).</summary>
+        public float IdleTime => idle;
+
         void Start() => baseScale = animator.transform.localScale;
 
         void Update()

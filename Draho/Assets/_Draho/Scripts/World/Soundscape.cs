@@ -11,7 +11,8 @@ namespace Draho.World
     {
         const int Rate = 22050;
 
-        AudioSource rain, thunder, purr, birds, crickets;
+        AudioSource rain, thunder, purr, birds, crickets, wind;
+        Transform catT;
         AudioClip[] songs;
         AudioClip scream;
         float nextSong = 4f;
@@ -27,11 +28,33 @@ namespace Draho.World
             crickets = Source(MakeCrickets(), true, 0f);
             songs = new[] { MakeSong(1), MakeSong(2), MakeSong(3), MakeSong(4) };
             scream = MakeScream();
+            wind = Source(MakeWind(), true, 0f);
+            // The river murmurs from three places along the water (3D: louder near the quay).
+            var flow = MakeFlow();
+            foreach (float z in new[] { 0f, -45f, -95f })
+            {
+                var go = new GameObject("RiverSound");
+                go.transform.SetParent(transform, false);
+                go.transform.position = new Vector3(-41.5f, -0.8f, z);
+                var src = go.AddComponent<AudioSource>();
+                src.clip = flow;
+                src.loop = true;
+                src.volume = 0.35f;
+                src.spatialBlend = 1f;
+                src.rolloffMode = AudioRolloffMode.Linear;
+                src.minDistance = 4f;
+                src.maxDistance = 32f;
+                src.Play();
+            }
             SkyMood.Flashed += OnFlash;
-            Debug.Log($"STATE soundscape: rain {rain.clip.length:0.0} s, thunder {thunder.clip.length:0.0} s, purr {purr.clip.length:0.0} s, {songs.Length} songs, crickets {crickets.clip.length:0.0} s, scream {scream.length:0.00} s");
+            Debug.Log($"STATE soundscape: rain {rain.clip.length:0.0} s, thunder {thunder.clip.length:0.0} s, purr {purr.clip.length:0.0} s, {songs.Length} songs, crickets {crickets.clip.length:0.0} s, scream {scream.length:0.00} s, wind {wind.clip.length:0.0} s, river x3");
         }
 
-        void Start() => catAnimator = FindAnyObjectByType<Cat.CatAnimator>();
+        void Start()
+        {
+            catAnimator = FindAnyObjectByType<Cat.CatAnimator>();
+            catT = catAnimator != null ? catAnimator.transform : null;
+        }
 
         void OnDestroy() => SkyMood.Flashed -= OnFlash;
 
@@ -77,6 +100,9 @@ namespace Draho.World
                     birds.PlayOneShot(low && Random.value < 0.6f ? scream : songs[Random.Range(0, songs.Length)], low ? 0.7f : 1f);
                 }
             }
+            // Wind on the high roofs: louder the higher the cat, much louder in the storm.
+            float height = catT != null ? Mathf.Clamp01((catT.position.y - 5f) / 6f) : 0f;
+            wind.volume = Mathf.MoveTowards(wind.volume, height * (Storm.Active ? 0.4f : 0.16f), dt * 0.2f);
             bool sitting = catAnimator != null && catAnimator.IdleTime > 4f;
             purr.volume = Mathf.MoveTowards(purr.volume, sitting ? 0.28f : 0f, dt * (sitting ? 0.15f : 0.6f));
         }
@@ -218,6 +244,51 @@ namespace Draho.World
             }
             Crossfade(data, Rate / 20);
             var clip = AudioClip.Create("Crickets", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip MakeWind()
+        {
+            // Four seconds of deep, slowly swelling noise (strongly low-passed): wind over the roofs.
+            int n = Rate * 4;
+            var data = new float[n];
+            var rng = new System.Random(87);
+            float lp = 0f, lp2 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float white = (float)rng.NextDouble() * 2f - 1f;
+                lp += (white - lp) * 0.04f;
+                lp2 += (lp - lp2) * 0.08f;
+                float swell = 0.55f + 0.45f * Mathf.Sin(t * Mathf.PI * 2f / 4f) * Mathf.Sin(t * 1.3f + 0.4f);
+                data[i] = lp2 * 6f * swell;
+            }
+            Crossfade(data, Rate / 4);
+            var clip = AudioClip.Create("Wind", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip MakeFlow()
+        {
+            // Running water: band-limited noise with many small bubbling swells.
+            int n = Rate * 3;
+            var data = new float[n];
+            var rng = new System.Random(82);
+            float lp = 0f, hp = 0f, prev = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float white = (float)rng.NextDouble() * 2f - 1f;
+                lp += (white - lp) * 0.25f;
+                hp = 0.97f * (hp + lp - prev);
+                prev = lp;
+                float bubble = 0.6f + 0.4f * Mathf.Abs(Mathf.Sin(t * 9f) * Mathf.Sin(t * 13.7f + 1f));
+                data[i] = hp * 0.9f * bubble;
+            }
+            Crossfade(data, Rate / 10);
+            var clip = AudioClip.Create("RiverFlow", n, 1, Rate, false);
             clip.SetData(data, 0);
             return clip;
         }

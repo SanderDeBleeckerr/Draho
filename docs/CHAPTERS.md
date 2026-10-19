@@ -18,6 +18,8 @@ surface and terrain models). Only relative game metres go into this repository.
 | 10 | The high roofs | The cat's house and its neighbour on the street (8.8–11.8 m) | Up the light well, slate and tiles, chimneys, a storm with gusts (DUCK), the roof hatch | 40 min | Playable (to grow) |
 | 11 | Home | Back to the apartment | Dry off on the cat tree, morning, the humans come home; greet them | 15 min | Playable (to grow) |
 |   | Side activities | Everywhere | 24 feathers to find, a bounty board with 5 mouse territories (mice come back warier), coins | 40 min | First part playable |
+|   | More side activities | Everywhere | 12 nap spots (all: well rested), 5 viewpoints on the high roofs, catnip zoomies, squeaky toys | 30 min | Playable |
+|   | Epilogue (free roam) | Everywhere, a new day | After THE END: 6 gifts for the humans across town, and everything not yet found | 30 min | Playable |
 
 Rules for each chapter:
 - Every new area comes from the real block (survey first, then the blueprint, then the scene).

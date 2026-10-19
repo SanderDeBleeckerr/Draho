@@ -86,3 +86,5 @@ web for how good games solve each weak point before it changes anything. Finding
 | 49b | — | Verified live: a breakfast start shows the dawn: warm light, long window-frame shadows on the floor, dust motes; the shaft itself faint (→ 0.55) | — |
 | 50 | — | Camera verified live in the light well: the cat stays framed from a little above; chapter 8 still plays through; the court's round stones look too bright and busy | Perf at the halfway mark: max 244 batches, 129 k tris (budget 300 / 150 k); spawn 233 batches / 51 k tris |
 | 51 | Cobbles at real size (about 11 cm), old-plaster texture on plaster walls | Live: stone size right, but the stones still read near-white against dark gaps (51b: darker stone tint) | — |
+| 51b | — | Verified live: the court reads as grey round cobbles | — |
+| 52 | Catnip bed (leaves, lilac flowers) and a green scent trail | Verified live: sniff → zoomies (6.8 m in 2.5 s) → beat 25; the wisps were too faint to follow (52b: bigger, brighter) | Chapter 5 grows from 4 to 5 beats: follow a smell |

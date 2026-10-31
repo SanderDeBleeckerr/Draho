@@ -2446,7 +2446,7 @@ namespace Draho.EditorTools
 
         /// <summary>
         /// The blocks round the level (scenery, no colliders): about 700 real building footprints and heights from open
-        /// data, extruded into walls and roofs. Merged into one mesh per 100 m square (so the camera culls the squares
+        /// data, extruded into walls and roofs. Merged into one mesh per 200 m square (so the camera culls the squares
         /// out of view), one submesh per wall material (two brick and two plaster tones) and two roof materials
         /// (gravel for flat roofs, slate for pitched ones).
         /// </summary>
@@ -2496,7 +2496,7 @@ namespace Draho.EditorTools
                 if (signed < 0f) System.Array.Reverse(pts); // counter-clockwise in (x, z)
                 Vector2 centre = Vector2.zero;
                 foreach (var q in pts) centre += q / n;
-                var key = new Vector2Int(Mathf.FloorToInt(centre.x / 100f), Mathf.FloorToInt(centre.y / 100f));
+                var key = new Vector2Int(Mathf.FloorToInt(centre.x / 200f), Mathf.FloorToInt(centre.y / 200f));
                 if (!chunks.TryGetValue(key, out var tris))
                 {
                     tris = new List<int>[mats.Length];
@@ -2687,7 +2687,7 @@ namespace Draho.EditorTools
 
         /// <summary>
         /// Trees round the level: a tapered trunk and two or three low-poly lumps of leaves per tree, merged into one mesh
-        /// per 100 m square (bark and leaves submeshes). trees = [x, z, height, crown radius, ...].
+        /// per 200 m square (bark and leaves submeshes). trees = [x, z, height, crown radius, ...].
         /// </summary>
         static void SurroundingTrees(Transform root, float[] trees)
         {
@@ -2711,7 +2711,7 @@ namespace Draho.EditorTools
             for (int i = 0; i + 3 < trees.Length; i += 4)
             {
                 float x = trees[i], z = trees[i + 1], h = trees[i + 2], rad = trees[i + 3];
-                var key = new Vector2Int(Mathf.FloorToInt(x / 100f), Mathf.FloorToInt(z / 100f));
+                var key = new Vector2Int(Mathf.FloorToInt(x / 200f), Mathf.FloorToInt(z / 200f));
                 if (!chunks.TryGetValue(key, out var c)) chunks[key] = c = (new List<Vector3>(), new List<Vector3>(), new[] { new List<int>(), new List<int>(), new List<int>() });
                 // The trunk: six sides, tapering, up to the crown base.
                 float tb = 0.14f + h * 0.012f, crownBase = h * 0.35f;

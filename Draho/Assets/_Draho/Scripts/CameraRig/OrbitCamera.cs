@@ -138,14 +138,14 @@ namespace Draho.CameraRig
             Quaternion rotation = Quaternion.Euler(Mathf.Lerp(pitch, climbPitch, blend), yaw, 0f);
             Vector3 back = rotation * Vector3.back;
             float allowed = wantDistance;
-            if (Physics.SphereCast(focus, collisionRadius, back, out RaycastHit hit, wantDistance,
+            if (distance < 5f && Physics.SphereCast(focus, collisionRadius, back, out RaycastHit hit, wantDistance,
                     collisionMask, QueryTriggerInteraction.Ignore))
             {
                 allowed = Mathf.Max(0.1f, hit.distance);
             }
 
             // Blocked for a while (and the player is not turning the view): look for a freer viewpoint nearby.
-            occludedTime = allowed < wantDistance * 0.6f ? occludedTime + dt : 0f;
+            occludedTime = distance < 5f && allowed < wantDistance * 0.6f ? occludedTime + dt : 0f;
             if (occludedTime > minOcclusionTime && look.sqrMagnitude < 0.01f && blend < 0.1f) // climbing has its own framing
             {
                 float best = allowed * 1.3f;

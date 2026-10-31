@@ -207,7 +207,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(SetRewards), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(SetRewards), typeof(NightWindows), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -2401,16 +2401,28 @@ namespace Draho.EditorTools
             raw = System.Text.RegularExpressions.Regex.Replace(raw, @"""p"":\[\[(.*?)\]\]", m => "\"p\":[" + m.Groups[1].Value.Replace("],[", ",") + "]");
             var file = JsonUtility.FromJson<SurroundingsFile>(raw);
             if (file?.buildings == null) return;
+            // Walls with windows (round 105): facade textures of 12 m (4 floors, 4 bays), lit windows at night.
+            var lights = FacadeLightTexture();
+            Material Facade(string name, Color c, bool brick)
+            {
+                var m = Mat(name, c, brick ? 0.08f : 0.1f, FacadeTexture(brick), Vector2.one);
+                m.EnableKeyword("_EMISSION");
+                m.SetTexture("_EmissionMap", lights);
+                m.SetColor("_EmissionColor", Color.black); // NightWindows turns it up after dusk
+                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+                EditorUtility.SetDirty(m);
+                return m;
+            }
             var mats = new[]
             {
-                Mat("Sur_Brick", new Color(0.66f, 0.42f, 0.33f), 0.08f, BrickTexture(), Vector2.one),
-                Mat("Sur_BrickDark", new Color(0.5f, 0.33f, 0.27f), 0.08f, BrickTexture(), Vector2.one),
-                Mat("Sur_Plaster", new Color(0.86f, 0.83f, 0.77f), 0.1f, PlasterTexture(), Vector2.one),
-                Mat("Sur_PlasterGrey", new Color(0.7f, 0.7f, 0.68f), 0.1f, PlasterTexture(), Vector2.one),
+                Facade("Sur_Brick", new Color(0.8f, 0.52f, 0.41f), true),
+                Facade("Sur_BrickDark", new Color(0.62f, 0.41f, 0.34f), true),
+                Facade("Sur_Plaster", new Color(1f, 0.97f, 0.9f), false),
+                Facade("Sur_PlasterGrey", new Color(0.82f, 0.82f, 0.8f), false),
                 Mat("Sur_RoofFlat", new Color(0.36f, 0.35f, 0.33f), 0.05f, PebbleTexture(), Vector2.one),
                 Mat("Sur_RoofSlate", new Color(0.3f, 0.3f, 0.33f), 0.25f, RoofTexture(false), Vector2.one),
             };
-            float[] wallScale = { 1f, 1f, 3f, 3f };   // the brick texture is 1 m, the plaster 3 m
+            float[] wallScale = { 12f, 12f, 12f, 12f };   // the facade textures are 12 m square
             var chunks = new Dictionary<Vector2Int, List<int>[]>();
             var chunkVerts = new Dictionary<Vector2Int, (List<Vector3> v, List<Vector3> n, List<Vector2> uv)>();
             int count = 0;
@@ -2504,7 +2516,8 @@ namespace Draho.EditorTools
                             int v0 = V.Count;
                             V.Add(q0); V.Add(q1); V.Add(q1 + Vector3.up * ch); V.Add(q0 + Vector3.up * ch);
                             for (int m = 0; m < 4; m++) N.Add(outw);
-                            UV.Add(Vector2.zero); UV.Add(new Vector2(0.6f, 0f)); UV.Add(new Vector2(0.6f, ch)); UV.Add(new Vector2(0f, ch));
+                            // A plain brick patch of the facade texture (left of the first window), not a window.
+                            UV.Add(Vector2.zero); UV.Add(new Vector2(0.05f, 0f)); UV.Add(new Vector2(0.05f, 0.06f)); UV.Add(new Vector2(0f, 0.06f));
                             if (Vector3.Dot(Vector3.Cross(q1 - q0, Vector3.up), outw) < 0f) tris[0].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
                             else tris[0].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
                         }
@@ -2557,6 +2570,7 @@ namespace Draho.EditorTools
             Surface(root, "SurWater", file.water, -0.02f, water, 4f, true);
             Surface(root, "SurRoads", file.roads, -0.05f, Mat("Sur_Asphalt", new Color(0.3f, 0.3f, 0.31f), 0.2f, PebbleTexture(), Vector2.one), 3f, false);
             Surface(root, "SurGreen", file.green, -0.04f, Mat("Sur_Grass", new Color(0.32f, 0.45f, 0.22f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
+            root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3] });
             Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
         }
 
@@ -4336,6 +4350,42 @@ namespace Draho.EditorTools
             float t = 0.62f + ridge * 0.12f - dirt * 0.14f - (y < 3 ? 0.15f : 0f);
             float lichen = Mathf.Clamp01((TileNoise(x, y, size, 0.12f, 7.7f, 3.3f) - 0.7f) * 4f);
             return Color.Lerp(new Color(t, t, t * 1.02f), new Color(0.55f, 0.6f, 0.42f), lichen * 0.6f);
+        });
+
+        /// <summary>
+        /// A facade, 12 m square (4 floors of 3 m, 4 bays of 3 m), 512 px: the wall (brick or plaster pattern) with
+        /// one window per bay and floor (1.1 x 1.5 m, a light frame, dark glass, a stone sill).
+        /// </summary>
+        static Texture2D FacadeTexture(bool brick) => MakeTexture(brick ? "FacadeBrick.png" : "FacadePlaster.png", 512, (x, y, size) =>
+        {
+            float px = 12f / size;                       // metres per pixel
+            float mx = x * px % 3f, my = y * px % 3f;    // position in the bay
+            bool win = mx > 0.95f && mx < 2.05f && my > 0.9f && my < 2.4f;
+            bool frame = win && (mx < 1.02f || mx > 1.98f || my < 0.97f || my > 2.33f || Mathf.Abs(mx - 1.5f) < 0.035f);
+            bool sill = !win && mx > 0.88f && mx < 2.12f && my > 0.8f && my <= 0.9f;
+            if (frame) return new Color(0.88f, 0.87f, 0.84f);
+            if (win) { float g = 0.13f + 0.05f * (my - 0.9f) / 1.5f; return new Color(g, g * 1.08f, g * 1.2f); }
+            if (sill) return new Color(0.7f, 0.69f, 0.66f);
+            if (brick)
+            {
+                int row = y / 3, shifted = x + (row % 2) * 5;
+                bool joint = y % 3 == 0 || shifted % 10 == 0;
+                float tone = 0.82f + 0.18f * (((row * 73856093) ^ ((shifted / 10) * 19349663)) >> 4 & 7) / 7f;
+                return joint ? new Color(0.78f, 0.76f, 0.72f) : new Color(tone, tone * 0.93f, tone * 0.88f);
+            }
+            float n = TileNoise(x, y, size, 0.02f, 3.1f, 7.7f) * 0.1f;
+            return new Color(0.92f - n, 0.91f - n, 0.88f - n);
+        });
+
+        /// <summary>The lit windows of the facade texture: about a third of the 16 windows, warm light (emission map).</summary>
+        static Texture2D FacadeLightTexture() => MakeTexture("FacadeLights.png", 512, (x, y, size) =>
+        {
+            float px = 12f / size;
+            int bx = Mathf.FloorToInt(x * px / 3f), by = Mathf.FloorToInt(y * px / 3f);
+            float mx = x * px % 3f, my = y * px % 3f;
+            bool glass = mx > 1.02f && mx < 1.98f && my > 0.97f && my < 2.33f && Mathf.Abs(mx - 1.5f) >= 0.035f;
+            bool lit = ((bx * 7 + by * 13 + bx * by * 5) % 3) == 0;
+            return glass && lit ? new Color(1f, 0.72f, 0.38f) : Color.black;
         });
 
         static Texture2D TileTexture() => MakeTexture("FloorTile.png", 128, (x, y, size) =>

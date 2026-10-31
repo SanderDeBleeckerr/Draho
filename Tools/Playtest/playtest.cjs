@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -377,6 +377,13 @@ const steps = {
     ['02_dawn', 'call', 'Rainbow.TestShow'],
     ['03_bow', 'wait', '7'],
     ['04_bow_later', 'wait', '2'],
+  ],
+  // Start with ?beat=12&at=-19.5,4.4,0 : out in the garden; "New game" (the hook the button calls): the save is
+  // deleted and the game starts again at beat 0, inside the apartment.
+  resume: [
+    ['02_inside', 'wait', '2'],
+    ['03_new_game', 'call', 'Progress.NewGame'],
+    ['04_new', 'wait', '6'],
   ],
   // Start with ?beat=6&at=-2.6,2.6,270 : beside the picnic table by day, looking down the garden (the whitewashed
   // wall with the sheets above on the left, the fence on the right, leaves, shoots and the bins at the far end).

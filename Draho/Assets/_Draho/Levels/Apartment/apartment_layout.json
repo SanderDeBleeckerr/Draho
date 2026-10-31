@@ -329,25 +329,11 @@
    "note": "East kitchen wall, next to the fridge."
   },
   {
-   "id": "hole_court",
-   "x": 7.6,
-   "z": 2.8,
-   "facing": "west",
-   "note": "East kitchen wall, before the court."
-  },
-  {
    "id": "hole_living",
    "x": 3.6,
    "z": 0.0,
    "facing": "north",
    "note": "South living room wall."
-  },
-  {
-   "id": "hole_garden_door",
-   "x": 0.0,
-   "z": 0.7,
-   "facing": "east",
-   "note": "West wall, south of the sliding door."
   }
  ],
  "lamps": [

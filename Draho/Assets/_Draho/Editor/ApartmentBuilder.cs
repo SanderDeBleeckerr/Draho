@@ -3774,6 +3774,12 @@ namespace Draho.EditorTools
             }
             var counters = MakeText("Counters", canvas, new Vector2(1f, 1f), new Vector2(-40f, -230f), new Vector2(700f, 60f), 36, TextAnchor.MiddleRight);
             counters.horizontalOverflow = HorizontalWrapMode.Overflow; // right-aligned: a longer line grows to the left
+            // "New game" in the top-left corner (tap twice).
+            var newGame = MakeText("NewGame", canvas, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(250f, 50f), 26, TextAnchor.MiddleLeft);
+            newGame.text = "New game";
+            newGame.color = new Color(1f, 0.92f, 0.7f, 0.75f);
+            newGame.raycastTarget = true;
+            newGame.gameObject.AddComponent<NewGameButton>().Configure(newGame);
             var panel = new GameObject("BountyPanel", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
             var prt = (RectTransform)panel.transform;
             prt.SetParent(canvas, false);

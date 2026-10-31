@@ -136,6 +136,15 @@ namespace Draho.Core
             return i < 0 ? 0 : data.bountyCounts[i];
         }
 
+        /// <summary>Delete the save and start the game again at the beginning (the "New game" button).</summary>
+        public void NewGame()
+        {
+            PlayerPrefs.DeleteKey(Key);
+            PlayerPrefs.Save();
+            data = new Data();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        }
+
         public void Save()
         {
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data));

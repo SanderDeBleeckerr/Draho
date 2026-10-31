@@ -16,6 +16,8 @@ namespace Draho.Story
     {
         /// <summary>True in the free-roam epilogue after THE END (the gifts for the humans appear).</summary>
         public static bool InEpilogue { get; private set; }
+        /// <summary>Beats 0-8 are chapter 1 (the apartment and the garden).</summary>
+        const int FirstBeatOfChapter2 = 9;
 
         [SerializeField] StoryHud hud;
         [SerializeField] Mouse mouse;
@@ -637,7 +639,9 @@ namespace Draho.Story
             if (!urlBeat && progress != null && progress.SavedBeat > 0)
             {
                 startBeat = progress.SavedBeat;
-                if (progress.TryGetSavedPosition(out Vector3 saved, out float savedYaw))
+                // In chapter 1 the day starts at home: Drahomil wakes up inside the apartment again (the goal marker
+                // shows the way out). From chapter 2 on, a saved game continues where the cat was.
+                if (startBeat >= FirstBeatOfChapter2 && progress.TryGetSavedPosition(out Vector3 saved, out float savedYaw))
                     cat.Teleport(saved + Vector3.up * 0.05f, Quaternion.Euler(0f, savedYaw, 0f));
                 Debug.Log($"SAVE resume at beat {startBeat}");
             }

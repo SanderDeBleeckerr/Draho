@@ -4839,11 +4839,16 @@ namespace Draho.EditorTools
         });
 
         /// <summary>The lit windows of the facade texture: about a third of the 16 windows, warm light (emission map).</summary>
-        static Texture2D FacadeLightTexture() => MakeTexture("FacadeLights.png", 512, (x, y, size) =>
+        static Texture2D FacadeLightTexture() => MakeTexture("FacadeLights2.png", 512, (x, y, size) =>
         {
             float px = 12f / size;
             int bx = Mathf.FloorToInt(x * px / 3f), by = Mathf.FloorToInt(y * px / 3f);
             float mx = x * px % 3f, my = y * px % 3f;
+            // The shop windows on the ground floor glow at night too, a little cooler (round 121: shop lighting).
+            if (by == 0 && bx % 2 == 0)
+                return mx > 0.42f && mx < 2.58f && my > 0.52f && my < 2.38f && Mathf.Abs(mx - 1.5f) >= 0.04f
+                    ? new Color(1f, 0.9f, 0.7f) : Color.black;
+            if (by == 0) return Color.black; // doors stay dark
             bool glass = mx > 1.02f && mx < 1.98f && my > 0.97f && my < 2.33f && Mathf.Abs(mx - 1.5f) >= 0.035f;
             bool lit = ((bx * 7 + by * 13 + bx * by * 5) % 3) == 0;
             return glass && lit ? new Color(1f, 0.72f, 0.38f) : Color.black;

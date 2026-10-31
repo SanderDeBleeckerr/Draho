@@ -2383,7 +2383,8 @@ namespace Draho.EditorTools
         }
 
         [Serializable] class SurroundingBuilding { public float[] p; public float h, r; }
-        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; }
+        [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
+        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green; }
 
         /// <summary>
         /// The blocks round the level (scenery, no colliders): about 700 real building footprints and heights from open
@@ -2487,7 +2488,50 @@ namespace Draho.EditorTools
                 r.sharedMaterials = used.ToArray();
                 r.shadowCastingMode = ShadowCastingMode.Off; // far away: the shadow distance is 10 m anyway
             }
+            // Flat surfaces from the same open data: the real water round the level (the river arms), the streets and
+            // the public grass. Each a little above the ground plane (3 cm apart, no z-fighting at a distance).
+            var water = Mat("Sur_Water", new Color(0.18f, 0.29f, 0.28f), 0.8f, RippleTexture(), Vector2.one);
+            water.SetTexture("_BumpMap", RippleNormalTexture());
+            water.SetFloat("_BumpScale", 0.4f);
+            water.EnableKeyword("_NORMALMAP");
+            EditorUtility.SetDirty(water);
+            Surface(root, "SurWater", file.water, -0.02f, water, 4f, true);
+            Surface(root, "SurRoads", file.roads, -0.05f, Mat("Sur_Asphalt", new Color(0.3f, 0.3f, 0.31f), 0.2f, PebbleTexture(), Vector2.one), 3f, false);
+            Surface(root, "SurGreen", file.green, -0.04f, Mat("Sur_Grass", new Color(0.32f, 0.45f, 0.22f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
             Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
+        }
+
+        /// <summary>A flat triangle mesh from the surroundings file at height y, every triangle turned to face up.</summary>
+        static void Surface(Transform root, string name, SurfaceMesh s, float y, Material mat, float uvMetres, bool flowing)
+        {
+            if (s?.v == null || s.t == null || s.t.Length < 3) return;
+            var verts = new List<Vector3>();
+            for (int i = 0; i + 1 < s.v.Length; i += 2) verts.Add(new Vector3(s.v[i], y, s.v[i + 1]));
+            var tris = new List<int>();
+            for (int i = 0; i + 2 < s.t.Length; i += 3)
+            {
+                int a = s.t[i], b = s.t[i + 1], c = s.t[i + 2];
+                if (Vector3.Cross(verts[b] - verts[a], verts[c] - verts[a]).y < 0f) (b, c) = (c, b); // face up
+                tris.AddRange(new[] { a, b, c });
+            }
+            var uvs = new List<Vector2>();
+            foreach (var v in verts) uvs.Add(new Vector2(v.x, v.z) / uvMetres);
+            var mesh = new Mesh { name = name };
+            mesh.SetVertices(verts);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            string mp = $"{PlaygroundBuilder.ArtDir}/Meshes/{name}.asset";
+            AssetDatabase.DeleteAsset(mp);
+            AssetDatabase.CreateAsset(mesh, mp);
+            var go = new GameObject(name);
+            go.transform.SetParent(root, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = mat;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            if (flowing) go.AddComponent<WaterRipples>();
         }
 
         /// <summary>Triangulates a simple counter-clockwise polygon (x, z) by ear clipping; returns index triples.</summary>

@@ -2509,7 +2509,9 @@ namespace Draho.EditorTools
                 }
                 var (V, N, UV) = chunkVerts[key];
                 int wall = (bi * 7919) % 4 < 2 ? 0 : 2; // brick or plaster (the two darker tones cost a draw call each per square)
-                float h = b.h, perim = 0f;
+                // Start each building at a different bay of the facade texture (round 119), so the lit windows and shop
+                // fronts differ from house to house: a whole number of 3 m bays keeps the windows in their frames.
+                float h = b.h, perim = 3f * ((bi * 37) % 4);
                 // Walls: one quad per edge, outward (counter-clockwise in x,z: outward is to the right of the edge).
                 for (int i = 0; i < n; i++)
                 {

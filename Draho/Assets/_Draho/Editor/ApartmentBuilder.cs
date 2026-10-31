@@ -2442,7 +2442,8 @@ namespace Draho.EditorTools
 
         [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public float[] g, i, k; }
         [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
-        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees; }
+        [Serializable] class BridgeData { public float[] v, ring; public int[] t, wet; }
+        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees, boats; public BridgeData[] bridges; }
 
         /// <summary>
         /// The blocks round the level (scenery, no colliders): about 700 real building footprints and heights from open
@@ -2681,8 +2682,98 @@ namespace Draho.EditorTools
             // tree crowns from the height data (local peaks of the canopy over 4 m) with their heights and widths.
             Surface(root, "SurGardens", file.gardens, -0.035f, Mat("Sur_GardenGrass", new Color(0.3f, 0.43f, 0.2f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
             SurroundingTrees(root, file.trees);
+            SurroundingWater(root, file.bridges, file.boats);
             root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3] });
             Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
+        }
+
+        /// <summary>
+        /// The water's details (round 111): the bridges over the river arms (a stone deck a little above the street, with
+        /// a parapet along the edges over the water) and moored boats along the banks (a hull, a cabin, a coloured
+        /// stripe): boats = [x, z, heading, length, kind, ...]. One mesh, three materials.
+        /// </summary>
+        static void SurroundingWater(Transform root, BridgeData[] bridges, float[] boats)
+        {
+            var stone = Mat("Sur_BridgeStone", new Color(0.62f, 0.6f, 0.56f), 0.1f, TileTexture(), Vector2.one);
+            var hullMats = new[] { Mat("Boat_Hull", new Color(0.12f, 0.16f, 0.22f), 0.4f), Mat("Boat_Cabin", new Color(0.86f, 0.84f, 0.78f), 0.3f) };
+            var V = new List<Vector3>(); var N = new List<Vector3>(); var UV = new List<Vector2>();
+            var T = new[] { new List<int>(), new List<int>(), new List<int>() };
+            void AddBox(Vector3 centre, Vector3 size, float yaw, int sub)
+            {
+                var rot = Quaternion.Euler(0f, yaw, 0f);
+                var faces = new (Vector3 n, Vector3 u, Vector3 v)[]
+                {
+                    (Vector3.up, Vector3.right, Vector3.forward), (Vector3.right, Vector3.forward, Vector3.up), (Vector3.left, Vector3.back, Vector3.up),
+                    (Vector3.forward, Vector3.left, Vector3.up), (Vector3.back, Vector3.right, Vector3.up),
+                };
+                foreach (var (n, u, v) in faces)
+                {
+                    Vector3 Ext(Vector3 d) => Vector3.Scale(d, size * 0.5f);
+                    Vector3 c = centre + rot * Ext(n), du = rot * Ext(u), dv = rot * Ext(v);
+                    int v0 = V.Count;
+                    V.Add(c - du - dv); V.Add(c + du - dv); V.Add(c + du + dv); V.Add(c - du + dv);
+                    var wn = rot * n;
+                    for (int k = 0; k < 4; k++) N.Add(wn);
+                    UV.Add(Vector2.zero); UV.Add(Vector2.right); UV.Add(Vector2.one); UV.Add(Vector2.up);
+                    if (Vector3.Dot(Vector3.Cross(V[v0 + 1] - V[v0], V[v0 + 2] - V[v0]), wn) > 0f) T[sub].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
+                    else T[sub].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
+                }
+            }
+            if (boats != null)
+                for (int i = 0; i + 4 < boats.Length; i += 5)
+                {
+                    float x = boats[i], z = boats[i + 1], len = boats[i + 3];
+                    float yaw = 90f - boats[i + 2]; // the data's heading is from +x towards +z (maths); Unity yaw turns from +z
+                    var c = new Vector3(x, 0.15f, z);
+                    var fwd = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+                    AddBox(c, new Vector3(2.2f, 0.7f, len), yaw, 1);                                       // hull
+                    AddBox(c + Vector3.up * 0.55f - fwd * len * 0.1f, new Vector3(1.8f, 0.6f, len * 0.5f), yaw, 2); // cabin
+                }
+            if (bridges != null)
+                foreach (var b in bridges)
+                {
+                    int n = b.v.Length / 2;
+                    int d0 = V.Count;
+                    for (int k = 0; k < n; k++) { V.Add(new Vector3(b.v[k * 2], 0.12f, b.v[k * 2 + 1])); N.Add(Vector3.up); UV.Add(new Vector2(b.v[k * 2], b.v[k * 2 + 1]) / 0.8f); }
+                    for (int k = 0; k + 2 < b.t.Length; k += 3)
+                    {
+                        int a = d0 + b.t[k], bb = d0 + b.t[k + 1], cc = d0 + b.t[k + 2];
+                        if (Vector3.Cross(V[bb] - V[a], V[cc] - V[a]).y < 0f) (bb, cc) = (cc, bb);
+                        T[0].AddRange(new[] { a, bb, cc });
+                    }
+                    int rn = b.ring.Length / 2;
+                    for (int k = 0; k < rn; k++)
+                    {
+                        if (b.wet == null || k >= b.wet.Length || b.wet[k] == 0) continue;
+                        var p0 = new Vector3(b.ring[k * 2], 0.12f, b.ring[k * 2 + 1]);
+                        var p1 = new Vector3(b.ring[(k + 1) % rn * 2], 0.12f, b.ring[(k + 1) % rn * 2 + 1]);
+                        float len = Vector3.Distance(p0, p1);
+                        if (len < 0.3f) continue;
+                        float yaw = Mathf.Atan2(p1.x - p0.x, p1.z - p0.z) * Mathf.Rad2Deg;
+                        AddBox((p0 + p1) / 2f + Vector3.up * 0.45f, new Vector3(0.3f, 0.9f, len), yaw, 0); // the parapet
+                        AddBox((p0 + p1) / 2f + Vector3.down * 0.5f, new Vector3(0.6f, 1.2f, len), yaw, 0); // the face down to the water
+                    }
+                }
+            if (V.Count == 0) return;
+            var mesh = new Mesh { name = "SurWaterDetails" };
+            if (V.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            mesh.SetVertices(V); mesh.SetNormals(N); mesh.SetUVs(0, UV);
+            var mats = new[] { stone, hullMats[0], hullMats[1] };
+            var used = new List<Material>(); var subs = new List<List<int>>();
+            for (int m = 0; m < 3; m++) if (T[m].Count > 0) { used.Add(mats[m]); subs.Add(T[m]); }
+            mesh.subMeshCount = subs.Count;
+            for (int m = 0; m < subs.Count; m++) mesh.SetTriangles(subs[m], m);
+            mesh.RecalculateBounds();
+            string mp = $"{PlaygroundBuilder.ArtDir}/Meshes/SurWaterDetails.asset";
+            AssetDatabase.DeleteAsset(mp);
+            AssetDatabase.CreateAsset(mesh, mp);
+            var go = new GameObject("SurWaterDetails");
+            go.transform.SetParent(root, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterials = used.ToArray();
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            Debug.Log($"Draho: surroundings: {(boats?.Length ?? 0) / 5} boats, {bridges?.Length ?? 0} bridges");
         }
 
         /// <summary>

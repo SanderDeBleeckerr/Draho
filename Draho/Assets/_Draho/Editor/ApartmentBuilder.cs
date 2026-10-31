@@ -2443,7 +2443,8 @@ namespace Draho.EditorTools
         [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public float[] g, i, k; }
         [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
         [Serializable] class BridgeData { public float[] v, ring; public int[] t, wet; }
-        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees, boats; public BridgeData[] bridges; }
+        [Serializable] class QuayLine { public float[] q; }
+        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees, boats; public BridgeData[] bridges; public QuayLine[] quays; }
 
         /// <summary>
         /// The blocks round the level (scenery, no colliders): about 700 real building footprints and heights from open
@@ -2682,7 +2683,7 @@ namespace Draho.EditorTools
             // tree crowns from the height data (local peaks of the canopy over 4 m) with their heights and widths.
             Surface(root, "SurGardens", file.gardens, -0.035f, Mat("Sur_GardenGrass", new Color(0.3f, 0.43f, 0.2f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
             SurroundingTrees(root, file.trees);
-            SurroundingWater(root, file.bridges, file.boats);
+            SurroundingWater(root, file.bridges, file.boats, file.quays);
             root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3] });
             Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
         }
@@ -2692,12 +2693,12 @@ namespace Draho.EditorTools
         /// a parapet along the edges over the water) and moored boats along the banks (a hull, a cabin, a coloured
         /// stripe): boats = [x, z, heading, length, kind, ...]. One mesh, three materials.
         /// </summary>
-        static void SurroundingWater(Transform root, BridgeData[] bridges, float[] boats)
+        static void SurroundingWater(Transform root, BridgeData[] bridges, float[] boats, QuayLine[] quays)
         {
             var stone = Mat("Sur_BridgeStone", new Color(0.62f, 0.6f, 0.56f), 0.1f, TileTexture(), Vector2.one);
             var hullMats = new[] { Mat("Boat_Hull", new Color(0.12f, 0.16f, 0.22f), 0.4f), Mat("Boat_Cabin", new Color(0.86f, 0.84f, 0.78f), 0.3f) };
             var V = new List<Vector3>(); var N = new List<Vector3>(); var UV = new List<Vector2>();
-            var T = new[] { new List<int>(), new List<int>(), new List<int>() };
+            var T = new[] { new List<int>(), new List<int>(), new List<int>(), new List<int>() };
             void AddBox(Vector3 centre, Vector3 size, float yaw, int sub)
             {
                 var rot = Quaternion.Euler(0f, yaw, 0f);
@@ -2754,13 +2755,39 @@ namespace Draho.EditorTools
                         AddBox((p0 + p1) / 2f + Vector3.down * 0.5f, new Vector3(0.6f, 1.2f, len), yaw, 0); // the face down to the water
                     }
                 }
+            // Quay edges (round 112): a stone coping along every bank of the real water, and an iron bollard every 14 m.
+            var iron = Mat("Sur_Bollard", new Color(0.12f, 0.13f, 0.12f), 0.4f);
+            int bollards = 0;
+            if (quays != null)
+                foreach (var ql in quays)
+                {
+                    if (ql?.q == null) continue;
+                    float since = 7f;
+                    for (int k = 0; k + 3 < ql.q.Length; k += 2)
+                    {
+                        var p0 = new Vector3(ql.q[k], 0f, ql.q[k + 1]);
+                        var p1 = new Vector3(ql.q[k + 2], 0f, ql.q[k + 3]);
+                        float len = Vector3.Distance(p0, p1);
+                        if (len < 0.2f) continue;
+                        float yaw = Mathf.Atan2(p1.x - p0.x, p1.z - p0.z) * Mathf.Rad2Deg;
+                        AddBox((p0 + p1) / 2f + Vector3.up * 0.08f, new Vector3(0.45f, 0.26f, len + 0.2f), yaw, 0);
+                        since += len;
+                        while (since >= 14f)
+                        {
+                            since -= 14f;
+                            var at = Vector3.Lerp(p1, p0, since / len);
+                            AddBox(at + Vector3.up * 0.42f, new Vector3(0.22f, 0.45f, 0.22f), yaw, 3);
+                            bollards++;
+                        }
+                    }
+                }
             if (V.Count == 0) return;
             var mesh = new Mesh { name = "SurWaterDetails" };
             if (V.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.SetVertices(V); mesh.SetNormals(N); mesh.SetUVs(0, UV);
-            var mats = new[] { stone, hullMats[0], hullMats[1] };
+            var mats = new[] { stone, hullMats[0], hullMats[1], iron };
             var used = new List<Material>(); var subs = new List<List<int>>();
-            for (int m = 0; m < 3; m++) if (T[m].Count > 0) { used.Add(mats[m]); subs.Add(T[m]); }
+            for (int m = 0; m < mats.Length; m++) if (T[m].Count > 0) { used.Add(mats[m]); subs.Add(T[m]); }
             mesh.subMeshCount = subs.Count;
             for (int m = 0; m < subs.Count; m++) mesh.SetTriangles(subs[m], m);
             mesh.RecalculateBounds();
@@ -2773,7 +2800,7 @@ namespace Draho.EditorTools
             var r = go.AddComponent<MeshRenderer>();
             r.sharedMaterials = used.ToArray();
             r.shadowCastingMode = ShadowCastingMode.Off;
-            Debug.Log($"Draho: surroundings: {(boats?.Length ?? 0) / 5} boats, {bridges?.Length ?? 0} bridges");
+            Debug.Log($"Draho: surroundings: {(boats?.Length ?? 0) / 5} boats, {bridges?.Length ?? 0} bridges, {bollards} bollards");
         }
 
         /// <summary>

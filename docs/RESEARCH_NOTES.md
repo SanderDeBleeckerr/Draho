@@ -762,3 +762,24 @@ several on high roofs you can see from below before you can reach them. A found 
 - Small held props read better a little larger than life and held where the camera can see them; the cat's body
   still hides them from straight behind.
 - Done: a carried gift is drawn 1.5x and held a little higher, in front of the face; normal size again when given.
+
+## Rounds 101-120 — the surroundings from open data
+
+Sources (all open data of Digitaal Vlaanderen, "Modellicentie Gratis Hergebruik"; raw data, coordinates and images
+stay outside the repository, the repo only has game metres in `Levels/Apartment/surroundings.json`):
+- GRB (WFS): GBG buildings, WBN street surfaces, WTZ water, TRN terrain (grass), KNW structures (bridges).
+- DHM Vlaanderen II (WCS): surface (DSM) and terrain (DTM) at 1 m: building heights = DSM - DTM (40th
+  percentile = eaves, 92nd = ridge); canopy height for trees.
+- Orthophotos (WMS): the summer colour photo (roof colours) and the summer near-infrared photo (vegetation).
+
+Methods:
+- The map-to-game transform was fitted from 32 buildings already in the level (rotation + translation, error 4 cm).
+- Vegetation: NDVI = (NIR - red) / (NIR + red) from the false-colour infrared photo (R = NIR, G = red); NDVI > 0.18
+  and height < 1 m = grass and gardens; NDVI > 0.18 and height > 3 m = canopy; tree crowns = local peaks of the
+  smoothed canopy height in a 7 m window.
+- Roofs: rectangular footprints (area / oriented box > 0.82) with a ridge in the height data get gable roofs, the ridge
+  along the street front (deep narrow terrace houses: across); red tile roofs where the median roof colour in the
+  photo is clearly red.
+- Flat polygons with holes are triangulated with a constrained Delaunay triangulation (shapely).
+- Performance: surroundings are merged per 200 m square; the plain props share one palette texture (each box picks
+  its colour by UV); facades are 12 m textures (4 floors x 4 bays) with an emission map for lit windows.

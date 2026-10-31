@@ -2677,7 +2677,7 @@ namespace Draho.EditorTools
             water.EnableKeyword("_NORMALMAP");
             EditorUtility.SetDirty(water);
             Surface(root, "SurWater", file.water, -0.02f, water, 4f, true);
-            Surface(root, "SurRoads", file.roads, -0.05f, Mat("Sur_Asphalt", new Color(0.3f, 0.3f, 0.31f), 0.2f, PebbleTexture(), Vector2.one), 3f, false);
+            Surface(root, "SurRoads", file.roads, -0.05f, Mat("Sur_Asphalt", new Color(0.36f, 0.35f, 0.34f), 0.2f, PebbleTexture(), Vector2.one), 1f, false); // cobbles of about 12 cm (round 117: 3 m made them 40 cm)
             Surface(root, "SurGreen", file.green, -0.04f, Mat("Sur_Grass", new Color(0.32f, 0.45f, 0.22f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
             // Gardens and trees (round 107): green areas from the infrared aerial photo (high NDVI, low height), and
             // tree crowns from the height data (local peaks of the canopy over 4 m) with their heights and widths.

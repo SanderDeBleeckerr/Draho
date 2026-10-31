@@ -17,7 +17,11 @@ namespace Draho.World
         [Tooltip("Gulls (round 125): slow, wide, low glides over the water, bigger and white; no screaming parties.")]
         [SerializeField] bool gulls;
 
-        Transform[] birds;
+        Mesh flock;               // all the birds in one mesh: one draw call (round 127)
+        MeshRenderer view;
+        Vector3[] flockVerts, shapeVerts;
+        Vector3[] heading;
+        int[] shapeTris;
         float[] seeds;
         Vector3[] last;
         static Mesh shape;
@@ -40,22 +44,35 @@ namespace Draho.World
         void Start()
         {
             if (shape == null) shape = Boomerang();
-            birds = new Transform[count];
+            shapeVerts = shape.vertices;
+            shapeTris = shape.triangles;
             seeds = new float[count];
             last = new Vector3[count];
+            heading = new Vector3[count];
+            flockVerts = new Vector3[count * shapeVerts.Length];
+            var tris = new int[count * shapeTris.Length];
+            var normals = new Vector3[flockVerts.Length];
             for (int i = 0; i < count; i++)
             {
-                var go = new GameObject($"Swift_{i}");
-                go.transform.SetParent(transform, false);
-                go.AddComponent<MeshFilter>().sharedMesh = shape;
-                var r = go.AddComponent<MeshRenderer>();
-                r.sharedMaterial = material;
-                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                r.receiveShadows = false;
-                birds[i] = go.transform;
                 seeds[i] = i * 7.3f + Random.value;
                 last[i] = Position(i, 0f);
+                heading[i] = Vector3.forward;
+                for (int k = 0; k < shapeTris.Length; k++) tris[i * shapeTris.Length + k] = shapeTris[k] + i * shapeVerts.Length;
+                for (int k = 0; k < shapeVerts.Length; k++) normals[i * shapeVerts.Length + k] = Vector3.up;
             }
+            flock = new Mesh { name = gulls ? "Gulls" : "Swifts" };
+            flock.MarkDynamic();
+            flock.vertices = flockVerts;
+            flock.normals = normals;
+            flock.triangles = tris;
+            gameObject.AddComponent<MeshFilter>().sharedMesh = flock;
+            view = gameObject.AddComponent<MeshRenderer>();
+            view.sharedMaterial = material;
+            view.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            view.receiveShadows = false;
+            gameObject.layer = 0;
+            transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity); // the vertices are in world space
+            transform.localScale = Vector3.one;
         }
 
         Vector3 Position(int i, float t)
@@ -74,21 +91,29 @@ namespace Draho.World
         {
             bool flying = SkyMood.NightAmount < 0.5f && !Storm.Active;
             if (!gulls) PartyLow = flying && Mathf.Sin(Time.time * 0.05f) > 0.3f;
-            for (int i = 0; i < birds.Length; i++)
+            view.enabled = flying;
+            if (!flying) return;
+            for (int i = 0; i < count; i++)
             {
-                birds[i].gameObject.SetActive(flying);
-                if (!flying) continue;
                 Vector3 p = Position(i, Time.time);
                 Vector3 v = p - last[i];
                 last[i] = p;
-                birds[i].position = p;
-                if (v.sqrMagnitude > 1e-6f) birds[i].rotation = Quaternion.LookRotation(v, Vector3.up);
+                if (v.sqrMagnitude > 1e-6f) heading[i] = v;
+                var rot = Quaternion.LookRotation(heading[i], Vector3.up);
                 // Flicker the wings in bursts, then glide.
                 float beat = gulls ? Mathf.Sin(Time.time * 4f + seeds[i]) * (Mathf.Sin(Time.time * 0.4f + seeds[i]) > 0.6f ? 1f : 0f) // gulls glide, a few slow beats
                     : Mathf.Sin(Time.time * 1.3f + seeds[i]) > 0.2f ? Mathf.Sin(Time.time * 40f + seeds[i]) : 0f;
                 float size = gulls ? 3.2f : 1.5f; // a little larger than life: they are far away (gulls span about 1.4 m)
-                birds[i].localScale = new Vector3(size, size + 0.6f * size * beat, size);
+                for (int k = 0; k < shapeVerts.Length; k++)
+                {
+                    var sv = shapeVerts[k];
+                    // The wing tips go up and down with the beat (the body stays level).
+                    var local = Vector3.Scale(sv, new Vector3(size, size, size)) + Vector3.up * (Mathf.Abs(sv.x) * size * 0.6f * beat);
+                    flockVerts[i * shapeVerts.Length + k] = p + rot * local;
+                }
             }
+            flock.vertices = flockVerts;
+            flock.RecalculateBounds();
         }
 
         static Mesh Boomerang()

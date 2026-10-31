@@ -110,7 +110,7 @@ namespace Draho.World
             if (nextTram <= 0f)
             {
                 nextTram = Random.Range(70f, 180f);
-                if (night < 0.6f && !Storm.Active) city.PlayOneShot(tramBell, Random.Range(0.12f, 0.2f));
+                if (night < 0.6f && !Storm.Active) birds.PlayOneShot(tramBell, Random.Range(0.5f, 0.8f)); // through the birds source (0.22): the city source is near silent
             }
             // Wind on the high roofs: louder the higher the cat, much louder in the storm.
             float height = catT != null ? Mathf.Clamp01((catT.position.y - 5f) / 6f) : 0f;

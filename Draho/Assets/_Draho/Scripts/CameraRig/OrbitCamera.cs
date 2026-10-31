@@ -163,7 +163,8 @@ namespace Draho.CameraRig
                 pitch = Mathf.Clamp(Mathf.MoveTowards(pitch, pitch + turn.y, avoidSpeed * 0.6f * dt), minPitch, maxPitch);
             }
 
-            currentDistance = allowed < currentDistance
+            currentDistance = distance >= 5f ? allowed // a far test view: at once
+                : allowed < currentDistance
                 ? allowed
                 : Mathf.MoveTowards(currentDistance, allowed, returnSpeed * dt);
             transform.SetPositionAndRotation(focus + back * currentDistance, rotation);

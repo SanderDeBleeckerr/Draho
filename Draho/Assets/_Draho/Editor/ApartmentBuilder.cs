@@ -2382,7 +2382,7 @@ namespace Draho.EditorTools
             return m;
         }
 
-        [Serializable] class SurroundingBuilding { public float[] p; public float h, r; }
+        [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public float[] g; }
         [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
         [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green; }
 
@@ -2452,6 +2452,65 @@ namespace Draho.EditorTools
                     UV.Add(new Vector2(s0, 0f)); UV.Add(new Vector2(s1, 0f)); UV.Add(new Vector2(s1, t1)); UV.Add(new Vector2(s0, t1));
                     tris[wall].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
                     perim += len;
+                }
+                // A pitched roof (round 104): rectangular houses with a real ridge get a gable roof of slate, its ridge
+                // along the street front, with a brick chimney on most of them.
+                if (b.g != null && b.g.Length == 6)
+                {
+                    var gc = new Vector3(b.g[0], h, b.g[1]);
+                    float a = b.g[4] * Mathf.Deg2Rad;
+                    var along = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (b.g[2] / 2f + 0.15f); // a little overhang
+                    var across = new Vector3(-Mathf.Sin(a), 0f, Mathf.Cos(a)) * (b.g[3] / 2f + 0.2f);
+                    var up = Vector3.up * b.g[5];
+                    Vector3 p00 = gc - along - across, p10 = gc + along - across, p11 = gc + along + across, p01 = gc - along + across;
+                    Vector3 r0 = gc - along + up, r1 = gc + along + up;
+                    void Quad(Vector3 q0, Vector3 q1, Vector3 q2, Vector3 q3, int sub, float uvs)
+                    {
+                        var nrm = Vector3.Cross(q1 - q0, q3 - q0).normalized;
+                        if (nrm.y < 0f) { (q1, q3) = (q3, q1); nrm = -nrm; }
+                        int v0 = V.Count;
+                        V.Add(q0); V.Add(q1); V.Add(q2); V.Add(q3);
+                        for (int k = 0; k < 4; k++) N.Add(nrm);
+                        float lu = Vector3.Distance(q0, q1) / uvs, lv = Vector3.Distance(q0, q3) / uvs;
+                        UV.Add(Vector2.zero); UV.Add(new Vector2(lu, 0f)); UV.Add(new Vector2(lu, lv)); UV.Add(new Vector2(0f, lv));
+                        tris[sub].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
+                    }
+                    Quad(p00, p10, r1, r0, 5, 1f);   // the two slopes
+                    Quad(p11, p01, r0, r1, 5, 1f);
+                    foreach (var (e0, e1, top) in new[] { (p01, p00, r0), (p10, p11, r1) }) // the gable ends, in the wall material
+                    {
+                        var nrm = Vector3.Cross(top - e0, e1 - e0).normalized;
+                        var outN = Vector3.Dot(nrm, (e0 + e1) / 2f - gc) < 0f ? -nrm : nrm;
+                        int v0 = V.Count;
+                        V.Add(e0); V.Add(e1); V.Add(top);
+                        for (int k = 0; k < 3; k++) N.Add(outN);
+                        UV.Add(Vector2.zero); UV.Add(new Vector2(b.g[3] / wallScale[wall], 0f)); UV.Add(new Vector2(b.g[3] / 2f / wallScale[wall], b.g[5] / wallScale[wall]));
+                        if (Vector3.Dot(nrm, (e0 + e1) / 2f - gc) < 0f) tris[wall].AddRange(new[] { v0, v0 + 1, v0 + 2 });
+                        else tris[wall].AddRange(new[] { v0, v0 + 2, v0 + 1 });
+                    }
+                    if (bi % 5 != 0) // a chimney on four roofs in five
+                    {
+                        float t = (bi % 3 - 1) * 0.3f;
+                        var cpos = gc + along * t + across * 0.25f + Vector3.up * (b.g[5] * 0.7f);
+                        float ch = b.g[5] * 0.45f + 0.9f;
+                        var cs = new Vector3(0.6f, ch, 0.6f);
+                        Vector3 c0 = cpos - new Vector3(cs.x, 0f, cs.z) / 2f;
+                        Vector3[] cb = { c0, c0 + new Vector3(cs.x, 0f, 0f), c0 + new Vector3(cs.x, 0f, cs.z), c0 + new Vector3(0f, 0f, cs.z) };
+                        for (int k = 0; k < 4; k++)
+                        {
+                            Vector3 q0 = cb[k], q1 = cb[(k + 1) % 4];
+                            var outw = Vector3.Cross(Vector3.up, q1 - q0).normalized;
+                            if (Vector3.Dot(outw, (q0 + q1) / 2f - cpos) < 0f) outw = -outw;
+                            int v0 = V.Count;
+                            V.Add(q0); V.Add(q1); V.Add(q1 + Vector3.up * ch); V.Add(q0 + Vector3.up * ch);
+                            for (int m = 0; m < 4; m++) N.Add(outw);
+                            UV.Add(Vector2.zero); UV.Add(new Vector2(0.6f, 0f)); UV.Add(new Vector2(0.6f, ch)); UV.Add(new Vector2(0f, ch));
+                            if (Vector3.Dot(Vector3.Cross(q1 - q0, Vector3.up), outw) < 0f) tris[0].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
+                            else tris[0].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
+                        }
+                    }
+                    count++;
+                    continue;
                 }
                 // The roof: the footprint at the top, triangulated (ear clipping), facing up.
                 int roof = b.r > 1.5f ? 5 : 4;

@@ -2826,7 +2826,7 @@ namespace Draho.EditorTools
                     if (!pools.TryGetValue(key, out var pl)) pools[key] = pl = (new List<Vector3>(), new List<Color>(), new List<int>());
                     var at = new Vector3(lamps[i], 0.02f, lamps[i + 1]);
                     int c0 = pl.v.Count;
-                    pl.v.Add(at); pl.c.Add(new Color(1f, 0.78f, 0.5f, 0.32f));
+                    pl.v.Add(at); pl.c.Add(new Color(1f, 0.78f, 0.5f, 0.6f)); // 0.32 was too faint to see (round 124)
                     for (int k = 0; k < 10; k++)
                     {
                         float a = k * Mathf.PI * 2f / 10f;

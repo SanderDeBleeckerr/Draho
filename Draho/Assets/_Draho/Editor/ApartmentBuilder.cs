@@ -2681,7 +2681,7 @@ namespace Draho.EditorTools
             Surface(root, "SurGreen", file.green, -0.04f, Mat("Sur_Grass", new Color(0.32f, 0.45f, 0.22f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
             // Gardens and trees (round 107): green areas from the infrared aerial photo (high NDVI, low height), and
             // tree crowns from the height data (local peaks of the canopy over 4 m) with their heights and widths.
-            Surface(root, "SurGardens", file.gardens, -0.035f, Mat("Sur_GardenGrass", new Color(0.3f, 0.43f, 0.2f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
+            Surface(root, "SurGardens", file.gardens, -0.035f, Mat("Sur_Grass", new Color(0.32f, 0.45f, 0.22f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false); // shares the lawns' material (one batch)
             SurroundingTrees(root, file.trees);
             SurroundingWater(root, file.bridges, file.boats, file.quays);
             var lampHead = SurroundingStreets(root, file.lamps, file.cars);
@@ -2697,11 +2697,13 @@ namespace Draho.EditorTools
         {
             new Color(0.55f, 0.1f, 0.08f), new Color(0.14f, 0.22f, 0.42f), new Color(0.62f, 0.63f, 0.64f), new Color(0.06f, 0.06f, 0.07f), // cars
             new Color(0.12f, 0.15f, 0.18f), new Color(0.12f, 0.13f, 0.13f), new Color(0.12f, 0.16f, 0.22f), new Color(0.86f, 0.84f, 0.78f), // glass, pole, hull, cabin
+            new Color(0.3f, 0.25f, 0.2f), // bark
         };
-        static Vector2 PaletteUV(int i) => new Vector2((i % 4 + 0.5f) / 4f, (i / 4 + 0.5f) / 2f);
+        static Vector2 PaletteUV(int i) => new Vector2((i % 4 + 0.5f) / 4f, (i / 4 + 0.5f) / 4f);
         static Material PaletteMaterial()
         {
-            var tex = MakeTexture("PropPalette.png", 8, (x, y, size) => PaletteColours[Mathf.Min(x / 2 + (y / 4) * 4, PaletteColours.Length - 1)]);
+            // 4 x 3 cells of 4 px (12 px high in a 16 px texture; the last row is spare).
+            var tex = MakeTexture("PropPalette2.png", 16, (x, y, size) => PaletteColours[Mathf.Min(x / 4 + (y / 4) * 4, PaletteColours.Length - 1)]);
             if (AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(tex)) is TextureImporter ti && (ti.filterMode != FilterMode.Point || ti.mipmapEnabled))
             {
                 ti.filterMode = FilterMode.Point;
@@ -2934,7 +2936,7 @@ namespace Draho.EditorTools
         static void SurroundingTrees(Transform root, float[] trees)
         {
             if (trees == null || trees.Length < 4) return;
-            var bark = Mat("Sur_Bark", new Color(0.3f, 0.25f, 0.2f), 0.1f);
+            var bark = PaletteMaterial(); // the bark is a palette colour: it batches with the street props
             var leafMats = new[] { Mat("Sur_Leaves", new Color(0.25f, 0.38f, 0.17f), 0.1f), Mat("Sur_LeavesLight", new Color(0.36f, 0.47f, 0.2f), 0.1f) };
             // An icosahedron (20 triangles, radius 0.5) per lump: cheap enough for hundreds of trees.
             float gr = (1f + Mathf.Sqrt(5f)) / 2f;
@@ -2949,12 +2951,15 @@ namespace Draho.EditorTools
             var st = new[] { 0,11,5, 0,5,1, 0,1,7, 0,7,10, 0,10,11, 1,5,9, 5,11,4, 11,10,2, 10,7,6, 7,1,8,
                              3,9,4, 3,4,2, 3,2,6, 3,6,8, 3,8,9, 4,9,5, 2,4,11, 6,2,10, 8,6,7, 9,8,1 };
             var chunks = new Dictionary<Vector2Int, (List<Vector3> v, List<Vector3> n, List<int>[] t)>();
+            var chunkUV = new Dictionary<Vector2Int, List<Vector2>>();
+            var barkUV = PaletteUV(8);
             var rng = new System.Random(107);
             for (int i = 0; i + 3 < trees.Length; i += 4)
             {
                 float x = trees[i], z = trees[i + 1], h = trees[i + 2], rad = trees[i + 3];
                 var key = new Vector2Int(Mathf.FloorToInt(x / 200f), Mathf.FloorToInt(z / 200f));
-                if (!chunks.TryGetValue(key, out var c)) chunks[key] = c = (new List<Vector3>(), new List<Vector3>(), new[] { new List<int>(), new List<int>(), new List<int>() });
+                if (!chunks.TryGetValue(key, out var c)) { chunks[key] = c = (new List<Vector3>(), new List<Vector3>(), new[] { new List<int>(), new List<int>(), new List<int>() }); chunkUV[key] = new List<Vector2>(); }
+                var uvl = chunkUV[key];
                 // The trunk: six sides, tapering, up to the crown base.
                 float tb = 0.14f + h * 0.012f, crownBase = h * 0.35f;
                 int v0 = c.v.Count;
@@ -2962,8 +2967,8 @@ namespace Draho.EditorTools
                 {
                     float a = k * Mathf.PI / 3f;
                     var d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
-                    c.v.Add(new Vector3(x, -0.1f, z) + d * tb); c.n.Add(d);
-                    c.v.Add(new Vector3(x, crownBase + 0.5f, z) + d * tb * 0.6f); c.n.Add(d);
+                    c.v.Add(new Vector3(x, -0.1f, z) + d * tb); c.n.Add(d); uvl.Add(barkUV);
+                    c.v.Add(new Vector3(x, crownBase + 0.5f, z) + d * tb * 0.6f); c.n.Add(d); uvl.Add(barkUV);
                 }
                 for (int k = 0; k < 6; k++)
                 {
@@ -2979,7 +2984,7 @@ namespace Draho.EditorTools
                     var centre = new Vector3(x + ((float)rng.NextDouble() - 0.5f) * rad * 0.8f, crownBase + (h - crownBase) * (0.45f + 0.15f * l), z + ((float)rng.NextDouble() - 0.5f) * rad * 0.8f);
                     var scale = new Vector3(lr, Mathf.Min(lr, (h - crownBase) * 0.55f), lr);
                     int b0 = c.v.Count;
-                    for (int k = 0; k < sv.Length; k++) { c.v.Add(centre + Vector3.Scale(sv[k], scale * 2f)); c.n.Add(sn[k]); }
+                    for (int k = 0; k < sv.Length; k++) { c.v.Add(centre + Vector3.Scale(sv[k], scale * 2f)); c.n.Add(sn[k]); uvl.Add(Vector2.zero); }
                     for (int k = 0; k < st.Length; k++) c.t[leaf].Add(b0 + st[k]);
                 }
             }
@@ -2989,7 +2994,7 @@ namespace Draho.EditorTools
                 var (V, N, Tr) = kv.Value;
                 var mesh = new Mesh { name = $"SurTrees_{kv.Key.x}_{kv.Key.y}" };
                 if (V.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-                mesh.SetVertices(V); mesh.SetNormals(N);
+                mesh.SetVertices(V); mesh.SetNormals(N); mesh.SetUVs(0, chunkUV[kv.Key]);
                 var used = new List<Material>(); var subs = new List<List<int>>();
                 for (int m = 0; m < 3; m++) if (Tr[m].Count > 0) { used.Add(mats[m]); subs.Add(Tr[m]); }
                 mesh.subMeshCount = subs.Count;

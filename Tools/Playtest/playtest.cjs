@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump|hogview]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump|hogview|around]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -377,6 +377,17 @@ const steps = {
     ['02_dawn', 'call', 'Rainbow.TestShow'],
     ['03_bow', 'wait', '7'],
     ['04_bow_later', 'wait', '2'],
+  ],
+  // Start with ?beat=17&at=-25,-12,90,6.5 : the riverhouse roof by day: look round at the surrounding blocks.
+  around: [
+    ['02_east', 'call', 'Main Camera.TestView:2,2.4,90'],
+    ['03_e', 'wait', '2'],
+    ['04_north', 'call', 'Main Camera.TestView:2,2.4,0'],
+    ['05_n', 'wait', '2'],
+    ['06_west', 'call', 'Main Camera.TestView:2,2.4,270'],
+    ['07_w', 'wait', '2'],
+    ['08_south', 'call', 'Main Camera.TestView:2,2.4,180'],
+    ['09_s', 'wait', '2'],
   ],
   // Start with ?beat=8&at=-15.5,-5,90,6.6 : the first beat of chapter 2 on the gravel roof: the jump lesson; a run
   // and a jump end it.

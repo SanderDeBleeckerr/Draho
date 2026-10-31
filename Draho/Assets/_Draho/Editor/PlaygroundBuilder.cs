@@ -24,7 +24,7 @@ namespace Draho.EditorTools
     /// </summary>
     public static class PlaygroundBuilder
     {
-        const string Root = "Assets/_Draho";
+        internal const string Root = "Assets/_Draho";
         const string CatFbx = Root + "/Art/Cat/Drahomil.fbx";
         internal const string ArtDir = Root + "/Art";
         internal const string MaterialDir = Root + "/Art/Materials";

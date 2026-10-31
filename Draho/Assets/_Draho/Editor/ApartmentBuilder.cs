@@ -177,6 +177,7 @@ namespace Draho.EditorTools
             BuildBuildings(layout);
             BuildWildGarden(layout.wild_garden);
             BuildGardenDetails();
+            BuildSurroundings();
             BuildBegijnhof(layout.begijnhof);
             BuildDucks(layout);
             BuildBridges(layout);
@@ -2107,8 +2108,12 @@ namespace Draho.EditorTools
                 Box("Ground", new Vector3(0f, -0.13f, -50f), new Vector3(200f, 0.1f, 300f), groundMat);
             else
             {
-                Box("Ground_East", new Vector3((river.x1 + 100f) / 2, -0.13f, -50f), new Vector3(100f - river.x1, 0.1f, 300f), groundMat);
-                Box("Ground_West", new Vector3((river.x0 - 100f) / 2, -0.13f, -50f), new Vector3(river.x0 + 100f, 0.1f, 300f), groundMat);
+                // Wide enough for the surrounding blocks (x -260..340, z -540..260); the river cuts through it.
+                const float gx0 = -260f, gx1 = 340f, gz0 = -540f, gz1 = 260f;
+                Box("Ground_East", new Vector3((river.x1 + gx1) / 2, -0.13f, (gz0 + gz1) / 2), new Vector3(gx1 - river.x1, 0.1f, gz1 - gz0), groundMat);
+                Box("Ground_West", new Vector3((river.x0 + gx0) / 2, -0.13f, (gz0 + gz1) / 2), new Vector3(river.x0 - gx0, 0.1f, gz1 - gz0), groundMat);
+                Box("Ground_RiverNorth", new Vector3((river.x0 + river.x1) / 2, -0.13f, (river.z1 + gz1) / 2), new Vector3(river.x1 - river.x0, 0.1f, gz1 - river.z1), groundMat);
+                Box("Ground_RiverSouth", new Vector3((river.x0 + river.x1) / 2, -0.13f, (gz0 + river.z0) / 2), new Vector3(river.x1 - river.x0, 0.1f, river.z0 - gz0), groundMat);
                 BuildRiver(river);
             }
             foreach (var g in layout.grounds ?? new Ground[0])
@@ -2375,6 +2380,146 @@ namespace Draho.EditorTools
             AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(m, path);
             return m;
+        }
+
+        [Serializable] class SurroundingBuilding { public float[] p; public float h, r; }
+        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; }
+
+        /// <summary>
+        /// The blocks round the level (scenery, no colliders): about 700 real building footprints and heights from open
+        /// data, extruded into walls and roofs. Merged into one mesh per 100 m square (so the camera culls the squares
+        /// out of view), one submesh per wall material (two brick and two plaster tones) and two roof materials
+        /// (gravel for flat roofs, slate for pitched ones).
+        /// </summary>
+        static void BuildSurroundings()
+        {
+            string path = $"{PlaygroundBuilder.Root}/Levels/Apartment/surroundings.json";
+            if (!File.Exists(path)) return;
+            var raw = File.ReadAllText(path);
+            // JsonUtility cannot read nested arrays: flatten "p":[[x,z],...] to "p":[x,z,...] first.
+            raw = System.Text.RegularExpressions.Regex.Replace(raw, @"""p"":\[\[(.*?)\]\]", m => "\"p\":[" + m.Groups[1].Value.Replace("],[", ",") + "]");
+            var file = JsonUtility.FromJson<SurroundingsFile>(raw);
+            if (file?.buildings == null) return;
+            var mats = new[]
+            {
+                Mat("Sur_Brick", new Color(0.66f, 0.42f, 0.33f), 0.08f, BrickTexture(), Vector2.one),
+                Mat("Sur_BrickDark", new Color(0.5f, 0.33f, 0.27f), 0.08f, BrickTexture(), Vector2.one),
+                Mat("Sur_Plaster", new Color(0.86f, 0.83f, 0.77f), 0.1f, PlasterTexture(), Vector2.one),
+                Mat("Sur_PlasterGrey", new Color(0.7f, 0.7f, 0.68f), 0.1f, PlasterTexture(), Vector2.one),
+                Mat("Sur_RoofFlat", new Color(0.36f, 0.35f, 0.33f), 0.05f, PebbleTexture(), Vector2.one),
+                Mat("Sur_RoofSlate", new Color(0.3f, 0.3f, 0.33f), 0.25f, RoofTexture(false), Vector2.one),
+            };
+            float[] wallScale = { 1f, 1f, 3f, 3f };   // the brick texture is 1 m, the plaster 3 m
+            var chunks = new Dictionary<Vector2Int, List<int>[]>();
+            var chunkVerts = new Dictionary<Vector2Int, (List<Vector3> v, List<Vector3> n, List<Vector2> uv)>();
+            int count = 0;
+            for (int bi = 0; bi < file.buildings.Length; bi++)
+            {
+                var b = file.buildings[bi];
+                int n = b.p.Length / 2;
+                if (n < 3) continue;
+                var pts = new Vector2[n];
+                for (int i = 0; i < n; i++) pts[i] = new Vector2(b.p[i * 2], b.p[i * 2 + 1]);
+                float signed = 0f;
+                for (int i = 0; i < n; i++) { var a = pts[i]; var c = pts[(i + 1) % n]; signed += a.x * c.y - c.x * a.y; }
+                if (signed < 0f) System.Array.Reverse(pts); // counter-clockwise in (x, z)
+                Vector2 centre = Vector2.zero;
+                foreach (var q in pts) centre += q / n;
+                var key = new Vector2Int(Mathf.FloorToInt(centre.x / 100f), Mathf.FloorToInt(centre.y / 100f));
+                if (!chunks.TryGetValue(key, out var tris))
+                {
+                    tris = new List<int>[mats.Length];
+                    for (int i = 0; i < tris.Length; i++) tris[i] = new List<int>();
+                    chunks[key] = tris;
+                    chunkVerts[key] = (new List<Vector3>(), new List<Vector3>(), new List<Vector2>());
+                }
+                var (V, N, UV) = chunkVerts[key];
+                int wall = (bi * 7919) % 4;
+                float h = b.h, perim = 0f;
+                // Walls: one quad per edge, outward (counter-clockwise in x,z: outward is to the right of the edge).
+                for (int i = 0; i < n; i++)
+                {
+                    var a = pts[i]; var c = pts[(i + 1) % n];
+                    float len = Vector2.Distance(a, c);
+                    var dir = (c - a) / Mathf.Max(len, 1e-4f);
+                    var outward = new Vector3(dir.y, 0f, -dir.x);
+                    int v0 = V.Count;
+                    V.Add(new Vector3(a.x, -0.2f, a.y)); V.Add(new Vector3(c.x, -0.2f, c.y));
+                    V.Add(new Vector3(c.x, h, c.y)); V.Add(new Vector3(a.x, h, a.y));
+                    for (int k = 0; k < 4; k++) N.Add(outward);
+                    float s0 = perim / wallScale[wall], s1 = (perim + len) / wallScale[wall], t1 = h / wallScale[wall];
+                    UV.Add(new Vector2(s0, 0f)); UV.Add(new Vector2(s1, 0f)); UV.Add(new Vector2(s1, t1)); UV.Add(new Vector2(s0, t1));
+                    tris[wall].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
+                    perim += len;
+                }
+                // The roof: the footprint at the top, triangulated (ear clipping), facing up.
+                int roof = b.r > 1.5f ? 5 : 4;
+                int r0 = V.Count;
+                foreach (var q in pts) { V.Add(new Vector3(q.x, h, q.y)); N.Add(Vector3.up); UV.Add(q / (roof == 5 ? 1f : 1.5f)); }
+                foreach (int k in EarClip(pts)) tris[roof].Add(r0 + k);
+                count++;
+            }
+            var root = new GameObject("Surroundings").transform;
+            root.SetParent(level, false);
+            foreach (var kv in chunks)
+            {
+                var (V, N, UV) = chunkVerts[kv.Key];
+                var mesh = new Mesh { name = $"Surroundings_{kv.Key.x}_{kv.Key.y}" };
+                if (V.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+                mesh.SetVertices(V);
+                mesh.SetNormals(N);
+                mesh.SetUVs(0, UV);
+                var used = new List<Material>();
+                var subs = new List<List<int>>();
+                for (int m = 0; m < mats.Length; m++)
+                    if (kv.Value[m].Count > 0) { used.Add(mats[m]); subs.Add(kv.Value[m]); }
+                mesh.subMeshCount = subs.Count;
+                for (int m = 0; m < subs.Count; m++) mesh.SetTriangles(subs[m], m);
+                mesh.RecalculateBounds();
+                string mp = $"{PlaygroundBuilder.ArtDir}/Meshes/{mesh.name}.asset";
+                Directory.CreateDirectory(Path.GetDirectoryName(mp));
+                AssetDatabase.DeleteAsset(mp);
+                AssetDatabase.CreateAsset(mesh, mp);
+                var go = new GameObject(mesh.name);
+                go.transform.SetParent(root, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterials = used.ToArray();
+                r.shadowCastingMode = ShadowCastingMode.Off; // far away: the shadow distance is 10 m anyway
+            }
+            Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
+        }
+
+        /// <summary>Triangulates a simple counter-clockwise polygon (x, z) by ear clipping; returns index triples.</summary>
+        static List<int> EarClip(Vector2[] pts)
+        {
+            var result = new List<int>();
+            var idx = new List<int>();
+            for (int i = 0; i < pts.Length; i++) idx.Add(i);
+            float Cross(Vector2 a, Vector2 b, Vector2 c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+            bool Inside(Vector2 p, Vector2 a, Vector2 b, Vector2 c) => Cross(a, b, p) > 0f && Cross(b, c, p) > 0f && Cross(c, a, p) > 0f;
+            int guard = 0;
+            while (idx.Count > 3 && guard++ < 10000)
+            {
+                bool clipped = false;
+                for (int i = 0; i < idx.Count; i++)
+                {
+                    int ia = idx[(i + idx.Count - 1) % idx.Count], ib = idx[i], ic = idx[(i + 1) % idx.Count];
+                    Vector2 a = pts[ia], b = pts[ib], c = pts[ic];
+                    if (Cross(a, b, c) <= 1e-6f) continue; // reflex or flat
+                    bool ear = true;
+                    foreach (int j in idx)
+                        if (j != ia && j != ib && j != ic && Inside(pts[j], a, b, c)) { ear = false; break; }
+                    if (!ear) continue;
+                    result.AddRange(new[] { ia, ic, ib }); // clockwise seen from above in (x, z) = facing up in Unity
+                    idx.RemoveAt(i);
+                    clipped = true;
+                    break;
+                }
+                if (!clipped) break; // a bad polygon: leave the rest open
+            }
+            if (idx.Count == 3) result.AddRange(new[] { idx[0], idx[2], idx[1] });
+            return result;
         }
 
         /// <summary>

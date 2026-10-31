@@ -2440,7 +2440,7 @@ namespace Draho.EditorTools
             return m;
         }
 
-        [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public float[] g, i, k; }
+        [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public int c; public float[] g, i, k; }
         [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
         [Serializable] class BridgeData { public float[] v, ring; public int[] t, wet; }
         [Serializable] class QuayLine { public float[] q; }
@@ -2481,6 +2481,7 @@ namespace Draho.EditorTools
                 Facade("Sur_PlasterGrey", new Color(0.82f, 0.82f, 0.8f), false),
                 Mat("Sur_RoofFlat", new Color(0.36f, 0.35f, 0.33f), 0.05f, PebbleTexture(), Vector2.one),
                 Mat("Sur_RoofSlate", new Color(0.3f, 0.3f, 0.33f), 0.25f, RoofTexture(false), Vector2.one),
+                Mat("Sur_RoofTiles", new Color(0.72f, 0.36f, 0.24f), 0.2f, RoofTexture(false), Vector2.one), // red clay tiles (round 118)
             };
             float[] wallScale = { 12f, 12f, 12f, 12f };   // the facade textures are 12 m square
             var chunks = new Dictionary<Vector2Int, List<int>[]>();
@@ -2548,8 +2549,9 @@ namespace Draho.EditorTools
                         UV.Add(Vector2.zero); UV.Add(new Vector2(lu, 0f)); UV.Add(new Vector2(lu, lv)); UV.Add(new Vector2(0f, lv));
                         tris[sub].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
                     }
-                    Quad(p00, p10, ridgeB, ridgeA, 5, 1f);   // the two slopes
-                    Quad(p11, p01, ridgeA, ridgeB, 5, 1f);
+                    int slope = b.c == 1 ? 6 : 5; // red tiles where the aerial photo shows them, else slate
+                    Quad(p00, p10, ridgeB, ridgeA, slope, 1f);   // the two slopes
+                    Quad(p11, p01, ridgeA, ridgeB, slope, 1f);
                     foreach (var (e0, e1, top) in new[] { (p01, p00, ridgeA), (p10, p11, ridgeB) }) // the gable ends, in the wall material
                     {
                         var nrm = Vector3.Cross(top - e0, e1 - e0).normalized;
@@ -2635,9 +2637,9 @@ namespace Draho.EditorTools
                         else tris[2].AddRange(new[] { t0, t0 + 2, t0 + 1, t0, t0 + 3, t0 + 2 });
                     }
                 // The roof: the footprint at the top, triangulated (ear clipping), facing up.
-                int roof = b.r > 1.5f ? 5 : 4;
+                int roof = b.c == 1 ? 6 : b.r > 1.5f ? 5 : 4;
                 int r0 = V.Count;
-                foreach (var q in pts) { V.Add(new Vector3(q.x, h, q.y)); N.Add(Vector3.up); UV.Add(q / (roof == 5 ? 1f : 1.5f)); }
+                foreach (var q in pts) { V.Add(new Vector3(q.x, h, q.y)); N.Add(Vector3.up); UV.Add(q / (roof == 4 ? 1.5f : 1f)); }
                 foreach (int k in EarClip(pts)) tris[roof].Add(r0 + k);
                 count++;
             }

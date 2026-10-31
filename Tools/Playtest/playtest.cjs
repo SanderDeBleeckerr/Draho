@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump|hogview]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -400,12 +400,19 @@ const steps = {
     ['04_walk', 'move', '0,1,0,4'],
     ['05_far', 'wait', '1'],
   ],
-  // Start with ?beat=40&at=-3.5,7.3,0 : the fox's first beat, made day (test hook), the cat 1.3 m from the fox:
+  // Start with ?beat=40&at=-12,6.4,0 : the fox's first beat; the hook stands it side-on in front of the cat, made day (test hook), the cat 1.3 m from the fox:
   // compare their sizes from the side as the fox sets off west.
   foxday: [
     ['02_day', 'call', 'SkyMood.TestMood:Day'],
-    ['03_fox', 'wait', '2'],
-    ['04_fox_walks', 'wait', '2'],
+    ['03_pose', 'call', 'Fox.TestPose'],
+    ['04_fox', 'wait', '2'],
+    ['05_fox_walks', 'wait', '2.5'],
+  ],
+  // Start with ?beat=12&at=-16.2,7.0,90 : by day in the wild garden, 1.2 m west of the hedgehog: look at it from the
+  // side, close.
+  hogview: [
+    ['02_view', 'call', 'Main Camera.TestView:22,0.7,90'],
+    ['03_hog', 'wait', '2'],
   ],
   // Start with ?fresh=1 (a new game): the first minutes as a new player sees them: the story, the mist, a walk.
   start: [

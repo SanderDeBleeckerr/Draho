@@ -173,6 +173,19 @@ namespace Draho.World
         /// <summary>Test hook: SendMessage('Fox', 'TestBegin').</summary>
         public void TestBegin() => Begin();
 
+        /// <summary>Test hook: SendMessage('Fox', 'TestPose'): the fox stands side-on 1.5 m in front of the cat for 30 s
+        /// (to compare their sizes).</summary>
+        public void TestPose()
+        {
+            if (cat == null) return;
+            Show(true);
+            Vector3 f = Flat(cat.transform.forward).normalized;
+            transform.position = new Vector3(cat.transform.position.x, 0f, cat.transform.position.z) + f * 1.5f;
+            transform.rotation = Quaternion.LookRotation(Vector3.Cross(Vector3.up, f), Vector3.up);
+            state = State.Sniff;
+            timer = 30f;
+        }
+
         /// <summary>Test hook: SendMessage('Fox', 'TestToDen'): jump to the last part of the route.</summary>
         public void TestToDen()
         {

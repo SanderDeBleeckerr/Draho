@@ -202,3 +202,24 @@ story line at the top of the epilogue always says "a new day".
 | 119-121 | 119: each surrounding building starts at a different facade bay; 120: research notes for rounds 101-120; 121: shop windows glow at night | Verified live at night: warm shop windows along the street, lanterns lit, a varied pattern of lit windows over the town | Nights in town |
 | 122-123 | 122: paving texture on the big ground plane (plain strips by the river ends); 123: additive pools of lamplight under the 184 street lamps, shown only at night | Verified live: paved ground and shop fronts by day; at night the lanterns glow but the pools are too faint (124: brighter) | — |
 | 124-126 | 124: brighter lamp pools; 125: gulls gliding over the big river arms (swift code, gull settings); 126: far traffic hum and a tram bell (made in code) | Live: sounds made (city 6.0 s, tram bell 1.4 s), no errors; perf 314 batches: every bird was its own draw call (127: one mesh per flock) | — |
+| 127 | Each flock of birds is one dynamic mesh (swifts, two gull flocks: 3 draw calls instead of 18) | Verified live: swifts flying as specks over the roofs, no errors; perf 310 batches (the birds are mostly out of view at the worst station), 147k tris | — |
+| 128 | Final regression on the newest build: 31 chapter tests, two at a time | Verified live: 0 exceptions in 31/31, the story moved on in 22 (as in round 98) | The surroundings did not break the game |
+| 129-131 | README section on the town round the level; the research notes; this log | — | Documented |
+
+## Summary of the surroundings loop (rounds 101-132)
+
+- **Buildings:** 717 real footprints with heights round the level; brick and plaster facades of 12 m (windows, shop
+  fronts with signs, lit windows and shops at night, each building starting at its own bay); 359 gable roofs (slate,
+  or red tiles where the aerial photo is red) with chimneys; flat roofs with parapets and 571 roof boxes.
+- **Water:** the real river arms (flowing, with ripples), 7 bridges, about 4 km of stone quays with bollards, 108
+  moored boats, gulls over the water.
+- **Streets and green:** real street surfaces in 12 cm cobbles, paving on the rest of the ground, 184 lamps with pools
+  of light at night, 260 parked cars, gardens and lawns from the infrared photo, about 460 trees from the canopy
+  height.
+- **Sky:** drifting cumulus clouds coloured by the time of day, alongside the cloud shadows on the ground.
+- **Sound:** a far traffic hum and a tram bell.
+- **Performance:** about 310 batches at the worst station (soft target about 300, before the surroundings 271) and
+  147k triangles (budget 150k). Squares of 200 m, a shared palette material and one mesh per flock keep it there; a
+  texture atlas for the facades and roofs would be the next saving.
+- **Open points:** the game river is straight while the real one curves a little; the surroundings are scenery (no
+  collisions); the sounds still need a person to listen on a phone.

@@ -22,6 +22,15 @@ jump onto furniture and duck. Wait in front of the sliding garden door and it op
 The level is built from the blueprint file `Draho/Assets/_Draho/Levels/Apartment/apartment_layout.json`
 with Kenney furniture. The old test playground (a floor in empty space) is the second scene.
 
+## The town round the level
+
+Past the playable level, about 700 real buildings, the streets, the river arms, the bridges, the gardens and about
+460 trees fill a square kilometre of scenery. They come from open map data of Digitaal Vlaanderen (GRB, the DHM II
+height model, the summer colour and infrared aerial photos), turned into game metres by scripts outside the
+repository; the repository keeps only `Draho/Assets/_Draho/Levels/Apartment/surroundings.json` (no coordinates).
+The builder extrudes walls with window facades, gable roofs with chimneys, flat roofs with parapets and roof boxes,
+and adds parked cars, street lamps, moored boats, quays and gulls. See [the research notes](docs/RESEARCH_NOTES.md).
+
 ## Open the project
 
 1. Clone the repository. (Git LFS is prepared in `.gitattributes`, but it is off for now.)

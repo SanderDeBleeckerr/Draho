@@ -2463,7 +2463,7 @@ namespace Draho.EditorTools
                     var across = new Vector3(-Mathf.Sin(a), 0f, Mathf.Cos(a)) * (b.g[3] / 2f + 0.2f);
                     var up = Vector3.up * b.g[5];
                     Vector3 p00 = gc - along - across, p10 = gc + along - across, p11 = gc + along + across, p01 = gc - along + across;
-                    Vector3 r0 = gc - along + up, r1 = gc + along + up;
+                    Vector3 ridgeA = gc - along + up, ridgeB = gc + along + up;
                     void Quad(Vector3 q0, Vector3 q1, Vector3 q2, Vector3 q3, int sub, float uvs)
                     {
                         var nrm = Vector3.Cross(q1 - q0, q3 - q0).normalized;
@@ -2475,9 +2475,9 @@ namespace Draho.EditorTools
                         UV.Add(Vector2.zero); UV.Add(new Vector2(lu, 0f)); UV.Add(new Vector2(lu, lv)); UV.Add(new Vector2(0f, lv));
                         tris[sub].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
                     }
-                    Quad(p00, p10, r1, r0, 5, 1f);   // the two slopes
-                    Quad(p11, p01, r0, r1, 5, 1f);
-                    foreach (var (e0, e1, top) in new[] { (p01, p00, r0), (p10, p11, r1) }) // the gable ends, in the wall material
+                    Quad(p00, p10, ridgeB, ridgeA, 5, 1f);   // the two slopes
+                    Quad(p11, p01, ridgeA, ridgeB, 5, 1f);
+                    foreach (var (e0, e1, top) in new[] { (p01, p00, ridgeA), (p10, p11, ridgeB) }) // the gable ends, in the wall material
                     {
                         var nrm = Vector3.Cross(top - e0, e1 - e0).normalized;
                         var outN = Vector3.Dot(nrm, (e0 + e1) / 2f - gc) < 0f ? -nrm : nrm;

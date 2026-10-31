@@ -4796,10 +4796,27 @@ namespace Draho.EditorTools
         /// A facade, 12 m square (4 floors of 3 m, 4 bays of 3 m), 512 px: the wall (brick or plaster pattern) with
         /// one window per bay and floor (1.1 x 1.5 m, a light frame, dark glass, a stone sill).
         /// </summary>
-        static Texture2D FacadeTexture(bool brick) => MakeTexture(brick ? "FacadeBrick.png" : "FacadePlaster.png", 512, (x, y, size) =>
+        static Texture2D FacadeTexture(bool brick) => MakeTexture(brick ? "FacadeBrick2.png" : "FacadePlaster2.png", 512, (x, y, size) =>
         {
             float px = 12f / size;                       // metres per pixel
             float mx = x * px % 3f, my = y * px % 3f;    // position in the bay
+            int bay = (int)(x * px / 3f);
+            if (y * px < 3f)
+            {
+                // The ground floor (round 116): shop windows and doors on the street, as in the old town.
+                bool door = bay % 2 == 1 && mx > 1.05f && mx < 1.95f && my < 2.3f;
+                bool shop = bay % 2 == 0 && mx > 0.35f && mx < 2.65f && my > 0.45f && my < 2.45f;
+                bool sign = bay % 2 == 0 && mx > 0.35f && mx < 2.65f && my > 2.5f && my < 2.85f;
+                if (door) return (mx < 1.12f || mx > 1.88f || my > 2.22f) ? new Color(0.25f, 0.18f, 0.13f) : new Color(0.32f, 0.22f, 0.16f);
+                if (shop)
+                {
+                    bool frm = mx < 0.42f || mx > 2.58f || my < 0.52f || my > 2.38f || Mathf.Abs(mx - 1.5f) < 0.04f;
+                    if (frm) return new Color(0.2f, 0.2f, 0.22f);
+                    float g = 0.16f + 0.08f * (my - 0.45f) / 2f;
+                    return new Color(g, g * 1.06f, g * 1.15f);
+                }
+                if (sign) return bay % 4 == 0 ? new Color(0.45f, 0.12f, 0.1f) : new Color(0.15f, 0.25f, 0.2f);
+            }
             bool win = mx > 0.95f && mx < 2.05f && my > 0.9f && my < 2.4f;
             bool frame = win && (mx < 1.02f || mx > 1.98f || my < 0.97f || my > 2.33f || Mathf.Abs(mx - 1.5f) < 0.035f);
             bool sill = !win && mx > 0.88f && mx < 2.12f && my > 0.8f && my <= 0.9f;

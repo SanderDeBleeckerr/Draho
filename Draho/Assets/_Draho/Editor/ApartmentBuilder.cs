@@ -2444,7 +2444,7 @@ namespace Draho.EditorTools
         [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
         [Serializable] class BridgeData { public float[] v, ring; public int[] t, wet; }
         [Serializable] class QuayLine { public float[] q; }
-        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees, boats; public BridgeData[] bridges; public QuayLine[] quays; }
+        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees, boats, lamps, cars; public BridgeData[] bridges; public QuayLine[] quays; }
 
         /// <summary>
         /// The blocks round the level (scenery, no colliders): about 700 real building footprints and heights from open
@@ -2684,8 +2684,107 @@ namespace Draho.EditorTools
             Surface(root, "SurGardens", file.gardens, -0.035f, Mat("Sur_GardenGrass", new Color(0.3f, 0.43f, 0.2f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
             SurroundingTrees(root, file.trees);
             SurroundingWater(root, file.bridges, file.boats, file.quays);
-            root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3] });
+            var lampHead = SurroundingStreets(root, file.lamps, file.cars);
+            root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3], lampHead });
             Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
+        }
+
+        /// <summary>
+        /// Street life round the level (round 113): street lamps along the real streets (a dark pole and a lantern that
+        /// glows at night through NightWindows; no real lights, they cost too much) and parked cars at the kerbs in four
+        /// colours. Chunked per 200 m square. lamps = [x, z, ...], cars = [x, z, heading, colour, ...]. Returns the
+        /// lantern material.
+        /// </summary>
+        static Material SurroundingStreets(Transform root, float[] lamps, float[] cars)
+        {
+            var pole = Mat("Sur_LampPole", new Color(0.12f, 0.13f, 0.13f), 0.4f);
+            var head = Mat("Sur_LampHead", new Color(0.95f, 0.88f, 0.7f), 0.6f);
+            head.EnableKeyword("_EMISSION");
+            head.SetColor("_EmissionColor", Color.black);
+            head.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            EditorUtility.SetDirty(head);
+            var carMats = new[]
+            {
+                Mat("Car_Red", new Color(0.55f, 0.1f, 0.08f), 0.7f), Mat("Car_Blue", new Color(0.14f, 0.22f, 0.42f), 0.7f),
+                Mat("Car_Silver", new Color(0.62f, 0.63f, 0.64f), 0.75f), Mat("Car_Black", new Color(0.06f, 0.06f, 0.07f), 0.75f),
+                Mat("Car_Glass", new Color(0.12f, 0.15f, 0.18f), 0.9f),
+            };
+            var mats = new List<Material> { pole, head };
+            mats.AddRange(carMats);
+            var chunks = new Dictionary<Vector2Int, (List<Vector3> v, List<Vector3> n, List<int>[] t)>();
+            (List<Vector3> v, List<Vector3> n, List<int>[] t) Chunk(float x, float z)
+            {
+                var key = new Vector2Int(Mathf.FloorToInt(x / 200f), Mathf.FloorToInt(z / 200f));
+                if (!chunks.TryGetValue(key, out var c))
+                {
+                    var tl = new List<int>[mats.Count];
+                    for (int i = 0; i < tl.Length; i++) tl[i] = new List<int>();
+                    chunks[key] = c = (new List<Vector3>(), new List<Vector3>(), tl);
+                }
+                return c;
+            }
+            void AddBox((List<Vector3> v, List<Vector3> n, List<int>[] t) c, Vector3 centre, Vector3 size, float yaw, int sub)
+            {
+                var rot = Quaternion.Euler(0f, yaw, 0f);
+                foreach (var (fn, u, w) in new (Vector3, Vector3, Vector3)[]
+                {
+                    (Vector3.up, Vector3.right, Vector3.forward), (Vector3.right, Vector3.forward, Vector3.up), (Vector3.left, Vector3.back, Vector3.up),
+                    (Vector3.forward, Vector3.left, Vector3.up), (Vector3.back, Vector3.right, Vector3.up),
+                })
+                {
+                    Vector3 Ext(Vector3 d) => Vector3.Scale(d, size * 0.5f);
+                    Vector3 fc = centre + rot * Ext(fn), du = rot * Ext(u), dv = rot * Ext(w);
+                    int v0 = c.v.Count;
+                    c.v.Add(fc - du - dv); c.v.Add(fc + du - dv); c.v.Add(fc + du + dv); c.v.Add(fc - du + dv);
+                    var wn = rot * fn;
+                    for (int k = 0; k < 4; k++) c.n.Add(wn);
+                    if (Vector3.Dot(Vector3.Cross(c.v[v0 + 1] - c.v[v0], c.v[v0 + 2] - c.v[v0]), wn) > 0f) c.t[sub].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
+                    else c.t[sub].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
+                }
+            }
+            if (lamps != null)
+                for (int i = 0; i + 1 < lamps.Length; i += 2)
+                {
+                    var c = Chunk(lamps[i], lamps[i + 1]);
+                    var at = new Vector3(lamps[i], 0f, lamps[i + 1]);
+                    AddBox(c, at + Vector3.up * 2.1f, new Vector3(0.12f, 4.2f, 0.12f), 0f, 0);
+                    AddBox(c, at + Vector3.up * 4.35f, new Vector3(0.36f, 0.42f, 0.36f), 45f, 1);
+                    AddBox(c, at + Vector3.up * 4.62f, new Vector3(0.46f, 0.08f, 0.46f), 45f, 0);
+                }
+            if (cars != null)
+                for (int i = 0; i + 3 < cars.Length; i += 4)
+                {
+                    var c = Chunk(cars[i], cars[i + 1]);
+                    float yaw = 90f - cars[i + 2];
+                    var at = new Vector3(cars[i], 0f, cars[i + 1]);
+                    var fwd = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+                    int colour = 2 + Mathf.Clamp((int)cars[i + 3], 0, 3);
+                    AddBox(c, at + Vector3.up * 0.45f, new Vector3(1.75f, 0.7f, 4.2f), yaw, colour);                    // the body
+                    AddBox(c, at + Vector3.up * 1.05f - fwd * 0.2f, new Vector3(1.55f, 0.55f, 2.2f), yaw, 6);            // the glass cabin
+                }
+            foreach (var kv in chunks)
+            {
+                var (V, N, Tr) = kv.Value;
+                var mesh = new Mesh { name = $"SurStreets_{kv.Key.x}_{kv.Key.y}" };
+                if (V.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+                mesh.SetVertices(V); mesh.SetNormals(N);
+                var used = new List<Material>(); var subs = new List<List<int>>();
+                for (int m = 0; m < mats.Count; m++) if (Tr[m].Count > 0) { used.Add(mats[m]); subs.Add(Tr[m]); }
+                mesh.subMeshCount = subs.Count;
+                for (int m = 0; m < subs.Count; m++) mesh.SetTriangles(subs[m], m);
+                mesh.RecalculateBounds();
+                string mp = $"{PlaygroundBuilder.ArtDir}/Meshes/{mesh.name}.asset";
+                AssetDatabase.DeleteAsset(mp);
+                AssetDatabase.CreateAsset(mesh, mp);
+                var go = new GameObject(mesh.name);
+                go.transform.SetParent(root, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterials = used.ToArray();
+                r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+            Debug.Log($"Draho: surroundings: {(lamps?.Length ?? 0) / 2} street lamps, {(cars?.Length ?? 0) / 4} cars");
+            return head;
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -74,7 +74,7 @@ const steps = {
     ['10_tap_still', 'tap', ''],
     ['11_wait', 'wait', '3'],
   ],
-  // Start with ?beat=7&at=-22,0.45,180 : in front of the ivy at the end of the garden, facing it.
+  // Start with ?beat=6&at=-22,0.45,180 : in front of the ivy at the end of the garden, facing it.
   climb: [
     ['02_tap_still', 'tap', ''],
     ['03_rear_climb', 'wait', '0.8'],
@@ -93,7 +93,7 @@ const steps = {
     ['06_leap_off', 'jump', ''],
     ['07_landed', 'wait', '1.5'],
   ],
-  // Start with ?beat=7&at=-22,0.45,180 : the whole ivy, up to the flat roof (6.5 m), then a walk on the roof.
+  // Start with ?beat=6&at=-22,0.45,180 : the whole ivy, up to the flat roof (6.5 m), then a walk on the roof.
   roof: [
     ['02_hold', 'hold', '4'],
     ['03_hold_more', 'hold', '4'],
@@ -170,7 +170,7 @@ const steps = {
     ['03_turn', 'move', '-0.4,1,0,0.4'],
     ['04_settle', 'wait', '2'],
   ],
-  // Start with ?beat=6&at=2.2,2.6,0&fresh=1 : on the rug nap spot; sit still until it is found; then the garden table spot.
+  // Start with ?beat=5&at=2.2,2.6,0&fresh=1 : on the rug nap spot; sit still until it is found; then the garden table spot.
   naps: [
     ['02_ring', 'wait', '1'],
     ['03_sit_on_it', 'wait', '6'],
@@ -184,7 +184,7 @@ const steps = {
     ['04_streak', 'wait', '0.8'],
     ['05_streak_more', 'wait', '0.8'],
   ],
-  // Start with ?beat=6&at=14.4,4.6,180,12.4&fresh=1 : by day on the big roof's ridge viewpoint; stand still: the camera
+  // Start with ?beat=5&at=14.4,4.6,180,12.4&fresh=1 : by day on the big roof's ridge viewpoint; stand still: the camera
   // pulls back and sweeps round the cat.
   views: [
     ['02_ring', 'wait', '2.5'],
@@ -201,7 +201,7 @@ const steps = {
     ['05_door', 'call', 'StoryDirector.TestTeleport:6.3,1.0,90'],
     ['06_given', 'wait', '2'],
   ],
-  // Start with ?beat=6&at=-10,2.5,0 : the lawn by day; cloud shadows drift over the garden (look down a little).
+  // Start with ?beat=5&at=-10,2.5,0 : the lawn by day; cloud shadows drift over the garden (look down a little).
   clouds: [
     ['02_look', 'call', 'Main Camera.TestView:35,1.6'],
     ['03_clouds', 'wait', '3'],
@@ -248,7 +248,7 @@ const steps = {
     ['06_jump_after', 'movejump', '0,1,1,1.2,0.5'],
     ['07_glow_walk', 'move', '1,0,0,1.5'],
   ],
-  // Start with ?beat=6&at=-8,2.5,180 : on the lawn by day; stand still: after 4 s the cat sits down; walk on.
+  // Start with ?beat=5&at=-8,2.5,180 : on the lawn by day; stand still: after 4 s the cat sits down; walk on.
   sit: [
     ['02_standing', 'wait', '2'],
     ['03_sits', 'wait', '4'],
@@ -309,7 +309,7 @@ const steps = {
     ['04_on_top', 'wait', '1.5'],
     ['05_walk', 'move', '0,1,0,2'],
   ],
-  // Start with ?beat=6&at=-10,2.5,270 : in the garden; Fatsocat comes (test hook): stand your ground. Then nap with Zlatenka.
+  // Start with ?beat=5&at=-10,2.5,270 : in the garden; Fatsocat comes (test hook): stand your ground. Then nap with Zlatenka.
   rivals: [
     ['02_fatsocat', 'call', 'Fatsocat.TestArrive'],
     ['03_he_comes', 'wait', '10'],
@@ -328,7 +328,7 @@ const steps = {
     ['06_begijnhof', 'call', 'StoryDirector.TestTeleport:60,-235,180'], ['06b', 'wait', '6'],
     ['07_far_bank', 'call', 'StoryDirector.TestTeleport:-53,-60,180'], ['07b', 'wait', '6'],
   ],
-  // Start with ?beat=2&at=5.9,1.05,90 : the kitchen mouse comes out; the test hook catches it; then read the board.
+  // Start with ?beat=1&at=5.9,1.05,90 : the kitchen mouse comes out; the test hook catches it; then read the board.
   bounty: [
     ['02_mouse_out', 'wait', '4'],
     ['03_catch', 'call', 'Mouse.TestCatch'],
@@ -365,7 +365,7 @@ const steps = {
     ['15_down', 'jump', ''],
     ['16_landed', 'wait', '2'],
   ],
-  // Start with ?beat=6&at=14.4,2.6,0,12.4 : on the ridge; look down the slate in evening light: overlapping rows.
+  // Start with ?beat=5&at=14.4,2.6,0,12.4 : on the ridge; look down the slate in evening light: overlapping rows.
   slates: [
     ['02_look_down', 'call', 'Main Camera.TestView:35,1.4'],
     ['03_evening', 'call', 'SkyMood.TestMood:Evening'],
@@ -378,6 +378,13 @@ const steps = {
     ['03_bow', 'wait', '7'],
     ['04_bow_later', 'wait', '2'],
   ],
+  // Start with ?beat=8&at=-15.5,-5,90,6.6 : the first beat of chapter 2 on the gravel roof: the jump lesson; a run
+  // and a jump end it.
+  roofjump: [
+    ['02_lesson', 'wait', '2'],
+    ['03_run_jump', 'movejump', '0,1,1,1.4,0.6'],
+    ['04_done', 'wait', '2'],
+  ],
   // Start with ?beat=12&at=-19.5,4.4,0 : out in the garden; "New game" (the hook the button calls): the save is
   // deleted and the game starts again at beat 0, inside the apartment.
   resume: [
@@ -385,7 +392,7 @@ const steps = {
     ['03_new_game', 'call', 'Progress.NewGame'],
     ['04_new', 'wait', '6'],
   ],
-  // Start with ?beat=6&at=-2.6,2.6,270 : beside the picnic table by day, looking down the garden (the whitewashed
+  // Start with ?beat=5&at=-2.6,2.6,270 : beside the picnic table by day, looking down the garden (the whitewashed
   // wall with the sheets above on the left, the fence on the right, leaves, shoots and the bins at the far end).
   gardenview: [
     ['02_look', 'call', 'Main Camera.TestView:6,1.8'],
@@ -408,20 +415,20 @@ const steps = {
     ['05_turn', 'move', '-1,0,0,1.5'],
     ['06_walk_on', 'move', '0,1,0,3'],
   ],
-  // Start with ?beat=6&at=-10,2.5,0 : both set rewards at once (sharp claws, the red collar with a bell); walk to
+  // Start with ?beat=5&at=-10,2.5,0 : both set rewards at once (sharp claws, the red collar with a bell); walk to
   // the side to see the collar.
   rewards: [
     ['02_all', 'call', 'SetRewards.TestAll'],
     ['03_side', 'move', '1,0,0,0.8'],
     ['04_collar', 'wait', '1'],
   ],
-  // Start with ?beat=6&at=-8,2.5,180 : a test meow, then a jump down from the table for a landing thump (log only:
+  // Start with ?beat=5&at=-8,2.5,180 : a test meow, then a jump down from the table for a landing thump (log only:
   // the headless test cannot hear).
   voice: [
     ['02_meow', 'call', 'Drahomil.TestMeow'],
     ['03_wait', 'wait', '1'],
   ],
-  // Start with ?beat=6&at=-6,0.7,200 : close to the garden brick wall; by day, then evening light: brick relief.
+  // Start with ?beat=5&at=-6,0.7,200 : close to the garden brick wall; by day, then evening light: brick relief.
   bricks: [
     ['02_day', 'wait', '2'],
     ['03_evening', 'call', 'SkyMood.TestMood:Evening'],
@@ -433,7 +440,7 @@ const steps = {
     ['03_water', 'wait', '3'],
     ['04_water_later', 'wait', '2'],
   ],
-  // Start with ?beat=6&at=-14,2.5,0 : the lawn by day; look up at the sky: swifts circle over the roofs.
+  // Start with ?beat=5&at=-14,2.5,0 : the lawn by day; look up at the sky: swifts circle over the roofs.
   swifts: [
     ['02_look_up', 'call', 'Main Camera.TestView:-5,1.2'],
     ['03_sky', 'wait', '3'],
@@ -464,12 +471,12 @@ const steps = {
     ['05_tv', 'wait', '5'],
     ['06_tv_later', 'wait', '2'],
   ],
-  // Start with ?beat=6&at=14.4,2.6,0,12.4 : on the big roof's ridge by day, looking at the front chimney: smoke.
+  // Start with ?beat=5&at=14.4,2.6,0,12.4 : on the big roof's ridge by day, looking at the front chimney: smoke.
   smoke: [
     ['02_look_up', 'call', 'Main Camera.TestView:5,2.2'],
     ['03_smoke', 'wait', '4'],
   ],
-  // Start with ?beat=6&at=-8,2.5,180 : sit a while: Drahomil's notes (all categories) show on the board panel.
+  // Start with ?beat=5&at=-8,2.5,180 : sit a while: Drahomil's notes (all categories) show on the board panel.
   notes: [
     ['02_sit', 'wait', '15'],
     ['03_walk_away', 'move', '0,1,0,1.5'],
@@ -480,7 +487,7 @@ const steps = {
     ['03_report', 'call', 'RainSplashes.TestReport'],
     ['04_walk', 'move', '0,1,0,1.5'],
   ],
-  // Start with ?beat=6&at=-8,2.5,180 : the story panel shows, fades while walking, comes back when standing still.
+  // Start with ?beat=5&at=-8,2.5,180 : the story panel shows, fades while walking, comes back when standing still.
   storyhud: [
     ['02_shown', 'wait', '2'],
     ['03_walk', 'move', '0,1,0,12'],
@@ -495,28 +502,28 @@ const steps = {
     ['05_night', 'call', 'DayCycle.TestAdvance'],
     ['06_night_look', 'wait', '8'],
   ],
-  // Start with ?beat=6&at=-8,2.5,180&fresh=1 : the lawn; crouch and keep still: a sniff names the nearest thing not
+  // Start with ?beat=5&at=-8,2.5,180&fresh=1 : the lawn; crouch and keep still: a sniff names the nearest thing not
   // yet found, with distance and direction, and a scent trail drifts that way.
   sniff: [
     ['02_duck', 'duck', ''],
     ['03_sniff', 'wait', '2.5'],
     ['04_trail', 'wait', '0.8'],
   ],
-  // Start with ?beat=6&at=-2.35,1.45,0 : by the garden table leg; rear up (jump standing still) in the ring: claw
+  // Start with ?beat=5&at=-2.35,1.45,0 : by the garden table leg; rear up (jump standing still) in the ring: claw
   // marks and "Scritch-scratch".
   scratch: [
     ['02_ring', 'wait', '1.5'],
     ['03_rear', 'jump', ''],
     ['04_scratched', 'wait', '1.5'],
   ],
-  // Start with ?fresh=1 (a new game, the first morning): mist lies in the gardens; then ?beat=6&at=-4,2.5,270 with
+  // Start with ?fresh=1 (a new game, the first morning): mist lies in the gardens; then ?beat=5&at=-4,2.5,270 with
   // the test hook for a look down the garden.
   mist: [
     ['02_mist_on', 'call', 'MorningMist.TestMist'],
     ['03_mist', 'wait', '4'],
     ['04_walk', 'move', '0,1,0,2'],
   ],
-  // Start with ?beat=6&at=-8,2.5,90 : the lawn, side view; the wet shake (6 Hz twist from head to hips, drops fly).
+  // Start with ?beat=5&at=-8,2.5,90 : the lawn, side view; the wet shake (6 Hz twist from head to hips, drops fly).
   shake: [
     ['02_still', 'wait', '1'],
     ['03_shake', 'call', 'Drahomil.TestShake'],
@@ -524,7 +531,7 @@ const steps = {
     ['05_shaking_more', 'wait', '0.3'],
     ['06_after', 'wait', '1'],
   ],
-  // Start with ?beat=6&at=-10,2.5,0 : the lawn by day; walk (tail up), stand (lazy sway), crouch still (tip twitch).
+  // Start with ?beat=5&at=-10,2.5,0 : the lawn by day; walk (tail up), stand (lazy sway), crouch still (tip twitch).
   tail: [
     ['02_walk', 'move', '0,1,0,1.2'],
     ['03_walk_side', 'move', '1,0,0,0.8'],
@@ -695,7 +702,7 @@ const steps = {
     ['11_catch_c', 'call', 'Moth_2.TestCatch'],
     ['12_done', 'wait', '3'],
   ],
-  // Start with ?beat=6&at=-10,2.5,0 (open lawn): day, evening and night light (SkyMood test hook).
+  // Start with ?beat=5&at=-10,2.5,0 (open lawn): day, evening and night light (SkyMood test hook).
   sky: [
     ['02_day', 'move', '0,1,0,1'],
     ['03_evening', 'call', 'SkyMood.TestMood:Evening'],
@@ -705,7 +712,7 @@ const steps = {
     ['07_night_turn', 'move', '1,0,0,1.5'],
     ['08_night_still', 'wait', '1'],
   ],
-  // Start with ?beat=6&at=-10,2.5,0 (open lawn). Duck and crawl to the right; the shots come while the cat still moves (crawl animation check).
+  // Start with ?beat=5&at=-10,2.5,0 (open lawn). Duck and crawl to the right; the shots come while the cat still moves (crawl animation check).
   sneak: [
     ['02_duck', 'duck', ''],
     ['03_crawl', 'call', 'PlayerInput.TestMove:1,0,0,6'],
@@ -730,7 +737,7 @@ const steps = {
     ['05_climb_house', 'hold', '7'],
     ['06_on_roof', 'wait', '1.5'],
   ],
-  // Start with ?beat=4&at=6.4,2,90 : in the kitchen at the bounty board; then (teleport) pick up two feathers.
+  // Start with ?beat=3&at=6.4,2,90 : in the kitchen at the bounty board; then (teleport) pick up two feathers.
   board: [
     ['02_walk_to_board', 'move', '0,1,0,1.5'],
     ['03_read_board', 'wait', '2'],
@@ -741,7 +748,7 @@ const steps = {
     ['08_wait', 'wait', '7'],
     ['09_reload', 'reload', 'https://sanderdebleeckerr.github.io/Draho/'],
   ],
-  // Start with ?beat=7&at=-22,0.9,180 : close to the ivy; jump at it, hang on, climb a bit, tap to drop off.
+  // Start with ?beat=6&at=-22,0.9,180 : close to the ivy; jump at it, hang on, climb a bit, tap to drop off.
   grab: [
     ['02_jump_at_ivy', 'movejump', '0,1,0,1.2,0.2'],
     ['03_hanging', 'wait', '1.5'],
@@ -749,15 +756,15 @@ const steps = {
     ['05_drop_off', 'jump', ''],
     ['06_landed', 'wait', '1.5'],
   ],
-  // Start with ?beat=6&at=-22,3.9,0 : in front of the maple trunk (use with climbhold).
-  // Start with ?beat=4&at=-0.5,1.2,270 : on the terrace by the door, looking down the garden.
+  // Start with ?beat=5&at=-22,3.9,0 : in front of the maple trunk (use with climbhold).
+  // Start with ?beat=3&at=-0.5,1.2,270 : on the terrace by the door, looking down the garden.
   garden: [
     ['02_walk', 'move', '0,1,0,3'],
     ['03_run', 'move', '0,1,1,3'],
     ['04_run_more', 'move', '0,1,1,3'],
     ['05_look_back', 'move', '0,-1,0,1'],
   ],
-  // Start with ?beat=5&at=-3,3.3,270 : on the terrace edge, a blackbird about 3.5 m ahead.
+  // Start with ?beat=4&at=-3,3.3,270 : on the terrace edge, a blackbird about 3.5 m ahead.
   birds: [
     ['02_look', 'wait', '1.5'],
     ['03_duck', 'duck', ''],
@@ -769,7 +776,7 @@ const steps = {
     ['09_birds_up', 'wait', '1.5'],
     ['10_wait', 'wait', '4'],
   ],
-  // Start with ?beat=2&at=5.9,1.05,90 : in the kitchen, facing the mouse hole by the fridge.
+  // Start with ?beat=1&at=5.9,1.05,90 : in the kitchen, facing the mouse hole by the fridge.
   mouse: [
     ['02_watch', 'wait', '2.5'],
     ['03_duck', 'duck', ''],

@@ -16,8 +16,8 @@ namespace Draho.Story
     {
         /// <summary>True in the free-roam epilogue after THE END (the gifts for the humans appear).</summary>
         public static bool InEpilogue { get; private set; }
-        /// <summary>Beats 0-8 are chapter 1 (the apartment and the garden).</summary>
-        const int FirstBeatOfChapter2 = 9;
+        /// <summary>Beats 0-7 are chapter 1 (the apartment and the garden).</summary>
+        const int FirstBeatOfChapter2 = 8;
 
         [SerializeField] StoryHud hud;
         [SerializeField] Mouse mouse;
@@ -59,6 +59,7 @@ namespace Draho.Story
         StoryItem croissant, breakfast;
         Transform suitcase;
         float suitcaseTime;
+        bool jumpedOnRoof;
 
         static bool InApartment(Vector3 p) => p.x > 0.1f && p.x < 7.6f && p.z > 0f && p.z < 5f && p.y < 1.5f;
         static Vector3? P(float x, float y, float z) => new Vector3(x, y, z);
@@ -185,12 +186,6 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "A good cat checks everything from up high.",
-                    Goal = "Run at the sofa or the cat tree, then tap the stick to jump.",
-                    Done = () => cat.IsGrounded && cat.transform.position.y > 0.3f,
-                },
-                new Beat
-                {
                     Story = "Scritch... scritch... Something moves in the kitchen!",
                     Goal = "Catch the mouse. It hears running paws: DUCK to sneak up on it.",
                     Target = () => P(7.2f, 0f, 1.05f),
@@ -240,9 +235,17 @@ namespace Draho.Story
                     Target = () => P(-22f, 6.5f, -0.4f),
                     Done = () => cat.IsGrounded && cat.transform.position.y > 6f,
                 },
+                // The jump is taught here, on the roofs, where the gaps make it matter (in the flat it was too early).
                 new Beat
                 {
-                    Story = "Chapter 2: The Rooftops. Warm gravel, chimneys, and the whole block below. Nobody comes up here. Except cats... and butterflies: two dance over a pot of red geraniums.",
+                    Story = "Chapter 2: The Rooftops. Warm gravel, chimneys, and the whole block below. Up here the roofs have gaps and steps between them.",
+                    Goal = "Learn to jump: run, then tap the stick. (A cat never jumps from standing: run first.)",
+                    Begin = () => jumpedOnRoof = false,
+                    Done = () => jumpedOnRoof && cat.IsGrounded,
+                },
+                new Beat
+                {
+                    Story = "A fine jump! Nobody comes up here. Except cats... and butterflies: two dance over a pot of red geraniums.",
                     Goal = "Catch a butterfly. They zigzag, and they escape when you walk at them: sneak close (DUCK), then jump when one flutters low.",
                     Target = () => P(-13.5f, 6.9f, -5f),
                     Done = () => Moth.ButterfliesCaught >= 1,
@@ -669,6 +672,7 @@ namespace Draho.Story
             Vector3 p = cat.transform.position;
             walked += new Vector2(p.x - lastPosition.x, p.z - lastPosition.z).magnitude;
             lastPosition = p;
+            if (cat.IsAirborne && cat.VerticalVelocity > 1f && p.y > 3f) jumpedOnRoof = true; // a real jump, not a fall
             if (beatTime >= minBeatTime && beats[index].Done()) Next();
         }
 

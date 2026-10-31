@@ -3,6 +3,8 @@
 A mobile iPhone game about **Drahomil**, a black cat and mouse bounty hunter.
 The game uses Unity.
 
+**▶ Play it now in your browser (phone or desktop): https://sanderdebleeckerr.github.io/Draho/**
+
 ![Drahomil, low-poly](docs/images/lowpoly_cat_sheet.png)
 
 - [Game Design Document](docs/GDD.md)

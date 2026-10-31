@@ -204,7 +204,7 @@
    "h": 0.75,
    "facing": "east",
    "kenney": "",
-   "color": "#9C8A70"
+   "color": "#7C7B6C"
   },
   {
    "id": "firewood",
@@ -250,7 +250,7 @@
     5.0
    ],
    "h": 1.8,
-   "color": "#8A6E52",
+   "color": "#7D746A",
    "post_color": "#B5B0A8",
    "post_spacing": 2.0,
    "gap_at": -19.5,

@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -377,6 +377,21 @@ const steps = {
     ['02_dawn', 'call', 'Rainbow.TestShow'],
     ['03_bow', 'wait', '7'],
     ['04_bow_later', 'wait', '2'],
+  ],
+  // Start with ?beat=6&at=-2.6,2.6,270 : beside the picnic table by day, looking down the garden (the whitewashed
+  // wall with the sheets above on the left, the fence on the right, leaves, shoots and the bins at the far end).
+  gardenview: [
+    ['02_look', 'call', 'Main Camera.TestView:6,1.8'],
+    ['03_garden', 'wait', '3'],
+    ['04_walk', 'move', '0,1,0,4'],
+    ['05_far', 'wait', '1'],
+  ],
+  // Start with ?beat=40&at=-3.5,7.3,0 : the fox's first beat, made day (test hook), the cat 1.3 m from the fox:
+  // compare their sizes from the side as the fox sets off west.
+  foxday: [
+    ['02_day', 'call', 'SkyMood.TestMood:Day'],
+    ['03_fox', 'wait', '2'],
+    ['04_fox_walks', 'wait', '2'],
   ],
   // Start with ?fresh=1 (a new game): the first minutes as a new player sees them: the story, the mist, a walk.
   start: [

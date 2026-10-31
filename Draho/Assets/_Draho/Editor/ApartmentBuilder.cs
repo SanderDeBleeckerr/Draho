@@ -176,6 +176,7 @@ namespace Draho.EditorTools
             BuildPaths(layout);
             BuildBuildings(layout);
             BuildWildGarden(layout.wild_garden);
+            BuildGardenDetails();
             BuildBegijnhof(layout.begijnhof);
             BuildDucks(layout);
             BuildBridges(layout);
@@ -525,7 +526,7 @@ namespace Draho.EditorTools
         }
 
         /// <summary>
-        /// Chapter 9: a red fox (about 90 cm with the tail) that walks a night route west through the wild
+        /// Chapter 9: a red fox (withers 35 cm, about 1.1 m with the tail) that walks a night route west through the wild
         /// garden, from the workshop end to a den under the bushes in the far corner. +Z is forward.
         /// </summary>
         /// <summary>Chapter 9: an old cast-iron lamp-post at the north end of the quay; on at night.</summary>
@@ -1729,30 +1730,40 @@ namespace Draho.EditorTools
                 t.localPosition = pos;
                 return t;
             }
+            // Real proportions (research: withers 31-40 cm, head and body 58-90 cm, tail 30-55 cm, ears 8-10 cm):
+            // withers 35 cm, head and body about 70 cm, tail about 40 cm. A deep chest, slimmer hindquarters,
+            // a long narrow snout, black-backed ears, black "stockings" and a bushy tail with a white tip.
             var r = root.transform;
-            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.33f, 0f), Vector3.zero, new Vector3(0.2f, 0.2f, 0.48f), orange);
-            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.27f, 0.2f), Vector3.zero, new Vector3(0.11f, 0.12f, 0.12f), white); // chest
-            var head = Pivot("Head", r, new Vector3(0f, 0.42f, 0.26f));
-            Part(PrimitiveType.Sphere, head, Vector3.zero, Vector3.zero, new Vector3(0.15f, 0.13f, 0.15f), orange);
-            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.025f, 0.1f), Vector3.zero, new Vector3(0.07f, 0.06f, 0.13f), orange); // snout
-            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.045f, 0.09f), Vector3.zero, new Vector3(0.06f, 0.035f, 0.1f), white); // white jaw
-            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.015f, 0.165f), Vector3.zero, Vector3.one * 0.025f, black);          // nose
+            var legDark = Mat("Fox_Legs", new Color(0.12f, 0.08f, 0.06f), 0.2f);
+            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.27f, 0.1f), Vector3.zero, new Vector3(0.15f, 0.17f, 0.28f), orange);   // chest
+            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.28f, -0.13f), Vector3.zero, new Vector3(0.14f, 0.15f, 0.3f), orange);  // hindquarters
+            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.23f, 0.17f), Vector3.zero, new Vector3(0.1f, 0.12f, 0.12f), white);    // white bib
+            Part(PrimitiveType.Sphere, r, new Vector3(0f, 0.34f, 0.24f), new Vector3(-35f, 0f, 0f), new Vector3(0.09f, 0.1f, 0.16f), orange); // neck
+            var head = Pivot("Head", r, new Vector3(0f, 0.39f, 0.31f));
+            Part(PrimitiveType.Sphere, head, Vector3.zero, Vector3.zero, new Vector3(0.11f, 0.095f, 0.12f), orange);                 // skull
+            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.02f, 0.085f), new Vector3(8f, 0f, 0f), new Vector3(0.05f, 0.045f, 0.13f), orange); // long snout
+            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.035f, 0.07f), new Vector3(8f, 0f, 0f), new Vector3(0.045f, 0.03f, 0.11f), white);  // white jaw
+            Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.02f, 0.15f), Vector3.zero, Vector3.one * 0.02f, black);              // nose
             foreach (float side in new[] { -1f, 1f })
             {
-                Part(PrimitiveType.Cube, head, new Vector3(side * 0.045f, 0.08f, -0.01f), new Vector3(0f, 0f, side * -12f), new Vector3(0.05f, 0.09f, 0.02f), black); // ears
-                Part(PrimitiveType.Sphere, head, new Vector3(side * 0.04f, 0.02f, 0.06f), Vector3.zero, Vector3.one * 0.018f, black);   // eyes
+                Part(PrimitiveType.Sphere, head, new Vector3(side * 0.04f, -0.02f, 0.02f), Vector3.zero, new Vector3(0.04f, 0.045f, 0.05f), white); // cheeks
+                Part(PrimitiveType.Cube, head, new Vector3(side * 0.035f, 0.07f, -0.015f), new Vector3(-10f, 0f, side * -14f), new Vector3(0.045f, 0.085f, 0.012f), orange); // ears
+                Part(PrimitiveType.Cube, head, new Vector3(side * 0.035f, 0.07f, -0.022f), new Vector3(-10f, 0f, side * -14f), new Vector3(0.047f, 0.087f, 0.004f), black);  // black backs
+                Part(PrimitiveType.Sphere, head, new Vector3(side * 0.03f, 0.012f, 0.055f), Vector3.zero, Vector3.one * 0.014f, black);  // eyes
             }
             var legs = new List<Transform>();
-            foreach (float z in new[] { 0.16f, -0.16f })
+            foreach (float z in new[] { 0.17f, -0.2f })
                 foreach (float side in new[] { -1f, 1f })
                 {
-                    var leg = Pivot("Leg", r, new Vector3(side * 0.06f, 0.27f, z));
-                    Part(PrimitiveType.Cube, leg, new Vector3(0f, -0.135f, 0f), Vector3.zero, new Vector3(0.04f, 0.27f, 0.045f), black);
+                    var leg = Pivot("Leg", r, new Vector3(side * 0.045f, 0.24f, z));
+                    Part(PrimitiveType.Cube, leg, new Vector3(0f, -0.04f, 0f), Vector3.zero, new Vector3(0.04f, 0.08f, 0.05f), orange);   // upper leg
+                    Part(PrimitiveType.Cube, leg, new Vector3(0f, -0.155f, 0f), Vector3.zero, new Vector3(0.026f, 0.17f, 0.03f), legDark); // black stocking
+                    Part(PrimitiveType.Cube, leg, new Vector3(0f, -0.235f, 0.012f), Vector3.zero, new Vector3(0.032f, 0.012f, 0.05f), legDark); // paw
                     legs.Add(leg);
                 }
-            var tail = Pivot("Tail", r, new Vector3(0f, 0.36f, -0.22f));
-            Part(PrimitiveType.Sphere, tail, new Vector3(0f, -0.05f, -0.17f), new Vector3(-15f, 0f, 0f), new Vector3(0.12f, 0.12f, 0.38f), orange);
-            Part(PrimitiveType.Sphere, tail, new Vector3(0f, -0.1f, -0.35f), new Vector3(-15f, 0f, 0f), new Vector3(0.085f, 0.085f, 0.11f), white);
+            var tail = Pivot("Tail", r, new Vector3(0f, 0.3f, -0.27f));
+            Part(PrimitiveType.Sphere, tail, new Vector3(0f, -0.04f, -0.17f), new Vector3(-15f, 0f, 0f), new Vector3(0.1f, 0.1f, 0.36f), orange);
+            Part(PrimitiveType.Sphere, tail, new Vector3(0f, -0.085f, -0.33f), new Vector3(-15f, 0f, 0f), new Vector3(0.075f, 0.075f, 0.1f), white); // white tip
             // The route: from the workshop end of the wild garden to the far corner, sniffing on the way.
             var route = new[]
             {
@@ -2289,20 +2300,189 @@ namespace Draho.EditorTools
                 go.GetComponent<Renderer>().sharedMaterial = m;
                 return go.transform;
             }
-            Part(body, new Vector3(0f, 0.065f, 0f), new Vector3(0.17f, 0.12f, 0.22f), spines);
-            var rng = new System.Random(9);
-            for (int i = 0; i < 26; i++) // spine tufts: light tips over the back
-            {
-                float a = (float)rng.NextDouble() * Mathf.PI, z = ((float)rng.NextDouble() - 0.5f) * 0.18f;
-                Part(body, new Vector3(Mathf.Cos(a) * 0.075f, 0.065f + Mathf.Sin(a) * 0.055f, z), new Vector3(0.03f, 0.03f, 0.05f), i % 3 == 0 ? tips : spines);
-            }
+            // Research (round 101): about 25 cm long, a mound about 12 cm high, 5,000-7,000 spines of 2-3 cm, brown
+            // with cream bands at the tips, lying back over the body; a pointed face, small round ears, short legs.
+            var skin = Part(body, new Vector3(0f, 0.06f, 0f), new Vector3(0.15f, 0.1f, 0.21f), face);
+            skin.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+            var coat = new GameObject("Spines");
+            coat.transform.SetParent(body, false);
+            coat.AddComponent<MeshFilter>().sharedMesh = SpineCoat();
+            coat.AddComponent<MeshRenderer>().sharedMaterials = new[] { spines, tips };
             var snout = new GameObject("Snout").transform;
             snout.SetParent(body, false);
-            Part(snout, new Vector3(0f, 0.045f, 0.11f), new Vector3(0.07f, 0.06f, 0.08f), face);
-            Part(snout, new Vector3(0f, 0.045f, 0.155f), Vector3.one * 0.018f, black);
+            Part(snout, new Vector3(0f, 0.045f, 0.115f), new Vector3(0.06f, 0.05f, 0.08f), face);              // face
+            Part(snout, new Vector3(0f, 0.035f, 0.155f), new Vector3(0.03f, 0.025f, 0.04f), face);             // pointed snout
+            Part(snout, new Vector3(0f, 0.035f, 0.175f), Vector3.one * 0.014f, black);                          // nose
             foreach (float sx in new[] { -1f, 1f })
-                Part(snout, new Vector3(sx * 0.025f, 0.065f, 0.12f), Vector3.one * 0.012f, black);
+            {
+                Part(snout, new Vector3(sx * 0.022f, 0.058f, 0.13f), Vector3.one * 0.011f, black);              // eyes
+                Part(snout, new Vector3(sx * 0.03f, 0.075f, 0.1f), new Vector3(0.016f, 0.016f, 0.008f), face);  // small round ears
+                foreach (float z in new[] { 0.07f, -0.06f })
+                    Part(snout, new Vector3(sx * 0.045f, 0.012f, z), new Vector3(0.022f, 0.025f, 0.03f), face); // short legs (tucked in when curled)
+            }
             root.AddComponent<Hedgehog>().Configure(body, snout, nest);
+        }
+
+        /// <summary>
+        /// The hedgehog's coat: about 260 thin spines over the upper body, leaning back, in two submeshes: the brown
+        /// shafts and the cream tips. Saved as a mesh asset.
+        /// </summary>
+        static Mesh SpineCoat()
+        {
+            var verts = new List<Vector3>();
+            var shafts = new List<int>();
+            var tipTris = new List<int>();
+            var rng = new System.Random(101);
+            var radii = new Vector3(0.075f, 0.05f, 0.105f); // half the skin size, centred at y 0.06
+            var centre = new Vector3(0f, 0.06f, 0f);
+            void Spike(Vector3 basePos, Vector3 dir, float len, float width, List<int> tris)
+            {
+                Vector3 side = Vector3.Cross(dir, Vector3.up).normalized;
+                if (side.sqrMagnitude < 0.01f) side = Vector3.right;
+                Vector3 up = Vector3.Cross(side, dir).normalized;
+                int v = verts.Count;
+                verts.Add(basePos + side * width);
+                verts.Add(basePos - side * width * 0.5f + up * width * 0.87f);
+                verts.Add(basePos - side * width * 0.5f - up * width * 0.87f);
+                verts.Add(basePos + dir * len);
+                tris.AddRange(new[] { v, v + 3, v + 1, v + 1, v + 3, v + 2, v + 2, v + 3, v }); // outward (checked: the other order faced in)
+            }
+            int placed = 0;
+            for (int tries = 0; tries < 4000 && placed < 260; tries++)
+            {
+                // A random point on the ellipsoid; spines on the back and sides only, not on the face or belly.
+                var u = new Vector3((float)rng.NextDouble() * 2f - 1f, (float)rng.NextDouble() * 2f - 1f, (float)rng.NextDouble() * 2f - 1f);
+                if (u.sqrMagnitude < 0.01f || u.sqrMagnitude > 1f) continue;
+                u.Normalize();
+                if (u.y < -0.15f || (u.z > 0.65f && u.y < 0.55f)) continue;
+                Vector3 p = centre + Vector3.Scale(u, radii);
+                Vector3 n = new Vector3(u.x / radii.x, u.y / radii.y, u.z / radii.z).normalized;
+                Vector3 dir = (n + Vector3.back * 0.9f).normalized;
+                float len = 0.022f + (float)rng.NextDouble() * 0.012f;
+                Spike(p, dir, len * 0.75f, 0.0035f, shafts);                 // the brown shaft
+                Spike(p + dir * len * 0.62f, dir, len * 0.38f, 0.0026f, tipTris); // the cream tip
+                placed++;
+            }
+            var m = new Mesh { name = "HedgehogSpines" };
+            m.SetVertices(verts);
+            m.subMeshCount = 2;
+            m.SetTriangles(shafts, 0);
+            m.SetTriangles(tipTris, 1);
+            m.RecalculateNormals();
+            m.RecalculateBounds();
+            string path = $"{PlaygroundBuilder.ArtDir}/Meshes/HedgehogSpines.asset";
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(m, path);
+            return m;
+        }
+
+        /// <summary>
+        /// The garden as it really looks (round 101, from a photo of the garden; the photo itself stays out of the
+        /// repository): the long wall on the left is old white-painted brick to about 2.6 m with grey corrugated
+        /// sheets above; the lawn is overgrown, with fallen leaves and young maple shoots; a crumpled blue tarp;
+        /// a black compost bin and a grey bin at the far end.
+        /// </summary>
+        static void BuildGardenDetails()
+        {
+            var root = new GameObject("GardenDetails").transform;
+            root.SetParent(level, false);
+            // The wall faces at z = 0 (the buildings stand at z < 0): a skin 1-2 cm in front of them, no colliders.
+            var wash = Mat("Apt_Whitewash", Color.white, 0.08f, WhitewashTexture(), new Vector2(21f, 2.6f));
+            Box("Whitewash", new Vector3(-13.5f, 1.3f, 0.012f), new Vector3(21f, 2.6f, 0.02f), wash, collider: false).transform.SetParent(root, true);
+            var sheets = Mat("Apt_Corrugated", new Color(0.92f, 0.92f, 0.9f), 0.15f, CorrugatedTexture(), new Vector2(13f, 3.9f));
+            Box("Sheets_A", new Vector3(-17.5f, 4.55f, 0.02f), new Vector3(13f, 3.9f, 0.03f), sheets, collider: false).transform.SetParent(root, true);
+            var sheetsB = Mat("Apt_CorrugatedB", new Color(0.86f, 0.86f, 0.84f), 0.15f, CorrugatedTexture(), new Vector2(8f, 3.2f));
+            Box("Sheets_B", new Vector3(-7f, 4.2f, 0.02f), new Vector3(8f, 3.2f, 0.03f), sheetsB, collider: false).transform.SetParent(root, true);
+            var flashing = Mat("Apt_Flashing", new Color(0.2f, 0.19f, 0.18f), 0.3f);
+            Box("Flashing", new Vector3(-13.5f, 2.62f, 0.05f), new Vector3(21f, 0.06f, 0.08f), flashing, collider: false).transform.SetParent(root, true);
+
+            var rng = new System.Random(1031);
+            float R() => (float)rng.NextDouble();
+            // Fallen leaves: yellow, orange and brown, thicker under the maple and along the fence and the wall.
+            var leafMats = new[]
+            {
+                Mat("Leaf_Yellow", new Color(0.78f, 0.62f, 0.18f), 0.1f), Mat("Leaf_Orange", new Color(0.7f, 0.38f, 0.12f), 0.1f),
+                Mat("Leaf_Brown", new Color(0.42f, 0.3f, 0.18f), 0.1f),
+            };
+            for (int i = 0; i < 260; i++)
+            {
+                float x, z;
+                if (i < 110) { var c = new Vector2(-22f, 4.3f) + Random2(rng) * 2.6f; x = c.x; z = c.y; } // under the maple
+                else if (i < 180) { x = -24f + R() * 19f; z = R() < 0.5f ? 0.15f + R() * 0.5f : 4.35f + R() * 0.5f; } // along the edges
+                else { x = -24f + R() * 19f; z = 0.2f + R() * 4.6f; }
+                if (x > -5f || x < -24f || z < 0.1f || z > 4.9f) continue;
+                var leaf = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Object.DestroyImmediate(leaf.GetComponent<Collider>());
+                leaf.name = "Leaf";
+                leaf.transform.SetParent(root, false);
+                leaf.transform.SetPositionAndRotation(new Vector3(x, 0.006f + R() * 0.006f, z), Quaternion.Euler(R() * 8f, R() * 360f, R() * 8f));
+                leaf.transform.localScale = new Vector3(0.05f + R() * 0.03f, 0.003f, 0.04f + R() * 0.03f);
+                leaf.GetComponent<Renderer>().sharedMaterial = leafMats[rng.Next(leafMats.Length)];
+            }
+            // Young maple shoots in the overgrown lawn (thin stems, a few clusters of leaves, some turning yellow).
+            var stemMat = Mat("Sapling_Stem", new Color(0.35f, 0.27f, 0.2f), 0.1f);
+            var leafGreen = Mat("Sapling_Leaf", new Color(0.33f, 0.45f, 0.18f), 0.15f);
+            var leafTurning = Mat("Sapling_LeafYellow", new Color(0.66f, 0.62f, 0.2f), 0.15f);
+            foreach (var at in new[] { new Vector2(-7.5f, 3.4f), new Vector2(-9.2f, 2.3f), new Vector2(-12.6f, 3.8f), new Vector2(-15.4f, 2.6f), new Vector2(-18.1f, 3.6f), new Vector2(-10.8f, 4.3f) })
+            {
+                float h = 0.8f + R() * 0.7f;
+                var stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                Object.DestroyImmediate(stem.GetComponent<Collider>());
+                stem.name = "Sapling";
+                stem.transform.SetParent(root, false);
+                stem.transform.SetPositionAndRotation(new Vector3(at.x, h / 2f, at.y), Quaternion.Euler(R() * 6f - 3f, 0f, R() * 6f - 3f));
+                stem.transform.localScale = new Vector3(0.014f, h / 2f, 0.014f);
+                stem.GetComponent<Renderer>().sharedMaterial = stemMat;
+                for (int k = 0; k < 4; k++)
+                {
+                    var cl = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Object.DestroyImmediate(cl.GetComponent<Collider>());
+                    cl.name = "SaplingLeaves";
+                    cl.transform.SetParent(root, false);
+                    float y = h * (0.45f + 0.18f * k);
+                    cl.transform.position = new Vector3(at.x + (R() - 0.5f) * 0.25f, y, at.y + (R() - 0.5f) * 0.25f);
+                    cl.transform.localScale = new Vector3(0.22f, 0.06f, 0.2f) * (1.1f - 0.15f * k);
+                    cl.GetComponent<MeshFilter>().sharedMesh = LowSphere();
+                    cl.GetComponent<Renderer>().sharedMaterial = R() < 0.35f ? leafTurning : leafGreen;
+                }
+            }
+            // A crumpled blue tarp on the lawn.
+            var tarp = Mat("Tarp_Blue", new Color(0.12f, 0.32f, 0.7f), 0.45f);
+            for (int k = 0; k < 3; k++)
+            {
+                var t = Box("Tarp", new Vector3(-6.4f + k * 0.12f, 0.03f + k * 0.02f, 2.9f + k * 0.08f), new Vector3(0.5f - k * 0.1f, 0.05f, 0.35f - k * 0.06f), tarp, collider: false);
+                t.transform.rotation = Quaternion.Euler(R() * 14f - 7f, 20f + k * 35f, R() * 14f - 7f);
+                t.transform.SetParent(root, true);
+            }
+            // At the far end, by the shed: a black compost bin with a lid and a grey bin.
+            var black = Mat("Bin_Black", new Color(0.06f, 0.06f, 0.065f), 0.35f);
+            var grey = Mat("Bin_Grey", new Color(0.55f, 0.56f, 0.55f), 0.3f);
+            var compost = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            compost.name = "CompostBin";
+            compost.transform.SetParent(root, false);
+            compost.transform.position = new Vector3(-23.4f, 0.42f, 0.7f);
+            compost.transform.localScale = new Vector3(0.7f, 0.42f, 0.7f);
+            compost.GetComponent<Renderer>().sharedMaterial = black;
+            var lid = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(lid.GetComponent<Collider>());
+            lid.transform.SetParent(root, false);
+            lid.transform.position = new Vector3(-23.4f, 0.87f, 0.7f);
+            lid.transform.localScale = new Vector3(0.6f, 0.04f, 0.6f);
+            lid.GetComponent<Renderer>().sharedMaterial = black;
+            var bin = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            bin.name = "GreyBin";
+            bin.transform.SetParent(root, false);
+            bin.transform.position = new Vector3(-23.3f, 0.3f, 1.55f);
+            bin.transform.localScale = new Vector3(0.45f, 0.3f, 0.45f);
+            bin.GetComponent<Renderer>().sharedMaterial = grey;
+        }
+
+        static Vector2 Random2(System.Random rng)
+        {
+            // A point in the unit disc, denser in the middle (leaves fall close to the trunk).
+            float a = (float)rng.NextDouble() * Mathf.PI * 2f, d = (float)rng.NextDouble();
+            return new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * d;
         }
 
         /// <summary>The river: a dark green water surface (no collider) and a respawn on the quay for a cat that falls in.</summary>
@@ -3747,6 +3927,8 @@ namespace Draho.EditorTools
                 "RoofSlates" => SlateNormal(false),
                 "RoofSlatesV" => SlateNormal(true),
                 "Plaster" => PlasterNormal(),
+                "Whitewash" => BrickNormal(),
+                "Corrugated" => CorrugatedNormal(),
                 _ => null,
             };
             if (normal != null)
@@ -3794,6 +3976,9 @@ namespace Draho.EditorTools
 
         static Texture2D TileNormal() => NormalMap("FloorTileNormal.png", 128, 1.0f, (x, y) =>
             Mathf.Clamp01((Mathf.Min(Mathf.Min(x, y), Mathf.Min(128 - x, 128 - y) + 2) - 1.5f) / 2f));
+
+        static Texture2D CorrugatedNormal() => NormalMap("CorrugatedNormal.png", 128, 2.5f, (x, y) =>
+            0.5f + 0.5f * Mathf.Sin(x * 2f * Mathf.PI * 13f / 128f)); // 13 vertical ridges a metre
 
         static Texture2D SlateNormal(bool vertical) => NormalMap(vertical ? "RoofSlatesVNormal.png" : "RoofSlatesNormal.png", 256, 5f, (px, py) =>
         {
@@ -3871,6 +4056,32 @@ namespace Draho.EditorTools
             float n = Mathf.PerlinNoise(px * 0.05f, py * 0.05f) * 0.08f;
             float t = Mathf.Clamp01(tone * shade * edge - n);
             return new Color(t, t, t);
+        });
+
+        /// <summary>Old lime-washed brick, 1 m square (the brick layout): off-white, with patches where the paint
+        /// has come off and the red brick shows, and grey streaks running down.</summary>
+        static Texture2D WhitewashTexture() => MakeTexture("Whitewash.png", 256, (x, y, size) =>
+        {
+            const int rowH = 16, brickW = 64, mortar = 2;
+            int row = y / rowH;
+            int shifted = x + (row % 2) * brickW / 2;
+            bool joint = y % rowH < mortar || shifted % brickW < mortar;
+            float peel = TileNoise(x, y, size, 0.03f, 4.2f, 1.7f);
+            float streak = TileNoise(x, 0, size, 0.08f, 9.1f, 2.3f) * 0.12f;
+            if (!joint && peel > 0.66f) return new Color(0.62f, 0.38f, 0.3f);               // bare brick
+            float t = (joint ? 0.82f : 0.93f) - streak - (peel > 0.6f ? 0.08f : 0f);         // grubby paint, worn edges
+            return new Color(t, t * 0.98f, t * 0.95f);
+        });
+
+        /// <summary>Old corrugated fibre-cement sheets, 1 m square: 13 vertical ridges, grey with dirt streaks, a darker
+        /// overlap line (the sheets are about 1 m high here) and patches of lichen.</summary>
+        static Texture2D CorrugatedTexture() => MakeTexture("Corrugated.png", 128, (x, y, size) =>
+        {
+            float ridge = 0.5f + 0.5f * Mathf.Sin(x * 2f * Mathf.PI * 13f / size);
+            float dirt = TileNoise(x, y, size, 0.05f, 2.2f, 6.6f);
+            float t = 0.62f + ridge * 0.12f - dirt * 0.14f - (y < 3 ? 0.15f : 0f);
+            float lichen = Mathf.Clamp01((TileNoise(x, y, size, 0.12f, 7.7f, 3.3f) - 0.7f) * 4f);
+            return Color.Lerp(new Color(t, t, t * 1.02f), new Color(0.55f, 0.6f, 0.42f), lichen * 0.6f);
         });
 
         static Texture2D TileTexture() => MakeTexture("FloorTile.png", 128, (x, y, size) =>

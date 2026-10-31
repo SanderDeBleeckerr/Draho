@@ -2440,7 +2440,7 @@ namespace Draho.EditorTools
             return m;
         }
 
-        [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public float[] g; }
+        [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public float[] g, i, k; }
         [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
         [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees; }
 
@@ -2516,9 +2516,10 @@ namespace Draho.EditorTools
                     var outward = new Vector3(dir.y, 0f, -dir.x);
                     int v0 = V.Count;
                     V.Add(new Vector3(a.x, -0.2f, a.y)); V.Add(new Vector3(c.x, -0.2f, c.y));
-                    V.Add(new Vector3(c.x, h, c.y)); V.Add(new Vector3(a.x, h, a.y));
+                    float wallTop = b.i != null && b.g == null ? h + 0.45f : h; // a parapet round a flat roof
+                    V.Add(new Vector3(c.x, wallTop, c.y)); V.Add(new Vector3(a.x, wallTop, a.y));
                     for (int k = 0; k < 4; k++) N.Add(outward);
-                    float s0 = perim / wallScale[wall], s1 = (perim + len) / wallScale[wall], t1 = h / wallScale[wall];
+                    float s0 = perim / wallScale[wall], s1 = (perim + len) / wallScale[wall], t1 = wallTop / wallScale[wall];
                     UV.Add(new Vector2(s0, 0f)); UV.Add(new Vector2(s1, 0f)); UV.Add(new Vector2(s1, t1)); UV.Add(new Vector2(s0, t1));
                     tris[wall].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
                     perim += len;
@@ -2583,6 +2584,54 @@ namespace Draho.EditorTools
                     count++;
                     continue;
                 }
+                // Flat-roof details (round 109): the inner face of the parapet, and roof boxes (air-conditioning units,
+                // stair huts, skylights) in plain plaster.
+                if (b.i != null && b.i.Length >= 6)
+                {
+                    int ni = b.i.Length / 2;
+                    var ring = new Vector2[ni];
+                    for (int q = 0; q < ni; q++) ring[q] = new Vector2(b.i[q * 2], b.i[q * 2 + 1]);
+                    float ia = 0f;
+                    for (int q = 0; q < ni; q++) { var u0 = ring[q]; var u1 = ring[(q + 1) % ni]; ia += u0.x * u1.y - u1.x * u0.y; }
+                    if (ia < 0f) System.Array.Reverse(ring);
+                    for (int q = 0; q < ni; q++)
+                    {
+                        var a = ring[q]; var c = ring[(q + 1) % ni];
+                        var dir = (c - a).normalized;
+                        var inward = new Vector3(-dir.y, 0f, dir.x);
+                        int v0 = V.Count;
+                        V.Add(new Vector3(a.x, h, a.y)); V.Add(new Vector3(c.x, h, c.y));
+                        V.Add(new Vector3(c.x, h + 0.45f, c.y)); V.Add(new Vector3(a.x, h + 0.45f, a.y));
+                        for (int m = 0; m < 4; m++) N.Add(inward);
+                        UV.Add(Vector2.zero); UV.Add(new Vector2(0.05f, 0f)); UV.Add(new Vector2(0.05f, 0.03f)); UV.Add(new Vector2(0f, 0.03f));
+                        tris[wall].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 }); // the other way round from the outer walls: faces in
+                    }
+                }
+                if (b.k != null)
+                    for (int q = 0; q + 5 < b.k.Length; q += 6)
+                    {
+                        float kx = b.k[q], kz = b.k[q + 1], kw = b.k[q + 2], kd = b.k[q + 3], kh = b.k[q + 4], ka = b.k[q + 5] * Mathf.Deg2Rad;
+                        float cs = Mathf.Cos(ka), sn = Mathf.Sin(ka);
+                        Vector3 Corner(float dx, float dz) => new Vector3(kx + dx * cs - dz * sn, h, kz + dx * sn + dz * cs);
+                        var foot = new[] { Corner(-kw / 2, -kd / 2), Corner(kw / 2, -kd / 2), Corner(kw / 2, kd / 2), Corner(-kw / 2, kd / 2) };
+                        var boxCentre = new Vector3(kx, h, kz);
+                        for (int e = 0; e < 4; e++)
+                        {
+                            Vector3 q0 = foot[e], q1 = foot[(e + 1) % 4];
+                            var outw = Vector3.Cross(Vector3.up, q1 - q0).normalized;
+                            if (Vector3.Dot(outw, (q0 + q1) / 2f - boxCentre) < 0f) outw = -outw;
+                            int v0 = V.Count;
+                            V.Add(q0); V.Add(q1); V.Add(q1 + Vector3.up * kh); V.Add(q0 + Vector3.up * kh);
+                            for (int m = 0; m < 4; m++) N.Add(outw);
+                            UV.Add(Vector2.zero); UV.Add(new Vector2(0.05f, 0f)); UV.Add(new Vector2(0.05f, 0.04f)); UV.Add(new Vector2(0f, 0.04f));
+                            if (Vector3.Dot(Vector3.Cross(q1 - q0, Vector3.up), outw) < 0f) tris[2].AddRange(new[] { v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2 });
+                            else tris[2].AddRange(new[] { v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3 });
+                        }
+                        int t0 = V.Count;
+                        foreach (var fc in foot) { V.Add(fc + Vector3.up * kh); N.Add(Vector3.up); UV.Add(new Vector2(0.02f, 0.02f)); }
+                        if (Vector3.Cross(V[t0 + 1] - V[t0], V[t0 + 2] - V[t0]).y > 0f) tris[2].AddRange(new[] { t0, t0 + 1, t0 + 2, t0, t0 + 2, t0 + 3 });
+                        else tris[2].AddRange(new[] { t0, t0 + 2, t0 + 1, t0, t0 + 3, t0 + 2 });
+                    }
                 // The roof: the footprint at the top, triangulated (ear clipping), facing up.
                 int roof = b.r > 1.5f ? 5 : 4;
                 int r0 = V.Count;

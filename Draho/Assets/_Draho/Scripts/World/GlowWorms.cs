@@ -23,7 +23,7 @@ namespace Draho.World
         ParticleSystem system;
         ParticleSystem.Particle[] points;
         Vector3[] homes;
-        float[] light, seeds;
+        float[] brightness, seeds;
         Transform cat;
         float shown;
 
@@ -58,7 +58,7 @@ namespace Draho.World
             int n = grounded + flying;
             points = new ParticleSystem.Particle[n];
             homes = new Vector3[n];
-            light = new float[n];
+            brightness = new float[n];
             seeds = new float[n];
             var rng = new System.Random(60);
             for (int i = 0; i < n; i++)
@@ -70,7 +70,7 @@ namespace Draho.World
                     y = hit.point.y;
                 homes[i] = new Vector3(x, y + (i < grounded ? 0.04f : 0.5f), z);
                 seeds[i] = (float)rng.NextDouble() * 100f;
-                light[i] = 1f;
+                brightness[i] = 1f;
                 points[i].remainingLifetime = 1e6f;
                 points[i].startLifetime = 1e6f;
                 points[i].startSize = i < grounded ? 0.14f : 0.11f;
@@ -99,8 +99,8 @@ namespace Draho.World
                 }
                 // A female switches off when the cat comes close, and glows again a little later.
                 bool shy = i < grounded && (p - c).sqrMagnitude < shyDistance * shyDistance;
-                light[i] = Mathf.MoveTowards(light[i], shy ? 0f : 1f, dt * (shy ? 3f : 0.25f));
-                float a = shown * light[i] * (0.8f + 0.2f * Mathf.Sin(t * 0.7f + seeds[i]));
+                brightness[i] = Mathf.MoveTowards(brightness[i], shy ? 0f : 1f, dt * (shy ? 3f : 0.25f));
+                float a = shown * brightness[i] * (0.8f + 0.2f * Mathf.Sin(t * 0.7f + seeds[i]));
                 points[i].position = p;
                 points[i].startColor = new Color(glow.r, glow.g, glow.b, a);
             }

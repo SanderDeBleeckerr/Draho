@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump|hogview|around|overview]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump|hogview|around|overview|streetview]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -377,6 +377,14 @@ const steps = {
     ['02_dawn', 'call', 'Rainbow.TestShow'],
     ['03_bow', 'wait', '7'],
     ['04_bow_later', 'wait', '2'],
+  ],
+  // Start with ?beat=17&at=63,17.5,90 : in a street of the surrounding blocks (a parked car beside the cat):
+  // shop fronts, windows, lamps at cat height.
+  streetview: [
+    ['02_east', 'call', 'Main Camera.TestView:4,3,80'],
+    ['03_e', 'wait', '2'],
+    ['04_west', 'call', 'Main Camera.TestView:4,3,260'],
+    ['05_w', 'wait', '2'],
   ],
   // Start with ?beat=17&at=-25,-12,90,6.5 : high camera views over the town (40 m back, 30 degrees down; a far test
   // view flies free of camera collision). Add ?beat=42 for night.

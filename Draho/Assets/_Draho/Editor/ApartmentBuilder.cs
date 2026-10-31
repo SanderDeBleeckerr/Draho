@@ -2442,7 +2442,7 @@ namespace Draho.EditorTools
 
         [Serializable] class SurroundingBuilding { public float[] p; public float h, r; public float[] g; }
         [Serializable] class SurfaceMesh { public float[] v; public int[] t; }
-        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green; }
+        [Serializable] class SurroundingsFile { public SurroundingBuilding[] buildings; public SurfaceMesh water, roads, green, gardens; public float[] trees; }
 
         /// <summary>
         /// The blocks round the level (scenery, no colliders): about 700 real building footprints and heights from open
@@ -2628,8 +2628,93 @@ namespace Draho.EditorTools
             Surface(root, "SurWater", file.water, -0.02f, water, 4f, true);
             Surface(root, "SurRoads", file.roads, -0.05f, Mat("Sur_Asphalt", new Color(0.3f, 0.3f, 0.31f), 0.2f, PebbleTexture(), Vector2.one), 3f, false);
             Surface(root, "SurGreen", file.green, -0.04f, Mat("Sur_Grass", new Color(0.32f, 0.45f, 0.22f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
+            // Gardens and trees (round 107): green areas from the infrared aerial photo (high NDVI, low height), and
+            // tree crowns from the height data (local peaks of the canopy over 4 m) with their heights and widths.
+            Surface(root, "SurGardens", file.gardens, -0.035f, Mat("Sur_GardenGrass", new Color(0.3f, 0.43f, 0.2f), 0.05f, GrassTexture(), Vector2.one), 1.5f, false);
+            SurroundingTrees(root, file.trees);
             root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3] });
             Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
+        }
+
+        /// <summary>
+        /// Trees round the level: a tapered trunk and two or three low-poly lumps of leaves per tree, merged into one mesh
+        /// per 100 m square (bark and leaves submeshes). trees = [x, z, height, crown radius, ...].
+        /// </summary>
+        static void SurroundingTrees(Transform root, float[] trees)
+        {
+            if (trees == null || trees.Length < 4) return;
+            var bark = Mat("Sur_Bark", new Color(0.3f, 0.25f, 0.2f), 0.1f);
+            var leafMats = new[] { Mat("Sur_Leaves", new Color(0.25f, 0.38f, 0.17f), 0.1f), Mat("Sur_LeavesLight", new Color(0.36f, 0.47f, 0.2f), 0.1f) };
+            // An icosahedron (20 triangles, radius 0.5) per lump: cheap enough for hundreds of trees.
+            float gr = (1f + Mathf.Sqrt(5f)) / 2f;
+            var ico = new[]
+            {
+                new Vector3(-1, gr, 0), new Vector3(1, gr, 0), new Vector3(-1, -gr, 0), new Vector3(1, -gr, 0),
+                new Vector3(0, -1, gr), new Vector3(0, 1, gr), new Vector3(0, -1, -gr), new Vector3(0, 1, -gr),
+                new Vector3(gr, 0, -1), new Vector3(gr, 0, 1), new Vector3(-gr, 0, -1), new Vector3(-gr, 0, 1),
+            };
+            var sv = new Vector3[12]; var sn = new Vector3[12];
+            for (int k = 0; k < 12; k++) { sn[k] = ico[k].normalized; sv[k] = sn[k] * 0.5f; }
+            var st = new[] { 0,11,5, 0,5,1, 0,1,7, 0,7,10, 0,10,11, 1,5,9, 5,11,4, 11,10,2, 10,7,6, 7,1,8,
+                             3,9,4, 3,4,2, 3,2,6, 3,6,8, 3,8,9, 4,9,5, 2,4,11, 6,2,10, 8,6,7, 9,8,1 };
+            var chunks = new Dictionary<Vector2Int, (List<Vector3> v, List<Vector3> n, List<int>[] t)>();
+            var rng = new System.Random(107);
+            for (int i = 0; i + 3 < trees.Length; i += 4)
+            {
+                float x = trees[i], z = trees[i + 1], h = trees[i + 2], rad = trees[i + 3];
+                var key = new Vector2Int(Mathf.FloorToInt(x / 100f), Mathf.FloorToInt(z / 100f));
+                if (!chunks.TryGetValue(key, out var c)) chunks[key] = c = (new List<Vector3>(), new List<Vector3>(), new[] { new List<int>(), new List<int>(), new List<int>() });
+                // The trunk: six sides, tapering, up to the crown base.
+                float tb = 0.14f + h * 0.012f, crownBase = h * 0.35f;
+                int v0 = c.v.Count;
+                for (int k = 0; k < 6; k++)
+                {
+                    float a = k * Mathf.PI / 3f;
+                    var d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                    c.v.Add(new Vector3(x, -0.1f, z) + d * tb); c.n.Add(d);
+                    c.v.Add(new Vector3(x, crownBase + 0.5f, z) + d * tb * 0.6f); c.n.Add(d);
+                }
+                for (int k = 0; k < 6; k++)
+                {
+                    int a0 = v0 + k * 2, a1 = v0 + ((k + 1) % 6) * 2;
+                    c.t[0].AddRange(new[] { a0, a0 + 1, a1 + 1, a0, a1 + 1, a1 }); // outward (checked like the walls)
+                }
+                // The crown: two or three overlapping lumps.
+                int lumps = 2 + (int)(rng.NextDouble() * 2);
+                int leaf = 1 + rng.Next(2);
+                for (int l = 0; l < lumps; l++)
+                {
+                    float lr = rad * (0.75f + (float)rng.NextDouble() * 0.3f);
+                    var centre = new Vector3(x + ((float)rng.NextDouble() - 0.5f) * rad * 0.8f, crownBase + (h - crownBase) * (0.45f + 0.15f * l), z + ((float)rng.NextDouble() - 0.5f) * rad * 0.8f);
+                    var scale = new Vector3(lr, Mathf.Min(lr, (h - crownBase) * 0.55f), lr);
+                    int b0 = c.v.Count;
+                    for (int k = 0; k < sv.Length; k++) { c.v.Add(centre + Vector3.Scale(sv[k], scale * 2f)); c.n.Add(sn[k]); }
+                    for (int k = 0; k < st.Length; k++) c.t[leaf].Add(b0 + st[k]);
+                }
+            }
+            var mats = new[] { bark, leafMats[0], leafMats[1] };
+            foreach (var kv in chunks)
+            {
+                var (V, N, Tr) = kv.Value;
+                var mesh = new Mesh { name = $"SurTrees_{kv.Key.x}_{kv.Key.y}" };
+                if (V.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+                mesh.SetVertices(V); mesh.SetNormals(N);
+                var used = new List<Material>(); var subs = new List<List<int>>();
+                for (int m = 0; m < 3; m++) if (Tr[m].Count > 0) { used.Add(mats[m]); subs.Add(Tr[m]); }
+                mesh.subMeshCount = subs.Count;
+                for (int m = 0; m < subs.Count; m++) mesh.SetTriangles(subs[m], m);
+                mesh.RecalculateBounds();
+                string mp = $"{PlaygroundBuilder.ArtDir}/Meshes/{mesh.name}.asset";
+                AssetDatabase.DeleteAsset(mp);
+                AssetDatabase.CreateAsset(mesh, mp);
+                var go = new GameObject(mesh.name);
+                go.transform.SetParent(root, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterials = used.ToArray();
+                r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+            Debug.Log($"Draho: surroundings: {trees.Length / 4} trees");
         }
 
         /// <summary>A flat triangle mesh from the surroundings file at height y, every triangle turned to face up.</summary>

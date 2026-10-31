@@ -405,14 +405,16 @@ const steps = {
   foxday: [
     ['02_day', 'call', 'SkyMood.TestMood:Day'],
     ['03_pose', 'call', 'Fox.TestPose'],
+    ['03b_view', 'call', 'Main Camera.TestView:10,1.6,35'],
     ['04_fox', 'wait', '2'],
     ['05_fox_walks', 'wait', '2.5'],
   ],
   // Start with ?beat=12&at=-16.2,7.0,90 : by day in the wild garden, 1.2 m west of the hedgehog: look at it from the
   // side, close.
   hogview: [
-    ['02_view', 'call', 'Main Camera.TestView:22,0.7,90'],
-    ['03_hog', 'wait', '2'],
+    ['02_pose', 'call', 'Hedgehog.TestPose'],
+    ['03_view', 'call', 'Main Camera.TestView:20,0.9,130'],
+    ['04_hog', 'wait', '2'],
   ],
   // Start with ?fresh=1 (a new game): the first minutes as a new player sees them: the story, the mist, a walk.
   start: [

@@ -180,7 +180,8 @@ namespace Draho.World
             if (cat == null) return;
             Show(true);
             Vector3 f = Flat(cat.transform.forward).normalized;
-            transform.position = new Vector3(cat.transform.position.x, 0f, cat.transform.position.z) + f * 1.5f;
+            Vector3 right = Vector3.Cross(Vector3.up, f);
+            transform.position = new Vector3(cat.transform.position.x, 0f, cat.transform.position.z) + f * 1.3f + right * 0.7f;
             transform.rotation = Quaternion.LookRotation(Vector3.Cross(Vector3.up, f), Vector3.up);
             state = State.Sniff;
             timer = 30f;

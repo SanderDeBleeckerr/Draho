@@ -131,6 +131,18 @@ namespace Draho.World
             if (body != null) body.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(phase * 18f) * 4f);
         }
 
+        /// <summary>Test hook: SendMessage('Hedgehog', 'TestPose'): the hedgehog stands side-on 0.7 m ahead and to the
+        /// right of the cat, still (state Home), to look at the model.</summary>
+        public void TestPose()
+        {
+            var c = FindAnyObjectByType<Draho.Cat.CatMotor>();
+            if (c == null) return;
+            Vector3 f = Flat(c.transform.forward).normalized, r = Flat(c.transform.right).normalized;
+            transform.position = Flat(c.transform.position) + f * 0.7f + r * 0.35f;
+            transform.rotation = Quaternion.LookRotation(-r, Vector3.up);
+            state = State.Home;
+        }
+
         static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
     }
 }

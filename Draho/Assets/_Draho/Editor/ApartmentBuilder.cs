@@ -2692,7 +2692,7 @@ namespace Draho.EditorTools
             SurroundingTrees(root, file.trees);
             SurroundingWater(root, file.bridges, file.boats, file.quays);
             var lampHead = SurroundingStreets(root, file.lamps, file.cars);
-            root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3], lampHead });
+            root.gameObject.AddComponent<NightWindows>().Configure(new[] { mats[0], mats[1], mats[2], mats[3], lampHead }, lampPools);
             Debug.Log($"Draho: surroundings: {count} buildings in {chunks.Count} squares");
         }
 
@@ -2726,6 +2726,8 @@ namespace Draho.EditorTools
         /// colours. Chunked per 200 m square. lamps = [x, z, ...], cars = [x, z, heading, colour, ...]. Returns the
         /// lantern material.
         /// </summary>
+        static Renderer[] lampPools;
+
         static Material SurroundingStreets(Transform root, float[] lamps, float[] cars)
         {
             var palette = PaletteMaterial();
@@ -2814,6 +2816,44 @@ namespace Draho.EditorTools
                 r.sharedMaterials = used.ToArray();
                 r.shadowCastingMode = ShadowCastingMode.Off;
             }
+            // Pools of light under the lamps at night (round 123): an additive disc fan per lamp, warm in the middle and
+            // fading to nothing at 4 m, on the street; one mesh per square, shown only at night (NightWindows).
+            var pools = new Dictionary<Vector2Int, (List<Vector3> v, List<Color> c, List<int> t)>();
+            if (lamps != null)
+                for (int i = 0; i + 1 < lamps.Length; i += 2)
+                {
+                    var key = new Vector2Int(Mathf.FloorToInt(lamps[i] / 200f), Mathf.FloorToInt(lamps[i + 1] / 200f));
+                    if (!pools.TryGetValue(key, out var pl)) pools[key] = pl = (new List<Vector3>(), new List<Color>(), new List<int>());
+                    var at = new Vector3(lamps[i], 0.02f, lamps[i + 1]);
+                    int c0 = pl.v.Count;
+                    pl.v.Add(at); pl.c.Add(new Color(1f, 0.78f, 0.5f, 0.32f));
+                    for (int k = 0; k < 10; k++)
+                    {
+                        float a = k * Mathf.PI * 2f / 10f;
+                        pl.v.Add(at + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 4f); pl.c.Add(new Color(1f, 0.78f, 0.5f, 0f));
+                    }
+                    for (int k = 0; k < 10; k++) pl.t.AddRange(new[] { c0, c0 + 1 + (k + 1) % 10, c0 + 1 + k }); // facing up
+                }
+            var poolRenderers = new List<Renderer>();
+            foreach (var kv in pools)
+            {
+                var mesh = new Mesh { name = $"SurLampPools_{kv.Key.x}_{kv.Key.y}" };
+                mesh.SetVertices(kv.Value.v); mesh.SetColors(kv.Value.c); mesh.SetTriangles(kv.Value.t, 0);
+                mesh.RecalculateNormals(); mesh.RecalculateBounds();
+                string mp = $"{PlaygroundBuilder.ArtDir}/Meshes/{mesh.name}.asset";
+                AssetDatabase.DeleteAsset(mp);
+                AssetDatabase.CreateAsset(mesh, mp);
+                var go = new GameObject(mesh.name);
+                go.transform.SetParent(root, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterial = AdditiveMaterial();
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                r.receiveShadows = false;
+                r.enabled = false;
+                poolRenderers.Add(r);
+            }
+            lampPools = poolRenderers.ToArray();
             Debug.Log($"Draho: surroundings: {(lamps?.Length ?? 0) / 2} street lamps, {(cars?.Length ?? 0) / 4} cars");
             return head;
         }

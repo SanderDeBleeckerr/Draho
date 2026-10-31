@@ -387,6 +387,8 @@ const steps = {
     ['05_sw', 'wait', '3'],
     ['06_se', 'call', 'Main Camera.TestView:30,40,135'],
     ['07_se', 'wait', '3'],
+    ['08_sky', 'call', 'Main Camera.TestView:-8,6,0'],
+    ['09_sky', 'wait', '3'],
   ],
   // Start with ?beat=17&at=-25,-12,90,6.5 : the riverhouse roof by day: look round at the surrounding blocks.
   around: [

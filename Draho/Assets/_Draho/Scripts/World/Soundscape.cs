@@ -11,7 +11,9 @@ namespace Draho.World
     {
         const int Rate = 22050;
 
-        AudioSource rain, thunder, purr, birds, crickets, wind;
+        AudioSource rain, thunder, purr, birds, crickets, wind, city;
+        AudioClip tramBell;
+        float nextTram = 40f;
         Transform catT;
         AudioClip[] songs;
         AudioClip scream;
@@ -29,6 +31,8 @@ namespace Draho.World
             songs = new[] { MakeSong(1), MakeSong(2), MakeSong(3), MakeSong(4) };
             scream = MakeScream();
             wind = Source(MakeWind(), true, 0f);
+            city = Source(MakeCity(), true, 0f);
+            tramBell = MakeTramBell();
             // The river murmurs from three places along the water (3D: louder near the quay).
             var flow = MakeFlow();
             foreach (float z in new[] { 0f, -45f, -95f })
@@ -47,7 +51,7 @@ namespace Draho.World
                 src.Play();
             }
             SkyMood.Flashed += OnFlash;
-            Debug.Log($"STATE soundscape: rain {rain.clip.length:0.0} s, thunder {thunder.clip.length:0.0} s, purr {purr.clip.length:0.0} s, {songs.Length} songs, crickets {crickets.clip.length:0.0} s, scream {scream.length:0.00} s, wind {wind.clip.length:0.0} s, river x3");
+            Debug.Log($"STATE soundscape: rain {rain.clip.length:0.0} s, thunder {thunder.clip.length:0.0} s, purr {purr.clip.length:0.0} s, {songs.Length} songs, crickets {crickets.clip.length:0.0} s, scream {scream.length:0.00} s, wind {wind.clip.length:0.0} s, river x3, city {city.clip.length:0.0} s, tram bell {tramBell.length:0.0} s");
         }
 
         void Start()
@@ -99,6 +103,14 @@ namespace Draho.World
                     bool low = Swifts.PartyLow;
                     birds.PlayOneShot(low && Random.value < 0.6f ? scream : songs[Random.Range(0, songs.Length)], low ? 0.7f : 1f);
                 }
+            }
+            // The town (round 126): a faint, far traffic hum by day (quieter at night) and now and then a tram's bell.
+            city.volume = Mathf.MoveTowards(city.volume, Storm.Active ? 0f : Mathf.Lerp(0.07f, 0.02f, night), dt * 0.05f);
+            nextTram -= dt;
+            if (nextTram <= 0f)
+            {
+                nextTram = Random.Range(70f, 180f);
+                if (night < 0.6f && !Storm.Active) city.PlayOneShot(tramBell, Random.Range(0.12f, 0.2f));
             }
             // Wind on the high roofs: louder the higher the cat, much louder in the storm.
             float height = catT != null ? Mathf.Clamp01((catT.position.y - 5f) / 6f) : 0f;
@@ -244,6 +256,48 @@ namespace Draho.World
             }
             Crossfade(data, Rate / 20);
             var clip = AudioClip.Create("Crickets", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip MakeCity()
+        {
+            // Far traffic: very low, strongly filtered noise with slow swells (cars passing a street away).
+            int n = Rate * 6;
+            var data = new float[n];
+            var rng = new System.Random(126);
+            float lp = 0f, lp2 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float white = (float)rng.NextDouble() * 2f - 1f;
+                lp += (white - lp) * 0.02f;
+                lp2 += (lp - lp2) * 0.05f;
+                float swell = 0.6f + 0.4f * Mathf.Sin(t * Mathf.PI * 2f / 6f) * Mathf.Sin(t * 0.9f + 1.3f);
+                data[i] = lp2 * 9f * swell;
+            }
+            Crossfade(data, Rate / 2);
+            var clip = AudioClip.Create("City", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip MakeTramBell()
+        {
+            // A tram's "ding-ding": two strikes of a bright bell (partials 1 : 2.4 : 4.1), dying away.
+            int n = (int)(Rate * 1.4f);
+            var data = new float[n];
+            foreach (float at in new[] { 0f, 0.28f })
+            {
+                int s0 = (int)(at * Rate);
+                for (int i = s0; i < n; i++)
+                {
+                    float t = (float)(i - s0) / Rate;
+                    float env = Mathf.Exp(-t * 4.5f);
+                    data[i] += (Mathf.Sin(2f * Mathf.PI * 1180f * t) + 0.5f * Mathf.Sin(2f * Mathf.PI * 2830f * t) + 0.25f * Mathf.Sin(2f * Mathf.PI * 4840f * t)) * env * 0.3f;
+                }
+            }
+            var clip = AudioClip.Create("TramBell", n, 1, Rate, false);
             clip.SetData(data, 0);
             return clip;
         }

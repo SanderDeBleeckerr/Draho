@@ -2505,7 +2505,7 @@ namespace Draho.EditorTools
                     chunkVerts[key] = (new List<Vector3>(), new List<Vector3>(), new List<Vector2>());
                 }
                 var (V, N, UV) = chunkVerts[key];
-                int wall = (bi * 7919) % 4;
+                int wall = (bi * 7919) % 4 < 2 ? 0 : 2; // brick or plaster (the two darker tones cost a draw call each per square)
                 float h = b.h, perim = 0f;
                 // Walls: one quad per edge, outward (counter-clockwise in x,z: outward is to the right of the edge).
                 for (int i = 0; i < n; i++)
@@ -2681,7 +2681,7 @@ namespace Draho.EditorTools
                 }
                 // The crown: two or three overlapping lumps.
                 int lumps = 2 + (int)(rng.NextDouble() * 2);
-                int leaf = 1 + rng.Next(2);
+                int leaf = 1; rng.Next(2); // one leaf material (a second tone cost a draw call per square)
                 for (int l = 0; l < lumps; l++)
                 {
                     float lr = rad * (0.75f + (float)rng.NextDouble() * 0.3f);

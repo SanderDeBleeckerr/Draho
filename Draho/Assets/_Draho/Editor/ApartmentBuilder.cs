@@ -2160,7 +2160,10 @@ namespace Draho.EditorTools
                 .Select(b => new ContextBuilding { x = (b.x0 + b.x1) / 2, z = (b.z0 + b.z1) / 2, w = b.x1 - b.x0, d = b.z1 - b.z0, h = b.h, y0 = b.base_y, faces = b.windows });
             BuildWindows((layout.context_buildings ?? new ContextBuilding[0]).Concat(facades).ToArray());
             // Ground under the block (yards, streets), just below the garden; it has a hole for the river.
-            var groundMat = Mat("Apt_Ground", new Color(0.42f, 0.41f, 0.38f), 0.1f);
+            // Paving (round 122): pavements and yards read as stone, not a flat grey. The cube UVs span each ground box,
+            // so the tiling is sized for the big east plane (0.6 m slabs; the west plane gets about 0.35 m slabs).
+            var groundMat = Mat("Apt_Ground", new Color(0.5f, 0.49f, 0.46f), 0.1f, TileTexture(), new Vector2(625f, 1333f));
+            var plainGround = Mat("Apt_GroundPlain", new Color(0.42f, 0.41f, 0.38f), 0.1f); // narrow strips: no shimmering tiles
             var river = layout.water;
             if (river == null)
                 Box("Ground", new Vector3(0f, -0.13f, -50f), new Vector3(200f, 0.1f, 300f), groundMat);
@@ -2170,8 +2173,8 @@ namespace Draho.EditorTools
                 const float gx0 = -260f, gx1 = 340f, gz0 = -540f, gz1 = 260f;
                 Box("Ground_East", new Vector3((river.x1 + gx1) / 2, -0.13f, (gz0 + gz1) / 2), new Vector3(gx1 - river.x1, 0.1f, gz1 - gz0), groundMat);
                 Box("Ground_West", new Vector3((river.x0 + gx0) / 2, -0.13f, (gz0 + gz1) / 2), new Vector3(river.x0 - gx0, 0.1f, gz1 - gz0), groundMat);
-                Box("Ground_RiverNorth", new Vector3((river.x0 + river.x1) / 2, -0.13f, (river.z1 + gz1) / 2), new Vector3(river.x1 - river.x0, 0.1f, gz1 - river.z1), groundMat);
-                Box("Ground_RiverSouth", new Vector3((river.x0 + river.x1) / 2, -0.13f, (gz0 + river.z0) / 2), new Vector3(river.x1 - river.x0, 0.1f, river.z0 - gz0), groundMat);
+                Box("Ground_RiverNorth", new Vector3((river.x0 + river.x1) / 2, -0.13f, (river.z1 + gz1) / 2), new Vector3(river.x1 - river.x0, 0.1f, gz1 - river.z1), plainGround);
+                Box("Ground_RiverSouth", new Vector3((river.x0 + river.x1) / 2, -0.13f, (gz0 + river.z0) / 2), new Vector3(river.x1 - river.x0, 0.1f, river.z0 - gz0), plainGround);
                 BuildRiver(river);
             }
             foreach (var g in layout.grounds ?? new Ground[0])

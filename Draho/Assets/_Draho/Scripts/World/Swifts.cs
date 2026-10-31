@@ -14,6 +14,8 @@ namespace Draho.World
         [SerializeField] Vector3 centre = new Vector3(-4f, 0f, -2f);
         [SerializeField] float range = 26f;
         [SerializeField] Material material;
+        [Tooltip("Gulls (round 125): slow, wide, low glides over the water, bigger and white; no screaming parties.")]
+        [SerializeField] bool gulls;
 
         Transform[] birds;
         float[] seeds;
@@ -24,6 +26,16 @@ namespace Draho.World
         public static bool PartyLow { get; private set; }
 
         public void Configure(Material dark) => material = dark;
+
+        /// <summary>The same flight as gulls over the water: a few big white birds, slow and low, round a centre.</summary>
+        public void ConfigureGulls(Material white, Vector3 over, float radius, int birdCount)
+        {
+            material = white;
+            centre = over;
+            range = radius;
+            count = birdCount;
+            gulls = true;
+        }
 
         void Start()
         {
@@ -50,17 +62,18 @@ namespace Draho.World
         {
             // A wide loop round the block, with a "party" phase where the group drops low and tight.
             float s = seeds[i];
-            float party = Mathf.Clamp01(Mathf.Sin(t * 0.05f) * 2f); // now and then the whole group comes down
-            float a = t * (0.32f + 0.04f * Mathf.Sin(s)) + s * 0.6f * (1f - 0.7f * party);
+            float party = gulls ? 0f : Mathf.Clamp01(Mathf.Sin(t * 0.05f) * 2f); // now and then the whole group comes down
+            float a = t * (gulls ? 0.07f : 0.32f + 0.04f * Mathf.Sin(s)) + s * (gulls ? 1.7f : 0.6f) * (1f - 0.7f * party);
             float r = range * (0.55f + 0.45f * Mathf.PerlinNoise(s, t * 0.07f)) * (1f - 0.45f * party);
-            float y = Mathf.Lerp(24f + 10f * Mathf.PerlinNoise(s + 3f, t * 0.1f), 13f + 2f * Mathf.Sin(t * 2f + s), party);
+            float y = gulls ? 9f + 6f * Mathf.PerlinNoise(s + 3f, t * 0.05f)
+                : Mathf.Lerp(24f + 10f * Mathf.PerlinNoise(s + 3f, t * 0.1f), 13f + 2f * Mathf.Sin(t * 2f + s), party);
             return centre + new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r);
         }
 
         void Update()
         {
             bool flying = SkyMood.NightAmount < 0.5f && !Storm.Active;
-            PartyLow = flying && Mathf.Sin(Time.time * 0.05f) > 0.3f;
+            if (!gulls) PartyLow = flying && Mathf.Sin(Time.time * 0.05f) > 0.3f;
             for (int i = 0; i < birds.Length; i++)
             {
                 birds[i].gameObject.SetActive(flying);
@@ -71,8 +84,10 @@ namespace Draho.World
                 birds[i].position = p;
                 if (v.sqrMagnitude > 1e-6f) birds[i].rotation = Quaternion.LookRotation(v, Vector3.up);
                 // Flicker the wings in bursts, then glide.
-                float beat = Mathf.Sin(Time.time * 1.3f + seeds[i]) > 0.2f ? Mathf.Sin(Time.time * 40f + seeds[i]) : 0f;
-                birds[i].localScale = new Vector3(1.5f, 1.5f + 0.9f * beat, 1.5f); // a little larger than life: they are far away
+                float beat = gulls ? Mathf.Sin(Time.time * 4f + seeds[i]) * (Mathf.Sin(Time.time * 0.4f + seeds[i]) > 0.6f ? 1f : 0f) // gulls glide, a few slow beats
+                    : Mathf.Sin(Time.time * 1.3f + seeds[i]) > 0.2f ? Mathf.Sin(Time.time * 40f + seeds[i]) : 0f;
+                float size = gulls ? 3.2f : 1.5f; // a little larger than life: they are far away (gulls span about 1.4 m)
+                birds[i].localScale = new Vector3(size, size + 0.6f * size * beat, size);
             }
         }
 

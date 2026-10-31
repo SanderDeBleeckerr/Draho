@@ -4097,6 +4097,14 @@ namespace Draho.EditorTools
             var swifts = new GameObject("Swifts");
             swifts.transform.SetParent(level, false);
             swifts.AddComponent<Swifts>().Configure(Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f));
+            // Gulls over the big river arms (round 125): the same flight code, slow white glides over the water.
+            var gullWhite = Mat("Gull_White", new Color(0.92f, 0.92f, 0.9f), 0.3f);
+            foreach (var (over, radius) in new[] { (new Vector3(-110f, 0f, -20f), 45f), (new Vector3(-150f, 0f, 160f), 35f) })
+            {
+                var gulls = new GameObject("GullsOverWater");
+                gulls.transform.SetParent(level, false);
+                gulls.AddComponent<Swifts>().ConfigureGulls(gullWhite, over, radius, 4);
+            }
             var smoke = new GameObject("ChimneySmoke");
             smoke.transform.SetParent(level, false);
             smoke.AddComponent<ChimneySmoke>().Configure(AssetDatabase.LoadAssetAtPath<Material>($"{PlaygroundBuilder.MaterialDir}/Dust.mat"));

@@ -207,7 +207,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(SetRewards), typeof(NightWindows), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(SetRewards), typeof(NightWindows), typeof(SkyClouds), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1349,6 +1349,64 @@ namespace Draho.EditorTools
             r.receiveShadows = false;
             r.maxParticleSize = 3f;
             go.AddComponent<MorningMist>();
+        }
+
+        /// <summary>Clouds in the sky (SkyClouds, the Draho/Clouds shader): 40 soft billboards far round the camera.</summary>
+        static void BuildSkyClouds()
+        {
+            var shader = Shader.Find("Draho/Clouds");
+            if (shader == null) { Debug.LogWarning("Draho/Clouds not found: no clouds"); return; }
+            // A puffy cloud: a few overlapping soft blobs with noise, flat at the base, fading well before the edges.
+            var tex = MakeTexture("CloudPuff.png", 128, (x, y, size) =>
+            {
+                float u = (x + 0.5f) / size, v = (y + 0.5f) / size;
+                float d = 0f;
+                foreach (var (cx, cy, r) in new[] { (0.35f, 0.42f, 0.2f), (0.55f, 0.5f, 0.24f), (0.72f, 0.4f, 0.17f), (0.48f, 0.35f, 0.22f) })
+                    d = Mathf.Max(d, 1f - Vector2.Distance(new Vector2(u, v * 1.2f), new Vector2(cx, cy * 1.2f)) / r);
+                float n = Mathf.PerlinNoise(u * 9f, v * 9f) * 0.35f + Mathf.PerlinNoise(u * 21f + 5f, v * 21f) * 0.15f;
+                float a = Mathf.Clamp01((d + n * 0.6f - 0.25f) * 2.2f);
+                a *= Mathf.Clamp01((v - 0.22f) * 8f); // a flat base
+                return new Color(a, a, a);
+            });
+            if (AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(tex)) is TextureImporter ti && ti.wrapMode != TextureWrapMode.Clamp)
+            {
+                ti.wrapMode = TextureWrapMode.Clamp;
+                ti.SaveAndReimport();
+            }
+            string path = $"{PlaygroundBuilder.MaterialDir}/Clouds.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
+            m.shader = shader;
+            m.SetTexture("_MainTex", tex);
+            EditorUtility.SetDirty(m);
+            var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var sizes = new List<Vector2>(); var cols = new List<Color>(); var tris = new List<int>();
+            var rng = new System.Random(106);
+            for (int i = 0; i < 40; i++)
+            {
+                float az = (float)rng.NextDouble() * 360f, el = 7f + (float)Math.Pow(rng.NextDouble(), 1.5) * 25f;
+                var dir = Quaternion.Euler(-el, az, 0f) * Vector3.forward;
+                float w = 28f + (float)rng.NextDouble() * 34f, alpha = 0.6f + (float)rng.NextDouble() * 0.4f;
+                int v = verts.Count;
+                foreach (var uv in new[] { new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f) })
+                {
+                    verts.Add(dir); uvs.Add(uv); sizes.Add(new Vector2(w, 0f)); cols.Add(new Color(1f, 1f, 1f, alpha));
+                }
+                tris.AddRange(new[] { v, v + 1, v + 2, v, v + 2, v + 3 });
+            }
+            var mesh = new Mesh { name = "SkyClouds" };
+            mesh.SetVertices(verts); mesh.SetUVs(0, uvs); mesh.SetUVs(1, sizes); mesh.SetColors(cols); mesh.SetTriangles(tris, 0);
+            mesh.bounds = new Bounds(Vector3.zero, Vector3.one * 4000f); // the shader moves it round the camera
+            string mp = $"{PlaygroundBuilder.ArtDir}/Meshes/SkyClouds.asset";
+            AssetDatabase.DeleteAsset(mp);
+            AssetDatabase.CreateAsset(mesh, mp);
+            var go = new GameObject("SkyClouds");
+            go.transform.SetParent(level, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = m;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            go.AddComponent<SkyClouds>();
         }
 
         /// <summary>A rainbow at dawn after the storm (Rainbow, the Draho/Rainbow shader).</summary>
@@ -3603,6 +3661,7 @@ namespace Draho.EditorTools
             BuildShootingStars();
             BuildLightningBolt();
             BuildRainbow();
+            BuildSkyClouds();
             BuildMorningMist(layout);
             BuildScratchSpots();
             BuildRainSplashes();

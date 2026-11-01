@@ -136,3 +136,27 @@ least work. Generated models (steps 2–4) come next, the cat and the fox first.
 - Headless Blender by an AI agent: [dcc-mcp-blender on PyPI](https://pypi.org/project/dcc-mcp-blender/0.1.36/)
   (UV, bake and export tools; no auto-retopology found).
 - CC0 assets: Poly Haven, ambientCG, Quaternius, Kenney.
+
+## 9. Research update: papers from July to October 2026
+
+Google Scholar refuses automated access (HTTP 403), so this list comes from
+arXiv, where most of these papers appear first. They are preprints (not yet
+peer reviewed), and only the abstracts were read.
+
+| Trend | Papers | What it means for Draho |
+|---|---|---|
+| **Native "artist" meshes**: clean, low-poly topology made directly, fast (flow matching, not token by token) | Meshy T2 (2607.28675), MeshCarve (2610.09723), MeshOctave (2609.38985), TaoFlowForge (2609.37139), OptimusMesh (2610.01148), Dynamic Homing RL (2610.01233) | Attacks the biggest problem in section 8: the remesh step. Meshy T2 comes from a commercial tool, so it is likely to reach the product |
+| **Part-level generation**: the model comes out in separate parts | FlexPart (2610.31671), KaiNinja (2609.15659), Seg3DParts (2609.36918), MultiCube (2608.20448) | Separate legs, tail and head make rigging and editing easier |
+| **PBR and relightable textures** | SUPRA-TEX (2610.22352), Luce (2608.23943), Texture++ (2607.21504), BTC3D (2609.39709) | Materials that react to the game light. Texture++ makes low-resolution textures sharper, which could help the existing assets |
+| **Moving and physical assets** | MoRE (2610.30337), MotionAnimator (2610.15074), PhysAg3D (2610.39924), PhysX-CoT (2608.08053) | Doors and drawers with working joints. These are hinged objects, not animals |
+| **An LLM writes the model as a program** | USDCraft (2610.11322) | The same method as Draho's code-built level. It works for hard, mechanical objects, but not for organic shapes like animals |
+| **Faster and larger** | Channel Match few-step (2610.15321), Filigree3D up to 2048³ voxels (2609.34900), Hunyuan3D-Buffalo: generate, understand and edit in one model (2608.02711) | Lower cost per asset, and edits by text ("make the tail longer") |
+| **Doubts about evaluation** | Frozen Scenes (2610.00447), Cyc3D (2608.28080) | Leaderboards change with the camera and prompt settings. Test the tools on Draho's own assets, not on rankings |
+
+**Conclusion:** research in 2026 moves straight at the gaps in this study:
+clean topology, parts, PBR materials and editing. But no paper in this list
+gives a rigged, animated, furred quadruped ready for a phone. Most need a
+large GPU, and research code often has a non-commercial licence. For Draho,
+the practical route stays the same: a commercial service that puts these
+methods into a product, and then the cleanup, rig and baked lighting steps
+from section 5.

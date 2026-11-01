@@ -160,3 +160,61 @@ large GPU, and research code often has a non-commercial licence. For Draho,
 the practical route stays the same: a commercial service that puts these
 methods into a product, and then the cleanup, rig and baked lighting steps
 from section 5.
+
+## 10. The top 3D generators and the benchmarks (November 2026)
+
+### Live ranking: 3D Arena (Hugging Face)
+
+3D Arena shows people two models made from the same image, and they vote for
+the better one (Elo score, start value 1200). Read from its API on
+1 November 2026:
+
+| # | Model | Elo | Votes | Open |
+|---|---|---|---|---|
+| 1 | PicGen3D | 1415 | 4376 | no |
+| 2 | TRELLIS (Gaussian splats) | 1397 | 4840 | yes |
+| 3 | Meshy-6 | 1351 | 1037 | no |
+| 4 | 404_GEN | 1334 | 1469 | no |
+| 5 | Meshy-7 | 1313 | 263 | no |
+| 6 | TRELLIS (mesh) | 1303 | 5782 | yes |
+| 7 | Zaohaowu3D | 1294 | 2990 | no |
+| 8 | Hunyuan3D-2 | 1283 | 5247 | yes |
+| 9 | Hunyuan3D-2.1 | 1273 | 2218 | yes |
+| 10 | InstantMesh | 1269 | 11614 | yes |
+| 11 | SAM-3D-Objects (splats) | 1267 | 1416 | yes |
+| 18 | TRELLIS.2-4B | 1127 | 1439 | yes |
+| 20 | TripoSR (old, open) | 1081 | 11390 | yes |
+
+Read it with care:
+- Only models that someone submitted are ranked. **Rodin (Hyper3D), Tripo
+  3.x, CSM Cube and Hunyuan3D 3.x are not on the board**, although reviews
+  often name them as the best.
+- "Splat" entries are Gaussian splats, not meshes. Unity on a phone cannot
+  use them as normal game models.
+- Votes judge how a model looks in a viewer, not clean topology, UVs or how
+  easy it is to rig.
+- Models with few votes (Meshy-7: 263) can still move a lot.
+
+### Reviews (not benchmarks)
+
+Most 2026 reviews name **Meshy, Tripo, Rodin and Hunyuan3D** as the top four,
+and TRELLIS.2 (MIT licence) and Hunyuan3D 2.1 as the best open models. Many
+reviews come from vendors, and the version names differ between sources.
+
+### Research benchmarks
+
+| Benchmark | Year | Covers | Method |
+|---|---|---|---|
+| T3Bench | 2023 | text-to-3D | prompts at 3 levels of difficulty, 10 methods |
+| GPTEval3D | 2024 | text-to-3D | a vision-language model (GPT-4V) judges, close to human votes |
+| MATE-3D | 2024 | text-to-3D | 1280 meshes, 4 quality dimensions |
+| 3DGen-Bench | 2025 | text and image-to-3D | 19 open models, human pairwise votes |
+| Hi3DEval | 2025 (NeurIPS) | text and image-to-3D | 15,300 assets from 30 generators, scores per part and per material |
+| Cyc3D | 2026 | image-to-3D | also tests if the asset is usable in a graphics pipeline |
+| Frozen Scenes | 2026 | text-to-3D evaluation itself | shows that rankings change with camera and prompt settings |
+
+**No benchmark yet measures what a game needs most**: clean low-poly
+topology, good UVs, a working rig and performance on a phone. So for Draho the
+best test stays a small own benchmark: 5 Draho assets (cat, fox, hedgehog,
+garden bin, bike), made by 3 or 4 generators, rendered in the turntable scene
+from section 5, and scored by the owner.

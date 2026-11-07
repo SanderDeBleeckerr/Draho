@@ -46,6 +46,9 @@ PALETTE = [
     ("deep_blue_grey", "#38465C"), ("muted_blue", "#687D9B"), ("soft_yellow", "#E8C77D"),
     ("pale_yellow", "#F3DFA7"), ("olive", "#858B69"), ("warm_grey", "#A7A29B"), ("charcoal", "#292B32"),
     ("off_white", "#DED9CF"),
+    # neutral warm greys: tiles, concrete, metal frames (without them, greys snap to olive or blue)
+    ("grey_light", "#C4C0B8"), ("grey_mid", "#8A8781"), ("grey_dark", "#5E5C58"), ("grey_deep", "#3F3E3B"),
+    ("grey_stone", "#75716B"),
 ]
 NAMES = [n for n, _ in PALETTE]
 GRID = 8            # cells per row

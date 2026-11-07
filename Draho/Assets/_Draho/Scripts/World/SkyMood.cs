@@ -102,18 +102,19 @@ namespace Draho.World
             Preset p = day;
             if (mood == Mood.Evening)
             {
-                // Golden hour: a low, warm sun from the west, long shadows, a pink-orange horizon.
+                // Blue hour (docs/ART_STYLE.md §3): a low, warm sun from the west against a cool blue-grey
+                // ambient and a muted blue sky; the warm light comes from the sun patches, lamps and windows.
                 p.sunEuler = new Vector3(12f, day.sunEuler.y + 40f, 0f);
-                p.sun = new Color(1f, 0.66f, 0.42f);
-                p.sunIntensity = 1.05f;
-                p.sky = new Color(0.5f, 0.5f, 0.66f);
-                p.equator = new Color(0.62f, 0.46f, 0.38f);
-                p.ground = new Color(0.24f, 0.17f, 0.14f);
-                p.fog = new Color(0.86f, 0.64f, 0.55f);
-                p.fogStart = 60f;
+                p.sun = new Color(0.98f, 0.74f, 0.45f);
+                p.sunIntensity = 0.95f;
+                p.sky = new Color(0.41f, 0.49f, 0.61f);      // #687D9B, muted blue
+                p.equator = new Color(0.49f, 0.5f, 0.56f);
+                p.ground = new Color(0.2f, 0.21f, 0.25f);
+                p.fog = new Color(0.54f, 0.59f, 0.68f);      // #8A97AE
+                p.fogStart = 50f;
                 p.fogEnd = 150f;
-                p.skyTint = new Color(0.62f, 0.5f, 0.55f);
-                p.exposure = 1.0f;
+                p.skyTint = new Color(0.42f, 0.5f, 0.66f);
+                p.exposure = 0.8f;
                 p.night = 0.5f;
             }
             else if (mood == Mood.Night)
@@ -123,14 +124,15 @@ namespace Draho.World
                 p.sunEuler = new Vector3(32f, day.sunEuler.y - 70f, 0f); // a low moon: often in view
                 p.sun = new Color(0.6f, 0.7f, 1f);
                 p.sunIntensity = 0.32f;
-                p.sky = new Color(0.17f, 0.2f, 0.34f);
-                p.equator = new Color(0.14f, 0.13f, 0.22f);
-                p.ground = new Color(0.05f, 0.05f, 0.07f);
-                p.fog = new Color(0.08f, 0.1f, 0.18f);
+                // Blue, not black: the cat, platforms and things to find must still read (brief §2).
+                p.sky = new Color(0.2f, 0.25f, 0.38f);
+                p.equator = new Color(0.17f, 0.19f, 0.28f);
+                p.ground = new Color(0.07f, 0.08f, 0.11f);
+                p.fog = new Color(0.11f, 0.14f, 0.22f);
                 p.fogStart = 25f;
                 p.fogEnd = 95f;
-                p.skyTint = new Color(0.22f, 0.26f, 0.42f);
-                p.exposure = 0.22f;
+                p.skyTint = new Color(0.24f, 0.3f, 0.46f);
+                p.exposure = 0.3f;
                 // The fill light near the camera becomes a moon-blue rim on the black fur.
                 p.fill = new Color(0.62f, 0.74f, 1f);
                 p.fillIntensity = 0.42f;
@@ -157,12 +159,12 @@ namespace Draho.World
                 // Sunrise after the storm: a low gold sun from the east (opposite the evening sun), long shadows,
                 // the sky still cool and blue-pink from the blue hour; the lamps are still dimly on.
                 p.sunEuler = new Vector3(10f, day.sunEuler.y - 140f, 0f);
-                p.sun = new Color(1f, 0.72f, 0.48f);
+                p.sun = new Color(1f, 0.78f, 0.55f);
                 p.sunIntensity = 0.85f;
-                p.sky = new Color(0.45f, 0.5f, 0.66f);
-                p.equator = new Color(0.7f, 0.56f, 0.52f);
-                p.ground = new Color(0.22f, 0.18f, 0.17f);
-                p.fog = new Color(0.8f, 0.68f, 0.68f);
+                p.sky = new Color(0.45f, 0.52f, 0.66f);
+                p.equator = new Color(0.62f, 0.57f, 0.56f);
+                p.ground = new Color(0.21f, 0.2f, 0.21f);
+                p.fog = new Color(0.68f, 0.68f, 0.74f);
                 p.fogStart = 40f;
                 p.fogEnd = 140f;
                 p.skyTint = new Color(0.55f, 0.5f, 0.62f);
@@ -264,7 +266,7 @@ namespace Draho.World
             // Stars and the moon (Draho/NightSky); the moon sits where the night light comes from.
             Shader.SetGlobalFloat(NightId, dark * (1f - p.clouds)); // clouds hide the stars and the moon
             if (sun != null) Shader.SetGlobalVector(MoonDirId, -sun.transform.forward);
-            if (grade != null) grade.saturation.Override(Mathf.Lerp(baseSaturation, -35f, dark));
+            if (grade != null) grade.saturation.Override(Mathf.Lerp(baseSaturation, -20f, dark)); // muted, but the palette still shows
             if (split != null)
             {
                 Color grey = new Color(0.5f, 0.5f, 0.5f);

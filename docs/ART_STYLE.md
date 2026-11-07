@@ -26,7 +26,7 @@ The first direction (warm afternoon, saturated) is kept for comparison:
 ## 1. Palette
 
 One palette for the whole game: [`Art/Palette/DrahoPalette.png`](../Draho/Assets/_Draho/Art/Palette/DrahoPalette.png)
-(256 × 256 px, 8 × 8 cells, 48 colours used) with `DrahoPalette.json` (name, hex, UV). The colours are defined
+(256 × 256 px, 8 × 8 cells, 53 colours used) with `DrahoPalette.json` (name, hex, UV). The colours are defined
 only in [`Tools/Blender/draho_style.py`](../Tools/Blender/draho_style.py) (`PALETTE`); the PNG and JSON are
 generated from it.
 
@@ -38,7 +38,7 @@ generated from it.
 | Muted blue: sky, depth, cool surfaces | `muted_blue`, `sky`, `teal`, `teal_dark`, `water` | `#687D9B` |
 | Soft yellow: light, windows, things to notice | `soft_yellow`, `pale_yellow`, `cream`, `mustard`, `cat_eye` | `#E8C77D` |
 | Muted olive: plants | `olive`, `leaf`, `leaf_light`, `leaf_dark`, `grass` | `#858B69` |
-| Warm grey: stone, walls | `warm_grey`, `stone`, `plaster_shade`, `mortar` | `#A7A29B` |
+| Warm grey: stone, walls, tiles | `warm_grey`, `stone`, `plaster_shade`, `mortar`, `grey_light`, `grey_mid`, `grey_stone`, `grey_dark`, `grey_deep` | `#A7A29B` |
 | Natural brown: wood, doors, props | `oak_light`, `oak`, `walnut`, `walnut_dark`, `soil` | `#8C7B67` |
 | Charcoal: Drahomil, dark objects | `charcoal`, `cat_fur`, `black`, `metal_dark` | `#292B32` |
 | Warm off-white: plaster, fabric | `off_white`, `plaster`, `linen`, `white` | `#DED9CF` |
@@ -127,16 +127,30 @@ Rules:
 
 - [x] **Phase 1, audit:** §6.
 - [x] **Concept image** of the apartment in this direction (the frames above).
-- [ ] **Phase 2, apartment prototype:**
-  1. Palette: `DrahoPalette.png` imported with Filter Mode *Point*, no mipmaps, no compression; a
-     `PaletteMap` in the editor that maps each colour that `LitMaterial` and `Recolor` ask for to its palette
-     colour (nearest in OKLab first, then a hand-made table for the important ones); a switch to turn it off.
-  2. Light: retune the `SkyMood` presets (Evening as the hero mood; Day muted; Night blue, not black) and
-     the start light in `NewLitScene`.
-  3. Volume: saturation from +6 to about −5, contrast +5, bloom on lamps and windows only.
-  4. Cat: the back light (§4), fur values from §4.
-- [ ] **Phase 3, review:** before-and-after screenshots from the same camera positions (the playtest tool in
-  `Tools/Playtest/` takes them from the web build), and a frame-time check on a phone.
+- [x] **Phase 2a, apartment prototype (palette, light, Volume, cat):**
+  1. **Palette:** [`Editor/PaletteMap.cs`](../Draho/Assets/_Draho/Editor/PaletteMap.cs) maps every colour that
+     `PlaygroundBuilder.LitMaterial` gets (so also `ApartmentBuilder.Mat` and the Kenney `Recolor`) to the
+     nearest palette colour in OKLab, with hue and chroma weighted 3× (a grey must not turn olive). It keeps
+     glass, the cat's eye and nose, and white-tinted textures. `PaletteMap.Enabled = false` turns it off.
+  2. **Light:** `SkyMood` Evening is now blue hour (cool `#687D9B` ambient, warm low sun, blue-grey fog);
+     Night is lighter and less grey (saturation −20 instead of −35); Dawn is cooler; the Day sky is muted.
+  3. **Volume:** saturation +6 → −5, contrast 8 → 5, bloom 0.35 → 0.3, vignette 0.22 → 0.18.
+  4. **Cat:** charcoal rough fur (smoothness 0.35 → 0.2), and a `CatRimLight` behind the cat on **rendering
+     layer 1**, so it lights only Drahomil (no pool of light on the floor). URP "Use Rendering Layers" is on.
+
+  Before (top) and after (bottom). Rows: Day, Evening, Night. Columns: the cat, living room, living room at
+  cat height, garden, inner court. Made with `ArtCapture` (§8), Unity 6000.6.8f1, same camera positions.
+
+  ![Before](images/style/phase2_before.jpg)
+  ![After](images/style/phase2_after.jpg)
+
+- [ ] **Phase 2b, apartment, still open:**
+  1. Warm interior light at Evening and Night: a lamp in the living room and the kitchen (the layout has no
+     ceiling lamp), and check that `NightLamp` / `WindowGlow` come on (the edit-mode capture cannot show them).
+  2. The sky seen through the windows at Evening still looks like day (bright, with a sun disc).
+  3. Baked lightmaps and light probes for the apartment.
+  4. Check on a phone: frame time with the extra rim light and rendering layers.
+- [ ] **Phase 3, review:** the owner reviews the pictures above, and the web build on a phone.
 - [ ] **Phase 4:** courtyard and garden.
 - [ ] **Phase 5:** curtains, flowers, insects round lamps, small objects that react to the cat.
 
@@ -147,6 +161,7 @@ Rules:
 | Palette, styling rules, look-dev light, GPU render | [`Tools/Blender/draho_style.py`](../Tools/Blender/draho_style.py) |
 | Concept frames and the palette files | [`Tools/Blender/style_lookdev.py`](../Tools/Blender/style_lookdev.py) |
 | The cat | [`Tools/Blender/convert_lowpoly_cat.py`](../Tools/Blender/convert_lowpoly_cat.py) |
+| Before/after pictures in Unity | [`Editor/ArtCapture.cs`](../Draho/Assets/_Draho/Editor/ArtCapture.cs) |
 
 Run them with a local Blender 5.x. On Windows, give **absolute paths** (Blender resolves relative output paths
 in its own way):
@@ -160,6 +175,16 @@ in its own way):
 
 With an RTX 5080 (OptiX) the three frames take about 2.5 minutes. The Kenney models are ASCII FBX, which
 Blender cannot import; Unity recolours them (Phase 2, step 1).
+
+**Pictures from Unity:** run `CiBuild.Prepare` once, then `ArtCapture.Run`. It builds the scenes and renders
+5 views × 3 moods:
+
+```powershell
+& "D:\Unity\Hub\Editor\6000.6.8f1\Editor\Unity.exe" -batchmode -projectPath "$PWD\Draho" `
+  -executeMethod Draho.EditorTools.ArtCapture.Run -captureOut "D:\Code\Draho-work\captures\after" -quit
+```
+
+The palette PNG and JSON can be remade without rendering: `draho_style.save_palette(path)` in Blender.
 
 **Unity version:** the project and CI use **6000.3.26f1**. Open it with that version. A newer editor (6000.6)
 upgrades the project files and the CI build would no longer match.

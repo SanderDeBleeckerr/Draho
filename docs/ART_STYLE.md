@@ -154,6 +154,46 @@ Rules:
 - [ ] **Phase 4:** courtyard and garden.
 - [ ] **Phase 5:** curtains, flowers, insects round lamps, small objects that react to the cat.
 
+## 7b. The animals (review, November 2026)
+
+All animals were built in code from Unity primitives (spheres, capsules, boxes): smooth toys next to a faceted
+cat, and heavy for their size. `ArtCapture.Animals` puts one of each on a neutral floor next to Drahomil:
+
+| Animal | Renderers | Triangles | Verdict |
+|---|---|---|---|
+| Tortoise (Zlatenka) | 24 | ~18,400 | a yellow blob with black dots and egg legs: reads as a cookie |
+| Hedgehog | 13 | ~9,300 | charming spikes, but smooth and heavy |
+| Hrozna (corgi) | 14 | ~8,000 | segmented capsules |
+| Mouse | 8 | ~5,500 | a smooth grey capsule (the main prey) |
+| Duck | 6 | ~3,850 | a decent toy, smooth |
+| Fox | 30 | ~1,600 | capsules on box legs: robot-like |
+| Pigeon / gull | 13–15 | ~750 | box bodies with flat slab wings sticking out |
+| Blackbird | 10 | ~600 | the same box-and-slab build |
+| Moth | 3 | ~120 | fine at its size |
+| Fatsocat, grey cat | – | – | fine: Drahomil's model in other colours |
+
+![Animals before (1/2)](images/style/animals_before_1.jpg)
+![Animals before (2/2)](images/style/animals_before_2.jpg)
+
+**The pipeline:** [`Tools/Blender/build_animals.py`](../Tools/Blender/build_animals.py) builds each animal in the
+house style (faceted, palette UVs, one material) with **the same parts the game script animates** (for the
+mouse: `Body` and `TailPivot`), so the scripts do not change. `Editor/AnimalModels.cs` loads
+`Art/Animals/<Name>.fbx`, gives it the shared `DrahoPalette` material and wires the parts; without the FBX the
+builder keeps the old primitive animal.
+
+- Export: FBX in Blender's own axes (`axis_forward -Y`, `axis_up Z`, no "apply transform"); Unity's
+  `bakeAxisConversion` turns it into Y-up for every node, pivots included. ("Apply transform" in Blender
+  converts the meshes but not the pivots: the first mouse stood on its nose.)
+- QA: the `blender-asset-qa` check must pass. "Zero-area UV faces" is accepted: palette UVs sit on one
+  cell centre by design (animals are lit by light probes, not lightmaps).
+
+**Done:** the mouse, 364 triangles in 2 renderers (was ~5,500 in 8).
+
+![The new mouse](images/style/mouse_after.jpg)
+
+**Next, by how much they gain:** blackbird + pigeon + gull (one bird body, three colourings), fox, tortoise,
+Hrozna, hedgehog, duck.
+
 ## 8. Tools
 
 | Step | Tool |
@@ -161,7 +201,8 @@ Rules:
 | Palette, styling rules, look-dev light, GPU render | [`Tools/Blender/draho_style.py`](../Tools/Blender/draho_style.py) |
 | Concept frames and the palette files | [`Tools/Blender/style_lookdev.py`](../Tools/Blender/style_lookdev.py) |
 | The cat | [`Tools/Blender/convert_lowpoly_cat.py`](../Tools/Blender/convert_lowpoly_cat.py) |
-| Before/after pictures in Unity | [`Editor/ArtCapture.cs`](../Draho/Assets/_Draho/Editor/ArtCapture.cs) |
+| Before/after pictures in Unity | [`Editor/ArtCapture.cs`](../Draho/Assets/_Draho/Editor/ArtCapture.cs) (`Run`: rooms × moods; `Animals`: the animal sheet) |
+| Animals | [`Tools/Blender/build_animals.py`](../Tools/Blender/build_animals.py) + `Editor/AnimalModels.cs` |
 
 Run them with a local Blender 5.x. On Windows, give **absolute paths** (Blender resolves relative output paths
 in its own way):

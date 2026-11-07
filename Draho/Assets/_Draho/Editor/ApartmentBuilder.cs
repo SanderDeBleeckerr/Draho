@@ -4154,6 +4154,15 @@ namespace Draho.EditorTools
             cc.skinWidth = 0.005f;
             cc.minMoveDistance = 0f;
 
+            // The Blender mouse (Tools/Blender/build_animals.py): the same Body and TailPivot parts, in the house style.
+            var model = AnimalModels.Instantiate("Mouse", root.transform, 2);
+            if (model != null)
+            {
+                var modelMouse = root.AddComponent<Mouse>();
+                modelMouse.Configure(holes.ToArray(), AnimalModels.Find(model, "Body"), AnimalModels.Find(model, "TailPivot"));
+                return modelMouse;
+            }
+
             var fur = Mat("Mouse_Fur", new Color(0.47f, 0.43f, 0.4f), 0.2f);
             var pink = Mat("Mouse_Pink", new Color(0.86f, 0.6f, 0.6f), 0.3f);
             var eye = Mat("Mouse_Eye", new Color(0.02f, 0.02f, 0.02f), 0.9f);

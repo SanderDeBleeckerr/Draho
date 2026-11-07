@@ -108,6 +108,7 @@ namespace Draho.EditorTools
             SetIfFound(so, "m_SoftShadowsSupported", true);
             SetIfFound(so, "m_SupportsHDR", true);
             SetIfFound(so, "m_SupportsLightCookies", true); // cloud shadows on the sun (keep the cookie shader variants)
+            SetIfFound(so, "m_SupportsLightLayers", true);  // "Use Rendering Layers": the rim light lights only the cat
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(urp);
 
@@ -121,6 +122,9 @@ namespace Draho.EditorTools
                 EditorUtility.SetDirty(rendererAsset);
             }
         }
+
+        /// <summary>Rendering layer 1: Drahomil. The rim light shines on this layer only.</summary>
+        internal const uint CatRenderingLayer = 1u << 1;
 
         static void SetIfFound(SerializedObject so, string name, object value)
         {
@@ -154,14 +158,15 @@ namespace Draho.EditorTools
             Add<Tonemapping>().mode.Override(TonemappingMode.Neutral);
             var bloom = Add<Bloom>();
             bloom.threshold.Override(1.0f);
-            bloom.intensity.Override(0.35f);
+            bloom.intensity.Override(0.3f);
             bloom.scatter.Override(0.6f);
             var color = Add<ColorAdjustments>();
             color.postExposure.Override(0.15f);
-            color.contrast.Override(8f);
-            color.saturation.Override(6f);
+            // Muted colours come from the palette and the light; the grade only finishes (ART_STYLE.md §3).
+            color.contrast.Override(5f);
+            color.saturation.Override(-5f);
             var vignette = Add<Vignette>();
-            vignette.intensity.Override(0.22f);
+            vignette.intensity.Override(0.18f);
             vignette.smoothness.Override(0.45f);
             EditorUtility.SetDirty(profile);
             return profile;
@@ -211,7 +216,7 @@ namespace Draho.EditorTools
                 mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 AssetDatabase.CreateAsset(mat, path);
             }
-            mat.SetColor("_BaseColor", color);
+            mat.SetColor("_BaseColor", PaletteMap.Apply(name, color, texture)); // the shared art palette
             mat.SetFloat("_Smoothness", smoothness);
             if (texture != null)
             {
@@ -368,7 +373,7 @@ namespace Draho.EditorTools
 
             var materials = new[]
             {
-                LitMaterial("Fur", new Color(0.12f, 0.12f, 0.135f), 0.35f),
+                LitMaterial("Fur", new Color(0.16f, 0.17f, 0.2f), 0.2f), // charcoal, rough: no lamp stripe on the back
                 LitMaterial("Eye", Color.white, 0.85f, CatTexture("CatEye")),   // iris, pupil, highlight
                 LitMaterial("Pupil", Color.black, 0.9f),                       // lid line and mouth
                 LitMaterial("Nose", Color.white, 0.5f, CatTexture("CatNose")),  // leather and nostrils
@@ -380,6 +385,7 @@ namespace Draho.EditorTools
                 r.sharedMaterials = r.sharedMaterials
                     .Select(m => m != null && materials.TryGetValue(m.name, out var ours) ? ours : m).ToArray();
                 r.shadowCastingMode = ShadowCastingMode.On;
+                r.renderingLayerMask |= CatRenderingLayer; // only the hero cat gets the rim light
             }
 
             // Eyeshine at night (EyeShine drives the emission; black by day).
@@ -589,17 +595,17 @@ namespace Draho.EditorTools
             {
                 sky.SetFloat("_SunSize", 0.03f);
                 sky.SetFloat("_AtmosphereThickness", 0.8f);
-                sky.SetColor("_SkyTint", new Color(0.55f, 0.65f, 0.8f));
+                sky.SetColor("_SkyTint", new Color(0.47f, 0.55f, 0.68f)); // muted blue, not cartoon blue
                 sky.SetColor("_GroundColor", new Color(0.42f, 0.4f, 0.38f));
-                sky.SetFloat("_Exposure", 1.15f);
+                sky.SetFloat("_Exposure", 1.0f);
                 EditorUtility.SetDirty(sky);
                 RenderSettings.skybox = sky;
             }
 
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.intensity = 1.3f;
-            sun.color = new Color(1f, 0.96f, 0.9f);
+            sun.intensity = 1.2f;
+            sun.color = new Color(1f, 0.93f, 0.82f); // a warm sun against the cool ambient
             sun.shadows = LightShadows.Soft;
             sun.transform.rotation = sunRotation;
             return scene;
@@ -686,6 +692,18 @@ namespace Draho.EditorTools
             fill.intensity = 0.45f;
             fill.range = 1.6f;
             fill.shadows = LightShadows.None;
+            // A soft back light behind the cat (seen from the camera): it draws the outline of ears, back and
+            // tail against dark backgrounds, without a glow (ART_STYLE.md §4).
+            var rim = new GameObject("CatRimLight").AddComponent<Light>();
+            rim.type = LightType.Point;
+            rim.color = new Color(0.95f, 0.87f, 0.65f); // pale warm yellow, #F3DFA7
+            rim.intensity = 1.4f;
+            rim.range = 1.3f;
+            rim.shadows = LightShadows.None;
+            rim.GetUniversalAdditionalLightData().renderingLayers = CatRenderingLayer; // no pool of light on the floor
+            var rimFollow = rim.gameObject.AddComponent<CatRimLight>();
+            SetField(rimFollow, "cat", cat.transform);
+            SetField(rimFollow, "view", camGo.transform);
             camGo.AddComponent<AdaptiveQuality>();
             var orbit = camGo.AddComponent<OrbitCamera>();
             SetField(orbit, "target", cat.transform);

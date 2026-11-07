@@ -29,7 +29,10 @@ buildings hire him. Each finished job unlocks a new place to explore.
 
 ## 4. Art and audio direction
 
-- **Realistic** cat and interiors, made from bought assets.
+- **Cozy low-poly at blue hour** (changed from "realistic" in November 2026): cool
+  blue-grey surroundings, warm yellow lamps and windows, muted natural colours, one
+  shared palette. The brief is [ART_DIRECTION_BRIEF.md](ART_DIRECTION_BRIEF.md); the
+  rules and the target pictures are in [ART_STYLE.md](ART_STYLE.md).
 - Mood: warm, natural light, a slightly soft and filmic look.
 - A black cat is hard to read on screen. Use a rim light, a fur sheen, and a
   slightly lifted albedo instead of pure black.

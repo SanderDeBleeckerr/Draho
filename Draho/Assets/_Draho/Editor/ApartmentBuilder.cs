@@ -177,6 +177,9 @@ namespace Draho.EditorTools
             BuildBuildings(layout);
             BuildWildGarden(layout.wild_garden);
             BuildGardenDetails();
+            // A safeguard: no tree from the open map data stands inside the flat.
+            treeKeepOut = layout.rooms.Where(r => !r.outdoor)
+                .Select(r => Rect.MinMaxRect(r.x0 - 0.4f, r.z0 - 0.4f, r.x1 + 0.4f, r.z1 + 0.4f)).ToArray();
             BuildSurroundings();
             BuildBegijnhof(layout.begijnhof);
             BuildDucks(layout);
@@ -2462,6 +2465,9 @@ namespace Draho.EditorTools
             var raw = File.ReadAllText(path);
             // JsonUtility cannot read nested arrays: flatten "p":[[x,z],...] to "p":[x,z,...] first.
             raw = System.Text.RegularExpressions.Regex.Replace(raw, @"""p"":\[\[(.*?)\]\]", m => "\"p\":[" + m.Groups[1].Value.Replace("],[", ",") + "]");
+            // The same for "trees":[[x,z,h,r],...]. Without it JsonUtility read the trees as zeros, and all of them
+            // stood at (0, 0): a pile of zero-size trunks in the living room's south-west corner that flickered.
+            raw = System.Text.RegularExpressions.Regex.Replace(raw, @"""trees"":\[\[(.*?)\]\]", m => "\"trees\":[" + m.Groups[1].Value.Replace("],[", ",") + "]");
             var file = JsonUtility.FromJson<SurroundingsFile>(raw);
             if (file?.buildings == null) return;
             // Walls with windows (round 105): facade textures of 12 m (4 floors, 4 bays), lit windows at night.
@@ -2980,9 +2986,13 @@ namespace Draho.EditorTools
         /// Trees round the level: a tapered trunk and two or three low-poly lumps of leaves per tree, merged into one mesh
         /// per 200 m square (bark and leaves submeshes). trees = [x, z, height, crown radius, ...].
         /// </summary>
+        /// <summary>Areas where no data tree may stand (the rooms of the flat), set by Build.</summary>
+        static Rect[] treeKeepOut = new Rect[0];
+
         static void SurroundingTrees(Transform root, float[] trees)
         {
             if (trees == null || trees.Length < 4) return;
+            int skipped = 0;
             var bark = PaletteMaterial(); // the bark is a palette colour: it batches with the street props
             var leafMats = new[] { Mat("Sur_Leaves", new Color(0.25f, 0.38f, 0.17f), 0.1f), Mat("Sur_LeavesLight", new Color(0.36f, 0.47f, 0.2f), 0.1f) };
             // An icosahedron (20 triangles, radius 0.5) per lump: cheap enough for hundreds of trees.
@@ -3004,6 +3014,7 @@ namespace Draho.EditorTools
             for (int i = 0; i + 3 < trees.Length; i += 4)
             {
                 float x = trees[i], z = trees[i + 1], h = trees[i + 2], rad = trees[i + 3];
+                if (treeKeepOut.Any(r => r.Contains(new Vector2(x, z)))) { skipped++; continue; }
                 var key = new Vector2Int(Mathf.FloorToInt(x / 200f), Mathf.FloorToInt(z / 200f));
                 if (!chunks.TryGetValue(key, out var c)) { chunks[key] = c = (new List<Vector3>(), new List<Vector3>(), new[] { new List<int>(), new List<int>(), new List<int>() }); chunkUV[key] = new List<Vector2>(); }
                 var uvl = chunkUV[key];
@@ -3057,7 +3068,7 @@ namespace Draho.EditorTools
                 r.sharedMaterials = used.ToArray();
                 r.shadowCastingMode = ShadowCastingMode.Off;
             }
-            Debug.Log($"Draho: surroundings: {trees.Length / 4} trees");
+            Debug.Log($"Draho: surroundings: {trees.Length / 4 - skipped} trees ({skipped} skipped inside the flat)");
         }
 
         /// <summary>A flat triangle mesh from the surroundings file at height y, every triangle turned to face up.</summary>
@@ -3195,8 +3206,9 @@ namespace Draho.EditorTools
                     cl.GetComponent<Renderer>().sharedMaterial = R() < 0.35f ? leafTurning : leafGreen;
                 }
             }
-            // A crumpled blue tarp on the lawn.
-            var tarp = Mat("Tarp_Blue", new Color(0.12f, 0.32f, 0.7f), 0.45f);
+            // A crumpled blue tarp on the lawn: matte and dark, so it reads as cloth, not as a puddle that mirrors
+            // the sky (it did, once the palette made it pale and it stayed shiny).
+            var tarp = Mat("Tarp_Blue", new Color(0.22f, 0.27f, 0.36f), 0.1f);
             for (int k = 0; k < 3; k++)
             {
                 var t = Box("Tarp", new Vector3(-6.4f + k * 0.12f, 0.03f + k * 0.02f, 2.9f + k * 0.08f), new Vector3(0.5f - k * 0.1f, 0.05f, 0.35f - k * 0.06f), tarp, collider: false);
@@ -4141,6 +4153,15 @@ namespace Draho.EditorTools
             cc.stepOffset = 0.02f;
             cc.skinWidth = 0.005f;
             cc.minMoveDistance = 0f;
+
+            // The Blender mouse (Tools/Blender/build_animals.py): the same Body and TailPivot parts, in the house style.
+            var model = AnimalModels.Instantiate("Mouse", root.transform, 2);
+            if (model != null)
+            {
+                var modelMouse = root.AddComponent<Mouse>();
+                modelMouse.Configure(holes.ToArray(), AnimalModels.Find(model, "Body"), AnimalModels.Find(model, "TailPivot"));
+                return modelMouse;
+            }
 
             var fur = Mat("Mouse_Fur", new Color(0.47f, 0.43f, 0.4f), 0.2f);
             var pink = Mat("Mouse_Pink", new Color(0.86f, 0.6f, 0.6f), 0.3f);

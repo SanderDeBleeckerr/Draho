@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Draho.World;
 using UnityEditor;
@@ -115,6 +116,80 @@ namespace Draho.EditorTools
                     string file = Path.Combine(outDir, $"{v.name}_{mood}.png");
                     File.WriteAllBytes(file, tex.EncodeToPNG());
                     Debug.Log($"ARTCAPTURE {file}");
+                }
+            }
+            UnityEngine.Object.DestroyImmediate(rt);
+        }
+
+        /// <summary>
+        /// Animal review sheet: one of each animal on a neutral floor high above the town, next to Drahomil for scale,
+        /// from three angles in the day light. Files: animal_[Type]_[n]_[angle].png in -captureOut.
+        /// </summary>
+        public static void Animals()
+        {
+            string outDir = Arg("-captureOut") ?? "captures/animals";
+            Directory.CreateDirectory(outDir);
+            PlaygroundBuilder.Build();
+            EditorSceneManager.OpenScene(ApartmentBuilder.ScenePath);
+
+            var cam = new GameObject("ArtCaptureCamera").AddComponent<Camera>();
+            if (Camera.main != null) { cam.CopyFrom(Camera.main); Camera.main.enabled = false; }
+            cam.nearClipPlane = 0.01f;
+            cam.fieldOfView = 35f;
+            var data = cam.GetUniversalAdditionalCameraData();
+            data.renderPostProcessing = true;
+            data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+            PoseCat();
+
+            Vector3 studio = new Vector3(0f, 200f, 0f);
+            var floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            floor.transform.position = studio;
+            floor.transform.localScale = Vector3.one * 2f;
+            floor.GetComponent<Renderer>().sharedMaterial = PlaygroundBuilder.LitMaterial("Studio_Floor", PaletteMap.Named("warm_grey", Color.grey), 0.1f);
+
+            var catMotor = UnityEngine.Object.FindAnyObjectByType<Draho.Cat.CatMotor>();
+            string[] types = { "Mouse", "Hedgehog", "Fox", "Bird", "Pigeon", "Duck", "Tortoise", "Moth", "Hrozna", "Fatsocat", "NpcCat" };
+            int width = 900, height = 600;
+            var rt = new RenderTexture(width, height, 24);
+            var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
+            foreach (string typeName in types)
+            {
+                var type = Type.GetType($"Draho.World.{typeName}, Assembly-CSharp");
+                if (type == null) { Debug.LogWarning($"ARTCAPTURE no type {typeName}"); continue; }
+                var found = UnityEngine.Object.FindObjectsByType(type, FindObjectsSortMode.InstanceID);
+                for (int n = 0; n < Mathf.Min(found.Length, typeName == "Pigeon" ? 3 : 1); n++)
+                {
+                    var animal = ((Component)found[n]).transform;
+                    Vector3 oldPos = animal.position;
+                    Quaternion oldRot = animal.rotation;
+                    animal.SetPositionAndRotation(studio, Quaternion.Euler(0f, 0f, 0f));
+                    var rends = animal.GetComponentsInChildren<Renderer>().Where(r => r.enabled && !(r is ParticleSystemRenderer)).ToArray();
+                    if (rends.Length == 0) { animal.SetPositionAndRotation(oldPos, oldRot); continue; }
+                    var b = rends[0].bounds;
+                    foreach (var r in rends) b.Encapsulate(r.bounds);
+                    // Drahomil beside it, for scale.
+                    Vector3 catOld = catMotor != null ? catMotor.transform.position : Vector3.zero;
+                    if (catMotor != null) catMotor.transform.SetPositionAndRotation(studio + new Vector3(Mathf.Max(b.extents.x, 0.15f) + 0.35f, 0f, 0f), Quaternion.Euler(0f, -90f, 0f));
+                    float size = Mathf.Max(b.size.magnitude, 0.25f);
+                    var angles = new (string name, Vector3 dir)[] { ("front", new Vector3(-0.6f, 0.35f, 1f)), ("side", new Vector3(-1f, 0.15f, 0f)), ("top", new Vector3(-0.4f, 1.2f, 0.6f)) };
+                    foreach (var a in angles)
+                    {
+                        Vector3 target = b.center;
+                        cam.transform.position = target + a.dir.normalized * (size * 1.9f + 0.25f);
+                        cam.transform.rotation = Quaternion.LookRotation(target - cam.transform.position);
+                        for (int pass = 0; pass < 2; pass++)
+                            RenderPipeline.SubmitRenderRequest(cam, new RenderPipeline.StandardRequest { destination = rt });
+                        var prev = RenderTexture.active;
+                        RenderTexture.active = rt;
+                        tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                        tex.Apply();
+                        RenderTexture.active = prev;
+                        File.WriteAllBytes(Path.Combine(outDir, $"animal_{typeName}_{n}_{a.name}.png"), tex.EncodeToPNG());
+                    }
+                    int tris = animal.GetComponentsInChildren<MeshFilter>().Where(f => f.sharedMesh != null).Sum(f => (int)f.sharedMesh.GetIndexCount(0) / 3);
+                    Debug.Log($"ARTCAPTURE animal {typeName} #{n} '{animal.name}': {rends.Length} renderers, ~{tris} triangles, size {b.size:F2} m");
+                    animal.SetPositionAndRotation(oldPos, oldRot);
+                    if (catMotor != null) catMotor.transform.position = catOld;
                 }
             }
             UnityEngine.Object.DestroyImmediate(rt);

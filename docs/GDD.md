@@ -29,7 +29,9 @@ buildings hire him. Each finished job unlocks a new place to explore.
 
 ## 4. Art and audio direction
 
-- **Realistic** cat and interiors, made from bought assets.
+- **Stylised, soft low-poly** (changed from "realistic" in November 2026): simple
+  chunky shapes, flat colours from one shared palette, and warm soft light.
+  The rules and the target picture are in [ART_STYLE.md](ART_STYLE.md).
 - Mood: warm, natural light, a slightly soft and filmic look.
 - A black cat is hard to read on screen. Use a rim light, a fur sheen, and a
   slightly lifted albedo instead of pure black.

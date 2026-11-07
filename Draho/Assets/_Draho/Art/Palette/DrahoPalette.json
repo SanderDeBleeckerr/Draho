@@ -5,243 +5,291 @@
  "colors": [
   {
    "name": "cat_fur",
-   "hex": "#2F2C35",
+   "hex": "#292B32",
    "u": 0.0625,
    "v": 0.9375
   },
   {
    "name": "cat_fur_light",
-   "hex": "#4A4656",
+   "hex": "#3C3F49",
    "u": 0.1875,
    "v": 0.9375
   },
   {
    "name": "cat_eye",
-   "hex": "#E8A33A",
+   "hex": "#D8A94F",
    "u": 0.3125,
    "v": 0.9375
   },
   {
    "name": "cat_nose",
-   "hex": "#6B4A52",
+   "hex": "#5A4A50",
    "u": 0.4375,
    "v": 0.9375
   },
   {
    "name": "cat_inner_ear",
-   "hex": "#C98A8E",
+   "hex": "#9E7F82",
    "u": 0.5625,
    "v": 0.9375
   },
   {
    "name": "oak_light",
-   "hex": "#D4A86E",
+   "hex": "#A8977F",
    "u": 0.6875,
    "v": 0.9375
   },
   {
    "name": "oak",
-   "hex": "#B07A45",
+   "hex": "#8C7B67",
    "u": 0.8125,
    "v": 0.9375
   },
   {
    "name": "walnut",
-   "hex": "#6E4A2E",
+   "hex": "#6B5545",
    "u": 0.9375,
    "v": 0.9375
   },
   {
    "name": "walnut_dark",
-   "hex": "#4A3020",
+   "hex": "#4A3D35",
    "u": 0.0625,
    "v": 0.8125
   },
   {
    "name": "plaster",
-   "hex": "#F1E6D0",
+   "hex": "#DED9CF",
    "u": 0.1875,
    "v": 0.8125
   },
   {
    "name": "plaster_warm",
-   "hex": "#E8D2AC",
+   "hex": "#CFC6B8",
    "u": 0.3125,
    "v": 0.8125
   },
   {
    "name": "plaster_shade",
-   "hex": "#D9C3A0",
+   "hex": "#B7B0A5",
    "u": 0.4375,
    "v": 0.8125
   },
   {
    "name": "brick",
-   "hex": "#B5573F",
+   "hex": "#8E6E62",
    "u": 0.5625,
    "v": 0.8125
   },
   {
    "name": "brick_dark",
-   "hex": "#8E3F2E",
+   "hex": "#6A534B",
    "u": 0.6875,
    "v": 0.8125
   },
   {
    "name": "mortar",
-   "hex": "#D8CBB4",
+   "hex": "#B9B2A6",
    "u": 0.8125,
    "v": 0.8125
   },
   {
    "name": "terracotta",
-   "hex": "#C9774E",
+   "hex": "#A47F69",
    "u": 0.9375,
    "v": 0.8125
   },
   {
    "name": "slate",
-   "hex": "#5B6370",
+   "hex": "#4E5868",
    "u": 0.0625,
    "v": 0.6875
   },
   {
    "name": "stone",
-   "hex": "#A9A396",
+   "hex": "#A7A29B",
    "u": 0.1875,
    "v": 0.6875
   },
   {
    "name": "teal",
-   "hex": "#3F7C7A",
+   "hex": "#5F7A80",
    "u": 0.3125,
    "v": 0.6875
   },
   {
    "name": "teal_dark",
-   "hex": "#2D5E5D",
+   "hex": "#46596A",
    "u": 0.4375,
    "v": 0.6875
   },
   {
    "name": "mustard",
-   "hex": "#D9A441",
+   "hex": "#C9AE72",
    "u": 0.5625,
    "v": 0.6875
   },
   {
    "name": "rose",
-   "hex": "#C9737A",
+   "hex": "#A08484",
    "u": 0.6875,
    "v": 0.6875
   },
   {
    "name": "linen",
-   "hex": "#E2D8C4",
+   "hex": "#CFC7B6",
    "u": 0.8125,
    "v": 0.6875
   },
   {
    "name": "navy",
-   "hex": "#34456B",
+   "hex": "#38465C",
    "u": 0.9375,
    "v": 0.6875
   },
   {
    "name": "leaf_light",
-   "hex": "#92C16A",
+   "hex": "#A3A77E",
    "u": 0.0625,
    "v": 0.5625
   },
   {
    "name": "leaf",
-   "hex": "#5E9A4A",
+   "hex": "#858B69",
    "u": 0.1875,
    "v": 0.5625
   },
   {
    "name": "leaf_dark",
-   "hex": "#3D6E3A",
+   "hex": "#5C6450",
    "u": 0.3125,
    "v": 0.5625
   },
   {
    "name": "grass",
-   "hex": "#7DB054",
+   "hex": "#7E8562",
    "u": 0.4375,
    "v": 0.5625
   },
   {
    "name": "soil",
-   "hex": "#6A4B35",
+   "hex": "#5A4A3E",
    "u": 0.5625,
    "v": 0.5625
   },
   {
    "name": "path",
-   "hex": "#CDBB98",
+   "hex": "#B3AA98",
    "u": 0.6875,
    "v": 0.5625
   },
   {
    "name": "metal",
-   "hex": "#A3A8AE",
+   "hex": "#8E949C",
    "u": 0.8125,
    "v": 0.5625
   },
   {
    "name": "metal_dark",
-   "hex": "#3A3D42",
+   "hex": "#3D424B",
    "u": 0.9375,
    "v": 0.5625
   },
   {
    "name": "red",
-   "hex": "#D2483E",
+   "hex": "#B0645B",
    "u": 0.0625,
    "v": 0.4375
   },
   {
    "name": "cream",
-   "hex": "#FFF4DE",
+   "hex": "#F3DFA7",
    "u": 0.1875,
    "v": 0.4375
   },
   {
    "name": "black",
-   "hex": "#232227",
+   "hex": "#292B32",
    "u": 0.3125,
    "v": 0.4375
   },
   {
    "name": "white",
-   "hex": "#F7F4EE",
+   "hex": "#ECE8DF",
    "u": 0.4375,
    "v": 0.4375
   },
   {
    "name": "roof_tile",
-   "hex": "#A44A36",
+   "hex": "#7E5A50",
    "u": 0.5625,
    "v": 0.4375
   },
   {
    "name": "roof_slate",
-   "hex": "#4C5563",
+   "hex": "#4B5466",
    "u": 0.6875,
    "v": 0.4375
   },
   {
    "name": "water",
-   "hex": "#4E8FA6",
+   "hex": "#5A7088",
    "u": 0.8125,
    "v": 0.4375
   },
   {
    "name": "sky",
-   "hex": "#A9CBEA",
+   "hex": "#687D9B",
    "u": 0.9375,
    "v": 0.4375
+  },
+  {
+   "name": "deep_blue_grey",
+   "hex": "#38465C",
+   "u": 0.0625,
+   "v": 0.3125
+  },
+  {
+   "name": "muted_blue",
+   "hex": "#687D9B",
+   "u": 0.1875,
+   "v": 0.3125
+  },
+  {
+   "name": "soft_yellow",
+   "hex": "#E8C77D",
+   "u": 0.3125,
+   "v": 0.3125
+  },
+  {
+   "name": "pale_yellow",
+   "hex": "#F3DFA7",
+   "u": 0.4375,
+   "v": 0.3125
+  },
+  {
+   "name": "olive",
+   "hex": "#858B69",
+   "u": 0.5625,
+   "v": 0.3125
+  },
+  {
+   "name": "warm_grey",
+   "hex": "#A7A29B",
+   "u": 0.6875,
+   "v": 0.3125
+  },
+  {
+   "name": "charcoal",
+   "hex": "#292B32",
+   "u": 0.8125,
+   "v": 0.3125
+  },
+  {
+   "name": "off_white",
+   "hex": "#DED9CF",
+   "u": 0.9375,
+   "v": 0.3125
   }
  ]
 }

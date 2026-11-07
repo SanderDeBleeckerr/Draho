@@ -8,7 +8,7 @@ The game uses Unity.
 ![Drahomil, low-poly](docs/images/lowpoly_cat_sheet.png)
 
 - [Game Design Document](docs/GDD.md)
-- [Art style](docs/ART_STYLE.md): stylised soft low-poly, one shared palette, the style frame and the Blender pipeline
+- [Art style](docs/ART_STYLE.md): cozy low-poly at blue hour (the [brief](docs/ART_DIRECTION_BRIEF.md)), the palette, the concept frames and the Blender pipeline
 - [Version 1 Technical Plan](docs/V1_PLAN.md)
 - [Assets](docs/ASSETS.md): Sketchfab low-poly cat (CC BY) and Kenney Furniture Kit (CC0); see [CREDITS.md](CREDITS.md)
 - [Level 1: the apartment](docs/APARTMENT.md): blueprint and layout file

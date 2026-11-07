@@ -21,26 +21,31 @@ from mathutils import Vector
 # Add new colours at the END only, or existing models point at the wrong cell.
 # ---------------------------------------------------------------------------
 PALETTE = [
+    # Blue-hour direction (docs/ART_STYLE.md): muted, natural colours; warm yellow only for light and accents.
     # cat
-    ("cat_fur", "#2F2C35"), ("cat_fur_light", "#4A4656"), ("cat_eye", "#E8A33A"), ("cat_nose", "#6B4A52"),
-    ("cat_inner_ear", "#C98A8E"),
-    # wood
-    ("oak_light", "#D4A86E"), ("oak", "#B07A45"), ("walnut", "#6E4A2E"), ("walnut_dark", "#4A3020"),
-    # walls and stone
-    ("plaster", "#F1E6D0"), ("plaster_warm", "#E8D2AC"), ("plaster_shade", "#D9C3A0"),
-    ("brick", "#B5573F"), ("brick_dark", "#8E3F2E"), ("mortar", "#D8CBB4"),
-    ("terracotta", "#C9774E"), ("slate", "#5B6370"), ("stone", "#A9A396"),
-    # fabric
-    ("teal", "#3F7C7A"), ("teal_dark", "#2D5E5D"), ("mustard", "#D9A441"), ("rose", "#C9737A"),
-    ("linen", "#E2D8C4"), ("navy", "#34456B"),
-    # plants and garden
-    ("leaf_light", "#92C16A"), ("leaf", "#5E9A4A"), ("leaf_dark", "#3D6E3A"), ("grass", "#7DB054"),
-    ("soil", "#6A4B35"), ("path", "#CDBB98"),
+    ("cat_fur", "#292B32"), ("cat_fur_light", "#3C3F49"), ("cat_eye", "#D8A94F"), ("cat_nose", "#5A4A50"),
+    ("cat_inner_ear", "#9E7F82"),
+    # wood (natural brown)
+    ("oak_light", "#A8977F"), ("oak", "#8C7B67"), ("walnut", "#6B5545"), ("walnut_dark", "#4A3D35"),
+    # walls and stone (warm grey, off-white)
+    ("plaster", "#DED9CF"), ("plaster_warm", "#CFC6B8"), ("plaster_shade", "#B7B0A5"),
+    ("brick", "#8E6E62"), ("brick_dark", "#6A534B"), ("mortar", "#B9B2A6"),
+    ("terracotta", "#A47F69"), ("slate", "#4E5868"), ("stone", "#A7A29B"),
+    # fabric (muted blues, a dusty rose, soft yellow)
+    ("teal", "#5F7A80"), ("teal_dark", "#46596A"), ("mustard", "#C9AE72"), ("rose", "#A08484"),
+    ("linen", "#CFC7B6"), ("navy", "#38465C"),
+    # plants and garden (muted olive)
+    ("leaf_light", "#A3A77E"), ("leaf", "#858B69"), ("leaf_dark", "#5C6450"), ("grass", "#7E8562"),
+    ("soil", "#5A4A3E"), ("path", "#B3AA98"),
     # metal and accents
-    ("metal", "#A3A8AE"), ("metal_dark", "#3A3D42"), ("red", "#D2483E"), ("cream", "#FFF4DE"),
-    ("black", "#232227"), ("white", "#F7F4EE"),
+    ("metal", "#8E949C"), ("metal_dark", "#3D424B"), ("red", "#B0645B"), ("cream", "#F3DFA7"),
+    ("black", "#292B32"), ("white", "#ECE8DF"),
     # town
-    ("roof_tile", "#A44A36"), ("roof_slate", "#4C5563"), ("water", "#4E8FA6"), ("sky", "#A9CBEA"),
+    ("roof_tile", "#7E5A50"), ("roof_slate", "#4B5466"), ("water", "#5A7088"), ("sky", "#687D9B"),
+    # the brief's reference colours, by their own names
+    ("deep_blue_grey", "#38465C"), ("muted_blue", "#687D9B"), ("soft_yellow", "#E8C77D"),
+    ("pale_yellow", "#F3DFA7"), ("olive", "#858B69"), ("warm_grey", "#A7A29B"), ("charcoal", "#292B32"),
+    ("off_white", "#DED9CF"),
 ]
 NAMES = [n for n, _ in PALETTE]
 GRID = 8            # cells per row
@@ -48,8 +53,8 @@ CELL = 32           # pixels per cell -> 256 x 256 texture, room for 64 colours
 SIZE = GRID * CELL
 
 # Look-dev light. Unity's lights should match these (see docs/ART_STYLE.md, section Light).
-SUN_COLOR = "#FFE2B8"
-SKY_COLOR = "#A9C4E6"
+SUN_COLOR = "#F2B868"   # the last low sun of the evening
+SKY_COLOR = "#687D9B"   # muted blue: the blue-hour ambient
 
 
 def srgb(hex_):
@@ -286,10 +291,10 @@ def lookdev_world(scene, sky_strength=0.7):
     return world
 
 
-def sun(direction, strength=3.5, angle_deg=4):
+def sun(direction, strength=3.5, angle_deg=4, colour=SUN_COLOR):
     light = bpy.data.lights.new("Sun", "SUN")
     light.energy = strength
-    light.color = linear(SUN_COLOR)
+    light.color = linear(colour)
     light.angle = math.radians(angle_deg)
     o = bpy.data.objects.new("Sun", light)
     o.rotation_euler = Vector(direction).normalized().to_track_quat("-Z", "Y").to_euler()

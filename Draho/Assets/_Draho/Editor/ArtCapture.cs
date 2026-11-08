@@ -157,7 +157,11 @@ namespace Draho.EditorTools
                 var type = Type.GetType($"Draho.World.{typeName}, Assembly-CSharp");
                 if (type == null) { Debug.LogWarning($"ARTCAPTURE no type {typeName}"); continue; }
                 var found = UnityEngine.Object.FindObjectsByType(type, FindObjectsSortMode.InstanceID);
-                for (int n = 0; n < Mathf.Min(found.Length, typeName == "Pigeon" ? 3 : 1); n++)
+                if (typeName == "Duck") // a drake and a hen
+                    found = found.OrderBy(o => AnimalModels.Find(((Component)o).transform, "Duck_Hen_Body") != null ? 0 : 1)
+                        .Where((o, i) => i == 0 || AnimalModels.Find(((Component)o).transform, "Duck_Hen_Body") == null)
+                        .Take(2).ToArray();
+                for (int n = 0; n < Mathf.Min(found.Length, typeName == "Pigeon" ? 3 : typeName == "Duck" ? 2 : 1); n++)
                 {
                     var animal = ((Component)found[n]).transform;
                     Vector3 oldPos = animal.position;
@@ -171,9 +175,17 @@ namespace Draho.EditorTools
                     Vector3 catOld = catMotor != null ? catMotor.transform.position : Vector3.zero;
                     if (catMotor != null) catMotor.transform.SetPositionAndRotation(studio + new Vector3(Mathf.Max(b.extents.x, 0.15f) + 0.35f, 0f, 0f), Quaternion.Euler(0f, -90f, 0f));
                     float size = Mathf.Max(b.size.magnitude, 0.25f);
-                    var angles = new (string name, Vector3 dir)[] { ("front", new Vector3(-0.6f, 0.35f, 1f)), ("side", new Vector3(-1f, 0.15f, 0f)), ("top", new Vector3(-0.4f, 1.2f, 0.6f)) };
+                    var wingL = AnimalModels.Find(animal, "WingL");
+                    var wingR = AnimalModels.Find(animal, "WingR");
+                    var angles = new System.Collections.Generic.List<(string name, Vector3 dir)> { ("front", new Vector3(-0.6f, 0.35f, 1f)), ("side", new Vector3(-1f, 0.15f, 0f)), ("top", new Vector3(-0.4f, 1.2f, 0.6f)) };
+                    if (wingL != null && wingR != null) angles.Add(("flap", new Vector3(-0.25f, 0.45f, 1f)));
                     foreach (var a in angles)
                     {
+                        if (a.name == "flap") // the top of the wing beat (Bird and Pigeon swing up to about 100 degrees)
+                        {
+                            wingL.localRotation = Quaternion.Euler(0f, 0f, -100f);
+                            wingR.localRotation = Quaternion.Euler(0f, 0f, 100f);
+                        }
                         Vector3 target = b.center;
                         cam.transform.position = target + a.dir.normalized * (size * 1.9f + 0.25f);
                         cam.transform.rotation = Quaternion.LookRotation(target - cam.transform.position);
@@ -186,7 +198,18 @@ namespace Draho.EditorTools
                         RenderTexture.active = prev;
                         File.WriteAllBytes(Path.Combine(outDir, $"animal_{typeName}_{n}_{a.name}.png"), tex.EncodeToPNG());
                     }
+                    if (wingL != null && wingR != null) wingL.localRotation = wingR.localRotation = Quaternion.identity;
                     int tris = animal.GetComponentsInChildren<MeshFilter>().Where(f => f.sharedMesh != null).Sum(f => (int)f.sharedMesh.GetIndexCount(0) / 3);
+                    // Every Transform the animal's script animates must be wired (a wrong part name would leave it empty).
+                    var fields = new SerializedObject((Component)found[n]).GetIterator();
+                    int wired = 0, empty = 0;
+                    while (fields.NextVisible(true))
+                    {
+                        if (fields.propertyType != SerializedPropertyType.ObjectReference || !fields.type.Contains("Transform")) continue;
+                        if (fields.objectReferenceValue != null) wired++;
+                        else { empty++; Debug.LogWarning($"ARTCAPTURE EMPTY PART {typeName}.{fields.propertyPath}"); }
+                    }
+                    Debug.Log($"ARTCAPTURE parts {typeName} #{n}: {wired} wired, {empty} empty");
                     Debug.Log($"ARTCAPTURE animal {typeName} #{n} '{animal.name}': {rends.Length} renderers, ~{tris} triangles, size {b.size:F2} m");
                     animal.SetPositionAndRotation(oldPos, oldRot);
                     if (catMotor != null) catMotor.transform.position = catOld;

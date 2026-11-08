@@ -26,7 +26,7 @@ The first direction (warm afternoon, saturated) is kept for comparison:
 ## 1. Palette
 
 One palette for the whole game: [`Art/Palette/DrahoPalette.png`](../Draho/Assets/_Draho/Art/Palette/DrahoPalette.png)
-(256 × 256 px, 8 × 8 cells, 53 colours used) with `DrahoPalette.json` (name, hex, UV). The colours are defined
+(256 × 256 px, 8 × 8 cells, 57 colours used) with `DrahoPalette.json` (name, hex, UV). The colours are defined
 only in [`Tools/Blender/draho_style.py`](../Tools/Blender/draho_style.py) (`PALETTE`); the PNG and JSON are
 generated from it.
 
@@ -154,45 +154,46 @@ Rules:
 - [ ] **Phase 4:** courtyard and garden.
 - [ ] **Phase 5:** curtains, flowers, insects round lamps, small objects that react to the cat.
 
-## 7b. The animals (review, November 2026)
+## 7b. The animals (November 2026)
 
-All animals were built in code from Unity primitives (spheres, capsules, boxes): smooth toys next to a faceted
-cat, and heavy for their size. `ArtCapture.Animals` puts one of each on a neutral floor next to Drahomil:
+All animals used to be built in code from Unity primitives (spheres, capsules, boxes): smooth toys next to a
+faceted cat, and heavy for their size. They are now Blender models in the house style.
 
-| Animal | Renderers | Triangles | Verdict |
+| Animal | Before: renderers, triangles | Now: renderers, triangles | What changed |
 |---|---|---|---|
-| Tortoise (Zlatenka) | 24 | ~18,400 | a yellow blob with black dots and egg legs: reads as a cookie |
-| Hedgehog | 13 | ~9,300 | charming spikes, but smooth and heavy |
-| Hrozna (corgi) | 14 | ~8,000 | segmented capsules |
-| Mouse | 8 | ~5,500 | a smooth grey capsule (the main prey) |
-| Duck | 6 | ~3,850 | a decent toy, smooth |
-| Fox | 30 | ~1,600 | capsules on box legs: robot-like |
-| Pigeon / gull | 13–15 | ~750 | box bodies with flat slab wings sticking out |
-| Blackbird | 10 | ~600 | the same box-and-slab build |
-| Moth | 3 | ~120 | fine at its size |
-| Fatsocat, grey cat | – | – | fine: Drahomil's model in other colours |
+| Tortoise (Zlatenka) | 24, ~18,400 | 2, 632 | was a yellow blob with dots; now a domed shell with leopard markings |
+| Hedgehog | 13, ~9,300 | 2, 2,370 | 147 faceted two-tone spines |
+| Hrozna (corgi) | 14, ~8,000 | 2, 528 | one faceted body, big corgi ears, white chest and blaze |
+| Mouse | 8, ~5,500 | 2, 364 | pear-shaped body, round ears, thin tail |
+| Duck (drake, hen) | 6, ~3,850 | 2, 334 | a mallard drake and a mottled brown hen |
+| Fox | 30, ~1,600 | 7, 588 | one body, slim stockinged legs, bushy tail with a white tip |
+| Pigeon | 15, ~750 | 4, 448 | one bird body, folded wings with bars |
+| Gull | 13, ~730 | 4, 512 | the same body, with black wing tips and the croissant |
+| Blackbird | 10, ~600 | 4, 488 | the same body, with an orange beak and eye ring |
+| Moth, Fatsocat, grey cat | | unchanged | fine as they are |
 
-![Animals before (1/2)](images/style/animals_before_1.jpg)
-![Animals before (2/2)](images/style/animals_before_2.jpg)
+Triangle counts for "before" are approximate (first submesh of each part).
 
-**The pipeline:** [`Tools/Blender/build_animals.py`](../Tools/Blender/build_animals.py) builds each animal in the
-house style (faceted, palette UVs, one material) with **the same parts the game script animates** (for the
-mouse: `Body` and `TailPivot`), so the scripts do not change. `Editor/AnimalModels.cs` loads
-`Art/Animals/<Name>.fbx`, gives it the shared `DrahoPalette` material and wires the parts; without the FBX the
-builder keeps the old primitive animal.
+| Before | After |
+|---|---|
+| ![Before (1/2)](images/style/animals_before_1.jpg) | ![After (1/2)](images/style/animals_after_1.jpg) |
+| ![Before (2/2)](images/style/animals_before_2.jpg) | ![After (2/2)](images/style/animals_after_2.jpg) |
+
+**How it works:** [`Tools/Blender/build_animals.py`](../Tools/Blender/build_animals.py) builds each animal
+(faceted, palette UVs, one material) with **the same parts its game script animates**. Sizes and pivots are
+written in Unity coordinates, so they compare directly with `ApartmentBuilder.cs`. `Editor/AnimalModels.cs`
+loads `Art/Animals/<Name>.fbx`, gives it the shared `DrahoPalette` material, and the builder wires the parts
+into the same `Configure` call. The game scripts do not change. Without the FBX, the builder keeps the old
+primitive animal.
 
 - Export: FBX in Blender's own axes (`axis_forward -Y`, `axis_up Z`, no "apply transform"); Unity's
-  `bakeAxisConversion` turns it into Y-up for every node, pivots included. ("Apply transform" in Blender
-  converts the meshes but not the pivots: the first mouse stood on its nose.)
-- QA: the `blender-asset-qa` check must pass. "Zero-area UV faces" is accepted: palette UVs sit on one
-  cell centre by design (animals are lit by light probes, not lightmaps).
-
-**Done:** the mouse, 364 triangles in 2 renderers (was ~5,500 in 8).
-
-![The new mouse](images/style/mouse_after.jpg)
-
-**Next, by how much they gain:** blackbird + pigeon + gull (one bird body, three colourings), fox, tortoise,
-Hrozna, hedgehog, duck.
+  `bakeAxisConversion` makes every node Y-up, pivots included.
+- Colours: four animal-only colours at the end of the palette (`a_fox_rust`, `a_corgi_tan`, `a_beak`,
+  `a_drake_green`). The `a_` prefix keeps them out of `PaletteMap`, so the world's colours do not shift.
+- QA: the `blender-asset-qa` check. "Zero-area UV faces" is accepted: palette UVs sit on one cell centre by
+  design (animals are lit by light probes, not lightmaps).
+- `ArtCapture.Animals` renders the sheets (with a wing-beat view for birds) and logs any animated part that is
+  not wired.
 
 ## 8. Tools
 

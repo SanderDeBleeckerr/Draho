@@ -49,6 +49,8 @@ PALETTE = [
     # neutral warm greys: tiles, concrete, metal frames (without them, greys snap to olive or blue)
     ("grey_light", "#C4C0B8"), ("grey_mid", "#8A8781"), ("grey_dark", "#5E5C58"), ("grey_deep", "#3F3E3B"),
     ("grey_stone", "#75716B"),
+    # animals only: the "a_" prefix keeps them out of PaletteMap, so the world does not drift towards them
+    ("a_fox_rust", "#A9653B"), ("a_corgi_tan", "#B8824F"), ("a_beak", "#CF9A45"), ("a_drake_green", "#3E6050"),
 ]
 NAMES = [n for n, _ in PALETTE]
 GRID = 8            # cells per row

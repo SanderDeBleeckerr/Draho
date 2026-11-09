@@ -45,6 +45,17 @@ namespace Draho.EditorTools
             return go.transform;
         }
 
+        /// <summary>
+        /// Replaces everything below root with the Blender model, or returns null (and changes nothing) when the
+        /// model does not exist. The caller then takes the animated parts with <see cref="Find"/>.
+        /// </summary>
+        public static Transform Swap(string name, Transform root, int layer = 0)
+        {
+            if (AssetDatabase.LoadAssetAtPath<GameObject>($"{Dir}/{name}.fbx") == null) return null;
+            for (int i = root.childCount - 1; i >= 0; i--) Object.DestroyImmediate(root.GetChild(i).gameObject);
+            return Instantiate(name, root, layer);
+        }
+
         /// <summary>A child anywhere below root, by name.</summary>
         public static Transform Find(Transform root, string name)
         {

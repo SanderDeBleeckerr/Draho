@@ -47,6 +47,8 @@ namespace Draho.World
         Vector3 from, to, walkTarget;
         float moveTime, moveDuration, timer, phase, alarmDelay = -1f;
 
+        Vector3 headHome;
+
         public bool OnGround => state == State.Ground;
         public bool WasTouched { get; private set; }
         public static bool AnyTouched { get; private set; }
@@ -64,6 +66,7 @@ namespace Draho.World
 
         void Awake()
         {
+            if (head != null) headHome = head.localPosition; // each species has its own neck
             cat = FindAnyObjectByType<CatMotor>();
             walkTarget = transform.position;
             phase = Random.value * 10f;
@@ -119,7 +122,7 @@ namespace Draho.World
             {
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(step.normalized), 240f * dt);
                 transform.position += transform.forward * walkSpeed * dt;
-                if (head != null) head.localPosition = new Vector3(0f, 0.15f, 0.06f + Mathf.Sin(phase * 14f) * 0.02f);
+                if (head != null) head.localPosition = headHome + Vector3.forward * (Mathf.Sin(phase * 14f) * 0.02f);
                 return;
             }
             timer -= dt;

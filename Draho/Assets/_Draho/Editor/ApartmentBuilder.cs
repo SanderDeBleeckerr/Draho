@@ -1039,6 +1039,8 @@ namespace Draho.EditorTools
                 new Vector3(b.x + 0.1f, 7.05f, -94f), new Vector3(b.x + 0.1f, 7.05f, -100f), new Vector3(b.x + 0.1f, 7.05f, -105f),
             };
             var yard = new Vector4(b.x + 0.8f, b.z0 + 1.5f, -49.5f, b.z1 - 1.5f);
+            var model = AnimalModels.Swap("Gull", root.transform);
+            if (model != null) { body = AnimalModels.Find(model, "Body"); head = AnimalModels.Find(model, "Head"); left = AnimalModels.Find(model, "WingL"); right = AnimalModels.Find(model, "WingR"); }
             var gull = root.AddComponent<Pigeon>();
             gull.Configure(body, head, left, right, perches, yard);
             var so = new SerializedObject(gull);
@@ -1833,6 +1835,13 @@ namespace Draho.EditorTools
                 new Vector3(-19f, 0f, 7.8f), new Vector3(-22.5f, 0f, 6.9f), new Vector3(-24.6f, 0f, 6.3f),
             };
             var sniff = new[] { false, true, true, true, false, true, false };
+            var model = AnimalModels.Swap("Fox", root.transform);
+            if (model != null)
+            {
+                head = AnimalModels.Find(model, "Head");
+                tail = AnimalModels.Find(model, "Tail");
+                legs = Enumerable.Range(0, 4).Select(i => AnimalModels.Find(model, $"Leg_{i}")).ToList();
+            }
             root.AddComponent<Fox>().Configure(head, tail, legs.ToArray(), route, sniff);
         }
 
@@ -1906,6 +1915,8 @@ namespace Draho.EditorTools
                 }
                 var left = Wing("WingL", -1f);
                 var right = Wing("WingR", 1f);
+                var model = AnimalModels.Swap("Pigeon", root.transform);
+                if (model != null) { body = AnimalModels.Find(model, "Body"); head = AnimalModels.Find(model, "Head"); left = AnimalModels.Find(model, "WingL"); right = AnimalModels.Find(model, "WingR"); }
                 root.AddComponent<Pigeon>().Configure(body, head, left, right, perches.ToArray(), yard);
             }
 
@@ -2389,6 +2400,8 @@ namespace Draho.EditorTools
                 foreach (float z in new[] { 0.07f, -0.06f })
                     Part(snout, new Vector3(sx * 0.045f, 0.012f, z), new Vector3(0.022f, 0.025f, 0.03f), face); // short legs (tucked in when curled)
             }
+            var model = AnimalModels.Swap("Hedgehog", root.transform);
+            if (model != null) { body = AnimalModels.Find(model, "Body"); snout = AnimalModels.Find(model, "Snout"); }
             root.AddComponent<Hedgehog>().Configure(body, snout, nest);
         }
 
@@ -3442,6 +3455,8 @@ namespace Draho.EditorTools
                     Part(head, new Vector3(0f, -0.01f, 0.09f), new Vector3(0.05f, 0.022f, 0.08f), orange, PrimitiveType.Cube);
                     foreach (float sx in new[] { -1f, 1f })
                         Part(head, new Vector3(sx * 0.045f, 0.02f, 0.04f), Vector3.one * 0.016f, dark);
+                    var model = AnimalModels.Swap(drake ? "Duck_Drake" : "Duck_Hen", root.transform);
+                    if (model != null) { body = AnimalModels.Find(model, "Body"); head = AnimalModels.Find(model, "Head"); }
                     root.AddComponent<Duck>().Configure(body, head, new Rect(w.x0, w.z0, w.x1 - w.x0, w.z1 - w.z0), w.top);
                 }
         }
@@ -4280,6 +4295,8 @@ namespace Draho.EditorTools
                 }
                 var left = Wing("WingL", -1f);
                 var right = Wing("WingR", 1f);
+                var model = AnimalModels.Swap("Blackbird", root.transform);
+                if (model != null) { body = AnimalModels.Find(model, "Body"); head = AnimalModels.Find(model, "Head"); left = AnimalModels.Find(model, "WingL"); right = AnimalModels.Find(model, "WingR"); }
                 root.AddComponent<Bird>().Configure(body, head, left, right, perches.ToArray(), lawn);
             }
         }
@@ -4323,6 +4340,8 @@ namespace Draho.EditorTools
             Part(head, new Vector3(0f, 0f, 0.04f), new Vector3(0.07f, 0.06f, 0.09f), skin);
             foreach (var leg in new[] { new Vector3(-0.11f, 0.03f, 0.1f), new Vector3(0.11f, 0.03f, 0.1f), new Vector3(-0.11f, 0.03f, -0.1f), new Vector3(0.11f, 0.03f, -0.1f) })
                 Part(tortoise.transform, leg, new Vector3(0.06f, 0.06f, 0.06f), skin);
+            var tortoiseModel = AnimalModels.Swap("Zlatenka", tortoise.transform);
+            if (tortoiseModel != null) head = AnimalModels.Find(tortoiseModel, "Head");
             tortoise.AddComponent<Tortoise>().Configure(head, new[]
             {
                 new Vector3(-12f, 0f, 3.2f), new Vector3(-16f, 0f, 2.2f), new Vector3(-9f, 0f, 1.6f), new Vector3(-14f, 0f, 4.1f),
@@ -4440,6 +4459,8 @@ namespace Draho.EditorTools
             tailPart.localRotation = Quaternion.Euler(20f, 0f, 0f);
             dog.transform.localScale = Vector3.one * 0.85f;
             dog.AddComponent<AudioSource>().playOnAwake = false;
+            var dogModel = AnimalModels.Swap("Hrozna", dog.transform);
+            if (dogModel != null) { body = AnimalModels.Find(dogModel, "Body"); tail = AnimalModels.Find(dogModel, "Tail"); }
             dog.AddComponent<Hrozna>().Configure(body, tail, basketSpot);
 
             // Hrozna's rubber toys on the floor between the window and her basket: step on one and it squeaks.

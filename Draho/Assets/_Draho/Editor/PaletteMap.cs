@@ -70,6 +70,7 @@ namespace Draho.EditorTools
             var seen = new HashSet<string>();
             foreach (var e in data.colors)
             {
+                if (e.name.StartsWith("a_")) continue;                // animal-only colours (Tools/Blender/build_animals.py)
                 if (!seen.Add(e.hex.ToUpperInvariant())) continue;   // some names share a colour
                 if (ColorUtility.TryParseHtmlString(e.hex, out var c)) palette.Add((e.name, c, OkLab(c)));
             }

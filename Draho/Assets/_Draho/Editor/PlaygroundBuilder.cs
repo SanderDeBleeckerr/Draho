@@ -436,9 +436,10 @@ namespace Draho.EditorTools
             mat.shader = shader;
             mat.SetColor("_BaseColor", fur.GetColor("_BaseColor"));
             mat.SetFloat("_FurLength", 0.009f);
-            mat.SetFloat("_Density", 420f);
-            mat.SetFloat("_RootShade", 0.65f);
-            mat.SetColor("_TipColor", new Color(1.25f, 1.25f, 1.32f, 1f));
+            mat.SetFloat("_Density", 520f);
+            mat.SetFloat("_RootShade", 0.8f);
+            mat.SetFloat("_Rim", 0.15f);
+            mat.SetColor("_TipColor", new Color(1.08f, 1.08f, 1.12f, 1f));
             EditorUtility.SetDirty(mat);
             return mat;
         }

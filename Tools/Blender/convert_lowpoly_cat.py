@@ -183,8 +183,19 @@ if args.subdiv > 0:
     print(f"CHECK body weld: removed {len(fins)} inner faces, "
           f"{sum(len(e.link_faces) > 2 for e in bm.edges)} non-manifold edges left")
     crease = bm.edges.layers.float.get("crease_edge") or bm.edges.layers.float.new("crease_edge")
+    # Only the ears and paws keep sharp ridges. The source tail and legs have a square cross-section:
+    # creased, the tail stayed a square block stuck into the rump.
+    deform = bm.verts.layers.deform.verify()
+    keep_sharp = {vg.index for vg in body.vertex_groups
+                  if vg.name.startswith(("Ear.", "Fingers.", "Toe.", "Hand.", "Foot."))}
+
+    def is_pointed(v):
+        weights = v[deform]
+        return bool(weights) and max(weights.keys(), key=lambda g: weights[g]) in keep_sharp
+
     for e in bm.edges:
-        if len(e.link_faces) == 2 and math.degrees(e.calc_face_angle(0.0)) > CREASE_DEG:
+        if (len(e.link_faces) == 2 and math.degrees(e.calc_face_angle(0.0)) > CREASE_DEG
+                and all(is_pointed(v) for v in e.verts)):
             e[crease] = 1.0
     bm.to_mesh(body.data)
     bm.free()

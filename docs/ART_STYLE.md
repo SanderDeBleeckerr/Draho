@@ -110,12 +110,28 @@ Rules:
   back. The QA check reports only the expected items (palette/decal UVs, layered eye decals).
 
   ![Before and after](images/style/cat_refine_before_after.jpg)
+- **Creases:** only the ears and paws are creased. The source tail and legs have a square cross-section;
+  creased, the tail stayed a square block stuck into the rump.
+- **Crouch:** in CrouchIdle and CrouchWalk the hind legs are driven from the paw, not the hock: the paw stays
+  on the ground 2.3 cm further forward, a pole target keeps the knee forward, and the foot bone aims at the
+  paw. Before, the knee folded onto the floor and the paw floated or dragged behind. `crouchClipSpeed` is
+  0.148 m/s (the planted paws' speed).
+- **Fur (proposed, November 2026):** shell fur. Strand fur (Blender's hair curves) cannot run in a phone
+  browser; shell fur draws the fur surface in layers and a shader cuts each layer into strand dots. WebGL has
+  no geometry shader, so the layers are in the mesh: the converter's step 5b writes `DrahomilFur`, 8 copies of
+  the fur faces (38,016 triangles, one draw call, no shadow), with the layer, the rest position and a fur
+  length mask in its UV channels. [`Draho/ShellFur`](../Draho/Assets/_Draho/Art/Shaders/ShellFur.shader)
+  pushes the layers out (9 mm) and draws 520 strands per metre from the rest position, so it needs no texture
+  or unwrap. The mask leaves the eyes, nose and inner ears clear and shortens the fur on the head, ears and
+  lower legs. `PlaygroundBuilder.FurShellMaterial` sets the look; a scene rebuild resets it.
+  `--fur-shells 0` builds the cat without fur. Open: frame time on a phone (38k extra triangles and
+  alpha-tested overdraw), and whether fur fits the low-poly style at all: the owner decides.
 
 ## 5. Budgets (mobile WebGL and iPhone)
 
 | Asset | Triangles | Textures |
 |---|---|---|
-| Drahomil | 8–15k (now 6.3k) | the palette + eye and nose textures (256 px) |
+| Drahomil | 8–15k (now 6.3k, plus 38k fur layers: over budget, see §4) | the palette + eye and nose textures (256 px) |
 | Other animals | 3–6k | palette only |
 | Furniture, props | 0.2–2k | palette only |
 | A building | 0.5–3k | palette only |

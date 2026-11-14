@@ -14,14 +14,14 @@ Shader "Draho/ShellFur"
     Properties
     {
         _BaseColor ("Fur colour", Color) = (0.16, 0.17, 0.2, 1)
-        _TipColor ("Tip tint (multiplied at the hair tips)", Color) = (1.25, 1.25, 1.32, 1)
+        _TipColor ("Tip tint (multiplied at the hair tips)", Color) = (1.08, 1.08, 1.12, 1)
         _FurLength ("Fur length (m)", Float) = 0.009
-        _Density ("Strands per metre", Float) = 420
+        _Density ("Strands per metre", Float) = 520
         _Thickness ("Strand thickness at the root (0..1 of a cell)", Range(0.2, 1.2)) = 0.95
         _MinLength ("Shortest strand (0..1 of the length)", Range(0, 1)) = 0.45
-        _RootShade ("Shade at the roots", Range(0, 1)) = 0.65
+        _RootShade ("Shade at the roots", Range(0, 1)) = 0.8
         _Droop ("Droop (0..1 of the length, at the tip)", Range(0, 1)) = 0.25
-        _Rim ("Soft rim sheen", Range(0, 1)) = 0.25
+        _Rim ("Soft rim sheen", Range(0, 1)) = 0.15
     }
 
     SubShader
@@ -103,7 +103,7 @@ Shader "Draho/ShellFur"
 
             half3 Diffuse(Light light, half3 n)
             {
-                half wrap = saturate(dot(n, light.direction) * 0.6 + 0.4); // fur scatters: a soft terminator
+                half wrap = saturate(dot(n, light.direction) * 0.75 + 0.25); // fur scatters: a soft terminator
                 return light.color * (wrap * light.distanceAttenuation * light.shadowAttenuation);
             }
 

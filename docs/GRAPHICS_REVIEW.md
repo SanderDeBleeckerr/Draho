@@ -29,7 +29,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 14 | Climbable trees (maple, bank alder) | code blobs | **Done, round 14** |
 | 15 | Lawn, path, terrace | flat colour, tiles | **Done, round 15** (grass tufts) |
 | 16 | Ivy | leaf mesh | **Done, round 16** (and the chapter 9 route) |
-| 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | Blender props |
+| 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | **Done, round 17** |
 | 18 | Humans (legs at the door) | code cylinders | Blender: legs, shoes, coat hem |
 | 19 | Mouse | Blender (animals) | fur/colour check at cat height |
 | 20 | Pigeons | Blender | sheen, perched pose |
@@ -227,3 +227,15 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   across the neighbours' grass, onto the fence top (1.0 m, within the cat's 1.05 m jump), then down into the garden.
   The beat's target and check follow the fence (cat on top: y > 0.85, within 0.45 m of x = -24).
 - **Checked:** the Unity scene builds; layout JSON valid.
+
+### Round 17: the neighbour's wild garden
+
+- **Review:** smooth spheres for the brambles, boxes for the upturned wheelbarrow (the hedgehog's nest), three slabs
+  for the fallen chair and a stretched cylinder for the barrel.
+- **Change:** Blender models, all palette: `wild_bramble` (660 triangles, faceted clumps with black and red
+  berries on their surface, scaled per bush), `wild_wheelbarrow` (1,892: tapered rust-red tray turned over, rolled
+  rim, wooden handles with grips, tyre and hub), `wild_chair` (760: a white monobloc chair modelled standing and
+  tipped onto its back), `wild_barrel` (856: rusty drum with rolling hoops, rim, bung, a rust patch). The parts that
+  carry colliders stay (renderers removed); the nest's leaves and hoglets stay. New capture view `wild_garden`.
+- **Light:** the faceted brambles take the sun facet by facet; the barrow's red is the one warm colour in the green.
+- **Checked:** Blender look-dev render; Unity `wild_garden` view (Day).

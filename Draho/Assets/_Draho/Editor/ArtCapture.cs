@@ -35,6 +35,7 @@ namespace Draho.EditorTools
             ("sofa", new Vector3(2.6f, 1.3f, 2.2f), new Vector3(2.6f, 0.4f, 4.5f)),            // the sofa: seat, back and arms
             ("court_window", new Vector3(5.2f, 1.2f, 3.5f), new Vector3(7.6f, 1.2f, 4.0f)),    // the bedroom window and the drainpipe
             ("light_well", new Vector3(7.2f, 0.6f, 3.4f), new Vector3(5.4f, 4.6f, 5.0f)),      // up the light well: windows, sills, gutter
+            ("wild_garden", new Vector3(-4.6f, 1.3f, 6.3f), new Vector3(-10.5f, 0.3f, 8.2f)),  // the neighbour's wild garden: barrow, barrel, brambles
             ("dining", new Vector3(3.4f, 1.4f, 2.6f), new Vector3(3.4f, 0.6f, 0.3f)),          // the dining bar by the south wall
             ("sliding_door", new Vector3(1.3f, 1.0f, 2.2f), new Vector3(-0.1f, 0.05f, 2.9f)),  // the sliding door's sill and frames, from above
         };

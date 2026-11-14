@@ -681,6 +681,106 @@ def grass_tuft():
 
 
 @prop
+def wild_bramble():
+    """A bramble bush in the neighbour's wild garden, built for radius 0.5 m (ApartmentBuilder scales it per bush):
+    six faceted dark clumps of different sizes and a few blackberries. Origin on the ground in the middle."""
+    import random
+    rnd = random.Random(12)
+    parts = []
+    for i in range(6):
+        a = i * 1.05 + rnd.uniform(-0.3, 0.3)
+        r = 0.22 * math.sqrt(rnd.random()) if i else 0
+        size = rnd.uniform(0.26, 0.38)
+        parts.append(ds.blob("Clump", (math.cos(a) * r, math.sin(a) * r, size * 0.75), size, (1.0, 1.0, 0.8),
+                             rnd.choice(("leaf_dark", "olive", "leaf_dark")), subdiv=2, seed=40 + i))
+    bpy.context.view_layer.update()
+    clumps = [(o.location.copy(), o.dimensions.x / 2) for o in parts]
+    for i in range(9):                                            # blackberries on the clumps' surface
+        centre, r = clumps[i % len(clumps)]
+        a = rnd.uniform(0, 2 * math.pi)
+        e = rnd.uniform(-0.2, 0.5)                                # mostly the upper half
+        pos = centre + Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e) * 0.8)) * r * 0.95
+        parts.append(ds.blob("Berry", tuple(pos), 0.025, (1, 1, 1), "black" if i % 3 else "red", subdiv=1, seed=70 + i))
+    return parts
+
+
+@prop
+def wild_wheelbarrow():
+    """An old wheelbarrow lying upside down over the hedgehog's nest (the nest, the leaves and the hoglets stay in
+    Unity): a tapered rust-red tray turned over, a rolled rim, two wooden handles with grips at the back (Blender
+    +Y), the wheel with its tyre at the front (Blender -Y). Origin on the ground in the middle."""
+    parts = [ds.box("TrayBottom", (0, 0, 0.33), (0.56, 0.78, 0.025), "red", bevel=0.006)]
+    for s in (-1, 1):
+        side = ds.box("TraySide", (0, 0, 0), (0.025, 0.86, 0.26), "red", bevel=0.004)
+        side.rotation_euler.y = math.radians(-s * 14)
+        side.location = (s * 0.31, 0, 0.2)
+        parts.append(side)
+        end = ds.box("TrayEnd", (0, 0, 0), (0.64, 0.025, 0.26), "brick_dark", bevel=0.004)
+        end.rotation_euler.x = math.radians(s * 16)
+        end.location = (0, s * 0.43, 0.2)
+        parts.append(end)
+        parts.append(ds.box("Rim", (s * 0.345, 0, 0.075), (0.03, 0.9, 0.03), "brick_dark", bevel=0.006))
+        parts.append(ds.box("Handle", (s * 0.22, 0.6, 0.12), (0.04, 0.75, 0.04), "walnut", bevel=0.006))
+        parts.append(ds.cylinder("Grip", (0, 0, 0), 0.025, 0.13, "black", segments=8, bevel=0.003))
+        parts[-1].rotation_euler.x = math.radians(90)
+        parts[-1].location = (s * 0.22, 0.98, 0.12)
+        parts.append(ds.box("Fork", (s * 0.06, -0.48, 0.2), (0.025, 0.2, 0.025), "metal_dark", bevel=0.003))
+    for s in (-1, 1):
+        parts.append(ds.box("RimEnd", (0, s * 0.44, 0.075), (0.7, 0.03, 0.03), "brick_dark", bevel=0.006))
+    tyre = ds.cylinder("Tyre", (0, 0, 0), 0.18, 0.08, "black", segments=16, bevel=0.01)
+    tyre.rotation_euler.y = math.radians(90)
+    tyre.location = (-0.04, -0.58, 0.2)
+    hub = ds.cylinder("Hub", (0, 0, 0), 0.06, 0.1, "metal", segments=10, bevel=0.004)
+    hub.rotation_euler.y = math.radians(90)
+    hub.location = (-0.05, -0.58, 0.2)
+    return parts + [tyre, hub]
+
+
+@prop
+def wild_chair():
+    """A white plastic garden chair (monobloc) fallen on its back in the wild garden: modelled standing (seat 0.43 m,
+    splayed legs, arm rests, a high back), then tipped back so the backrest lies in the grass."""
+    parts = [ds.box("Seat", (0, 0, 0.43), (0.46, 0.44, 0.03), "white", bevel=0.01)]
+    back = ds.box("Back", (0, 0, 0), (0.44, 0.03, 0.42), "white", bevel=0.01)
+    back.rotation_euler.x = math.radians(-12)
+    back.location = (0, 0.24, 0.66)
+    parts.append(back)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            leg = ds.cylinder("Leg", (0, 0, 0), 0.022, 0.44, "white", segments=8, radius_top=0.016, bevel=0)
+            leg.rotation_euler = (math.radians(-sy * 8), math.radians(sx * 8), 0)
+            leg.location = (sx * 0.2, sy * 0.19, 0)
+            parts.append(leg)
+        parts.append(ds.box("Arm", (sx * 0.24, 0.02, 0.6), (0.04, 0.44, 0.03), "white", bevel=0.008))
+        parts.append(ds.box("ArmPost", (sx * 0.24, -0.18, 0.51), (0.035, 0.035, 0.17), "white", bevel=0.006))
+    # Tip it back about the back legs' feet: the backrest ends up in the grass.
+    from mathutils import Matrix
+    bpy.context.view_layer.update()
+    pivot = Vector((0, 0.24, 0))
+    rot = Matrix.Translation(pivot) @ Matrix.Rotation(math.radians(-78), 4, "X") @ Matrix.Translation(-pivot)
+    for o in parts:
+        o.matrix_world = rot @ o.matrix_world
+    bpy.context.view_layer.update()
+    low = min((o.matrix_world @ Vector(c)).z for o in parts for c in o.bound_box)
+    for o in parts:
+        o.location.z -= low
+    return parts
+
+
+@prop
+def wild_barrel():
+    """A rusty steel drum (0.58 m across, 0.9 m high) in the wild garden: rust-red with darker patches, two rolling
+    hoops, a rim and a lid with its bung. Origin on the ground."""
+    parts = [ds.cylinder("Drum", (0, 0, 0), 0.29, 0.9, "terracotta", segments=16, bevel=0.01, smooth=True)]
+    for z in (0.3, 0.6):
+        parts.append(ds.cylinder("Hoop", (0, 0, z - 0.015), 0.302, 0.03, "brick_dark", segments=16, bevel=0.004, smooth=True))
+    parts.append(ds.cylinder("Rim", (0, 0, 0.88), 0.297, 0.025, "brick_dark", segments=16, bevel=0.004, smooth=True))
+    parts.append(ds.cylinder("Bung", (0.15, 0.05, 0.9), 0.03, 0.015, "metal_dark", segments=8, bevel=0.002))
+    parts.append(ds.box("RustPatch", (0.0, -0.29, 0.5), (0.18, 0.006, 0.22), "brick_dark", bevel=0))
+    return parts
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

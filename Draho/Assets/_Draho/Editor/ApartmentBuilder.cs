@@ -2424,7 +2424,16 @@ namespace Draho.EditorTools
             // Brambles: dark, thorny clumps; low ones have no collider (the cat pushes through).
             var bramble = Mat("Apt_Bramble", new Color(0.17f, 0.25f, 0.12f), 0.15f);
             var bramble2 = Mat("Apt_Bramble2", new Color(0.24f, 0.3f, 0.14f), 0.15f);
+            bool blenderWild = AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/wild_bramble.fbx") != null;
             foreach (var b in w.bushes ?? new Spot[0])
+            {
+                if (blenderWild) // faceted bramble from Blender, built for r = 0.5
+                {
+                    var bush = FurnitureModel("wild_bramble", root);
+                    bush.SetPositionAndRotation(new Vector3(b.x, 0f, b.z), Quaternion.Euler(0f, Rand() * 360f, 0f));
+                    bush.localScale = Vector3.one * (b.r / 0.5f);
+                    continue;
+                }
                 for (int i = 0; i < 4; i++)
                 {
                     var blob = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -2435,6 +2444,21 @@ namespace Draho.EditorTools
                     blob.transform.localScale = new Vector3(b.r * 1.3f, b.r * (0.9f + 0.4f * Rand()), b.r * 1.3f);
                     blob.GetComponent<Renderer>().sharedMaterial = i % 2 == 0 ? bramble : bramble2;
                 }
+            }
+            // Blender models for the old wheelbarrow, the fallen chair and the rusty barrel: the code-built parts that
+            // carry colliders stay (renderers removed), the rest of their visuals is replaced.
+            void ReplaceVisuals(Transform owner, string model, Vector3 position, Quaternion rotation, params string[] keepColliders)
+            {
+                if (!blenderWild) return;
+                foreach (var r in owner.GetComponentsInChildren<Renderer>(true).ToArray())
+                {
+                    if (r.transform.IsChildOf(owner) && (r.name == "Leaves" || r.name == "Hoglet")) continue; // the nest stays
+                    if (keepColliders.Contains(r.name) || r.GetComponent<Collider>() != null) Object.DestroyImmediate(r);
+                    else Object.DestroyImmediate(r.gameObject);
+                }
+                var m = FurnitureModel(model, owner);
+                if (m != null) m.SetPositionAndRotation(position, rotation);
+            }
 
             var rust = Mat("Apt_Rust", new Color(0.45f, 0.24f, 0.13f), 0.25f);
             var oldWood = Mat("Apt_OldWood", new Color(0.42f, 0.36f, 0.28f), 0.1f);
@@ -2484,6 +2508,7 @@ namespace Draho.EditorTools
                 nest = new GameObject("Nest").transform;
                 nest.SetParent(wb, false);
                 nest.localPosition = new Vector3(0f, 0f, -0.15f);
+                ReplaceVisuals(wb, "wild_wheelbarrow", wb.position, wb.rotation);
             }
             if (w.chair != null) // a garden chair, fallen on its back
             {
@@ -2496,6 +2521,8 @@ namespace Draho.EditorTools
                 back.transform.SetParent(ch, true);
                 foreach (var leg in new[] { new Vector3(-0.2f, 0.1f, 0.2f), new Vector3(0.2f, 0.1f, 0.2f) })
                     Box("Leg", ch.TransformPoint(leg), new Vector3(0.03f, 0.22f, 0.03f), white, collider: false).transform.SetParent(ch, true);
+                // The Blender chair lies along +Y from its origin (the backrest end); the code chair's back is at -Z.
+                ReplaceVisuals(ch, "wild_chair", ch.TransformPoint(new Vector3(0f, 0f, 0.3f)), ch.rotation);
             }
             if (w.barrel != null)
             {
@@ -2505,6 +2532,12 @@ namespace Draho.EditorTools
                 barrel.transform.position = new Vector3(w.barrel.x, 0.45f, w.barrel.z);
                 barrel.transform.localScale = new Vector3(0.58f, 0.45f, 0.58f);
                 barrel.GetComponent<Renderer>().sharedMaterial = rust;
+                if (blenderWild)
+                {
+                    Object.DestroyImmediate(barrel.GetComponent<MeshRenderer>());
+                    var drum = FurnitureModel("wild_barrel", root);
+                    if (drum != null) drum.position = new Vector3(w.barrel.x, 0f, w.barrel.z);
+                }
             }
 
             if (w.hedgehog != null) HedgehogModel(root, w.hedgehog, nest);

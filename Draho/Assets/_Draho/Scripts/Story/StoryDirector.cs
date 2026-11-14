@@ -194,7 +194,7 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Got it! Drahomil, mouse hunter. The bounty board by the kitchen pays for every mouse in the neighbourhood.",
+                    Story = "Got it! Drahomil, mouse hunter. You carry it about proudly, then lose interest. Something outside smells even better.",
                     Goal = "Sit in front of the garden door until it opens.",
                     Target = () => door != null ? door.transform.position : (Vector3?)null,
                     Done = () => door == null || door.IsOpen,
@@ -622,15 +622,13 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "Epilogue: a new day. Your humans are home, the cat flap is open and the whole town is yours again.",
-                    Goal = "Free roam: bring your humans a gift from every corner of town (6), find every feather and nap spot, fill the bounty board. Lost? Crouch and keep still to sniff.",
+                    Goal = "Free roam: wander where you like. Little things for your humans are lying around town, if you feel like bringing them home.",
                     Begin = () =>
                     {
                         humans?.SettleIn();
                         InEpilogue = true;
                         SkyMood.Set(SkyMood.Mood.Day, 20f);
-                        var p = Draho.Core.Progress.Instance;
-                        if (p != null)
-                            Debug.Log($"STORY epilogue: feathers {p.CollectedCount}/{p.TotalCollectables}, naps {p.NapCount}");
+                        Debug.Log("STORY epilogue");
                     },
                     Done = () => false,
                 },

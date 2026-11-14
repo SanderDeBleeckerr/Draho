@@ -6,7 +6,7 @@ namespace Draho.Core
     /// <summary>
     /// Combines all scenery that never moves (walls, roofs, houses, fences, trees...) into a few big meshes
     /// when the level loads (static batching at run time), so the phone draws far fewer objects one by one.
-    /// The list comes from the level builder; moving things (animals, the door, feathers) are not in it.
+    /// The list comes from the level builder; moving things (animals, the door, the gifts) are not in it.
     /// </summary>
     public class StaticScenery : MonoBehaviour
     {

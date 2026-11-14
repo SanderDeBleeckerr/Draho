@@ -68,11 +68,8 @@ namespace Draho.EditorTools
             public Ground[] bridges;
             public Bakery bakery;
             public MouseTerritory[] mouse_territories;
-            public Feather[] feathers;
-            public float[] bounty_board; // x, y, z, yaw of the cork board
         }
-        [Serializable] class MouseTerritory { public string id, name; public int bounty; public Hole[] holes; }
-        [Serializable] class Feather { public string id; public float x, y, z; }
+        [Serializable] class MouseTerritory { public string id, name; public Hole[] holes; }
         [Serializable] class Bakery
         {
             public float x, z0, z1;
@@ -113,6 +110,7 @@ namespace Draho.EditorTools
             public float x0, x1, z0, z1, h, ridge;
             public float base_y;    // walls start here (upper floors over the apartment)
             public string windows;  // faces with window panes, for example "-x+z"
+            public string flush;    // faces that lie on a wall of the flat or the light well, for example "-x+z": pulled back into that wall
             public string ridge_along; // pitched: "x" or "z" (default: along the long side)
         }
         [Serializable] class QuayLampInfo { public float x, z, h; }
@@ -210,7 +208,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(SetRewards), typeof(NightWindows), typeof(SkyClouds), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(NightWindows), typeof(SkyClouds), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -1282,32 +1280,6 @@ namespace Draho.EditorTools
             go.AddComponent<RainSplashes>();
         }
 
-        /// <summary>Eight places to scratch (ScratchSpot): upright, rough things that are not climbable.</summary>
-        static void BuildScratchSpots()
-        {
-            var spots = new (string id, string title, Vector3 pos)[]
-            {
-                ("scratch_sisal", "your own scratching post (the only one you are allowed)", new Vector3(4.1f, 0.5f, 4.0f)),
-                ("scratch_sofa", "the sofa. The humans will not be pleased", new Vector3(2.0f, 0.5f, 3.9f)),
-                ("scratch_table", "a leg of the garden table", new Vector3(-2.35f, 0.5f, 1.8f)),
-                ("scratch_fence", "the old garden fence", new Vector3(-10f, 0.5f, 4.7f)),
-                ("scratch_chair", "the old chair in the wild garden", new Vector3(-17.5f, 0.5f, 7.1f)),
-                ("scratch_lamp", "the iron lamp-post on the quay", new Vector3(-33.6f, 0.5f, 3.2f)),
-                ("scratch_bakery", "the bakery's wooden door frame", new Vector3(-57.6f, 0.5f, -100.9f)),
-                ("scratch_church", "the church door of the begijnhof", new Vector3(51.6f, 0.8f, -208.6f)),
-            };
-            var ringMat = NoiseRingMaterial();
-            var marks = Mat("Claw_Marks", new Color(0.12f, 0.09f, 0.07f), 0.05f);
-            foreach (var (id, title, pos) in spots)
-            {
-                var go = new GameObject($"Scratch_{id.Substring(8)}");
-                go.transform.SetParent(level, false);
-                go.transform.position = pos;
-                go.AddComponent<LineRenderer>().sharedMaterial = ringMat;
-                go.AddComponent<ScratchSpot>().Configure(id, title, marks);
-            }
-        }
-
         /// <summary>Morning mist over the gardens: big faint billboard puffs (MorningMist), prewarmed.</summary>
         static void BuildMorningMist(Layout layout)
         {
@@ -1473,28 +1445,6 @@ namespace Draho.EditorTools
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             go.AddComponent<ShootingStars>();
-        }
-
-        /// <summary>Five viewpoints on the high roofs: a faint blue ring; stand still in it for a slow camera sweep.</summary>
-        static void BuildViewpoints()
-        {
-            var views = new (string id, string text, Vector3 pos)[]
-            {
-                ("view_ridge", "the ridge of the big roof. The whole street lies below, and the chimneys smoke.", new Vector3(14.4f, 12.4f, 4.6f)),
-                ("view_highroof", "the highest roof of the block. Gardens, roofs and the river, all yours.", new Vector3(-5.2f, 9.6f, -7.9f)),
-                ("view_flatroof", "the flat roof by the hatch. Every garden of the block in one look.", new Vector3(3.2f, 9.4f, 5.6f)),
-                ("view_gravel", "the big gravel roof. The geraniums, the light well and the maple.", new Vector3(-15.5f, 7.1f, -5.6f)),
-                ("view_riverhouse", "the riverhouse roof. The river, the quay and the far bank.", new Vector3(-25.6f, 7.0f, -12f)),
-            };
-            var mat = NoiseRingMaterial();
-            foreach (var (id, text, pos) in views)
-            {
-                var go = new GameObject($"Viewpoint_{id.Substring(5)}");
-                go.transform.SetParent(level, false);
-                go.transform.position = pos;
-                go.AddComponent<LineRenderer>().sharedMaterial = mat;
-                go.AddComponent<Viewpoint>().Configure(id, text);
-            }
         }
 
         /// <summary>Six gifts for the humans, one in each area, shown only in the epilogue (Gift).</summary>
@@ -1730,41 +1680,6 @@ namespace Draho.EditorTools
                 wisps.Add(ps);
             }
             bed.AddComponent<Catnip>().Configure(wisps.ToArray());
-        }
-
-        /// <summary>
-        /// Twelve nap spots, the warmest places in every area (a side activity): sit in one to find it. Each spot drops
-        /// onto whatever is under it at run time (a rug, a table top, a roof).
-        /// </summary>
-        static void BuildNapSpots()
-        {
-            var spots = new (string id, string title, Vector3 pos)[]
-            {
-                ("nap_rug", "the red rug in the living room", new Vector3(2.2f, 0.5f, 2.6f)),
-                ("nap_cattree", "your own basket on the cat tree", new Vector3(4.1f, 1.2f, 4.35f)),
-                ("nap_table", "the garden table, still warm from the sun", new Vector3(-1.4f, 1.2f, 2.6f)),
-                ("nap_maple", "the shade under the maple", new Vector3(-21.2f, 0.5f, 3.3f)),
-                ("nap_gravel", "the warm gravel by the geraniums", new Vector3(-14.6f, 7f, -3.8f)),
-                ("nap_high", "the highest roof of the block", new Vector3(-5.6f, 9.1f, -7.5f)),
-                ("nap_chair", "the old chair in the wild garden", new Vector3(-17f, 1.2f, 7.6f)),
-                ("nap_quay", "the sunny quay stones", new Vector3(-32.4f, 0.5f, -24f)),
-                ("nap_church", "the church step of the begijnhof", new Vector3(51.2f, 0.8f, -208.8f)),
-                ("nap_bakery", "the bakery doorstep, smelling of bread", new Vector3(-57.1f, 0.5f, -100.6f)),
-                ("nap_court", "the sunny corner of the court", new Vector3(5.1f, 0.5f, 4.6f)),
-                ("nap_roof", "the flat roof of your own house", new Vector3(2.4f, 9.3f, 2.6f)),
-            };
-            var mat = NoiseRingMaterial();
-            foreach (var (id, title, pos) in spots)
-            {
-                var go = new GameObject($"NapSpot_{id.Substring(4)}");
-                go.transform.SetParent(level, false);
-                go.transform.position = pos;
-                go.AddComponent<LineRenderer>().sharedMaterial = mat;
-                go.AddComponent<NapSpot>().Configure(id, title);
-            }
-            var rested = new GameObject("WellRested");
-            rested.transform.SetParent(level, false);
-            rested.AddComponent<WellRested>().Configure(spots.Length);
         }
 
         static void BuildFox()
@@ -2136,7 +2051,13 @@ namespace Draho.EditorTools
                     : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
                 var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 7f); // small stones
                 var stone = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
-                Box("Walls", new Vector3(cx, (b.base_y + b.h - roofT) / 2, cz), new Vector3(w, b.h - roofT - b.base_y, d), brick).transform.SetParent(root, true);
+                // A face that lies in the plane of a wall of the flat z-fights with it (the kitchen's east wall flickered
+                // between plaster and the neighbour's wall): pull it back 2 cm, inside that 20 cm wall.
+                string flush = b.flush ?? "";
+                const float tuck = 0.02f;
+                float wx0 = b.x0 + (flush.Contains("-x") ? tuck : 0f), wx1 = b.x1 - (flush.Contains("+x") ? tuck : 0f);
+                float wz0 = b.z0 + (flush.Contains("-z") ? tuck : 0f), wz1 = b.z1 - (flush.Contains("+z") ? tuck : 0f);
+                Box("Walls", new Vector3((wx0 + wx1) / 2, (b.base_y + b.h - roofT) / 2, (wz0 + wz1) / 2), new Vector3(wx1 - wx0, b.h - roofT - b.base_y, wz1 - wz0), brick).transform.SetParent(root, true);
                 Box("Roof", new Vector3(cx, b.h - roofT / 2, cz), new Vector3(w, roofT, d), gravel).transform.SetParent(root, true);
                 // A thin stone coping along the edges: the roof line reads clearly from the garden.
                 foreach (float z in new[] { b.z0, b.z1 })
@@ -3353,10 +3274,10 @@ namespace Draho.EditorTools
                 m.transform.position = new Vector3(b.marker[0], 0f, b.marker[1]);
             }
             if (b.mouse_holes != null && b.mouse_holes.Length > 0)
-                BuildMouseTerritory(new MouseTerritory { id = "BakeryMouse", name = "Bakery mouse", bounty = 15, holes = b.mouse_holes });
+                BuildMouseTerritory(new MouseTerritory { id = "BakeryMouse", name = "Bakery mouse", holes = b.mouse_holes });
         }
 
-        /// <summary>Mouse holes in walls and one mouse that lives there (a bounty on the board).</summary>
+        /// <summary>Mouse holes in walls and one mouse that lives there.</summary>
         static Mouse BuildMouseTerritory(MouseTerritory t)
         {
             var holes = new List<Transform>();
@@ -3377,38 +3298,8 @@ namespace Draho.EditorTools
             }
             var mouse = MouseModel(holes);
             mouse.name = t.id;
-            mouse.SetBounty(t.name, t.bounty);
+            mouse.SetName(t.name);
             return mouse;
-        }
-
-        /// <summary>Feathers to collect, floating a little above the place where they lie.</summary>
-        static void BuildFeathers(Layout layout)
-        {
-            var white = Mat("Feather_White", new Color(0.95f, 0.94f, 0.9f), 0.3f);
-            var tip = Mat("Feather_Tip", new Color(0.25f, 0.22f, 0.2f), 0.3f);
-            white.EnableKeyword("_EMISSION");
-            white.SetColor("_EmissionColor", new Color(0.35f, 0.33f, 0.28f));
-            EditorUtility.SetDirty(white);
-            foreach (var f in layout.feathers ?? new Feather[0])
-            {
-                var root = new GameObject($"Feather_{f.id}");
-                root.transform.SetParent(level, false);
-                root.transform.position = new Vector3(f.x, f.y + 0.2f, f.z);
-                var visual = new GameObject("Visual").transform;
-                visual.SetParent(root.transform, false);
-                var vane = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.DestroyImmediate(vane.GetComponent<Collider>());
-                vane.transform.SetParent(visual, false);
-                vane.transform.localScale = new Vector3(0.05f, 0.012f, 0.2f);
-                vane.GetComponent<Renderer>().sharedMaterial = white;
-                var end = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.DestroyImmediate(end.GetComponent<Collider>());
-                end.transform.SetParent(visual, false);
-                end.transform.localPosition = new Vector3(0f, 0f, 0.085f);
-                end.transform.localScale = new Vector3(0.035f, 0.013f, 0.05f);
-                end.GetComponent<Renderer>().sharedMaterial = tip;
-                root.AddComponent<Collectable>().Configure(f.id, visual);
-            }
         }
 
         /// <summary>Mallards on the river: drakes (green head) and brown ducks, in small groups.</summary>
@@ -4089,9 +3980,8 @@ namespace Draho.EditorTools
 
             BuildBirds(layout);
             Mouse mouse = MouseModel(holes);
-            mouse.SetBounty("Kitchen mouse", 10);
+            mouse.SetName("Kitchen mouse");
             foreach (var t in layout.mouse_territories ?? new MouseTerritory[0]) BuildMouseTerritory(t);
-            BuildFeathers(layout);
             BuildGardenCharacters();
             BuildNeighbourFlat();
             BuildCourtLife(layout);
@@ -4109,16 +3999,11 @@ namespace Draho.EditorTools
             BuildGlowWorms(layout.wild_garden);
             BuildCloudShadows();
             BuildGifts();
-            BuildViewpoints();
-            var rewards = new GameObject("SetRewards");
-            rewards.transform.SetParent(level, false);
-            rewards.AddComponent<SetRewards>().Configure(8, 6, Mat("Collar_Red", new Color(0.75f, 0.08f, 0.08f), 0.5f), Mat("Apt_Gold", new Color(0.85f, 0.65f, 0.2f), 0.7f));
             BuildShootingStars();
             BuildLightningBolt();
             BuildRainbow();
             BuildSkyClouds();
             BuildMorningMist(layout);
-            BuildScratchSpots();
             BuildRainSplashes();
             new GameObject("Soundscape").AddComponent<Soundscape>().transform.SetParent(level, false);
             var swifts = new GameObject("Swifts");
@@ -4139,8 +4024,6 @@ namespace Draho.EditorTools
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildStreetLamps();
-            BuildNapSpots();
-            BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);
             new GameObject("PerfProbe").AddComponent<Draho.Core.PerfProbe>().transform.SetParent(level, false);
@@ -4500,43 +4383,6 @@ namespace Draho.EditorTools
             }
         }
 
-        /// <summary>A cork board on the kitchen wall with paper notes: the mouse bounties.</summary>
-        static void BountyBoard(float[] at)
-        {
-            if (at == null || at.Length < 4) return;
-            var root = new GameObject("BountyBoard").transform;
-            root.SetParent(level, false);
-            root.SetPositionAndRotation(new Vector3(at[0], at[1], at[2]), Quaternion.Euler(0f, at[3], 0f));
-            var cork = Mat("Apt_Cork", new Color(0.66f, 0.5f, 0.33f), 0.1f);
-            var frame = Mat("Apt_BoardFrame", new Color(0.35f, 0.25f, 0.16f), 0.2f);
-            var paper = Mat("Apt_Paper", new Color(0.95f, 0.93f, 0.86f), 0.1f);
-            var pin = Mat("Apt_Pin", new Color(0.8f, 0.15f, 0.12f), 0.6f);
-            Part(root, "Frame", new Vector3(0f, 0f, 0f), new Vector3(0.66f, 0.48f, 0.03f), frame);
-            Part(root, "Cork", new Vector3(0f, 0f, 0.01f), new Vector3(0.6f, 0.42f, 0.02f), cork);
-            var notes = new[] { new Vector3(-0.17f, 0.08f, 0f), new Vector3(0.05f, 0.1f, 0f), new Vector3(0.18f, -0.06f, 0f), new Vector3(-0.08f, -0.1f, 0f) };
-            for (int i = 0; i < notes.Length; i++)
-            {
-                var note = Part(root, "Note", notes[i] + new Vector3(0f, 0f, 0.022f), new Vector3(0.12f, 0.15f, 0.004f), paper);
-                note.localRotation = Quaternion.Euler(0f, 0f, (i % 2 == 0 ? 1f : -1f) * 6f);
-                Part(root, "Pin", notes[i] + new Vector3(0f, 0.06f, 0.028f), Vector3.one * 0.015f, pin);
-            }
-            var marker = new GameObject("Marker_BountyBoard").transform;
-            marker.SetParent(level, false);
-            marker.position = new Vector3(at[0], 0f, at[2]) + root.forward * 0.4f;
-
-            Transform Part(Transform parent, string name, Vector3 local, Vector3 scale, Material m)
-            {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.name = name;
-                Object.DestroyImmediate(go.GetComponent<Collider>());
-                go.transform.SetParent(parent, false);
-                go.transform.localPosition = local;
-                go.transform.localScale = scale;
-                go.GetComponent<Renderer>().sharedMaterial = m;
-                return go.transform;
-            }
-        }
-
         static Material NoiseRingMaterial()
         {
             // Sprites/Default: unlit, alpha-blended and uses the line's vertex colours.
@@ -4550,7 +4396,7 @@ namespace Draho.EditorTools
             return m;
         }
 
-        /// <summary>Coins and feathers (top right) and the bounty list panel (shown at the board).</summary>
+        /// <summary>The side-moment line (top right), the "New game" button and the goal compass.</summary>
         static void ProgressPanel(Transform canvas)
         {
             Text MakeText(string name, Transform parent, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize, TextAnchor align)
@@ -4571,31 +4417,15 @@ namespace Draho.EditorTools
                 go.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.6f);
                 return t;
             }
-            var counters = MakeText("Counters", canvas, new Vector2(1f, 1f), new Vector2(-40f, -230f), new Vector2(700f, 60f), 36, TextAnchor.MiddleRight);
-            counters.horizontalOverflow = HorizontalWrapMode.Overflow; // right-aligned: a longer line grows to the left
+            var toast = MakeText("Toast", canvas, new Vector2(1f, 1f), new Vector2(-40f, -230f), new Vector2(900f, 60f), 32, TextAnchor.MiddleRight);
+            toast.horizontalOverflow = HorizontalWrapMode.Overflow; // right-aligned: a longer line grows to the left
             // "New game" in the top-left corner (tap twice).
             var newGame = MakeText("NewGame", canvas, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(250f, 50f), 26, TextAnchor.MiddleLeft);
             newGame.text = "New game";
             newGame.color = new Color(1f, 0.92f, 0.7f, 0.75f);
             newGame.raycastTarget = true;
             newGame.gameObject.AddComponent<NewGameButton>().Configure(newGame);
-            var panel = new GameObject("BountyPanel", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
-            var prt = (RectTransform)panel.transform;
-            prt.SetParent(canvas, false);
-            prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0f);
-            prt.anchoredPosition = new Vector2(0f, 40f);
-            prt.sizeDelta = new Vector2(1100f, 420f);
-            var bg = panel.GetComponent<Image>();
-            bg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
-            bg.type = Image.Type.Sliced;
-            bg.color = new Color(0.25f, 0.17f, 0.1f, 0.85f);
-            bg.raycastTarget = false;
-            var group = panel.GetComponent<CanvasGroup>();
-            group.alpha = 0f;
-            group.blocksRaycasts = false;
-            var board = MakeText("BountyList", prt, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1020f, 380f), 34, TextAnchor.MiddleCenter);
-            var hud = canvas.gameObject.AddComponent<ProgressHud>();
-            hud.Configure(counters, board, group);
+            canvas.gameObject.AddComponent<ProgressHud>().Configure(toast);
 
             // Goal compass under the story panel: a chevron of two bars and the distance.
             var compass = new GameObject("GoalCompass", typeof(RectTransform), typeof(CanvasGroup));

@@ -53,14 +53,8 @@ namespace Draho.Cat
         public bool IsCrouching { get; private set; }
         /// <summary>A storm gust (m/s, horizontal). A crouched cat feels only a little of it.</summary>
         public Vector3 Wind { get; set; }
-        /// <summary>How much of the wind reaches the cat (sure-footed after every viewpoint): 1 is all of it.</summary>
-        public float WindFactor { get; set; } = 1f;
         /// <summary>A short burst of speed (catnip zoomies): 1 is normal.</summary>
         public float SpeedBoost { get; set; } = 1f;
-        /// <summary>Jump height factor (well rested after all the nap spots): 1 is normal.</summary>
-        public float JumpBoost { get; set; } = 1f;
-        /// <summary>Climbing speed factor (sharp claws after every scratching place): 1 is normal.</summary>
-        public float ClimbBoost { get; set; } = 1f;
         public bool IsRearing => mode == Mode.Rearing;
         public bool IsClimbing => mode == Mode.Climbing || mode == Mode.Mantling;
         /// <summary>Raised after <see cref="Teleport"/> (the camera jumps behind the cat).</summary>
@@ -174,7 +168,7 @@ namespace Draho.Cat
                 else
                 {
                     speed = carried;
-                    verticalVelocity = Mathf.Sqrt(2f * -stats.gravity * stats.jumpHeight * JumpBoost);
+                    verticalVelocity = Mathf.Sqrt(2f * -stats.gravity * stats.jumpHeight);
                     Debug.Log($"CAT jump at {carried:0.00} m/s");
                     timeSinceGrounded = stats.coyoteTime + 1f; // no second jump in the air
                 }
@@ -185,7 +179,7 @@ namespace Draho.Cat
                 verticalVelocity = Mathf.Max(verticalVelocity + stats.gravity * dt, -stats.maxFallSpeed);
 
             Vector3 velocity = transform.forward * speed + Vector3.up * verticalVelocity
-                + Wind * (IsCrouching ? 0.15f : 1f) * WindFactor; // low cats do not blow away
+                + Wind * (IsCrouching ? 0.15f : 1f); // low cats do not blow away
             CollisionFlags hit = controller.Move(velocity * dt);
             if ((hit & CollisionFlags.Above) != 0 && verticalVelocity > 0f) verticalVelocity = 0f;
         }
@@ -243,7 +237,7 @@ namespace Draho.Cat
             if (input != null && input.HoldUp) move.y = Mathf.Max(move.y, 1f); // hold the middle: climb up
             holdUpBefore = input != null && input.HoldUp;
             float feet = transform.position.y;
-            ClimbVelocity = move.y * stats.climbSpeed * ClimbBoost;
+            ClimbVelocity = move.y * stats.climbSpeed;
 
             if (ClimbVelocity > 0f && feet >= climbable.TopY - stats.mantleReach)
             {
@@ -256,7 +250,7 @@ namespace Draho.Cat
             // Stay just in front of the climbed surface: never press under an overhang (ivy above the ground).
             float gap = wallDistance - controller.radius - 0.02f;
             float toWall = Mathf.Clamp(gap * 6f, -0.5f, 0.3f);
-            Vector3 motion = Vector3.up * ClimbVelocity + right * (move.x * stats.climbSpeed * ClimbBoost * 0.5f) - wallNormal * toWall;
+            Vector3 motion = Vector3.up * ClimbVelocity + right * (move.x * stats.climbSpeed * 0.5f) - wallNormal * toWall;
             CollisionFlags flags = controller.Move(motion * dt);
             if ((flags & CollisionFlags.Above) != 0 && Time.frameCount % 30 == 0)
                 Debug.Log($"CAT climb blocked above at {transform.position.y:0.00}");

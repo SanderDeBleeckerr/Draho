@@ -26,7 +26,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 11 | Garden picnic table | code boxes | **Done, round 11** |
 | 12 | Garden lamp | code primitives | **Done, round 12** |
 | 13 | Garden fences (neighbour, end, wild) | code boxes | **Done, round 13** |
-| 14 | Garden trees (maple, others) | code blobs | Blender: faceted canopy clusters, trunk |
+| 14 | Climbable trees (maple, bank alder) | code blobs | **Done, round 14** |
 | 15 | Lawn, path, terrace | flat colour, tiles | grass variation (vertex colour), path slabs with height |
 | 16 | Ivy wall | `WindFoliage` cards | leaf density, colour |
 | 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | Blender props |
@@ -193,3 +193,14 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   tones; a slightly lighter cap on every post. The fallen plank by the hole uses the new tones.
 - **Light:** the darker gravel board grounds the fence; the caps catch the sun along the top.
 - **Checked:** Unity `garden` view (Day).
+
+### Round 14: climbable trees
+
+- **Review:** the garden maple and the river-bank alder were a cylinder, four stick branches and 14 smooth spheres:
+  balloons, against the house rule (organic shapes are faceted) and the faceted animals.
+- **Change:** Blender trees `tree_maple` and `tree_bank_alder` (1,408 triangles each, faceted): a tapering bark trunk
+  with a root flare, five branches out of the fork, a crown of 16 irregular low-poly leaf clumps in three greens
+  (lighter on top; the alder darker). The cylinder stays as the invisible climbing collider (`climb_top` unchanged).
+- **Light:** each facet takes its own tone of the sun, so the crown reads as volume; the lighter top clumps catch the
+  sky.
+- **Checked:** Blender look-dev render; Unity `garden` view (Day).

@@ -624,6 +624,43 @@ def garden_lantern():
     return parts
 
 
+def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
+    """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
+    branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at
+    the foot of the trunk. ApartmentBuilder keeps its cylinder as the invisible climbing collider."""
+    import random
+    rnd = random.Random(seed)
+    parts = [ds.cylinder("Trunk", (0, 0, 0), radius * 1.15, h + 0.15, "walnut_dark", segments=7, radius_top=radius * 0.75, bevel=0, smooth=False),
+             ds.cylinder("Flare", (0, 0, 0), radius * 1.7, 0.18, "walnut_dark", segments=7, radius_top=radius * 1.1, bevel=0, smooth=False)]
+    for i in range(5):
+        a = i * 2 * math.pi / 5 + rnd.uniform(-0.3, 0.3)
+        length = rnd.uniform(1.0, 1.5) * crown / 1.6
+        br = ds.cylinder("Branch", (0, 0, 0), radius * 0.5, length, "walnut_dark", segments=5, radius_top=radius * 0.2, bevel=0, smooth=False)
+        br.rotation_euler = (math.radians(rnd.uniform(35, 55)), 0, a)
+        br.location = (0, 0, h - 0.25)
+        parts.append(br)
+    for i in range(16):
+        a = rnd.uniform(0, 2 * math.pi)
+        r = crown * math.sqrt(rnd.random()) * 0.85
+        z = h + 0.7 + rnd.uniform(0, 1.3) - r * 0.35
+        size = rnd.uniform(0.55, 0.85) * crown / 1.6
+        colour = greens[2] if z > h + 1.6 else rnd.choice(greens[:2])
+        parts.append(ds.blob("Leaves", (math.cos(a) * r, math.sin(a) * r, z), size, (1.0, 1.0, 0.72), colour, subdiv=2, seed=seed * 31 + i))
+    return parts
+
+
+@prop
+def tree_maple():
+    """The garden maple (layout climbable "maple": trunk 2.4 m, radius 0.14)."""
+    return _tree(2.4, 0.14, 1.6, 5)
+
+
+@prop
+def tree_bank_alder():
+    """The alder on the river bank (layout climbable "bank_alder": trunk 3.0 m, radius 0.16), darker greens."""
+    return _tree(3.0, 0.16, 1.4, 9, greens=("leaf_dark", "olive", "leaf"))
+
+
 @prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping

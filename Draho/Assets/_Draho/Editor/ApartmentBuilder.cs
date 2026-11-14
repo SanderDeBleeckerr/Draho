@@ -4059,6 +4059,16 @@ namespace Draho.EditorTools
                 trunk.transform.localPosition = Vector3.up * c.h / 2;
                 trunk.transform.localScale = new Vector3(c.radius * 2, c.h / 2, c.radius * 2);
                 trunk.GetComponent<Renderer>().sharedMaterial = wood;
+                // The faceted Blender tree (build_apartment_props.py tree_[id]); the cylinder stays as the climbing
+                // collider only.
+                var model = FurnitureModel($"tree_{c.id}", root);
+                if (model != null)
+                {
+                    model.SetPositionAndRotation(root.position, Quaternion.identity);
+                    Object.DestroyImmediate(trunk.GetComponent<MeshRenderer>());
+                    climbable.Configure(c.climb_top, false);
+                    return;
+                }
                 var rng = new System.Random(5);
                 float Rand() => (float)rng.NextDouble();
                 for (int i = 0; i < 4; i++) // branches from the fork, no colliders

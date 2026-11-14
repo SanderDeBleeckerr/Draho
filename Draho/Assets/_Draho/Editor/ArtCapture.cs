@@ -38,6 +38,8 @@ namespace Draho.EditorTools
             ("wild_garden", new Vector3(-4.6f, 1.3f, 6.3f), new Vector3(-10.5f, 0.3f, 8.2f)),  // the neighbour's wild garden: barrow, barrel, brambles
             ("dining", new Vector3(3.4f, 1.4f, 2.6f), new Vector3(3.4f, 0.6f, 0.3f)),          // the dining bar by the south wall
             ("sliding_door", new Vector3(1.3f, 1.0f, 2.2f), new Vector3(-0.1f, 0.05f, 2.9f)),  // the sliding door's sill and frames, from above
+            ("town_east", new Vector3(4f, 14f, 3f), new Vector3(32f, 5f, 12f)),                // over the roofs: the town to the east
+            ("town_west", new Vector3(-2f, 14f, 3f), new Vector3(-34f, 5f, -6f)),              // and to the west, towards the river
         };
 
         /// <summary>The fixed views, plus a side view of the cat (readability).</summary>

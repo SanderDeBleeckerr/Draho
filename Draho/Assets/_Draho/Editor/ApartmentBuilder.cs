@@ -2324,9 +2324,7 @@ namespace Draho.EditorTools
                 var body = Box($"Context_{n}", new Vector3(c.x, c.h / 2, c.z), new Vector3(c.w, c.h, c.d),
                     Mat($"Apt_Context_{n % tones.Length}", tone, 0.08f, BrickTexture(), new Vector2(6f, 6f)), collider: false);
                 body.transform.rotation = Quaternion.Euler(0f, c.yaw, 0f);
-                var roof = Box($"Context_{n}_roof", new Vector3(c.x, c.h + 0.05f, c.z), new Vector3(c.w + 0.2f, 0.1f, c.d + 0.2f),
-                    Mat("Apt_ContextRoof", new Color(0.33f, 0.31f, 0.3f), 0.1f), collider: false);
-                roof.transform.rotation = body.transform.rotation;
+                ContextRoofline(c, n, tone);
                 n++;
             }
             // Window panes on the scenery blocks, and on the faces of story buildings that ask for them.
@@ -3756,6 +3754,68 @@ namespace Draho.EditorTools
         }
 
         /// <summary>A house with a pitched roof (ridge along the long side), gables, a door and windows on its front.</summary>
+        /// <summary>
+        /// The top and foot of a scenery block (graphics review round 26). They were all flat boxes with a thin dark
+        /// slab, so the town read as cubes. Now about two in five of the mid-rise blocks get a gabled tile or slate
+        /// roof, the rest a pale stone cornice, and every block a darker plinth at street level. No colliders.
+        /// </summary>
+        static void ContextRoofline(ContextBuilding c, int n, Color tone)
+        {
+            var rot = Quaternion.Euler(0f, c.yaw, 0f);
+            var origin = new Vector3(c.x, 0f, c.z);
+            GameObject Part(string name, Vector3 local, Vector3 size, Material m, Quaternion? tilt = null)
+            {
+                var go = Box($"Context_{n}_{name}", origin + rot * local, size, m, collider: false);
+                go.transform.rotation = rot * (tilt ?? Quaternion.identity);
+                return go;
+            }
+            var plinth = Mat($"Apt_ContextPlinth_{n % 5}", tone * 0.62f, 0.1f, BrickTexture(), new Vector2(6f, 1f));
+            Part("plinth", new Vector3(0f, 0.45f, 0f), new Vector3(c.w + 0.06f, 0.9f, c.d + 0.06f), plinth);
+
+            bool pitched = c.h <= 13.5f && (n % 5 == 1 || n % 5 == 3);
+            if (!pitched)
+            {
+                var cornice = Mat("Apt_ContextCornice", new Color(0.7f, 0.68f, 0.64f), 0.15f);
+                Part("cornice", new Vector3(0f, c.h + 0.12f, 0f), new Vector3(c.w + 0.32f, 0.24f, c.d + 0.32f), cornice);
+                Part("roof", new Vector3(0f, c.h + 0.25f, 0f), new Vector3(c.w - 0.1f, 0.04f, c.d - 0.1f),
+                    Mat("Apt_ContextRoof", new Color(0.33f, 0.31f, 0.3f), 0.1f));
+                return;
+            }
+            // A gable roof, ridge along the long side, built like PitchedHouse in the block's own frame.
+            bool alongX = c.w >= c.d;
+            float span = alongX ? c.d : c.w, length = alongX ? c.w : c.d, ridge = span * 0.42f;
+            float slope = Mathf.Atan2(ridge, span / 2) * Mathf.Rad2Deg, slab = Mathf.Sqrt(span * span / 4 + ridge * ridge) + 0.35f;
+            var roofColour = n % 2 == 0 ? new Color(0.29f, 0.33f, 0.4f) : new Color(0.49f, 0.35f, 0.31f); // slate or tile
+            var tiles = alongX
+                ? Mat($"Apt_ContextTiles_{n % 2}_x", roofColour, 0.25f, RoofTexture(false), new Vector2(length + 0.3f, slab))
+                : Mat($"Apt_ContextTiles_{n % 2}_z", roofColour, 0.25f, RoofTexture(true), new Vector2(slab, length + 0.3f));
+            Vector3 across = alongX ? Vector3.forward : Vector3.right;
+            foreach (float side in new[] { -1f, 1f })
+                Part("roofside", new Vector3(0f, c.h + ridge / 2, 0f) + across * side * span / 4,
+                    alongX ? new Vector3(length + 0.3f, 0.14f, slab) : new Vector3(slab, 0.14f, length + 0.3f), tiles,
+                    alongX ? Quaternion.Euler(side * slope, 0f, 0f) : Quaternion.Euler(0f, 0f, -side * slope));
+            Part("ridge", new Vector3(0f, c.h + ridge + 0.04f, 0f),
+                alongX ? new Vector3(length + 0.3f, 0.12f, 0.26f) : new Vector3(0.26f, 0.12f, length + 0.3f),
+                Mat($"Apt_ContextRidge_{n % 2}", roofColour * 0.7f, 0.2f));
+            // Gable ends in the wall's colour: a cube turned 45 degrees and squeezed to the slope.
+            var wall = Mat($"Apt_Context_{n % 5}", tone, 0.08f, BrickTexture(), new Vector2(6f, 6f));
+            Vector3 along = alongX ? Vector3.right : Vector3.forward;
+            foreach (float end in new[] { -1f, 1f })
+            {
+                var gable = new GameObject($"Context_{n}_gable").transform;
+                gable.SetParent(level, false);
+                gable.position = origin + rot * (new Vector3(0f, c.h, 0f) + along * end * (length / 2 - 0.06f));
+                gable.rotation = rot * (alongX ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.identity);
+                gable.localScale = new Vector3(span / 2 / ridge, 1f, 1f);
+                var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Object.DestroyImmediate(cube.GetComponent<Collider>());
+                cube.transform.SetParent(gable, false);
+                cube.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                cube.transform.localScale = new Vector3(ridge * Mathf.Sqrt(2f), ridge * Mathf.Sqrt(2f), 0.1f);
+                cube.GetComponent<Renderer>().sharedMaterial = wall;
+            }
+        }
+
         static void PitchedHouse(Transform root, Building b)
         {
             float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;

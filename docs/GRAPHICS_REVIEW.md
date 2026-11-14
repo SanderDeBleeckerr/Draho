@@ -38,7 +38,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | **Done, round 23** | check |
 | 24 | Fatsocat, the grey cat (NPC cats) | **Done, round 24** | colour per cat, fur settings |
 | 25 | Drahomil | **Done, round 25** | fur at night, eye shine |
-| 26 | Town buildings near the flat | code extrusions | window frames, roof edges |
+| 26 | Town buildings near the flat | **Done, round 26** | window frames, roof edges |
 | 27 | Courtyard / street props (bins, cars, lamps) | code | Blender props |
 | 28 | Quay, bridges, boats, water | code | water colour and glint, quay stones |
 | 29 | Bakery, begijnhof | code | facades |
@@ -357,3 +357,19 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   nose and whiskers are all clear.
 - **Checked:** the full Unity capture cycle: the cat, cat_back and cat_face views in Day, Evening and Night (sheen
   on the spine and tail at night; the eyes and whiskers clear by day), and the room views unchanged.
+
+## Round 26: the town buildings
+
+- **Shape:** the 44 scenery blocks around the block were all flat-topped boxes with a thin dark slab, so the town
+  read as cubes from the roofs and the garden. `ContextRoofline` (in each block's own rotated frame) now gives:
+  - **Gable roofs:** about two in five of the mid-rise blocks (13.5 m and under, index n % 5 in {1, 3}) get a gable
+    roof, ridge along the long side, 0.42 x span high. It alternates slate (#4A5466) and tile (#7D5A4F), with the
+    slate texture rows, a darker ridge cap and gable ends in the block's wall colour (the PitchedHouse method).
+  - **Cornices:** the other blocks get a pale stone cornice (0.24 m, 16 cm overhang) with the flat roof set inside it.
+  - **Plinths:** every block gets a plinth band 0.9 m high at street level, in its wall tone x 0.62, so the blocks
+    stand on the pavement instead of floating on it.
+  - No colliders (scenery).
+- **Light:** the pitched slopes take the sun at different angles, so the skyline shows light and shadow sides. The
+  cornices catch a bright line along each flat roof.
+- **New capture views:** `town_east` and `town_west`, high over the roofs.
+- **Checked:** the full Unity capture cycle (48 views): the town in Day and Evening from both new views.

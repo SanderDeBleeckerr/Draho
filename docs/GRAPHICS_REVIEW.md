@@ -265,3 +265,17 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   feet now stand out against the body.
 - **Checked:** Blender QA (no floating parts, no z-fighting; palette UVs are zero-area by design); Unity animal
   studio (front, side, top) next to Drahomil.
+
+## Round 20: the pigeons (and the shared bird body)
+
+- **Shape:** the wings ran straight back from the shoulder and stood off the body in a V, with floor showing
+  between wing and flank from above. They now fold like a resting bird's: each wing follows the flank, tapers in over
+  the back and rises so the primaries lie over the sides of the tail. The head is smaller (radius 37 to 33 mm, a
+  pigeon's head is small for its body), and the eyes and eye rings moved in onto the smaller head. The pivots are
+  unchanged, so the flap animation still swings the wings from the shoulder.
+- **Shared:** `bird()` also builds the blackbird and the gull, and both get the folded wings and the smaller head
+  (checked: the gull's croissant still sits across the beak). Pigeon 448 tris, blackbird 488, gull 512.
+- **Texture/light:** the colours are unchanged (blue-grey `metal`, `charcoal` wing bars, a `teal_dark` neck, red
+  feet). With the wings folded, the wing bars now sit on the flank where the sun catches them, instead of on an edge.
+- **Checked:** Blender QA (no floating parts, no z-fighting, no inside-out parts); Unity animal studio: pigeon front,
+  side and flap, blackbird side.

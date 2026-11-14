@@ -307,12 +307,12 @@ def bird(name, s, c):
 
     head = pivot("Head", S(0, 0.15, 0.06), body_p)
     k = Kit()
-    k.ball(S(0, 0.03, 0.032), 0.037 * s, c["head"], scale=(0.92, 0.96, 1.06), subdiv=2)
+    k.ball(S(0, 0.028, 0.030), 0.033 * s, c["head"], scale=(0.9, 0.96, 1.08), subdiv=2)  # smaller: a pigeon's head is small
     k.limb(S(0, 0.024, 0.062), S(0, 0.013, 0.100), 0.012 * s, 0.002 * s, c["beak"], sides=4)
     for side in (-1, 1):
         if c.get("eye_ring"):
-            k.ball(S(side * 0.029, 0.039, 0.045), 0.0095 * s, c["eye_ring"], scale=(0.5, 1, 1))
-        k.ball(S(side * 0.0335, 0.039, 0.045), 0.0058 * s, c["eye"], scale=(0.55, 1, 1), euler=(36, 20, 0))
+            k.ball(S(side * 0.0225, 0.038, 0.044), 0.0095 * s, c["eye_ring"], scale=(0.5, 1, 1))
+        k.ball(S(side * 0.0262, 0.038, 0.044), 0.0058 * s, c["eye"], scale=(0.55, 1, 1), euler=(36, 20, 0))
     if c.get("croissant"):
         for side in (-1, 1):  # one curved croissant, held across the beak: two tapered halves meeting at the beak
             k.limb(S(side * -0.008, 0.012, 0.100), S(side * 0.056, -0.012, 0.086), 0.019 * s, 0.005 * s,
@@ -330,9 +330,12 @@ def bird(name, s, c):
             if c.get("bar") and (-0.085 < z < -0.060 or -0.040 < z < -0.020):
                 return c["bar"]
             return c["wing"]
-        k.loft([(z * s, y * s, rx * s, ry * s, side * 0.009 * s) for z, y, rx, ry in (
-            (0.045, -0.026, 0.004, 0.006), (0.018, -0.040, 0.008, 0.032), (-0.050, -0.050, 0.008, 0.037),
-            (-0.112, -0.052, 0.006, 0.021), (-0.180, -0.052, 0.003, 0.004))], feathers, segments=6)
+        # Folded at rest: the wing follows the flank and tapers in over the back, the primaries rising to lie
+        # over the sides of the tail (they used to run straight back and stand off the body in a V).
+        k.loft([(z * s, y * s, rx * s, ry * s, side * x * s) for z, y, rx, ry, x in (
+            (0.045, -0.026, 0.004, 0.006, 0.004), (0.018, -0.036, 0.008, 0.030, 0.006),
+            (-0.050, -0.040, 0.008, 0.036, 0.004), (-0.112, -0.026, 0.006, 0.021, -0.024),
+            (-0.180, -0.016, 0.003, 0.004, -0.041))], feathers, segments=6)
         k.finish(f"{name}_{wing_name}_Mesh", w)
     return root
 

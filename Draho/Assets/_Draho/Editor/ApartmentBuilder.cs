@@ -4618,6 +4618,7 @@ namespace Draho.EditorTools
 
             var black = Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f);
             var orange = Mat("Bird_Beak", new Color(0.95f, 0.6f, 0.08f), 0.5f);
+            int birdIndex = 0;
             foreach (var spot in layout.birds)
             {
                 var root = new GameObject(spot.id);
@@ -4661,7 +4662,9 @@ namespace Draho.EditorTools
                 }
                 var left = Wing("WingL", -1f);
                 var right = Wing("WingR", 1f);
-                var model = AnimalModels.Swap("Blackbird", root.transform);
+                // Every second blackbird is a brown hen, so the lawn has pairs.
+                var model = (birdIndex++ % 2 == 1 ? AnimalModels.Swap("Blackbird_Hen", root.transform) : null)
+                    ?? AnimalModels.Swap("Blackbird", root.transform);
                 if (model != null) { body = AnimalModels.Find(model, "Body"); head = AnimalModels.Find(model, "Head"); left = AnimalModels.Find(model, "WingL"); right = AnimalModels.Find(model, "WingR"); }
                 root.AddComponent<Bird>().Configure(body, head, left, right, perches.ToArray(), lawn);
             }

@@ -33,7 +33,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 18 | Humans (legs at the door) | **Done, round 18** | Blender: legs, shoes, coat hem |
 | 19 | Mouse | **Done, round 19** | fur/colour check at cat height |
 | 20 | Pigeons | **Done, round 20** | sheen, perched pose |
-| 21 | Blackbirds | Blender | check |
+| 21 | Blackbirds | **Done, round 21** | check |
 | 22 | Hrozna (corgi) | Blender | check |
 | 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | Blender | check |
 | 24 | Fatsocat, the grey cat (NPC cats) | Drahomil model + fur | colour per cat, fur settings |
@@ -279,3 +279,18 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   feet). With the wings folded, the wing bars now sit on the flank where the sun catches them, instead of on an edge.
 - **Checked:** Blender QA (no floating parts, no z-fighting, no inside-out parts); Unity animal studio: pigeon front,
   side and flap, blackbird side.
+
+## Round 21: the blackbirds
+
+- **Shape:** a blackbird has a long tail (about 40% of its length) and often holds it raised, while ours had the
+  pigeon's tail scaled down. `bird()` takes `tail_len` and `tail_lift`, and the blackbirds use 1.35 and 0.12
+  (length 0.30 to 0.33 m).
+- **Texture:** all three birds were black males, and charcoal is also Drahomil's colour, so the lawn read as three
+  dark blobs. Every second blackbird is now a hen (`Blackbird_Hen`, 448 tris): `walnut_dark` body, a paler
+  `walnut` breast, `soil` wings, a dull `oak` bill and no eye ring. The male keeps a step of separation, with
+  `metal_dark` wings and a `cat_fur_light` belly against the charcoal body, and the orange bill and eye ring.
+- **Light:** the hen's browns take the low sun warmly on the grass, while the male stays a glossy dark accent.
+- **Code:** `BuildBirds` uses the hen for every second bird and falls back to the male model. ArtCapture now
+  captures a male and the hen.
+- **Checked:** Blender QA (no floating parts, no z-fighting); Unity animal studio: `blackbird_3` (male) and
+  `blackbird_2` (hen), front, side, top and flap.

@@ -180,7 +180,11 @@ namespace Draho.EditorTools
                     found = found.OrderBy(o => AnimalModels.Find(((Component)o).transform, "Duck_Hen_Body") != null ? 0 : 1)
                         .Where((o, i) => i == 0 || AnimalModels.Find(((Component)o).transform, "Duck_Hen_Body") == null)
                         .Take(2).ToArray();
-                for (int n = 0; n < Mathf.Min(found.Length, typeName == "Pigeon" ? 3 : typeName == "Duck" ? 2 : 1); n++)
+                if (typeName == "Bird") // a male blackbird and the hen
+                    found = found.OrderBy(o => AnimalModels.Find(((Component)o).transform, "Blackbird_Hen_Body") != null ? 1 : 0)
+                        .Where((o, i) => i == 0 || AnimalModels.Find(((Component)o).transform, "Blackbird_Hen_Body") != null)
+                        .ToArray();
+                for (int n = 0; n < Mathf.Min(found.Length, typeName == "Pigeon" ? 3 : typeName == "Duck" || typeName == "Bird" ? 2 : 1); n++)
                 {
                     var animal = ((Component)found[n]).transform;
                     Vector3 oldPos = animal.position;

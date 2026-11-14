@@ -298,7 +298,9 @@ def bird(name, s, c):
         (-0.125, 0.125, 0.012, 0.010), (-0.085, 0.116, 0.038, 0.033), (-0.030, 0.105, 0.058, 0.053),
         (0.025, 0.105, 0.062, 0.060), (0.070, 0.122, 0.050, 0.053), (0.092, 0.150, 0.032, 0.036),
         (0.098, 0.180, 0.018, 0.020))], plumage, segments=8)
-    k.loft([(z * s, y * s, rx * s, ry * s) for z, y, rx, ry in (
+    # tail_len stretches the tail behind its root; tail_lift raises it (a blackbird cocks its long tail)
+    tl, lift = c.get("tail_len", 1.0), c.get("tail_lift", 0.0)
+    k.loft([((-0.105 + (z + 0.105) * tl) * s, (y - (z + 0.105) * tl * lift) * s, rx * s, ry * s) for z, y, rx, ry in (
         (-0.105, 0.124, 0.026, 0.010), (-0.170, 0.112, 0.038, 0.006), (-0.235, 0.100, 0.034, 0.004))], c["tail"])
     for side in (-1, 1):
         k.limb(S(side * 0.022, 0.058, 0.012), S(side * 0.022, 0.008, 0.018), 0.0065 * s, 0.0045 * s, c["feet"], sides=4)
@@ -341,8 +343,18 @@ def bird(name, s, c):
 
 
 def blackbird():
+    # The male: black with a long cocked tail, an orange-yellow bill and eye ring. The wing (metal_dark) and the belly
+    # (cat_fur_light) are a step lighter than the body, so the black bird keeps its form in shade.
     return bird("Blackbird", 0.75, dict(body="charcoal", belly="cat_fur_light", neck="charcoal", tail="black", feet="walnut",
-                                        head="charcoal", beak="a_beak", eye="black", eye_ring="a_beak", wing="metal_dark"))
+                                        head="charcoal", beak="a_beak", eye="black", eye_ring="a_beak", wing="metal_dark",
+                                        tail_len=1.35, tail_lift=0.12))
+
+
+def blackbird_hen():
+    # The female: dark brown, a paler mottled breast, a dull bill and no eye ring.
+    return bird("Blackbird_Hen", 0.74, dict(body="walnut_dark", belly="walnut", neck="walnut_dark", tail="walnut_dark",
+                                            feet="walnut", head="walnut_dark", beak="oak", eye="black", wing="soil",
+                                            tail_len=1.35, tail_lift=0.12))
 
 
 def pigeon():
@@ -550,7 +562,7 @@ def duck(name, drake):
 
 
 BUILDERS = {
-    "Mouse": mouse, "Blackbird": blackbird, "Pigeon": pigeon, "Gull": gull, "Fox": fox, "Zlatenka": tortoise,
+    "Mouse": mouse, "Blackbird": blackbird, "Blackbird_Hen": blackbird_hen, "Pigeon": pigeon, "Gull": gull, "Fox": fox, "Zlatenka": tortoise,
     "Hrozna": hrozna, "Hedgehog": hedgehog,
     "Duck_Drake": lambda: duck("Duck_Drake", True), "Duck_Hen": lambda: duck("Duck_Hen", False),
 }

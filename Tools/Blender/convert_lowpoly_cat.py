@@ -302,6 +302,25 @@ for owner in LEGS:
     e.location = arm.matrix_world @ arm.data.bones[owner].tail_local
     targets[owner] = (e, e.location.copy())
 
+# Hind legs when the cat ducks. The IK above only pins the hock (the end of the shin): with the hips
+# 7 cm lower, the knee folded any way it liked (down to the floor, across the body) and the paw hung
+# from the hock, in the air or dragged behind. For the crouch clips the paw is the target instead: the
+# hock is placed above it, a pole keeps the knee forward, and the foot bone aims at the paw.
+HIND = {"Shin.L": "Foot.L", "Shin.R": "Foot.R"}  # IK owner -> foot bone (hock to paw)
+FOOT_LEN = arm.data.bones["Foot.L"].length
+CROUCH_TUCK = 0.023  # the hind paws step this far forward, under the body
+paw_targets, knee_poles = {}, {}
+for owner, foot in HIND.items():
+    p = bpy.data.objects.new(f"Paw_{owner}", None)
+    scene.collection.objects.link(p)
+    p.location = arm.matrix_world @ arm.data.bones[foot].tail_local
+    paw_targets[owner] = (p, p.location.copy())
+    k = bpy.data.objects.new(f"Knee_{owner}", None)
+    scene.collection.objects.link(k)
+    hip = arm.matrix_world @ arm.data.bones[owner].parent.head_local
+    k.location = hip + Vector((0.6 * hip.x, 0.5, -0.1))  # far ahead, a little outwards
+    knee_poles[owner] = k
+
 
 def leg_offset(u, duty, stride, lift, hover=0.0):
     """Paw path for one leg; u in [0,1). Stance: back along the ground. Swing: forward in an arc.
@@ -322,9 +341,11 @@ def leg_offset(u, duty, stride, lift, hover=0.0):
 PAWS = ("Fingers.L", "Fingers.R", "Toe.L", "Toe.R")
 
 
-def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False):
+def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False, hind_paws=False):
     for owner, (e, base) in targets.items():
         e.animation_data_clear()
+    for owner, (p, base) in paw_targets.items():
+        p.animation_data_clear()
     cons = []
     if use_ik:
         for owner, (e, base) in targets.items():
@@ -343,6 +364,24 @@ def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False):
             c = arm.pose.bones[n].constraints.new("DAMPED_TRACK")
             c.target = aim
             cons.append((n, c))
+    if hind_paws:
+        reset_pose()
+        pose_fn(0.0, 0)
+        for owner, foot in HIND.items():
+            ik = next(c for o, c in cons if o == owner and c.type == "IK")
+            ik.pole_target = knee_poles[owner]
+            # The pole angle depends on the bone roll: take the quarter turn that puts the knee furthest forward.
+            knee_y = {}
+            for deg in (0, 90, 180, -90):
+                ik.pole_angle = math.radians(deg)
+                bpy.context.view_layer.update()
+                knee_y[deg] = (arm.matrix_world @ arm.pose.bones[owner].head).y
+            ik.pole_angle = math.radians(max(knee_y, key=knee_y.get))
+            print(f"CHECK {name} {owner} pole angle {max(knee_y, key=knee_y.get)} (knee y by angle: "
+                  f"{ {d: round(y, 3) for d, y in knee_y.items()} })")
+            c = arm.pose.bones[foot].constraints.new("DAMPED_TRACK")
+            c.target = paw_targets[owner][0]
+            cons.append((foot, c))
     tmp = new_action(name + "_fk")
     for f in range(frames + 1):
         t = f / frames
@@ -357,7 +396,7 @@ def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False):
     baked.name = name
     baked.use_fake_user = True
     for owner, c in cons:
-        if c.type == "DAMPED_TRACK":
+        if c.type == "DAMPED_TRACK" and c.target.name.startswith("Aim_"):
             bpy.data.objects.remove(c.target, do_unlink=True)
         arm.pose.bones[owner].constraints.remove(c)
     bpy.data.actions.remove(tmp)
@@ -381,11 +420,22 @@ def move_world(pb, offset):
     pb.matrix = Matrix.Translation(offset) @ pb.matrix
 
 
-def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0):
+def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0, tuck=None):
+    """tuck (metres): the hind legs are driven from the paw (see HIND), set this far forward of the rest spot."""
     for owner, phase in phases.items():
         e, base = targets[owner]
         out = SIDE * (spread if owner.endswith(".L") else -spread)  # elbows and knees out when low
-        e.location = base + out + (leg_offset((t + phase) % 1.0, duty, stride, lift, hover) if duty else Vector())
+        off = leg_offset((t + phase) % 1.0, duty, stride, lift, hover) if duty else Vector()
+        if tuck is not None and owner in HIND:
+            p, paw_base = paw_targets[owner]
+            p.location = paw_base + out + FWD * tuck + off
+            p.keyframe_insert("location", frame=f)
+            # The foot (hock to paw) lies low while the paw is forward and stands up as the leg pushes off.
+            back = 0.5 - off.dot(FWD) / stride if duty else 0.5   # 0 = paw fully forward, 1 = fully back
+            a = math.radians(30 + 30 * back)
+            e.location = p.location + (UP * math.sin(a) - FWD * math.cos(a)) * FOOT_LEN
+        else:
+            e.location = base + out + off
         e.keyframe_insert("location", frame=f)
 
 
@@ -434,7 +484,7 @@ def crouch_body(pb, w, bob=0.0):
 
 
 def crouch_idle_pose(t, f):
-    set_legs(t, LEGS, 0, 0, 0, f, spread=0.012)
+    set_legs(t, LEGS, 0, 0, 0, f, spread=0.012, tuck=CROUCH_TUCK)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     crouch_body(pb, 2 * w)
@@ -444,7 +494,8 @@ def crouch_idle_pose(t, f):
 
 
 def crouch_walk_pose(t, f):
-    set_legs(t, STALK_LEGS, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT, f, hover=0.35, spread=0.012)
+    set_legs(t, STALK_LEGS, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT, f, hover=0.35, spread=0.012,
+             tuck=CROUCH_TUCK)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     # Two small dips per cycle (one for each hind step), out of phase between hips and shoulders.
@@ -584,8 +635,8 @@ def sit_pose(t, f):
 
 walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True)
 idle = bake_clip("Idle", IDLE_FRAMES, idle_pose, use_ik=True)
-crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True, flat_paws=True)
-crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True, flat_paws=True)
+crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True, flat_paws=True, hind_paws=True)
+crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True, flat_paws=True, hind_paws=True)
 jump = bake_clip("Jump", AIR_FRAMES, jump_pose, use_ik=False)
 fall = bake_clip("Fall", AIR_FRAMES, fall_pose, use_ik=False)
 rear = bake_clip("Rear", IDLE_FRAMES // 2, rear_pose, use_ik=True)

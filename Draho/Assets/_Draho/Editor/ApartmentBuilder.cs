@@ -3841,25 +3841,40 @@ namespace Draho.EditorTools
             var root = new GameObject(e.id).transform;
             root.SetParent(level, false);
             var post = Mat($"Apt_{e.id}_post", Hex(e.post_color), 0.15f);
-            var plank = Mat($"Apt_{e.id}_plank", Hex(e.color), 0.1f);
-            var plankDark = Mat($"Apt_{e.id}_plank2", Hex(e.color) * 0.85f, 0.1f);
+            // Three plank tones (weathered wood is never one colour; two alternating tones read as stripes).
+            var tones = new[]
+            {
+                Mat($"Apt_{e.id}_plank", Hex(e.color), 0.1f),
+                Mat($"Apt_{e.id}_plank2", Hex(e.color) * 0.85f, 0.1f),
+                Mat($"Apt_{e.id}_plank3", Hex(e.color) * 0.93f, 0.1f),
+            };
+            var postCap = Mat($"Apt_{e.id}_postcap", Hex(e.post_color) * 1.06f, 0.15f);
+            var gravelBoard = Mat($"Apt_{e.id}_gravel", Hex(e.post_color) * 0.9f, 0.15f);
             Vector3 At(float along, float y) => alongX ? new Vector3(along, y, line) : new Vector3(line, y, along);
             Vector3 Size(float along, float y, float across) => alongX ? new Vector3(along, y, across) : new Vector3(across, y, along);
             float spacing = e.post_spacing > 0f ? e.post_spacing : 2f;
             int posts = Mathf.Max(1, Mathf.RoundToInt((b - a) / spacing));
             for (int i = 0; i <= posts; i++)
-                Box("Post", At(a + (b - a) * i / posts, (e.h + 0.1f) / 2), Size(0.12f, e.h + 0.1f, 0.12f), post, collider: false)
-                    .transform.SetParent(root, true);
-            const float board = 0.15f, gap = 0.035f;
-            int rows = Mathf.FloorToInt(e.h / (board + gap));
+            {
+                float t = a + (b - a) * i / posts;
+                Box("Post", At(t, (e.h + 0.1f) / 2), Size(0.12f, e.h + 0.1f, 0.12f), post, collider: false).transform.SetParent(root, true);
+                Box("PostCap", At(t, e.h + 0.12f), Size(0.15f, 0.04f, 0.15f), postCap, collider: false).transform.SetParent(root, true);
+            }
             bool hasGap = e.gap_w > 0f;
             float g0 = e.gap_at - e.gap_w / 2, g1 = e.gap_at + e.gap_w / 2, holeTop = 0f;
+            // A concrete gravel board along the bottom (Belgian garden fences stand on one), split round the cat hole.
+            const float baseH = 0.25f;
+            void Gravel(float from, float to) =>
+                Box("GravelBoard", At((from + to) / 2, baseH / 2), Size(to - from, baseH, 0.045f), gravelBoard, collider: false).transform.SetParent(root, true);
+            if (hasGap) { Gravel(a, g0); Gravel(g1, b); } else Gravel(a, b);
+            const float board = 0.15f, gap = 0.035f;
+            int rows = Mathf.FloorToInt((e.h - baseH - 0.02f) / (board + gap));
             void Plank(float from, float to, float y, Material m) =>
                 Box("Plank", At((from + to) / 2, y), Size(to - from, board, 0.03f), m, collider: false).transform.SetParent(root, true);
             for (int r = 0; r < rows; r++)
             {
-                float bottom = 0.04f + r * (board + gap), y = bottom + board / 2;
-                var m = r % 2 == 0 ? plank : plankDark;
+                float bottom = baseH + 0.02f + r * (board + gap), y = bottom + board / 2;
+                var m = tones[(r * 7 + e.id.Length) % 3];
                 if (hasGap && bottom < e.gap_h)
                 {
                     // Loose planks: the bottom rows have a cat-sized hole.
@@ -3881,7 +3896,7 @@ namespace Draho.EditorTools
             AddCollider(g0, g1, holeTop, e.h);
             // The loose plank lies in the grass on the far side.
             var fallen = Box("FallenPlank", At(e.gap_at + 0.1f, 0.02f) + (alongX ? new Vector3(0f, 0f, 0.35f) : new Vector3(0.35f, 0f, 0f)),
-                Size(e.gap_w + 0.5f, 0.03f, board), plankDark, collider: false);
+                Size(e.gap_w + 0.5f, 0.03f, board), tones[1], collider: false);
             fallen.transform.rotation = Quaternion.Euler(0f, 25f, 0f);
             fallen.transform.SetParent(root, true);
         }

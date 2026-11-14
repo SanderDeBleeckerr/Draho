@@ -25,7 +25,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 10 | Drainpipes | code cylinder | **Done, round 10** |
 | 11 | Garden picnic table | code boxes | **Done, round 11** |
 | 12 | Garden lamp | code primitives | **Done, round 12** |
-| 13 | Garden fences (neighbour, end, wild) | code boxes | check scale, posts, planks variation |
+| 13 | Garden fences (neighbour, end, wild) | code boxes | **Done, round 13** |
 | 14 | Garden trees (maple, others) | code blobs | Blender: faceted canopy clusters, trunk |
 | 15 | Lawn, path, terrace | flat colour, tiles | grass variation (vertex colour), path slabs with height |
 | 16 | Ivy wall | `WindFoliage` cards | leaf density, colour |
@@ -182,3 +182,14 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** at night the glass glows inside the dark frame; the frame's posts break the glow into panes.
 - **Checked:** Blender look-dev render; the Unity scene builds with it (no capture view looks at the outside wall
   beside the door yet).
+
+### Round 13: garden fences
+
+- **Review:** the neighbour's fence (1.8 m, concrete posts, horizontal planks) and the wild garden's old fence were
+  identical planks in two alternating tones down to the grass, on bare square posts: stripes, and nothing at the
+  foot. The green mesh fence at the garden end (round "garden end") is fine.
+- **Change (code, `PostFence`):** a concrete gravel board along the bottom (25 cm, the way these fences stand),
+  split round the neighbour fence's cat hole so the hole stays open (now 0-0.45 m); planks start above it in three
+  tones; a slightly lighter cap on every post. The fallen plank by the hole uses the new tones.
+- **Light:** the darker gravel board grounds the fence; the caps catch the sun along the top.
+- **Checked:** Unity `garden` view (Day).

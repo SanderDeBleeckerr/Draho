@@ -380,11 +380,13 @@ namespace Draho.EditorTools
                 LitMaterial("InnerEar", new Color(0.36f, 0.22f, 0.25f), 0.2f),
                 LitMaterial("Whisker", new Color(0.82f, 0.82f, 0.8f), 0.4f),
             }.ToDictionary(m => m.name);
+            materials["FurShell"] = FurShellMaterial("FurShell", materials["Fur"]);
             foreach (var r in model.GetComponentsInChildren<Renderer>())
             {
                 r.sharedMaterials = r.sharedMaterials
                     .Select(m => m != null && materials.TryGetValue(m.name, out var ours) ? ours : m).ToArray();
-                r.shadowCastingMode = ShadowCastingMode.On;
+                // The fur layers cast no shadow: the body under them already does.
+                r.shadowCastingMode = r.sharedMaterial == materials["FurShell"] ? ShadowCastingMode.Off : ShadowCastingMode.On;
                 r.renderingLayerMask |= CatRenderingLayer; // only the hero cat gets the rim light
             }
 
@@ -415,6 +417,30 @@ namespace Draho.EditorTools
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabDir + "/Drahomil.prefab");
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        /// <summary>
+        /// The fur layers (the DrahomilFur mesh, shader Draho/ShellFur) in the colour of a cat's Fur material.
+        /// Length, density and the other looks are set here, so a rebuild resets them.
+        /// </summary>
+        static Material FurShellMaterial(string name, Material fur)
+        {
+            string path = $"{MaterialDir}/{name}.mat";
+            var shader = Shader.Find("Draho/ShellFur");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.SetColor("_BaseColor", fur.GetColor("_BaseColor"));
+            mat.SetFloat("_FurLength", 0.009f);
+            mat.SetFloat("_Density", 420f);
+            mat.SetFloat("_RootShade", 0.65f);
+            mat.SetColor("_TipColor", new Color(1.25f, 1.25f, 1.32f, 1f));
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         /// <summary>Face textures painted by Tools/Blender/convert_lowpoly_cat.py (clamped: they cover one part each).</summary>
@@ -449,9 +475,14 @@ namespace Draho.EditorTools
             animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ArtDir + "/Cat/Drahomil.controller");
             animator.applyRootMotion = false;
             var furMat = LitMaterial($"Fur_{name}", fur, 0.3f);
+            var shellMat = FurShellMaterial($"FurShell_{name}", furMat);
             foreach (var r in model.GetComponentsInChildren<Renderer>())
+            {
                 r.sharedMaterials = r.sharedMaterials.Select(m =>
-                    m == null ? m : m.name == "Fur" ? furMat : AssetDatabase.LoadAssetAtPath<Material>($"{MaterialDir}/{m.name}.mat") ?? m).ToArray();
+                    m == null ? m : m.name == "Fur" ? furMat : m.name == "FurShell" ? shellMat
+                    : AssetDatabase.LoadAssetAtPath<Material>($"{MaterialDir}/{m.name}.mat") ?? m).ToArray();
+                if (r.sharedMaterial == shellMat) r.shadowCastingMode = ShadowCastingMode.Off;
+            }
             return root;
         }
 

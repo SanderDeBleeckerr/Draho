@@ -32,6 +32,8 @@ ap.add_argument("--out", required=True)
 ap.add_argument("--renders")
 ap.add_argument("--textures", help="where to write CatEye.png / CatNose.png (default: <out dir>/Textures)")
 ap.add_argument("--subdiv", type=int, default=1, help="Catmull-Clark levels on the body (0 = the source mesh)")
+ap.add_argument("--fur-shells", type=int, default=8,
+                help="layers of the fur shell mesh DrahomilFur for Draho/ShellFur (0 = no fur mesh)")
 ap.add_argument("--shading", choices=("facet", "soft"), default="soft",
                 help="facet: flat faces; soft: smooth with sharp ridges (see step 3b)")
 args = ap.parse_args(argv)
@@ -1053,10 +1055,91 @@ size = [max(v.co[i] for v in body.data.vertices) - min(v.co[i] for v in body.dat
 print(f"CHECK size x {size[0]:.3f} y {size[1]:.3f} z {size[2]:.3f} m (y = nose to tail tip)")
 
 # ---------------------------------------------------------------------------
+# 5b. Fur shells for Unity's Draho/ShellFur shader (docs/ART_STYLE.md §4).
+#     Strand fur (Blender's hair curves) cannot run in a phone browser. Shell fur can: the fur surface is
+#     drawn in several layers and the shader cuts each layer into strand dots. WebGL has no geometry shader
+#     to make the layers, so they are in the mesh: N copies of the fur faces, all at the skin (the shader
+#     pushes them out, so the rest-pose size check in Unity still sees the plain cat).
+#     UVMap = (layer 1/N..1, rest z), FurRest = (rest x, rest y): the strand pattern is a function of the
+#     rest position, so it needs no unwrap and stays fixed on the skin. FurMask.x = fur length 0..1.
+# ---------------------------------------------------------------------------
+fur = None
+if args.fur_shells > 0:
+    fur_slot = next(i for i, m in enumerate(body.data.materials) if m.name == "Fur")
+    fur_mesh = body.data.copy()
+    fur_mesh.name = "DrahomilFur"
+    fur = bpy.data.objects.new("DrahomilFur", fur_mesh)
+    scene.collection.objects.link(fur)
+    for vg in body.vertex_groups:  # same order as the body: the copied weights refer to the group index
+        fur.vertex_groups.new(name=vg.name)
+    fur.parent = arm
+    fur.matrix_parent_inverse = body.matrix_parent_inverse.copy()
+    fur.matrix_world = body.matrix_world
+    fur.modifiers.new("Armature", "ARMATURE").object = arm
+    # Fur length per vertex (0..1): none round the eyes, nose, mouth and inner ears (the layers would cover
+    # them), shorter on the head, ears and lower legs, full on the body and tail.
+    from mathutils.kdtree import KDTree  # noqa: E402
+    face_slots = {i for i, m in enumerate(body.data.materials) if m.name in ("Eye", "Pupil", "Nose", "InnerEar")}
+    face_verts = sorted({vi for p in body.data.polygons if p.material_index in face_slots for vi in p.vertices})
+    near_face = KDTree(len(face_verts))
+    for n, vi in enumerate(face_verts):
+        near_face.insert(body.data.vertices[vi].co, n)
+    near_face.balance()
+    part_length = {"Head": 0.55, "Neck": 0.8, "Ear.L": 0.3, "Ear.R": 0.3}
+    for side in ("L", "R"):
+        part_length.update({f"Forearm.{side}": 0.7, f"Shin.{side}": 0.7, f"Hand.{side}": 0.45,
+                            f"Fingers.{side}": 0.4, f"Foot.{side}": 0.5, f"Toe.{side}": 0.4})
+    group_length = {vg.index: part_length.get(vg.name, 1.0) for vg in body.vertex_groups}
+    fur_length = []
+    for v in body.data.vertices:
+        total = sum(g.weight for g in v.groups) or 1.0
+        length = sum(g.weight * group_length[g.group] for g in v.groups) / total if v.groups else 1.0
+        gap = near_face.find(v.co)[2]
+        length *= smooth01((gap - 0.003) / 0.015)   # 0 within 3 mm of a face part, full from 18 mm
+        fur_length.append(length)
+
+    bm = bmesh.new()
+    bm.from_mesh(fur_mesh)
+    rest_layer = bm.loops.layers.uv.new("FurRest")  # Unity: uv1 (the layer order is the channel order)
+    mask_layer = bm.loops.layers.uv.new("FurMask")  # Unity: uv2
+    for f in bm.faces:  # before the delete: the vertex indices still match the body's
+        for loop in f.loops:
+            loop[mask_layer].uv = (fur_length[loop.vert.index], 0.0)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index != fur_slot], context="FACES")
+    for f in bm.faces:
+        f.smooth = True
+        f.material_index = 0
+    for e in bm.edges:  # no sharp edges: split normals would open gaps between the pushed-out layers
+        e.smooth = True
+    uv_layer = bm.loops.layers.uv["UVMap"]
+
+    def tag_shell(faces, layer):
+        for f in faces:
+            for loop in f.loops:
+                co = loop.vert.co
+                loop[uv_layer].uv = (layer, co.z)
+                loop[rest_layer].uv = (co.x, co.y)
+
+    skin = bm.verts[:] + bm.edges[:] + bm.faces[:]
+    skin_faces = bm.faces[:]
+    for i in range(2, args.fur_shells + 1):
+        copy = bmesh.ops.duplicate(bm, geom=skin)["geom"]
+        tag_shell([g for g in copy if isinstance(g, bmesh.types.BMFace)], i / args.fur_shells)
+    tag_shell(skin_faces, 1 / args.fur_shells)
+    bm.to_mesh(fur_mesh)
+    bm.free()
+    if "custom_normal" in fur_mesh.attributes:
+        fur_mesh.attributes.remove(fur_mesh.attributes["custom_normal"])
+    fur_mesh.materials.clear()
+    fur_mesh.materials.append(material("FurShell", (0.03, 0.03, 0.035), 0.9))
+    print(f"CHECK fur shells {args.fur_shells}: {sum(len(p.vertices) - 2 for p in fur_mesh.polygons)} triangles, "
+          f"{len(fur_mesh.vertices)} vertices, uv layers {[u.name for u in fur_mesh.uv_layers]}")
+
+# ---------------------------------------------------------------------------
 # 6. Export
 # ---------------------------------------------------------------------------
 os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
-select_only(arm, body)
+select_only(arm, body, *([fur] if fur else []))
 arm.animation_data.action = idle
 scene.frame_set(0)  # the stored pose must be a standing cat (Unity checks the facing with it)
 bpy.ops.export_scene.fbx(
@@ -1072,6 +1155,8 @@ print("EXPORTED", args.out)
 # ---------------------------------------------------------------------------
 if args.renders:
     os.makedirs(args.renders, exist_ok=True)
+    if fur:
+        fur.hide_render = True  # the layers lie on the skin until Unity's shader pushes them out
     bpy.ops.mesh.primitive_plane_add(size=4)
     bpy.context.object.data.materials.append(material("Floor", (0.45, 0.43, 0.4), 0.8))
     world = bpy.data.worlds.new("W")

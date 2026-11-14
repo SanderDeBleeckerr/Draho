@@ -43,6 +43,9 @@ namespace Draho.EditorTools
                 Transform t = cat.transform;
                 Debug.Log($"ARTCAPTURE cat at {t.position} facing {t.forward}");
                 list.Add(("cat", t.position + t.right * 0.95f + Vector3.up * 0.28f, t.position + Vector3.up * 0.16f));
+                // Close on the face from the front quarter: the fur must leave the eyes and nose clear.
+                list.Add(("cat_face", t.position + t.forward * 0.62f + t.right * 0.2f + Vector3.up * 0.26f,
+                    t.position + t.forward * 0.24f + Vector3.up * 0.2f));
             }
             list.AddRange(FixedViews);
             return list.ToArray();

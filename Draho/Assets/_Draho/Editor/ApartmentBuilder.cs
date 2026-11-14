@@ -430,10 +430,16 @@ namespace Draho.EditorTools
             b = WorldBounds(door);
             door.transform.position += root.position - new Vector3(b.center.x, b.min.y, b.center.z);
 
+            // The Sketchfab frames are open shells (the frame has 263 open edges, the sliding sash 132: whole sides were
+            // never modelled). Drawn one-sided, those sides were culled and the frame looked transparent from inside
+            // once the sash had slid open. Render the frame from both sides.
+            var doorFrame = Mat("Apt_DoorFrame", new Color(0.93f, 0.93f, 0.92f), 0.4f);
+            doorFrame.SetFloat("_Cull", (float)CullMode.Off);
+            EditorUtility.SetDirty(doorFrame);
             foreach (var r in door.GetComponentsInChildren<Renderer>())
             {
                 r.sharedMaterials = r.sharedMaterials.Select(m =>
-                    m != null && m.name.Contains("Glass") ? GlassMat() : Mat("Apt_DoorFrame", new Color(0.93f, 0.93f, 0.92f), 0.4f)).ToArray();
+                    m != null && m.name.Contains("Glass") ? GlassMat() : doorFrame).ToArray();
                 // The panes let the daylight in (WindowLight); the thin frames cast too little shadow to miss.
                 if (r.sharedMaterials.Any(m => m == GlassMat())) r.shadowCastingMode = ShadowCastingMode.Off;
             }

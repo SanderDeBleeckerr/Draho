@@ -17,7 +17,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 2 | Back counter (sink, coffee machine) | Kenney cabinets, flat top | **Done, round 2** |
 | 3 | Fridge column | Kenney fridge, stretched | **Done, round 3** |
 | 4 | Plant stand by the sliding door | Kenney potted plant | **Done, round 4** |
-| 5 | Sliding door | Sketchfab, white | check glass sorting (owner's "transparent frame" glitch), frame colour |
+| 5 | Sliding door | Sketchfab, white | **Done, round 5** (transparent-frame glitch) |
 | 6 | Front door | code boxes | Blender: panelled leaf, handle, frame |
 | 7 | Ceiling and lamps | flat box, no fittings | Blender: ceiling lights (pendant over the island, shade in the living room) |
 | 8 | Walls and floor | flat colour, tile texture | subtle plaster gradient, skirting colour, tile grout check |
@@ -91,3 +91,14 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   greens with a few lighter blades so the clump reads against the wall.
 - **Light:** the window light catches the faceted blades (each face its own tone); the pot sits in the floor patch.
 - **Checked:** Blender look-dev render; Unity `sliding_door` view (Day).
+
+### Round 5: sliding door
+
+- **Review:** the owner saw the frame "lose its solidity" from inside once the door had slid open. Materials were
+  right (frame opaque, panes glass, checked per sub-mesh in Unity). The cause is the Sketchfab mesh: in Blender the
+  frame has 263 open edges and the sliding sash 132, so whole sides of the profiles were never modelled. Drawn
+  one-sided, those sides were culled, and from some angles inside you looked through the frame.
+- **Change:** the door frame material renders both sides (`_Cull` off). No new geometry needed.
+- **Light:** the frame casts the window light's shadow onto the floor; the panes cast none (round 4 of the lighting).
+- **Checked:** Unity with the door forced open (`ArtCapture -captureOpenDoors`), `living_low` and `sliding_door`
+  views; the frame material is saved with `_Cull: 0`.

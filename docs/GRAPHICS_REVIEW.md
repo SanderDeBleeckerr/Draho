@@ -19,7 +19,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 4 | Plant stand by the sliding door | Kenney potted plant | **Done, round 4** |
 | 5 | Sliding door | Sketchfab, white | **Done, round 5** (transparent-frame glitch) |
 | 6 | Front door | code boxes | **Done, round 6** |
-| 7 | Ceiling and lamps | flat box, no fittings | Blender: ceiling lights (pendant over the island, shade in the living room) |
+| 7 | Ceiling and lamps | flat box, no fittings | **Done, round 7** |
 | 8 | Walls and floor | flat colour, tile texture | subtle plaster gradient, skirting colour, tile grout check |
 | 9 | Court light well (shaft walls, windows, gutter) | code boxes | window frames and sills in Blender |
 | 10 | Drainpipe | code cylinder | Blender: segments, brackets, shoe |
@@ -113,3 +113,15 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** in the kitchen's shade the mouldings and the metal handle are what read; the court light reaches it in
   the evening.
 - **Checked:** Blender look-dev render; Unity `kitchen` view (Evening); collider probe.
+
+### Round 7: ceiling lamps
+
+- **Review:** the living-room and kitchen lamps were point lights with nothing to see: light from nowhere. At Night
+  the room stayed one blue tone (the lamps were weak: 1.3 and 1.6).
+- **Change:** Blender fittings at real height (Art/Furniture/lamp_[layout id].fbx, about 530 triangles each): over
+  the island a dark metal dome pendant with a pale inside, in the living room a linen drum shade with a diffuser,
+  both on a cord from a ceiling rose. A small bulb in each with an emissive material that IndoorLight switches with
+  the lamps (dark by day, warm from the evening). Lamps 1.3 -> 2.2 (living) and 1.6 -> 2.4 (kitchen).
+- **Light:** at Night the lamp now warms the ceiling, the back wall and the rug while the window side stays moonlit
+  blue: the cool/warm split of ART_STYLE §3.
+- **Checked:** Blender export (heights 2.18-2.6 m); Unity `living` and `living_low` views (Night).

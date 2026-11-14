@@ -4183,6 +4183,22 @@ namespace Draho.EditorTools
                 light.range = l.range;
                 light.shadows = LightShadows.None; // cheap on the phone
                 lamps.Add(light);
+                // The fitting (Blender, Art/Furniture/lamp_[id].fbx, built at real height) and a glowing bulb in it.
+                var fitting = FurnitureModel($"lamp_{l.id}", level);
+                if (fitting != null)
+                {
+                    fitting.position = new Vector3(l.x, 0f, l.z);
+                    foreach (var r in fitting.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+                    var bulb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    bulb.name = $"{l.id}_bulb";
+                    Object.DestroyImmediate(bulb.GetComponent<Collider>());
+                    bulb.transform.SetParent(level, false);
+                    bulb.transform.position = new Vector3(l.x, l.y - 0.08f, l.z);
+                    bulb.transform.localScale = Vector3.one * 0.07f;
+                    var br = bulb.GetComponent<Renderer>();
+                    br.sharedMaterial = BulbMat();
+                    br.shadowCastingMode = ShadowCastingMode.Off;
+                }
             }
 
             Light Spot(string name, Vector3 pos, Vector3 target, float angle, float range, Color color, bool shadows)
@@ -4243,7 +4259,21 @@ namespace Draho.EditorTools
                 }
             }
             var openAir = (layout.courts ?? new Court[0]).Select(x => Rect.MinMaxRect(x.x0, x.z0, x.x1, x.z1)).ToArray();
-            new GameObject("IndoorLight").AddComponent<IndoorLight>().Configure(window, court, lamps.ToArray(), spots.ToArray(), fittings.ToArray(), openAir);
+            var indoor = new GameObject("IndoorLight").AddComponent<IndoorLight>();
+            indoor.Configure(window, court, lamps.ToArray(), spots.ToArray(), fittings.ToArray(), openAir);
+            indoor.SetBulbs(BulbMat());
+        }
+
+        /// <summary>The ceiling lamps' bulbs: warm emissive, switched with the lamps by IndoorLight.</summary>
+        static Material BulbMat()
+        {
+            if (materials.TryGetValue("Apt_Bulb", out var m)) return m;
+            m = Mat("Apt_Bulb", new Color(1f, 0.93f, 0.78f), 0.5f);
+            m.EnableKeyword("_EMISSION");
+            m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            m.SetColor("_EmissionColor", Color.black); // off by day; IndoorLight turns it on with the lamps
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         // ------------------------------------------------------------------ story: chapter 1

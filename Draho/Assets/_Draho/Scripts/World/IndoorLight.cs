@@ -26,9 +26,14 @@ namespace Draho.World
         static readonly Color Dusk = new Color(0.98f, 0.78f, 0.56f);
         static readonly Color Moonlight = new Color(0.55f, 0.64f, 0.85f);
 
+        [SerializeField] Material bulbs;
+
         CatMotor cat;
         float inside;
         float[] lampBase;
+
+        /// <summary>The ceiling lamps' bulb material: it glows when the lamps are on.</summary>
+        public void SetBulbs(Material bulbMaterial) => bulbs = bulbMaterial;
 
         public void Configure(Light windowLight, Light courtLight, Light[] roomLamps, Light[] spots, Renderer[] fittings, Rect[] openAir)
         {
@@ -85,6 +90,7 @@ namespace Draho.World
                     lamps[i].intensity = lampBase[i] * lampsOn;
                     lamps[i].enabled = lampsOn > 0.01f;
                 }
+            if (bulbs != null) bulbs.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.55f) * (2.2f * lampsOn));
             float spots = Mathf.Lerp(4f, 7f, lampsOn);   // 2.6 m from the counter: a warm pool on the sink
             if (sinkSpots != null)
                 foreach (var s in sinkSpots)

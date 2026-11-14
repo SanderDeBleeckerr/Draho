@@ -476,6 +476,31 @@ def front_door_leaf():
 
 
 @prop
+def lamp_kitchen_lamp():
+    """Pendant over the kitchen island (the layout lamp "kitchen_lamp" hangs its light at 2.3 m): a ceiling rose, a
+    cord and a dark metal dome shade with a pale inside, open at the bottom (the bulb is added in Unity, emissive).
+    Built at real height: origin on the floor under the lamp, the ceiling at 2.6 m."""
+    C = 2.6
+    parts = [ds.cylinder("Rose", (0, 0, C - 0.03), 0.05, 0.03, "metal_dark", segments=12, bevel=0.004),
+             ds.cylinder("Cord", (0, 0, 2.38), 0.004, C - 0.03 - 2.38, "black", segments=6, bevel=0),
+             ds.cylinder("ShadeTop", (0, 0, 2.34), 0.04, 0.04, "metal_dark", segments=12, bevel=0.003),
+             ds.cylinder("Shade", (0, 0, 2.18), 0.19, 0.16, "metal_dark", segments=20, radius_top=0.05, bevel=0.004),
+             ds.cylinder("ShadeInside", (0, 0, 2.185), 0.18, 0.15, "cream", segments=20, radius_top=0.045, bevel=0)]
+    return parts
+
+
+@prop
+def lamp_living_lamp():
+    """Living-room ceiling lamp (layout "living_lamp", light at 2.3 m): a ceiling rose, a cord and a linen drum
+    shade with a diffuser disc at the bottom (the bulb is added in Unity). Origin on the floor under the lamp."""
+    C = 2.6
+    return [ds.cylinder("Rose", (0, 0, C - 0.03), 0.05, 0.03, "white", segments=12, bevel=0.004),
+            ds.cylinder("Cord", (0, 0, 2.42), 0.004, C - 0.03 - 2.42, "white", segments=6, bevel=0),
+            ds.cylinder("Drum", (0, 0, 2.18), 0.24, 0.24, "linen", segments=24, bevel=0.003),
+            ds.cylinder("Diffuser", (0, 0, 2.19), 0.235, 0.004, "pale_yellow", segments=24, bevel=0)]
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

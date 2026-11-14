@@ -539,21 +539,6 @@
    "note": "Chapter 8: holds at 3.3 m (the jingle ball). Chapter 10: the story lets it go on to the gutter at 8.8 m."
   },
   {
-   "id": "shed_ivy",
-   "type": "ivy",
-   "label": "Ivy up the back wall of the shed at the garden end (the way home at night)",
-   "x": -27.0,
-   "z": 5.0,
-   "w": 1.6,
-   "d": 0.12,
-   "h": 4.2,
-   "climb_top": 4.2,
-   "bottom": 0.0,
-   "standable": true,
-   "color": "#2F4A26",
-   "top_color": "#3C5A2E"
-  },
-  {
    "id": "bank_alder",
    "type": "tree",
    "label": "Alder on the river bank",

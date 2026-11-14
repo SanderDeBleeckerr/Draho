@@ -28,7 +28,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 13 | Garden fences (neighbour, end, wild) | code boxes | **Done, round 13** |
 | 14 | Climbable trees (maple, bank alder) | code blobs | **Done, round 14** |
 | 15 | Lawn, path, terrace | flat colour, tiles | **Done, round 15** (grass tufts) |
-| 16 | Ivy wall | `WindFoliage` cards | leaf density, colour |
+| 16 | Ivy | leaf mesh | **Done, round 16** (and the chapter 9 route) |
 | 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | Blender props |
 | 18 | Humans (legs at the door) | code cylinders | Blender: legs, shoes, coat hem |
 | 19 | Mouse | Blender (animals) | fur/colour check at cat height |
@@ -215,3 +215,15 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   stone path; random size and turn, one shared palette material, no colliders, no shadows, seeded (same every build).
 - **Light:** the blades catch the low sun at their tips; at the base of the wall they soften the line.
 - **Checked:** Unity `garden` view (Day).
+
+### Round 16: ivy, and a broken route home
+
+- **Review:** the garden ivy and the begijnhof ivy are one leaf mesh each (many small pointed leaves, denser at the
+  top, ragged at the bottom, a four-colour strip): they read well and move with the wind; no change. But the third
+  ivy, `shed_ivy`, grew up the back of the outbuilding at the garden end, which was removed when the owner asked for
+  the green fence with open space behind it: it stood 4.2 m tall in mid-air, and chapter 9's way home ("climb the ivy
+  on the shed onto its roof") could no longer be done.
+- **Change:** `shed_ivy` removed. Chapter 9 now ends the night walk over the low green fence: from the river bank,
+  across the neighbours' grass, onto the fence top (1.0 m, within the cat's 1.05 m jump), then down into the garden.
+  The beat's target and check follow the fence (cat on top: y > 0.85, within 0.45 m of x = -24).
+- **Checked:** the Unity scene builds; layout JSON valid.

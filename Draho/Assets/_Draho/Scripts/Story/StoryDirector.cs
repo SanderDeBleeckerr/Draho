@@ -495,14 +495,17 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The river bank! The water whispers in the dark, and an old lamp-post hums on the quay. Home is close: ivy grows up the back of the shed at the end of your own garden.",
-                    Goal = "Climb the ivy on the shed (hold the middle of the stick) and get onto its roof.",
-                    Target = () => new Vector3(-27f, 2f, 5.1f),
-                    Done = () => cat.transform.position.y > 3.9f && cat.transform.position.x > -28.2f && cat.transform.position.x < -23.8f && cat.transform.position.z < 5.05f,
+                    // The garden end is a low green fence now (owner, November 2026; the shed with the ivy is gone):
+                    // from the river bank, across the neighbours' grass, up onto the fence.
+                    Story = "The river bank! The water whispers in the dark, and an old lamp-post hums on the quay. Home is close: across the grass is the low green fence at the end of your own garden.",
+                    Goal = "Cross the grass and jump onto the green fence at the end of your garden.",
+                    Target = () => new Vector3(-24f, 1.0f, 2.5f),
+                    Done = () => cat.transform.position.y > 0.85f && Mathf.Abs(cat.transform.position.x + 24f) < 0.45f
+                                 && cat.transform.position.z > 0f && cat.transform.position.z < 5f,
                 },
                 new Beat
                 {
-                    Story = "From the shed roof you see your own garden, silver in the moonlight, and the warm lamp by your door.",
+                    Story = "From the top of the fence you see your own garden, silver in the moonlight, and the warm lamp by your door.",
                     Goal = "Jump down into your garden and go home to the lamp by the door.",
                     Target = () => gardenLamp != null ? gardenLamp.position : (Vector3?)null,
                     Done = () => InGarden(cat.transform.position) && gardenLamp != null && Vector3.Distance(cat.transform.position, gardenLamp.position - Vector3.up * 1.9f) < 2.5f,

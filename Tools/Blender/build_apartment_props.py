@@ -560,6 +560,41 @@ def pipe_shoe():
 
 
 @prop
+def picnic_table():
+    """1.8 x 1.5 x 0.75 m garden picnic table with fixed benches (owner's pin), weathered grey wood: five top planks
+    with 1 cm gaps, two planks per bench at 0.43 m, crossed A-frame legs at each end with a cross bar under the
+    benches, a centre brace and bolt heads. The collider follows the mesh: bench -> table jumps, free underneath."""
+    import random
+    rnd = random.Random(8)
+    W, D, H = 1.8, 1.5, 0.75
+    top_d, n_top = 0.75, 5
+    pw = top_d / n_top
+    woods = ("warm_grey", "grey_stone", "stone")
+    parts = []
+    for i in range(n_top):
+        y = -top_d / 2 + pw * (i + 0.5)
+        parts.append(ds.box("TopPlank", (0, y, H - 0.02), (W, pw - 0.01, 0.04), rnd.choice(woods), bevel=0.005))
+    bench_y = D / 2 - 0.13
+    for s in (-1, 1):
+        for k in (-1, 1):
+            parts.append(ds.box("BenchPlank", (0, s * bench_y + k * 0.065, 0.43), (W, 0.12, 0.035), rnd.choice(woods), bevel=0.005))
+    for e in (-1, 1):
+        x = e * (W / 2 - 0.22)
+        for s in (-1, 1):                                                   # the A: two legs from the top to the ground
+            leg = ds.box("Leg", (0, 0, 0), (0.07, 0.07, 0.9), "grey_stone", bevel=0.006)
+            leg.rotation_euler.x = math.radians(s * 34)
+            leg.location = (x, s * 0.26, 0.37)
+            parts.append(leg)
+        parts.append(ds.box("CrossBar", (x, 0, 0.395), (0.07, D - 0.06, 0.05), "grey_stone", bevel=0.005))  # carries the benches
+        parts.append(ds.box("TopBar", (x, 0, H - 0.07), (0.07, top_d - 0.04, 0.05), "grey_stone", bevel=0.005))
+        for s in (-1, 1):
+            parts.append(ds.cylinder("Bolt", (x - 0.036, s * 0.2, 0.395), 0.012, 0.006, "metal_dark", segments=6, bevel=0))
+    brace = ds.box("Brace", (0, 0, 0.42), (W - 0.5, 0.05, 0.05), "grey_stone", bevel=0.005)
+    parts.append(brace)
+    return parts
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

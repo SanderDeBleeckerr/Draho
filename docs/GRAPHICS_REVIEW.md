@@ -23,7 +23,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 8 | Walls, ceiling and floor | flat colour, tile texture | **Done, round 8** |
 | 9 | Court light well (shaft walls, windows, gutter) | code boxes | **Done, round 9** |
 | 10 | Drainpipes | code cylinder | **Done, round 10** |
-| 11 | Garden picnic table | code boxes | Blender: planks, A-frame legs |
+| 11 | Garden picnic table | code boxes | **Done, round 11** |
 | 12 | Garden lamp | code primitives | Blender: lantern with glass |
 | 13 | Garden fences (neighbour, end, wild) | code boxes | check scale, posts, planks variation |
 | 14 | Garden trees (maple, others) | code blobs | Blender: faceted canopy clusters, trunk |
@@ -160,3 +160,13 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** the collars and the dark brackets break the pipe into readable lengths; the smooth zinc catches the
   well's sky light along one side.
 - **Checked:** Blender export (bounds); Unity `court_window` view (Day).
+
+### Round 11: garden picnic table
+
+- **Review:** code boxes: plank strips, two bench slabs and tilted sticks for legs that did not meet the frame.
+- **Change:** Blender model `picnic_table` (2,024 triangles, weathered grey woods from the palette): five top planks
+  with 1 cm gaps, two planks per bench, crossed A-frame legs at each end with a bar under the benches and one under
+  the top, a centre brace, bolt heads. Collider shaped from the mesh (bench -> table jumps, free underneath). The
+  layout's `facing` is now "south" (the code builder ignored it; this keeps the table along the garden).
+- **Light:** full sun on the terrace by day: the plank gaps and the leg shadows give it texture.
+- **Checked:** Blender look-dev render; Unity `garden` view (Day).

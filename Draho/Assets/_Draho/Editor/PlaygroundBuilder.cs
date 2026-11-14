@@ -109,6 +109,8 @@ namespace Draho.EditorTools
             SetIfFound(so, "m_SupportsHDR", true);
             SetIfFound(so, "m_SupportsLightCookies", true); // cloud shadows on the sun (keep the cookie shader variants)
             SetIfFound(so, "m_SupportsLightLayers", true);  // "Use Rendering Layers": the rim light lights only the cat
+            SetIfFound(so, "m_AdditionalLightShadowsSupported", true); // the window light's shadow (IndoorLight)
+            SetIfFound(so, "m_AdditionalLightsShadowmapResolution", 1024);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(urp);
 

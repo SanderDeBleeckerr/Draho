@@ -38,6 +38,11 @@ namespace Draho.World
         [Tooltip("Birds watch only their own flock (the court pigeons, the bakery gull).")]
         [SerializeField] string group = "court";
 
+        [Tooltip("Never on the ground: the pigeon hops between its perches (the court pigeons sit on the light-well sills).")]
+        [SerializeField] bool stayUp;
+        [Tooltip("With stayUp: the cat counts as touching a perched pigeon this close (flat), e.g. from the drainpipe.")]
+        [SerializeField] float reachRadius = 1.1f;
+
         [Header("Moves")]
         [SerializeField] float flySpeed = 3f;
         [SerializeField] float walkSpeed = 0.25f;
@@ -64,6 +69,9 @@ namespace Draho.World
             yard = yardRect;
         }
 
+        /// <summary>Court pigeons up on the sills: they never land on the stones (the builder sets this).</summary>
+        public void StayUp(float reach) { stayUp = true; reachRadius = reach; }
+
         void Awake()
         {
             if (head != null) headHome = head.localPosition; // each species has its own neck
@@ -71,6 +79,13 @@ namespace Draho.World
             walkTarget = transform.position;
             phase = Random.value * 10f;
             timer = Random.Range(0.5f, 2f);
+            if (transform.position.y > 0.5f)
+            {
+                // Placed on a perch by the builder.
+                state = State.Perched;
+                to = transform.position;
+                timer = Random.Range(5f, 12f);
+            }
         }
 
         void OnEnable() => flock.Add(this);
@@ -187,6 +202,23 @@ namespace Draho.World
         {
             timer -= dt;
             if (head != null) head.localRotation = Quaternion.Euler(0f, Mathf.Sin(phase * 1.1f) * 50f, 0f); // looks down at the cat
+            if (stayUp)
+            {
+                // The cat climbed up close (the drainpipe reaches the sills): that counts as touching it.
+                if (cat != null && !WasTouched && Flat(transform.position - cat.transform.position).magnitude < reachRadius
+                    && Mathf.Abs(transform.position.y - cat.transform.position.y) < 1.2f)
+                {
+                    WasTouched = true;
+                    if (group == "court") AnyTouched = true;
+                    Debug.Log($"STORY {group} bird reached on its perch");
+                    TakeOff("reached on its perch");
+                    return;
+                }
+                if (timer > 0f) return;
+                FlyTo(PickPerch()); // a hop to another sill or the gutter
+                timer = Random.Range(8f, 16f);
+                return;
+            }
             if (timer > 0f) return;
             // Come back down to a spot away from the cat; wait while the cat is right under the perch.
             Vector3 best = RandomSpot();
@@ -211,6 +243,7 @@ namespace Draho.World
             float bestScore = float.MinValue;
             foreach (var p in perches)
             {
+                if (stayUp && (p - transform.position).sqrMagnitude < 0.04f) continue; // a hop goes somewhere else
                 float taken = 0f;
                 foreach (var other in flock)
                     if (other != this && Vector3.Distance(other.to, p) < 0.2f) taken = 3f;

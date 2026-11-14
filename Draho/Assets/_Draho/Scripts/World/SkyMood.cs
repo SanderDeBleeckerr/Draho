@@ -204,14 +204,27 @@ namespace Draho.World
                 blend = Mathf.Min(1f, blend + Time.deltaTime / duration);
                 Apply(Lerp(from, to, Smooth(blend)));
             }
-            if (flash <= 0f) return;
-            // Two quick bright pulses, then the dark again.
-            flash = Mathf.Max(0f, flash - Time.deltaTime * 2.5f);
-            float pulse = flash > 0.75f || (flash > 0.45f && flash < 0.6f) ? flash : 0f;
-            if (sun != null) sun.intensity = now.sunIntensity + pulse * 2.2f;
-            RenderSettings.ambientSkyColor = now.sky + new Color(0.45f, 0.5f, 0.65f) * pulse;
-            RenderSettings.ambientEquatorColor = now.equator + new Color(0.3f, 0.32f, 0.4f) * pulse;
+            float pulse = 0f;
+            if (flash > 0f)
+            {
+                // Two quick bright pulses, then the dark again.
+                flash = Mathf.Max(0f, flash - Time.deltaTime * 2.5f);
+                pulse = flash > 0.75f || (flash > 0.45f && flash < 0.6f) ? flash : 0f;
+                if (sun != null) sun.intensity = now.sunIntensity + pulse * 2.2f;
+            }
+            // Indoors the sky light only comes in through the windows (IndoorLight): the ambient fill is dimmer, so the
+            // window and the lamps light the room instead of an even glow on every surface.
+            float dim = Mathf.Lerp(1f, IndoorAmbient, Indoors);
+            RenderSettings.ambientSkyColor = (now.sky + new Color(0.45f, 0.5f, 0.65f) * pulse) * dim;
+            RenderSettings.ambientEquatorColor = (now.equator + new Color(0.3f, 0.32f, 0.4f) * pulse) * dim;
+            RenderSettings.ambientGroundColor = now.ground * dim;
         }
+
+        /// <summary>0 outdoors .. 1 inside the flat (set by IndoorLight, smoothed).</summary>
+        public static float Indoors { get; set; }
+
+        /// <summary>The share of the sky's ambient light that reaches inside the flat.</summary>
+        public const float IndoorAmbient = 0.6f;
 
         static float Smooth(float t) => t * t * (3f - 2f * t);
 

@@ -53,6 +53,9 @@ namespace Draho.World
             home = transform.position;
             homeRotation = transform.rotation;
             done = Progress.Instance != null && Progress.Instance.IsDone(id);
+            // Hidden until the epilogue. `shown` starts false, so Show(false) alone did nothing: the gifts stayed
+            // visible all game (the gull feather floating on the roof, the bottle cap in the court).
+            shown = true;
             Show(false);
             if (carried == this) carried = null;
         }

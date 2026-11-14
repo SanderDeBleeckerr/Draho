@@ -111,7 +111,7 @@ namespace Draho.Story
             float bestD = float.MaxValue;
             foreach (var b in pigeons)
             {
-                if (b == null || !b.OnGround) continue;
+                if (b == null) continue; // the court pigeons sit up on the ledges now, not on the ground
                 float d = Vector3.Distance(b.transform.position, cat.transform.position);
                 if (d < bestD) { bestD = d; best = b.transform.position; }
             }
@@ -427,22 +427,22 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Chapter 8: The Inner Court. Roo-coo... roo-coo... Pigeons have landed in the little court behind the glass!",
+                    Story = "Chapter 8: The Inner Court. Roo-coo... roo-coo... Pigeons have landed in the light well above the little court behind the glass!",
                     Goal = "The court door next to the cat tree is open a crack. Squeeze through.",
                     Target = () => P(4.6f, 0f, 3.8f),
                     Done = () => InCourt(cat.transform.position),
                 },
                 new Beat
                 {
-                    Story = "Three fat pigeons peck between the round stones. Pigeons watch each other: when one flies, they all fly.",
-                    Goal = "Sneak up (DUCK) and touch a pigeon. Do not go straight at it: walk past it from the side.",
+                    Story = "Three fat pigeons sit on the ledges up the light well, one right above the bedroom window. Pigeons watch each other: when one flies, they all fly.",
+                    Goal = "Climb the drainpipe next to the bedroom window (hold the middle of the stick) and get close to a pigeon.",
                     Target = () => NearestPigeon(),
                     Done = () => Pigeon.AnyTouched,
                 },
                 new Beat
                 {
-                    Story = "Flap-flap-flap! The flock flies up the light well. Something shines behind the drainpipe: your old jingle ball, lost last spring!",
-                    Goal = "Climb the drainpipe in the court (hold the middle of the stick) and take the jingle ball.",
+                    Story = "Flap-flap-flap! The flock flies up the light well. Something shines behind a bracket of the drainpipe: your old jingle ball, lost last spring!",
+                    Goal = "Climb a little higher on the drainpipe and take the jingle ball.",
                     Target = () => jingleBall != null && jingleBall.gameObject.activeSelf ? jingleBall.transform.position : (Vector3?)null,
                     Done = () => jingleBall == null || jingleBall.Taken,
                 },

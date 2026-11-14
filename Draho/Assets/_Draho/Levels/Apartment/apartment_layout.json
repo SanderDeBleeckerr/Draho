@@ -62,9 +62,32 @@
    "height": 2.08,
    "note": "The flat's front door, set into the kitchen's east wall (ApartmentBuilder.BuildHomecoming).",
    "model": "Door"
+  },
+  {
+   "id": "bedroom_window",
+   "label": "Bedroom window",
+   "wall": "east",
+   "from": 3.3,
+   "to": 4.0,
+   "height": 2.4,
+   "note": "In the inner court, left of the drainpipe: a tall window from the floor to nearly the ceiling, the bedroom curtain behind it. A ledge over it is a pigeon perch.",
+   "model": "BedroomWindow"
   }
  ],
  "props": [
+  {
+   "id": "dining_bar",
+   "label": "Dining bar",
+   "room": "living",
+   "x": 3.4,
+   "z": 0.5,
+   "w": 1.4,
+   "d": 1.0,
+   "h": 1.05,
+   "facing": "north",
+   "color": "#6B5545",
+   "note": "A high table against the south wall with two bar stools, where the TV was. Blender model (Art/Furniture/dining_bar.fbx)."
+  },
   {
    "id": "sofa",
    "label": "Green sofa",
@@ -781,6 +804,20 @@
    "z0": 0.0,
    "z1": 9.0,
    "h": 8.8,
+   "base_y": 2.6,
+   "note": "Upper floors only: the ground floor east of the flat is the bedroom (behind the court's bedroom window) and house_back_e_ground.",
+   "color": "#CFC6B8",
+   "roof_color": "#4F4E4C",
+   "material": "plaster"
+  },
+  {
+   "id": "house_back_e_ground",
+   "label": "Ground floor east of the flat, behind the bedroom",
+   "x0": 8.3,
+   "x1": 9.0,
+   "z0": 0.0,
+   "z1": 9.0,
+   "h": 2.6,
    "color": "#CFC6B8",
    "roof_color": "#4F4E4C",
    "material": "plaster"

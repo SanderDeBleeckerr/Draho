@@ -177,6 +177,121 @@ def rug():
     return parts
 
 
+@prop
+def dining_bar():
+    """1.4 x 1.0 m footprint, 1.05 m high: a walnut high table against the wall (back, Blender +Y) and two bar
+    stools in front (Blender -Y) with round seats at 0.72 m, a low back and a foot ring. The cat can hop stool ->
+    table: the collider follows the shape."""
+    W, H, TD = 1.4, 1.05, 0.5
+    ty = 0.5 - TD / 2                                                        # the table's centre line (y)
+    parts = [ds.box("Top", (0, ty, H - 0.02), (W, TD, 0.04), "walnut", bevel=0.01)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            parts.append(ds.box("Leg", (sx * (W / 2 - 0.05), ty + sy * (TD / 2 - 0.05), (H - 0.04) / 2),
+                                (0.045, 0.045, H - 0.04), "walnut_dark", bevel=0.005))
+    parts.append(ds.box("FootBar", (0, ty - TD / 2 + 0.05, 0.25), (W - 0.1, 0.03, 0.03), "metal_dark", bevel=0.004))
+    parts.append(ds.box("Apron", (0, ty + TD / 2 - 0.05, H - 0.09), (W - 0.1, 0.025, 0.1), "walnut_dark", bevel=0.004))
+    SEAT = 0.72
+    for sx in (-0.35, 0.35):
+        sy = -0.22
+        parts.append(ds.cylinder("Seat", (sx, sy, SEAT - 0.04), 0.18, 0.05, "teal_dark", segments=16, bevel=0.012))
+        for k in range(4):                                                   # four straight legs under the seat
+            a = math.radians(45 + 90 * k)
+            parts.append(ds.cylinder("StoolLeg", (sx + math.cos(a) * 0.12, sy + math.sin(a) * 0.12, 0), 0.014, SEAT - 0.04,
+                                     "metal_dark", segments=6, radius_top=0.012, bevel=0))
+        parts.append(ds.cylinder("FootRing", (sx, sy, 0.26), 0.135, 0.015, "metal_dark", segments=16, radius_top=0.135, bevel=0))
+        parts.append(ds.box("StoolBack", (sx, sy - 0.15, SEAT + 0.14), (0.3, 0.03, 0.12), "walnut", bevel=0.008))
+        for s in (-1, 1):
+            parts.append(ds.cylinder("BackPost", (sx + s * 0.12, sy - 0.15, SEAT), 0.01, 0.1, "metal_dark", segments=6, bevel=0))
+    return parts
+
+
+@prop
+def bedroom_curtain():
+    """0.8 m wide, 2.3 m long linen curtain seen through the bedroom window: drawn to one side (pleats bunched on
+    the right, a dark gap on the left), a slim rail on top. Front faces Blender -Y."""
+    import bmesh
+    W, H, GAP = 0.8, 2.3, 0.18
+    bm = bmesh.new()
+    cols, rows = 40, 6
+    x0, x1 = -W / 2 + GAP, W / 2
+    for j in range(rows + 1):
+        z = H * j / rows
+        for i in range(cols + 1):
+            u = i / cols
+            x = x0 + (x1 - x0) * u
+            bunch = 0.6 + 0.8 * u                                           # deeper pleats where it is bunched
+            # Six soft folds: more and steeper folds read as a ribbed wooden panel behind the glass.
+            y = 0.03 * bunch * math.sin(u * math.pi * 6) * (0.85 + 0.15 * z / H)
+            bm.verts.new((x, y, z))
+    bm.verts.ensure_lookup_table()
+    for j in range(rows):
+        for i in range(cols):
+            a = j * (cols + 1) + i
+            bm.faces.new((bm.verts[a], bm.verts[a + 1], bm.verts[a + cols + 2], bm.verts[a + cols + 1]))
+    bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.006)
+    me = bpy.data.meshes.new("Curtain")
+    bm.to_mesh(me)
+    bm.free()
+    cloth = bpy.data.objects.new("Curtain", me)
+    bpy.context.scene.collection.objects.link(cloth)
+    for p in me.polygons:
+        p.use_smooth = True
+    ds.paint(cloth, "off_white")
+    rail = ds.cylinder("Rail", (-W / 2, 0.02, H + 0.02), 0.008, W, "metal", segments=6, bevel=0)
+    rail.rotation_euler.y = math.radians(90)
+    rail.location = (-W / 2, 0.02, H + 0.02)
+    return [cloth, rail]
+
+
+@prop
+def court_pebbles():
+    """The inner court's round stones with real height: a 3.0 x 1.8 m bed of about 430 half-buried, flattened
+    pebbles (11 cm apart, 2-3.5 cm high) in warm greys. Low-poly domes (8 sides, 2 rings); walk-over."""
+    import random
+    import bmesh
+    rnd = random.Random(42)
+    W, D, STEP = 3.0, 1.8, 0.11
+    greys = ("grey_light", "warm_grey", "stone", "grey_mid", "mortar", "grey_stone")
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+    nx, ny = int(W / STEP), int(D / STEP)
+    for j in range(ny):
+        for i in range(nx):
+            cx = -W / 2 + STEP * (i + 0.5 + (0.5 if j % 2 else 0) * 0.5) + rnd.uniform(-0.018, 0.018)
+            cy = -D / 2 + STEP * (j + 0.5) + rnd.uniform(-0.018, 0.018)
+            if abs(cx) > W / 2 - 0.04 or abs(cy) > D / 2 - 0.04:
+                continue
+            rx, ry = rnd.uniform(0.042, 0.056), rnd.uniform(0.036, 0.05)
+            h = rnd.uniform(0.02, 0.035)
+            rot = rnd.uniform(0, math.pi)
+            colour = ds.cell_uv(rnd.choice(greys))
+            ring = []
+            for r_frac, z_frac in ((1.0, 0.0), (0.72, 0.75)):
+                ring.append([])
+                for k in range(8):
+                    a = rot + k * math.pi / 4
+                    x, y = math.cos(a) * rx * r_frac, math.sin(a) * ry * r_frac
+                    ring[-1].append(bm.verts.new((cx + x, cy + y, h * z_frac)))
+            top = bm.verts.new((cx, cy, h))
+            faces = []
+            for k in range(8):
+                k1 = (k + 1) % 8
+                faces.append(bm.faces.new((ring[0][k], ring[0][k1], ring[1][k1], ring[1][k])))
+                faces.append(bm.faces.new((ring[1][k], ring[1][k1], top)))
+            for f in faces:
+                f.smooth = True
+                for loop in f.loops:
+                    loop[uv].uv = colour
+    me = bpy.data.meshes.new("Pebbles")
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new("Pebbles", me)
+    bpy.context.scene.collection.objects.link(o)
+    me.materials.append(ds.palette_material())
+    return [o]
+
+
 # ---------------------------------------------------------------------------
 def build(names=None):
     built = {}

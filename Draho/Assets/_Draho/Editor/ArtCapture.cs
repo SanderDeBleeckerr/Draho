@@ -33,6 +33,8 @@ namespace Draho.EditorTools
             ("court", new Vector3(7.3f, 1.6f, 3.3f), new Vector3(4.9f, 0.2f, 4.8f)),           // the inner court
             ("kitchen", new Vector3(4.9f, 1.1f, 2.2f), new Vector3(7.6f, 0.8f, 2.4f)),         // the front door and the mouse hole
             ("sofa", new Vector3(2.6f, 1.3f, 2.2f), new Vector3(2.6f, 0.4f, 4.5f)),            // the sofa: seat, back and arms
+            ("court_window", new Vector3(5.2f, 1.2f, 3.5f), new Vector3(7.6f, 1.2f, 4.0f)),    // the bedroom window and the drainpipe
+            ("dining", new Vector3(3.4f, 1.4f, 2.6f), new Vector3(3.4f, 0.6f, 0.3f)),          // the dining bar by the south wall
         };
 
         /// <summary>The fixed views, plus a side view of the cat (readability).</summary>
@@ -103,6 +105,12 @@ namespace Draho.EditorTools
                     // The rim light follows the game camera at run time: put that camera here and let it update.
                     if (gameCam != null) gameCam.transform.SetPositionAndRotation(camGo.transform.position, camGo.transform.rotation);
                     foreach (var rim in rims) rimUpdate?.Invoke(rim, null);
+                    // The indoor light (window, lamps, dimmer ambient inside) for a viewer at the camera, then the sky's
+                    // ambient again with it. By name, so the tool also runs on versions without IndoorLight.
+                    var indoorType = Type.GetType("Draho.World.IndoorLight, Assembly-CSharp");
+                    var indoor = indoorType != null ? UnityEngine.Object.FindAnyObjectByType(indoorType) : null;
+                    indoorType?.GetMethod("Refresh")?.Invoke(indoor, new object[] { v.pos, true });
+                    typeof(SkyMood).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(sky, null);
                     // Twice: the first frame after a change can miss state (the first picture came out red).
                     for (int pass = 0; pass < 2; pass++)
                     {

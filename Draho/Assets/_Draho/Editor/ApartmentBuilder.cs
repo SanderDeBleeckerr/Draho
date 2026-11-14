@@ -281,6 +281,21 @@ namespace Draho.EditorTools
                 ("west", new Vector2(inside.xMin - t / 2, inside.yMin), new Vector2(inside.xMin - t / 2, inside.yMax)),
                 ("east", new Vector2(inside.xMax + t / 2, inside.yMin), new Vector2(inside.xMax + t / 2, inside.yMax)),
             };
+            // Skirting boards on the room side of every full-height piece of wall: the wall no longer meets the floor
+            // in one hard line (docs/APARTMENT_GRAPHICS.md). 8 cm high, 1.5 cm proud, the trim colour of the doors.
+            var skirtMat = Mat("Apt_Skirting", new Color(0.93f, 0.92f, 0.89f), 0.35f);
+            void Skirting(string side, bool alongX, float line, float from, float to)
+            {
+                float inward = side == "south" || side == "west" ? 1f : -1f;           // towards the room
+                float face = line + inward * t / 2;
+                from = Mathf.Max(from, alongX ? inside.xMin : inside.yMin);              // only along the room
+                to = Mathf.Min(to, alongX ? inside.xMax : inside.yMax);
+                if (to - from < 0.05f) return;
+                const float sh = 0.08f, sd = 0.015f;
+                var pos = alongX ? new Vector3((from + to) / 2, sh / 2, face + inward * sd / 2) : new Vector3(face + inward * sd / 2, sh / 2, (from + to) / 2);
+                var size = alongX ? new Vector3(to - from, sh, sd) : new Vector3(sd, sh, to - from);
+                Box($"Skirting_{side}", pos, size, skirtMat, collider: false);
+            }
             foreach (var (side, a, b) in sides)
             {
                 bool alongX = Mathf.Approximately(a.y, b.y);
@@ -289,6 +304,7 @@ namespace Draho.EditorTools
                 float cursor = start;
                 foreach (var o in cuts)
                 {
+                    Skirting(side, alongX, alongX ? a.y : a.x, cursor, o.from);
                     WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, o.from, 0f, h, t, wall);
                     WallSegment($"Wall_{side}_above_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height, h, t, wall);
                     if (o.model == "SlidingDoor")
@@ -298,6 +314,7 @@ namespace Draho.EditorTools
                         GlassPanel($"Glass_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height);
                     cursor = o.to;
                 }
+                Skirting(side, alongX, alongX ? a.y : a.x, cursor, end);
                 WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, end, 0f, h, t, wall);
             }
         }

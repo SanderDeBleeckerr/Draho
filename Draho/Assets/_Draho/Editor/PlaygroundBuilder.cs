@@ -121,6 +121,58 @@ namespace Draho.EditorTools
                 Debug.Log($"Draho: post-process data assigned: {rendererAsset.postProcessData != null}");
                 EditorUtility.SetDirty(rendererAsset);
             }
+            if (rendererAsset != null) EnsureAmbientOcclusion(rendererAsset);
+        }
+
+        /// <summary>
+        /// Screen-space ambient occlusion (URP renderer feature): contact shadows where walls meet the floor and under
+        /// the furniture, so things sit on the ground (docs/APARTMENT_GRAPHICS.md). Half resolution, few samples and a
+        /// short radius for phones. The settings are internal, so they are set through the serialized fields.
+        /// </summary>
+        static void EnsureAmbientOcclusion(UniversalRendererData renderer)
+        {
+            var type = typeof(UniversalRendererData).Assembly.GetType("UnityEngine.Rendering.Universal.ScreenSpaceAmbientOcclusion");
+            if (type == null) { Debug.LogWarning("Draho: URP has no ScreenSpaceAmbientOcclusion feature."); return; }
+            var feature = renderer.rendererFeatures.FirstOrDefault(f => f != null && f.GetType() == type);
+            if (feature == null)
+            {
+                feature = (ScriptableRendererFeature)ScriptableObject.CreateInstance(type);
+                feature.name = "AmbientOcclusion";
+                AssetDatabase.AddObjectToAsset(feature, renderer);
+                var rso = new SerializedObject(renderer);
+                var list = rso.FindProperty("m_RendererFeatures");
+                var map = rso.FindProperty("m_RendererFeatureMap");
+                list.arraySize++;
+                list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = feature;
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out _, out long localId);
+                map.arraySize++;
+                map.GetArrayElementAtIndex(map.arraySize - 1).longValue = localId;
+                rso.ApplyModifiedPropertiesWithoutUndo();
+            }
+            var so = new SerializedObject(feature);
+            void Set(string name, object value)
+            {
+                var p = so.FindProperty("m_Settings." + name);
+                if (p == null) { Debug.LogWarning($"Draho: SSAO setting '{name}' not found."); return; }
+                if (value is bool b) p.boolValue = b;
+                else if (value is float f) p.floatValue = f;
+                else if (p.propertyType == SerializedPropertyType.Enum) p.enumValueIndex = (int)value;
+                else p.intValue = (int)value;
+            }
+            // Blue noise at half resolution drew dashed lines along every edge; interleaved gradient at full resolution
+            // with the high blur is smooth. AdaptiveQuality lowers the render scale on slow phones anyway.
+            Set("AOMethod", 1);                   // InterleavedGradient
+            Set("Downsample", false);
+            Set("Samples", 1);                    // Medium
+            Set("BlurQuality", 0);                // High
+            Set("Intensity", 0.9f);
+            Set("Radius", 0.2f);                  // metres: the gap under a sofa, the corner of a room
+            Set("DirectLightingStrength", 0.2f);  // mostly in the shade, not on top of sunlight
+            Set("Falloff", 25f);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            feature.SetActive(true);
+            EditorUtility.SetDirty(feature);
+            EditorUtility.SetDirty(renderer);
         }
 
         /// <summary>Rendering layer 1: Drahomil. The rim light shines on this layer only.</summary>

@@ -404,7 +404,6 @@ namespace Draho.EditorTools
             var dust = DustPuff(root.transform);
             SetField(catAnimator, "dust", dust);
             SetField(root.AddComponent<CatShake>(), "dust", dust);
-            root.AddComponent<SniffSense>();
             root.AddComponent<CatVoice>();
             var tailLife = root.AddComponent<CatTailLife>();
             SetField(tailLife, "motor", motor);

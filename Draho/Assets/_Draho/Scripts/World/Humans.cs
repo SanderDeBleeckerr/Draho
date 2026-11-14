@@ -12,7 +12,7 @@ namespace Draho.World
         float phase;
 
         public bool Home { get; private set; }
-        /// <summary>True while the humans stand at the door: the bounty board by the door stays quiet in the ending.</summary>
+        /// <summary>True while the humans stand at the door: the ending plays at the door.</summary>
         public static bool AnyHome { get; private set; }
 
         void Awake()

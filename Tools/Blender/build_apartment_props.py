@@ -500,6 +500,35 @@ def lamp_living_lamp():
             ds.cylinder("Diffuser", (0, 0, 2.19), 0.235, 0.004, "pale_yellow", segments=24, bevel=0)]
 
 
+def _shaft_window(W, H=1.3):
+    """An upper-floor window in the court's light well, W x H: a light frame (6 cm) with a mullion and a transom,
+    dark blue-grey panes set back 3 cm, a handle on the opening sash. Origin bottom middle; front Blender -Y."""
+    F, D = 0.06, 0.06
+    parts = []
+    for s in (-1, 1):
+        parts.append(ds.box("Jamb", (s * (W / 2 - F / 2), 0, H / 2), (F, D, H), "white", bevel=0.006))
+        parts.append(ds.box("Rail", (0, 0, H / 2 + s * (H / 2 - F / 2)), (W, D, F), "white", bevel=0.006))
+    parts.append(ds.box("Mullion", (0, 0, (F + H * 0.78) / 2), (0.05, D * 0.9, H * 0.78 - F), "white", bevel=0.004))
+    parts.append(ds.box("Transom", (0, 0, H * 0.78), (W - 2 * F, D * 0.9, 0.05), "white", bevel=0.004))
+    for (x0, x1, z0, z1) in ((-W / 2 + F, -0.025, F, H * 0.78 - 0.025), (0.025, W / 2 - F, F, H * 0.78 - 0.025),
+                             (-W / 2 + F, W / 2 - F, H * 0.78 + 0.025, H - F)):
+        parts.append(ds.box("Pane", ((x0 + x1) / 2, 0.03, (z0 + z1) / 2), (x1 - x0, 0.008, z1 - z0), "deep_blue_grey", bevel=0))
+    parts.append(ds.box("Handle", (0.06, -D / 2 - 0.01, H * 0.42), (0.02, 0.02, 0.1), "metal", bevel=0.003))
+    return parts
+
+
+@prop
+def shaft_window_wide():
+    """North wall of the light well: 1.3 m wide."""
+    return _shaft_window(1.3)
+
+
+@prop
+def shaft_window_narrow():
+    """West wall of the light well: 0.9 m wide."""
+    return _shaft_window(0.9)
+
+
 @prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping

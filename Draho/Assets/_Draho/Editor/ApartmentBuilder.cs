@@ -589,10 +589,15 @@ namespace Draho.EditorTools
             float midX = (c.x0 + c.x1) / 2, midZ = (c.z0 + c.z1) / 2;
             foreach (float floorY in new[] { 3.3f, 6.1f })
             {
-                // A window on the north wall and a smaller one on the west wall, each with a stone sill.
-                Box("ShaftWindow", new Vector3(midX, floorY + 0.7f, c.z1 - 0.005f), new Vector3(1.3f, 1.3f, 0.01f), window, collider: false);
+                // A window on the north wall and a smaller one on the west wall, each with a stone sill (pigeon perches).
+                // Framed Blender windows (build_apartment_props.py shaft_window_*) when they exist, else dark panels.
+                var wide = FurnitureModel("shaft_window_wide", level);
+                if (wide != null) wide.SetPositionAndRotation(new Vector3(midX, floorY + 0.05f, c.z1 - 0.03f), Quaternion.LookRotation(Vector3.back));
+                else Box("ShaftWindow", new Vector3(midX, floorY + 0.7f, c.z1 - 0.005f), new Vector3(1.3f, 1.3f, 0.01f), window, collider: false);
                 Box("ShaftSill", new Vector3(midX, floorY - 0.025f, c.z1 - 0.1f), new Vector3(1.5f, 0.05f, 0.2f), stone, collider: false);
-                Box("ShaftWindow", new Vector3(c.x0 + 0.005f, floorY + 0.7f, midZ), new Vector3(0.01f, 1.3f, 0.9f), window, collider: false);
+                var narrow = FurnitureModel("shaft_window_narrow", level);
+                if (narrow != null) narrow.SetPositionAndRotation(new Vector3(c.x0 + 0.03f, floorY + 0.05f, midZ), Quaternion.LookRotation(Vector3.right));
+                else Box("ShaftWindow", new Vector3(c.x0 + 0.005f, floorY + 0.7f, midZ), new Vector3(0.01f, 1.3f, 0.9f), window, collider: false);
                 Box("ShaftSill", new Vector3(c.x0 + 0.1f, floorY - 0.025f, midZ), new Vector3(0.2f, 0.05f, 1.1f), stone, collider: false);
             }
             var zinc = Mat("Apt_Zinc", new Color(0.55f, 0.57f, 0.58f), 0.55f);

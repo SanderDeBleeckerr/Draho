@@ -21,7 +21,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 6 | Front door | code boxes | **Done, round 6** |
 | 7 | Ceiling and lamps | flat box, no fittings | **Done, round 7** |
 | 8 | Walls, ceiling and floor | flat colour, tile texture | **Done, round 8** |
-| 9 | Court light well (shaft walls, windows, gutter) | code boxes | window frames and sills in Blender |
+| 9 | Court light well (shaft walls, windows, gutter) | code boxes | **Done, round 9** |
 | 10 | Drainpipe | code cylinder | Blender: segments, brackets, shoe |
 | 11 | Garden picnic table | code boxes | Blender: planks, A-frame legs |
 | 12 | Garden lamp | code primitives | Blender: lantern with glass |
@@ -137,3 +137,14 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** the ceiling now catches the lamp's warm pool at night and the window's bounce by day; the gradient adds
   the floor-level shade that baked light would give, at no cost.
 - **Checked:** Unity `living` (Day) and `living_low` (Night) views.
+
+### Round 9: the court's light well
+
+- **Review:** the upper-floor windows round the light well were flat dark boards (1 cm) above the stone sills: no
+  frame, no glazing bars, nothing for the light to catch. The cat sees them looking up from the court and from the
+  drainpipe (chapters 8 and 10); the pigeons sit on their sills.
+- **Change:** Blender windows `shaft_window_wide` (1.3 m, north wall) and `shaft_window_narrow` (0.9 m, west wall),
+  792 triangles each: a light frame with a mullion and a transom, dark blue-grey panes set back 3 cm, a handle. The
+  stone sills (pigeon perches) stay. New `ArtCapture` view `light_well` (looking up from the court).
+- **Light:** the frames catch the sky light and the sun high in the well; the panes stay dark against the plaster.
+- **Checked:** Blender look-dev render; Unity `light_well` view (Day), pigeons on the sills.

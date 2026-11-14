@@ -167,9 +167,11 @@ def rug():
     """2.4 x 1.7 m, 1 cm thick wool rug: a dusty rose field, a linen border and a navy inner line, fringes on the
     short sides. Walk-over (no collider in Unity: the layout height is 0.01)."""
     W, D, T = 2.4, 1.7, 0.012
+    # The layers step up 3 mm each: 0.6 mm apart they z-fought on a phone's depth buffer (the rug flashed as the
+    # camera moved). Each layer is a slab on top of the one below, not overlapping it.
     parts = [ds.box("Border", (0, 0, T / 2), (W, D, T), "linen", bevel=0.004),
-             ds.box("Line", (0, 0, T + 0.0006), (W - 0.2, D - 0.2, 0.0012), "navy", bevel=0),
-             ds.box("Field", (0, 0, T + 0.0012), (W - 0.28, D - 0.28, 0.0012), "rose", bevel=0)]
+             ds.box("Line", (0, 0, T + 0.0015), (W - 0.2, D - 0.2, 0.003), "navy", bevel=0),
+             ds.box("Field", (0, 0, T + 0.0045), (W - 0.28, D - 0.28, 0.003), "rose", bevel=0)]
     for s in (-1, 1):
         for i in range(24):
             z = -D / 2 + 0.06 + i * (D - 0.12) / 23

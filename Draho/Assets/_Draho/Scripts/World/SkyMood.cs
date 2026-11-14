@@ -76,7 +76,7 @@ namespace Draho.World
                 if (!profile.TryGet(out split)) split = profile.Add<SplitToning>(true);
             }
             day = Capture();
-            from = to = day;
+            from = to = now = day; // Update re-applies `now` every frame (indoor dimming): it must never start black
         }
 
         Preset Capture() => new Preset
@@ -224,7 +224,7 @@ namespace Draho.World
         public static float Indoors { get; set; }
 
         /// <summary>The share of the sky's ambient light that reaches inside the flat.</summary>
-        public const float IndoorAmbient = 0.6f;
+        public const float IndoorAmbient = 0.72f;
 
         static float Smooth(float t) => t * t * (3f - 2f * t);
 

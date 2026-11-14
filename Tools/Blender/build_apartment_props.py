@@ -106,10 +106,21 @@ def coffee_table():
 def cat_tree():
     """0.45 x 0.45 x 0.75 m: a carpeted base box with a round entrance, a sisal post, a platform with a raised rim."""
     S, H = 0.45, 0.75
-    parts = [ds.box("Base", (0, 0, 0.15), (S, S, 0.3), "navy", bevel=0.025),
-             ds.cylinder("Hole", (0, -S / 2 + 0.004, 0.06), 0.09, 0.006, "black", segments=16, bevel=0)]
-    parts[-1].rotation_euler.x = math.radians(90)
-    parts[-1].location = (0, -S / 2 - 0.002, 0.14)
+    # The base is a real hiding box: hollow inside, a round entrance in the front (booleans; the cutters' faces
+    # keep their dark palette colour, so the inside reads as shade).
+    base = ds.box("Base", (0, 0, 0.15), (S, S, 0.3), "navy", bevel=0.025)
+    cavity = ds.box("Cavity", (0, 0.01, 0.16), (S - 0.05, S - 0.07, 0.24), "black", bevel=0)
+    hole = ds.cylinder("Hole", (0, 0, 0), 0.085, 0.2, "black", segments=20, bevel=0)
+    hole.rotation_euler.x = math.radians(90)
+    hole.location = (0, -S / 2 + 0.08, 0.14)
+    bpy.context.view_layer.update()
+    for cutter in (cavity, hole):
+        mod = base.modifiers.new(cutter.name, "BOOLEAN")
+        mod.operation, mod.solver, mod.object = "DIFFERENCE", "EXACT", cutter
+        with bpy.context.temp_override(object=base, active_object=base, selected_objects=[base]):
+            bpy.ops.object.modifier_apply(modifier=mod.name)
+        bpy.data.objects.remove(cutter)
+    parts = [base]
     parts.append(ds.cylinder("Post", (0, 0, 0.3), 0.055, H - 0.34, "mustard", segments=12, bevel=0.004))
     for i in range(6):  # sisal rope rings
         parts.append(ds.cylinder("Rope", (0, 0, 0.33 + i * 0.065), 0.06, 0.012, "oak_light", segments=12, bevel=0.003))
@@ -254,7 +265,8 @@ def court_pebbles():
     import bmesh
     rnd = random.Random(42)
     W, D, STEP = 3.0, 1.8, 0.11
-    greys = ("grey_light", "warm_grey", "stone", "grey_mid", "mortar", "grey_stone")
+    # Mostly mid and dark greys (all-light stones on a dark ground read as a field of white bumps).
+    greys = ("grey_mid", "grey_stone", "grey_dark", "warm_grey", "stone", "grey_mid", "grey_stone", "grey_light")
     bm = bmesh.new()
     uv = bm.loops.layers.uv.new("UVMap")
     nx, ny = int(W / STEP), int(D / STEP)
@@ -262,10 +274,11 @@ def court_pebbles():
         for i in range(nx):
             cx = -W / 2 + STEP * (i + 0.5 + (0.5 if j % 2 else 0) * 0.5) + rnd.uniform(-0.018, 0.018)
             cy = -D / 2 + STEP * (j + 0.5) + rnd.uniform(-0.018, 0.018)
-            if abs(cx) > W / 2 - 0.04 or abs(cy) > D / 2 - 0.04:
-                continue
-            rx, ry = rnd.uniform(0.042, 0.056), rnd.uniform(0.036, 0.05)
-            h = rnd.uniform(0.02, 0.035)
+            if abs(cx) > W / 2 - 0.04 or abs(cy) > D / 2 - 0.04 or rnd.random() < 0.06:
+                continue                                                     # a few gaps show the ground
+            s = rnd.choice((0.6, 0.75, 0.9, 1.0, 1.0, 1.1, 1.25))              # small, medium and a few big stones
+            rx, ry = s * rnd.uniform(0.04, 0.052), s * rnd.uniform(0.034, 0.046)
+            h = s * rnd.uniform(0.018, 0.03)
             rot = rnd.uniform(0, math.pi)
             colour = ds.cell_uv(rnd.choice(greys))
             ring = []
@@ -292,6 +305,49 @@ def court_pebbles():
     bpy.context.scene.collection.objects.link(o)
     me.materials.append(ds.palette_material())
     return [o]
+
+
+@prop
+def firewood():
+    """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
+    roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log
+    stays inside the frame (the old stack's logs went through its side boards)."""
+    import random
+    rnd = random.Random(11)
+    W, D, H, T = 1.4, 0.45, 0.9, 0.03
+    parts = []
+    for s in (-1, 1):
+        parts.append(ds.box("Side", (s * (W / 2 - T / 2), 0, H / 2), (T, D, H), "oak", bevel=0.006))
+    parts.append(ds.box("Back", (0, D / 2 - 0.01, H / 2), (W - 2 * T, 0.02, H), "oak", bevel=0.004))
+    for i in range(3):
+        parts.append(ds.box("Slat", (0, -D / 2 + 0.07 + i * 0.15, 0.03), (W - 2 * T, 0.08, 0.025), "walnut", bevel=0.004))
+    roof = ds.box("Roof", (0, 0, 0), (W + 0.06, D + 0.08, 0.025), "walnut_dark", bevel=0.005)
+    roof.rotation_euler.x = math.radians(-8)          # sloping down to the front
+    roof.location = (0, 0.0, H + 0.02)
+    parts.append(roof)
+    inner = W - 2 * T - 0.02                           # room between the side planks
+    y0 = 0.043                                         # on the slats
+    row = 0
+    while True:
+        r_row = 0.055
+        z = y0 + r_row + row * 2 * r_row * 0.92
+        if z + r_row > H - 0.08:
+            break
+        x = -inner / 2 + (r_row if row % 2 == 0 else r_row * 1.6)
+        while x + r_row <= inner / 2:
+            r = r_row * rnd.uniform(0.78, 1.0)
+            length = rnd.uniform(D - 0.1, D - 0.05)    # always shorter than the store is deep
+            log = ds.cylinder("Log", (0, 0, -length / 2), r, length, "walnut", segments=8, bevel=0)
+            # Pale cut ends, dark bark.
+            ds.paint(log, lambda p: "linen" if abs(p.normal.z) > 0.9 else rnd.choice(("walnut", "walnut_dark", "oak")))
+            log.rotation_euler.x = math.radians(90)    # along the depth: the cut ends face the garden
+            # The pivot is the log's base and the turn lays it towards the front (-Y): shift it back by half its
+            # length, so the log sits between the back board and the front edge of the store.
+            log.location = (x, length / 2 - 0.03 + rnd.uniform(-0.012, 0.012), z)
+            parts.append(log)
+            x += 2 * r_row * 1.02
+        row += 1
+    return parts
 
 
 # ---------------------------------------------------------------------------

@@ -31,7 +31,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 16 | Ivy | leaf mesh | **Done, round 16** (and the chapter 9 route) |
 | 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | **Done, round 17** |
 | 18 | Humans (legs at the door) | **Done, round 18** | Blender: legs, shoes, coat hem |
-| 19 | Mouse | Blender (animals) | fur/colour check at cat height |
+| 19 | Mouse | **Done, round 19** | fur/colour check at cat height |
 | 20 | Pigeons | Blender | sheen, perched pose |
 | 21 | Blackbirds | Blender | check |
 | 22 | Hrozna (corgi) | Blender | check |
@@ -250,3 +250,18 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** they stand in the stairwell in the door's light; the bag's pale oak catches the light from the hall.
 - **Checked:** Blender look-dev; the Unity rebuild (`FurnitureModel` per person, primitive fallback kept). They sit
   outside the door, so the kitchen capture shows the closed door only.
+
+## Round 19: the mouse
+
+- **Shape:** the body loft goes from 8 to 10 sides, with two more rings. The rump now rounds off into the tail
+  instead of ending in a flat cut, and the head has fuller cheeks. The eyes were floating 4 mm off the cheek and are
+  now half sunk into it. The ear bases sit in the skull, and the ears are cupped (the inner face dips back) and lean
+  back 14°. The hind feet are long and flat on the floor, as a mouse's are; the front feet are unchanged.
+  436 tris (was 364).
+- **Texture:** the body was `grey_stone`, which disappeared against grey floors and stone. Two animals-only palette
+  cells were added at the end of the palette: `a_mouse_fur` #7D6E62 (house-mouse grey-brown) and `a_mouse_belly`
+  #BDB1A2 (buff). The palette PNG and JSON are regenerated, and the existing cells are unchanged.
+- **Light:** the warmer brown separates from the cool kitchen tiles and the court stones in shade. The pink ears and
+  feet now stand out against the body.
+- **Checked:** Blender QA (no floating parts, no z-fighting; palette UVs are zero-area by design); Unity animal
+  studio (front, side, top) next to Drahomil.

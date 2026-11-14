@@ -111,15 +111,17 @@ def mouse():
     bm = bmesh.new()
     # rump (+Y, back) to snout (-Y, front): one pear-shaped loft, so the head flows out of the body
     loft(bm, [
-        (0.050, 0.026, 0.006),
-        (0.042, 0.029, 0.022),
-        (0.022, 0.031, 0.029),
+        (0.057, 0.025, 0.004),    # rump, rounded off (no flat cut where the tail starts)
+        (0.051, 0.027, 0.016),
+        (0.041, 0.029, 0.025),
+        (0.022, 0.031, 0.030),
         (-0.004, 0.032, 0.027),
-        (-0.028, 0.035, 0.021),   # neck
-        (-0.046, 0.037, 0.019),   # head
-        (-0.066, 0.033, 0.011),
+        (-0.026, 0.034, 0.021),   # neck
+        (-0.042, 0.037, 0.0205),  # head, full cheeks
+        (-0.057, 0.035, 0.0155),
+        (-0.070, 0.032, 0.009),
         (-0.080, 0.030, 0.004),   # snout
-    ], segments=8, width=0.95, height=0.9)
+    ], segments=10, width=0.95, height=0.9)
     bm.faces.index_update()
     # belly a shade lighter: the lowest faces of the loft
     belly = {f.index for f in bm.faces if f.calc_center_median().z < 0.016}
@@ -128,27 +130,35 @@ def mouse():
         # big round mouse ears: flat faceted discs, standing up and turned a little outwards
         faces = blob(bm, (0, 0, 0), 0.0155, scale=(1.0, 0.25, 0.95), subdiv=1)
         verts = {v for f in faces for v in f.verts}
+        # cup the ear: the front face dips back towards the middle, so the pink inside reads as a hollow
+        for v in verts:
+            if v.co.y < 0:
+                v.co.y += 0.0035 * max(0.0, 1.0 - (v.co.x ** 2 + v.co.z ** 2) ** 0.5 / 0.0155)
+        bmesh.ops.rotate(bm, verts=list(verts), cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(14), 3, "X"))  # lean back
         bmesh.ops.rotate(bm, verts=list(verts), cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(-28 * side), 3, "Z"))
-        bmesh.ops.translate(bm, verts=list(verts), vec=(side * 0.018, -0.038, 0.059))
+        bmesh.ops.translate(bm, verts=list(verts), vec=(side * 0.0165, -0.038, 0.0565))  # base sunk into the skull
         bm.faces.index_update()
         ears |= {f.index for f in faces}
     eyes = set()
     for side in (-1, 1):
-        fs = blob(bm, (side * 0.0125, -0.062, 0.043), 0.0042, subdiv=1)
+        fs = blob(bm, (side * 0.0100, -0.060, 0.042), 0.0042, subdiv=1)  # half sunk into the cheek
         bm.faces.index_update()
         eyes |= {f.index for f in fs}
     fs = blob(bm, (0, -0.0815, 0.030), 0.0042, subdiv=1)
     bm.faces.index_update()
     nose = {f.index for f in fs}
     feet = set()
-    for (x, y, z) in ((-0.013, -0.024, 0.0125), (0.013, -0.024, 0.0125), (-0.017, 0.028, 0.0075), (0.017, 0.028, 0.0075)):
-        fs = blob(bm, (x, y, z), 0.008, scale=(0.8, 1.4, 0.95 + (z - 0.0075) * 80), subdiv=1)  # tucked into the belly
+    feet_at = (((-0.013, -0.024, 0.0125), (0.8, 1.4, 1.35)), ((0.013, -0.024, 0.0125), (0.8, 1.4, 1.35)),
+               # long, flat hind feet resting on the floor, heels under the haunch
+               ((-0.018, 0.026, 0.0052), (0.72, 2.1, 0.62)), ((0.018, 0.026, 0.0052), (0.72, 2.1, 0.62)))
+    for (x, y, z), sc in feet_at:
+        fs = blob(bm, (x, y, z), 0.008, scale=sc, subdiv=1)  # tucked into the belly
         bm.faces.index_update()
         feet |= {f.index for f in fs}
     bm.faces.index_update()
     body = mesh_obj("Mouse_Body", bm, parent=body_pivot)
-    paint_faces(body, [(belly, "grey_light"), (ears, "cat_inner_ear"), (eyes, "charcoal"),
-                       (nose, "rose"), (feet, "cat_inner_ear"), (None, "grey_stone")])
+    paint_faces(body, [(belly, "a_mouse_belly"), (ears, "cat_inner_ear"), (eyes, "charcoal"),
+                       (nose, "rose"), (feet, "cat_inner_ear"), (None, "a_mouse_fur")])
 
     # tail: pivot at the base (the script swings it round its up axis), curving back and down to the ground
     tail_pivot = empty("TailPivot", loc=(0, 0.040, 0.018), parent=body_pivot)

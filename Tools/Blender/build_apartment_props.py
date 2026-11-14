@@ -402,6 +402,28 @@ def back_counter():
 
 
 @prop
+def fridge():
+    """0.6 x 0.6 x 2.1 m integrated fridge column matching the kitchen: white handle-less doors (a tall fridge door,
+    a cupboard door above it) with 3 mm shadow gaps, a dark grip channel along the opening edge, a recessed plinth.
+    Front faces Blender -Y (the room)."""
+    W, D, H, PLINTH = 0.6, 0.6, 2.1, 0.1
+    gap = 0.003
+    parts = [ds.box("Carcass", (0, 0.02, PLINTH + (H - PLINTH) / 2), (W - 0.01, D - 0.04, H - PLINTH), "grey_light", bevel=0.004),
+             ds.box("Plinth", (0, 0.05, PLINTH / 2), (W - 0.04, D - 0.12, PLINTH), "grey_deep", bevel=0.003)]
+    fridge_h, top_h = 1.42, H - PLINTH - 1.42
+    z = PLINTH + gap
+    for name, h in (("FridgeDoor", fridge_h), ("TopDoor", top_h)):
+        fh = h - 2 * gap
+        parts.append(ds.box(name, (0, -D / 2 + 0.01, z + fh / 2), (W - 2 * gap, 0.02, fh), "white", bevel=0.003))
+        # Grip channel: a dark recess along the opening edge of each door.
+        parts.append(ds.box("Grip", (W / 2 - 0.025, -D / 2 - 0.0005, z + fh / 2), (0.02, 0.004, fh - 0.04), "grey_deep", bevel=0))
+        z += h
+    for s in (-1, 1):                                                        # side panels
+        parts.append(ds.box("Side", (s * (W / 2 - 0.009), 0.0, (H) / 2), (0.018, D - 0.02, H - 0.004), "white", bevel=0.003))
+    return parts
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

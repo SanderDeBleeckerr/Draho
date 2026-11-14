@@ -15,7 +15,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 |---|---|---|---|
 | 1 | Kitchen island | Kenney cabinets + code worktop | **Done, round 1** |
 | 2 | Back counter (sink, coffee machine) | Kenney cabinets, flat top | **Done, round 2** |
-| 3 | Fridge column | Kenney fridge, stretched | Blender: tall white column, handle-less, a seam |
+| 3 | Fridge column | Kenney fridge, stretched | **Done, round 3** |
 | 4 | Plant stand by the sliding door | Kenney potted plant | Blender: pot, faceted leaves (house rule: organic = faceted) |
 | 5 | Sliding door | Sketchfab, white | check glass sorting (owner's "transparent frame" glitch), frame colour |
 | 6 | Front door | code boxes | Blender: panelled leaf, handle, frame |
@@ -71,3 +71,13 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** the sink spots land on the basin and the tap; fine by day and at night. Noted for the day/night
   review: at Night the dining corner next to it gets almost no light (the living-room lamp is far).
 - **Checked:** Blender look-dev render; Unity `dining` view (Night) with the counter in the spot light.
+
+### Round 3: fridge column
+
+- **Review:** the Kenney large fridge stretched to 0.6 × 0.6 × 2.1 m: a freestanding appliance with handles next to
+  handle-less built-in units.
+- **Change:** Blender model `fridge` (672 triangles): an integrated column matching the island and the back
+  counter: a tall fridge door and a cupboard door above it, 3 mm shadow gaps, a dark grip channel along the opening
+  edge of each door instead of handles, white side panels, a recessed plinth.
+- **Light:** a large white surface at the east end of the south wall; the sink spots light its side. No change.
+- **Checked:** Blender look-dev render; the Unity scene builds with it (no capture view shows that corner yet).

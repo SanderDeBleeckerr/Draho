@@ -662,6 +662,25 @@ def tree_bank_alder():
 
 
 @prop
+def grass_tuft():
+    """A tuft of six faceted grass blades, 8-16 cm, leaning out from the middle (two greens and a light one).
+    ApartmentBuilder scatters copies along the lawn's edges and lightly over it (one material: few draw calls)."""
+    import random
+    rnd = random.Random(4)
+    parts = []
+    for i in range(6):
+        a = i * 2 * math.pi / 6 + rnd.uniform(-0.4, 0.4)
+        h = rnd.uniform(0.08, 0.16)
+        blade = ds.cylinder("Blade", (0, 0, 0), 0.014, h, rnd.choice(("grass", "leaf", "leaf_light")), segments=3,
+                            radius_top=0.0, bevel=0, smooth=False)
+        blade.scale = (1.0, 0.3, 1.0)
+        blade.rotation_euler = (math.radians(rnd.uniform(12, 30)), 0, a + math.pi / 2)
+        blade.location = (math.cos(a) * 0.015, math.sin(a) * 0.015, 0)
+        parts.append(blade)
+    return parts
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

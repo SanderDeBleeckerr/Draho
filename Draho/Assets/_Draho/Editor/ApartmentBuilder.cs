@@ -172,6 +172,7 @@ namespace Draho.EditorTools
             foreach (var prop in layout.props) BuildProp(prop);
             BuildGarden(layout);
             BuildPaths(layout);
+            BuildGrassTufts(layout);
             BuildBuildings(layout);
             BuildWildGarden(layout.wild_garden);
             BuildGardenDetails();
@@ -3834,6 +3835,41 @@ namespace Draho.EditorTools
             var col = Box("Collider", At((a + b) / 2, e.h / 2), Size(b - a, e.h, 0.12f), null);
             Object.DestroyImmediate(col.GetComponent<Renderer>());
             col.transform.SetParent(root, true);
+        }
+
+        /// <summary>
+        /// Faceted grass tufts (Art/Furniture/grass_tuft.fbx) on the lawn: dense along its long edges, where the lawn
+        /// meets the fence and the wall (the mower misses them), sparse over it, never on the stone path. One shared
+        /// palette material and no colliders; deterministic (seeded), so a rebuild gives the same garden.
+        /// </summary>
+        static void BuildGrassTufts(Layout layout)
+        {
+            if (AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/grass_tuft.fbx") == null) return;
+            var lawn = (layout.garden_zones ?? new Zone[0]).FirstOrDefault(z => z.material == "grass");
+            var garden = layout.rooms.FirstOrDefault(r => r.outdoor);
+            if (lawn == null || garden == null) return;
+            var root = new GameObject("GrassTufts").transform;
+            root.SetParent(level, false);
+            var rng = new System.Random(17);
+            float R(float a, float b) => a + (b - a) * (float)rng.NextDouble();
+            var paths = layout.garden_paths ?? new GardenPath[0];
+            bool OnPath(float x, float z) => paths.Any(p => z > Mathf.Min(p.from[1], p.to[1]) - p.w / 2 - 0.12f && z < Mathf.Max(p.from[1], p.to[1]) + p.w / 2 + 0.12f
+                && x > Mathf.Min(p.from[0], p.to[0]) - 0.1f && x < Mathf.Max(p.from[0], p.to[0]) + 0.1f);
+            void Tuft(float x, float z, float scale)
+            {
+                if (OnPath(x, z)) return;
+                var t = FurnitureModel("grass_tuft", root);
+                t.SetPositionAndRotation(new Vector3(x, -0.01f, z), Quaternion.Euler(0f, R(0f, 360f), 0f));
+                t.localScale = Vector3.one * scale;
+                foreach (var r in t.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+            float x0 = lawn.x0 + 0.1f, x1 = lawn.x1 - 0.1f;
+            foreach (float edge in new[] { garden.z0 + 0.12f, garden.z1 - 0.12f })     // along the wall and the fence
+                for (float x = x0; x < x1; x += R(0.12f, 0.3f))
+                    Tuft(x, edge + R(-0.08f, 0.08f) * (edge < 2f ? 1f : -1f), R(0.8f, 1.4f));
+            int scatter = Mathf.RoundToInt((x1 - x0) * (garden.z1 - garden.z0) * 1.2f);  // about 1 per m²
+            for (int i = 0; i < scatter; i++)
+                Tuft(R(x0, x1), R(garden.z0 + 0.4f, garden.z1 - 0.4f), R(0.6f, 1.0f));
         }
 
         static void PostFence(Edge e, bool alongX, float line, float a, float b)

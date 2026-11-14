@@ -27,7 +27,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 12 | Garden lamp | code primitives | **Done, round 12** |
 | 13 | Garden fences (neighbour, end, wild) | code boxes | **Done, round 13** |
 | 14 | Climbable trees (maple, bank alder) | code blobs | **Done, round 14** |
-| 15 | Lawn, path, terrace | flat colour, tiles | grass variation (vertex colour), path slabs with height |
+| 15 | Lawn, path, terrace | flat colour, tiles | **Done, round 15** (grass tufts) |
 | 16 | Ivy wall | `WindFoliage` cards | leaf density, colour |
 | 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | Blender props |
 | 18 | Humans (legs at the door) | code cylinders | Blender: legs, shoes, coat hem |
@@ -204,3 +204,14 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** each facet takes its own tone of the sun, so the crown reads as volume; the lighter top clumps catch the
   sky.
 - **Checked:** Blender look-dev render; Unity `garden` view (Day).
+
+### Round 15: lawn, path and terrace
+
+- **Review:** the lawn already has a soft grass texture (blades and patches) and the stone path two slab tones with a
+  little rotation each; the terrace tiles read well. What was missing is height: the lawn was a flat sheet that met
+  the wall and the fence in one hard line.
+- **Change:** a faceted grass tuft (`grass_tuft`, six blades, 24 triangles) scattered by `BuildGrassTufts`: dense
+  rows along the lawn's long edges (the strip the mower misses) and about one per m² over the lawn, never on the
+  stone path; random size and turn, one shared palette material, no colliders, no shadows, seeded (same every build).
+- **Light:** the blades catch the low sun at their tips; at the base of the wall they soften the line.
+- **Checked:** Unity `garden` view (Day).

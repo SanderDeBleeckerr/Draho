@@ -65,6 +65,10 @@ Keep the existing low-poly geometry (brief §3); improve it, don't replace it.
 
 `draho_style.soften(obj)` and `draho_style.facet(obj)` apply these rules in Blender.
 
+**Exception, proposed (November 2026): Drahomil.** The player sees the hero cat close up all game, and its
+800 fur triangles read as blocky (square chest, stick legs). Its body is now subdivided once and shaded
+smooth with sharp ridges: see §4.
+
 ## 3. Light (the most important part)
 
 The look is made by **cool ambient + warm sources**. The frames use this rig; Unity gets the same values.
@@ -97,12 +101,21 @@ Rules:
   floor surface needs a light border or a light patch near it. The concept frames showed this: on a deep
   blue rug, the cat disappeared.
 - Amber eyes stay the brightest part of the cat; `EyeShine` handles the night.
+- **Body (November 2026):** `convert_lowpoly_cat.py` step 3b welds the glTF's split faces, removes two inner
+  faces in the hind paws, and adds one Catmull-Clark level. Edges sharper than 70° are creased, so the ears
+  and paws keep their points. The weights are limited to 4 bones per vertex and normalised. Shading is
+  smooth, with edges sharper than 35° kept sharp. Fur: 794 → 4,752 triangles; whole cat 2,316 → 6,274.
+  The face parts are projected onto the refined head as before; the nose frame tilts up, so the pad lies on
+  the snout instead of sticking out of its tip. `--subdiv 0 --shading facet` gives the old faceted cat
+  back. The QA check reports only the expected items (palette/decal UVs, layered eye decals).
+
+  ![Before and after](images/style/cat_refine_before_after.jpg)
 
 ## 5. Budgets (mobile WebGL and iPhone)
 
 | Asset | Triangles | Textures |
 |---|---|---|
-| Drahomil | 8–15k (now 2.3k) | the palette + eye and nose textures (256 px) |
+| Drahomil | 8–15k (now 6.3k) | the palette + eye and nose textures (256 px) |
 | Other animals | 3–6k | palette only |
 | Furniture, props | 0.2–2k | palette only |
 | A building | 0.5–3k | palette only |

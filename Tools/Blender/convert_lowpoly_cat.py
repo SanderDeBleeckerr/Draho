@@ -5,6 +5,8 @@ What it does:
   2. Records the Run animation in world space.
   3. Makes the standing pose the new rest pose (the original rest pose lies on its side), in metres,
      facing +Y, up +Z (the same convention as Tools/Blender/build_drahomil.py).
+     3b. Refines the body: welds the split faces, one subdivision level, smooth shading with sharp ridges
+     (--subdiv, --shading; docs/ART_STYLE.md §4).
   4. Writes Run again on the clean rig and adds procedural Idle and Walk clips (IK legs, baked).
   5. Adds eyes, pupils and a nose (the model has no face), and names the materials for Unity.
   6. Exports Draho/Assets/_Draho/Art/Cat/Drahomil.fbx.
@@ -29,7 +31,13 @@ ap.add_argument("--glb", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--renders")
 ap.add_argument("--textures", help="where to write CatEye.png / CatNose.png (default: <out dir>/Textures)")
+ap.add_argument("--subdiv", type=int, default=1, help="Catmull-Clark levels on the body (0 = the source mesh)")
+ap.add_argument("--shading", choices=("facet", "soft"), default="soft",
+                help="facet: flat faces; soft: smooth with sharp ridges (see step 3b)")
 args = ap.parse_args(argv)
+CREASE_DEG = 70  # ridges sharper than this keep their points through the subdivision
+SHARP_DEG = 35   # "soft" shading: edges sharper than this stay sharp
+NOSE_RAISE = 0.004 if args.subdiv > 0 else 0.0  # the rounded snout's tip sits ~4 mm lower
 
 FPS = 24
 RENAME = {
@@ -152,6 +160,64 @@ mod.object = arm
 arm.name = "DrahomilRig"
 arm.data.name = "DrahomilRig"
 body.name = "DrahomilBody"
+
+# ---------------------------------------------------------------------------
+# 3b. Refine the body (docs/ART_STYLE.md §4-5: the cat's budget is 8-15k triangles, the source has 800).
+#     The glTF stores every flat face with its own vertices, so weld first; then one Catmull-Clark level
+#     rounds the blocky chest, legs and tail. Creased ridges (ears, paws) keep their points.
+#     Subdivision interpolates the vertex weights, so the skinning carries over.
+# ---------------------------------------------------------------------------
+import bmesh  # noqa: E402  (after bpy, see build_drahomil.py)
+
+if args.subdiv > 0:
+    bm = bmesh.new()
+    bm.from_mesh(body.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-4)
+    # The hind paws have small inner "fin" faces: after the weld, three faces share one edge there.
+    # A fin touches two such edges; the surface faces touch one.
+    fins = [f for f in bm.faces if sum(len(e.link_faces) > 2 for e in f.edges) >= 2]
+    bmesh.ops.delete(bm, geom=fins, context="FACES")
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])  # welded neighbours must agree on the winding
+    print(f"CHECK body weld: removed {len(fins)} inner faces, "
+          f"{sum(len(e.link_faces) > 2 for e in bm.edges)} non-manifold edges left")
+    crease = bm.edges.layers.float.get("crease_edge") or bm.edges.layers.float.new("crease_edge")
+    for e in bm.edges:
+        if len(e.link_faces) == 2 and math.degrees(e.calc_face_angle(0.0)) > CREASE_DEG:
+            e[crease] = 1.0
+    bm.to_mesh(body.data)
+    bm.free()
+    if "custom_normal" in body.data.attributes:  # the glTF's flat normals; ours come from the shading below
+        body.data.attributes.remove(body.data.attributes["custom_normal"])
+    sub = body.modifiers.new("Refine", "SUBSURF")
+    sub.levels = args.subdiv
+    body.modifiers.move(len(body.modifiers) - 1, 0)  # before the Armature modifier, so it applies cleanly
+    select_only(body)
+    bpy.ops.object.modifier_apply(modifier=sub.name)
+    if "crease_edge" in body.data.attributes:
+        body.data.attributes.remove(body.data.attributes["crease_edge"])
+    # Subdivision blends the weights of neighbouring vertices: keep the 4 strongest bones per vertex
+    # (Unity's default skin weights) and normalise, so Unity does not drop weights on its own.
+    for v in body.data.vertices:
+        gs = sorted(((g.group, g.weight) for g in v.groups if g.weight > 0), key=lambda gw: -gw[1])
+        keep, drop = gs[:4], gs[4:]
+        total = sum(w for _, w in keep) or 1.0
+        for gi, _ in drop:
+            body.vertex_groups[gi].remove([v.index])
+        for gi, w in keep:
+            body.vertex_groups[gi].add([v.index], w / total, "REPLACE")
+
+# Shading. "facet": flat faces (the house rule for organic models). "soft": smooth, with sharp edges kept on
+# ridges steeper than SHARP_DEG (ears, spine, paws), so the subdivided body reads as clean planes.
+bm = bmesh.new()
+bm.from_mesh(body.data)
+for f in bm.faces:
+    f.smooth = args.shading == "soft"
+for e in bm.edges:
+    e.smooth = not (len(e.link_faces) == 2 and math.degrees(e.calc_face_angle(0.0)) > SHARP_DEG)
+bm.to_mesh(body.data)
+bm.free()
+print(f"CHECK body refined: subdiv {args.subdiv}, shading {args.shading}, "
+      f"{sum(len(p.vertices) - 2 for p in body.data.polygons)} fur triangles")
 
 # Ground: lowest rest vertex at z = 0, body centred on x/y = 0 under the hips.
 zmin = min(v.co.z for v in body.data.vertices)
@@ -876,10 +942,11 @@ def rounded(points, iterations=3):
 
 NOSE_W, NOSE_TOP, NOSE_BOTTOM = 0.0095, 0.004, -0.0072
 nose_outline = rounded([(-NOSE_W, NOSE_TOP), (0.0, NOSE_BOTTOM), (NOSE_W, NOSE_TOP)])[::-1]
-loc, n = surface_hit(Vector((0, tip.y + 0.2, tip.z + 0.002)), Vector((0, -1, 0)))
-# The snout tip faces mostly up; project the nose halfway between "up" and "forward", so it reads well
-# from the front and from above.
-x, y, z = frame_at((n + FWD).normalized())
+loc, n = surface_hit(Vector((0, tip.y + 0.2, tip.z + 0.002 + NOSE_RAISE)), Vector((0, -1, 0)))
+# Project the nose between "up" and "forward", so it reads well from the front and from above. On the
+# refined (rounded) snout the tip faces forward, so tilt the frame up: the pad then lies on the top of
+# the snout instead of sticking out of its tip.
+x, y, z = frame_at((n + FWD + (UP if args.subdiv > 0 else Vector())).normalized())
 parts.append(decal("Nose", "Nose", nose_outline, (x, y, z), loc, 0.0003, "Head", dome=0.0016, rings=5,
                    uv_box=(-NOSE_W, NOSE_BOTTOM, NOSE_W, NOSE_TOP)))
 nose_bottom = loc + y * (NOSE_BOTTOM + 0.0008)

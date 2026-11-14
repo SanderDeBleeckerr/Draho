@@ -550,19 +550,23 @@ def duck(name, drake):
     k = Kit()
     k.loft([(-0.255, 0.128, 0.008, 0.008), (-0.195, 0.102, 0.050, 0.034), (-0.10, 0.072, 0.090, 0.066),
             (0.03, 0.066, 0.100, 0.074), (0.14, 0.080, 0.076, 0.064), (0.195, 0.108, 0.030, 0.032)], plumage, segments=8)
-    k.limb((0, 0.095, 0.145), (0, 0.178, 0.150), 0.044, 0.034, plumage, sides=7)
+    # a visible neck (the head used to sit straight on the back, like a decoy)
+    k.limb((0, 0.095, 0.140), (0, 0.192, 0.156), 0.042, 0.030, plumage, sides=7, mid=(0.55, 0.034))
     for side in (-1, 1):
-        k.loft([(0.075, 0.092, 0.012, 0.008, side * 0.083), (0.02, 0.086, 0.016, 0.040, side * 0.094),
-                (-0.09, 0.094, 0.014, 0.040, side * 0.084), (-0.19, 0.112, 0.008, 0.006, side * 0.046)],
-               ("metal" if drake else "walnut"), segments=5)
+        # folded wings lying over the back, tips meeting over the tail (they stood on the flanks like a boat's rim)
+        k.loft([(0.075, 0.116, 0.010, 0.008, side * 0.066), (0.02, 0.127, 0.036, 0.016, side * 0.056),
+                (-0.09, 0.125, 0.034, 0.016, side * 0.046), (-0.19, 0.127, 0.008, 0.006, side * 0.020)],
+               ("metal" if drake else "walnut"), segments=6)
     k.finish(f"{name}_Body", body)
 
-    head = pivot("Head", (0, 0.17, 0.15), body)
+    head = pivot("Head", (0, 0.185, 0.156), body)
     k = Kit()
-    k.ball((0, 0.012, 0.006), 0.5, "a_drake_green" if drake else "oak", scale=(0.104, 0.104, 0.122), subdiv=2)
-    k.loft([(0.046, -0.010, 0.026, 0.013), (0.098, -0.016, 0.026, 0.007), (0.130, -0.018, 0.019, 0.004)], "a_beak", segments=5)
+    k.ball((0, 0.012, 0.006), 0.5, "a_drake_green" if drake else "oak", scale=(0.088, 0.090, 0.108), subdiv=2)
+    # the drake's bill is yellow; the hen's a dull orange-brown
+    k.loft([(0.040, -0.008, 0.023, 0.012), (0.088, -0.014, 0.023, 0.006), (0.116, -0.016, 0.017, 0.004)],
+           "a_beak" if drake else "terracotta", segments=5)
     for side in (-1, 1):
-        k.ball((side * 0.046, 0.024, 0.032), 0.0088, "charcoal", scale=(0.6, 1, 1))
+        k.ball((side * 0.0385, 0.022, 0.028), 0.0080, "charcoal", scale=(0.6, 1, 1))
     k.finish(f"{name}_Head", head)
     return root
 

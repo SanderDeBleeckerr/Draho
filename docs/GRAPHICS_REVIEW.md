@@ -35,7 +35,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 20 | Pigeons | **Done, round 20** | sheen, perched pose |
 | 21 | Blackbirds | **Done, round 21** | check |
 | 22 | Hrozna (corgi) | **Done, round 22** | check |
-| 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | Blender | check |
+| 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | **Done, round 23** | check |
 | 24 | Fatsocat, the grey cat (NPC cats) | Drahomil model + fur | colour per cat, fur settings |
 | 25 | Drahomil | Blender + shell fur | fur at night, eye shine |
 | 26 | Town buildings near the flat | code extrusions | window frames, roof edges |
@@ -309,3 +309,22 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** the haunch and shoulder bulges take the sun on their tops, so the body is no longer one flat side.
 - **Checked:** Blender QA (no floating parts, no z-fighting); Unity animal studio front, side and top. The run also
   confirmed round 21's capture change: it takes a male blackbird and the hen.
+
+## Round 23: Zlatenka, the hedgehog, the fox, the ducks, the gull
+
+- **Ducks (changed):** they read as wooden decoys. The head sat straight on the back with no neck, and the wings
+  stood on the flanks like the rim of a boat.
+  - A neck now rises from the breast (0.095 to 0.192 m) to a smaller head (radius 52 to 44 mm). The Head pivot
+    moved up with it.
+  - The wings are flat, folded plates lying over the back, with the tips meeting over the tail.
+  - The hen's bill was the drake's yellow and is now `terracotta`, the dull orange-brown of a female mallard.
+  - On the drake, the longer neck shows the white collar between the chestnut breast and the green head.
+  - Each duck is 364 tris.
+- **Hedgehog, fox (checked, unchanged):** the hedgehog's spines, pale face and dark snout read well against the
+  ground. The fox's rust coat, black stockings and white tail tip are the classic marks, and the legs stand on the
+  ground.
+- **Zlatenka (checked, unchanged):** the leopard-tortoise shell reads as cream with dark blotches. A later pass could
+  add scute rings (raised plates) to give it relief in low sun. Noted, not done.
+- **Gull:** got the folded wings and the smaller head in round 20.
+- **Checked:** Blender QA (ducks: no floating parts, no z-fighting); Unity animal studio: drake `Duck_2` and hen
+  `Duck_8`.

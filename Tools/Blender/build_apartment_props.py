@@ -308,6 +308,39 @@ def court_pebbles():
 
 
 @prop
+def island():
+    """2.0 x 0.95 x 0.9 m kitchen island (owner: white handle-less drawers, dark-grey top, the hob). Drawers on the
+    front (Blender -Y, facing the back counter): three columns of three, 3 mm shadow gaps between the fronts, a
+    recessed dark plinth, a 3 cm worktop with a small overhang and a black induction hob with its ring marks."""
+    W, D, H = 2.0, 0.95, 0.9
+    PLINTH, TOP = 0.1, 0.03
+    body_h = H - TOP
+    parts = [ds.box("Carcass", (0, 0.02, PLINTH + (body_h - PLINTH) / 2), (W - 0.02, D - 0.06, body_h - PLINTH), "grey_light", bevel=0.004),
+             ds.box("Plinth", (0, 0.06, PLINTH / 2), (W - 0.1, D - 0.2, PLINTH), "grey_deep", bevel=0.003),
+             ds.box("Worktop", (0, 0, H - TOP / 2), (W + 0.03, D + 0.03, TOP), "grey_dark", bevel=0.006)]
+    gap, cols = 0.003, 3
+    fw = (W - 0.02 - gap * (cols + 1)) / cols
+    heights = (0.16, 0.26, 0.33)                                            # top to bottom
+    for c in range(cols):
+        x = -W / 2 + 0.01 + gap + fw / 2 + c * (fw + gap)
+        z = H - TOP - gap
+        for h in heights:
+            fh = h - gap
+            parts.append(ds.box("Drawer", (x, -D / 2 + 0.012, z - fh / 2), (fw, 0.02, fh), "white", bevel=0.003))
+            z -= h
+    for s in (-1, 1):                                                        # end panels
+        parts.append(ds.box("EndPanel", (s * (W / 2 - 0.009), 0.0, (body_h - 0.003) / 2), (0.018, D - 0.02, body_h - 0.003), "white", bevel=0.003))
+    parts.append(ds.box("BackPanel", (0, D / 2 - 0.02, PLINTH + (body_h - PLINTH) / 2), (W - 0.04, 0.018, body_h - PLINTH), "white", bevel=0.003))
+    hob = ds.box("Hob", (0.25, 0.0, H + 0.002), (0.58, 0.5, 0.006), "black", bevel=0.002)
+    parts.append(hob)
+    for (hx, hy, r) in ((0.08, -0.1, 0.1), (0.42, -0.1, 0.08), (0.08, 0.12, 0.08), (0.42, 0.12, 0.1)):
+        ring = ds.cylinder("HobRing", (hx, hy, H + 0.0052), r, 0.0008, "grey_dark", segments=24, bevel=0)
+        inner = ds.cylinder("HobRingIn", (hx, hy, H + 0.0056), r - 0.006, 0.0008, "black", segments=24, bevel=0)
+        parts += [ring, inner]
+    return parts
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

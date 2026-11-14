@@ -1,0 +1,60 @@
+# Graphics review, one entity per round
+
+A recurring review (owner, November 2026): each round takes one entity of the game, checks its shape, textures and
+light against [ART_STYLE.md](ART_STYLE.md) with the Blender skills (`blender-director` brief, `prop-artist`,
+`materials`, `lighting`, `collision-proxy`, `unity-export`, `qa-review`), improves it, and checks it in Unity
+(`ArtCapture`). After round 30, the day/night cycle (`SkyMood`, `DayCycle`) gets its own review.
+
+Furniture is built by [`Tools/Blender/build_apartment_props.py`](../Tools/Blender/build_apartment_props.py) and loaded
+from `Art/Furniture/<layout id>.fbx`; see [APARTMENT_GRAPHICS.md](APARTMENT_GRAPHICS.md) for the first rounds before
+this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedroom window, court stones, firewood).
+
+## Backlog (most visible first)
+
+| # | Entity | Now | Plan |
+|---|---|---|---|
+| 1 | Kitchen island | Kenney cabinets + code worktop | **Done, round 1** |
+| 2 | Back counter (sink, coffee machine) | Kenney cabinets, flat top | Blender: drawers like the island, a sink with tap, a coffee machine |
+| 3 | Fridge column | Kenney fridge, stretched | Blender: tall white column, handle-less, a seam |
+| 4 | Plant stand by the sliding door | Kenney potted plant | Blender: pot, faceted leaves (house rule: organic = faceted) |
+| 5 | Sliding door | Sketchfab, white | check glass sorting (owner's "transparent frame" glitch), frame colour |
+| 6 | Front door | code boxes | Blender: panelled leaf, handle, frame |
+| 7 | Ceiling and lamps | flat box, no fittings | Blender: ceiling lights (pendant over the island, shade in the living room) |
+| 8 | Walls and floor | flat colour, tile texture | subtle plaster gradient, skirting colour, tile grout check |
+| 9 | Court light well (shaft walls, windows, gutter) | code boxes | window frames and sills in Blender |
+| 10 | Drainpipe | code cylinder | Blender: segments, brackets, shoe |
+| 11 | Garden picnic table | code boxes | Blender: planks, A-frame legs |
+| 12 | Garden lamp | code primitives | Blender: lantern with glass |
+| 13 | Garden fences (neighbour, end, wild) | code boxes | check scale, posts, planks variation |
+| 14 | Garden trees (maple, others) | code blobs | Blender: faceted canopy clusters, trunk |
+| 15 | Lawn, path, terrace | flat colour, tiles | grass variation (vertex colour), path slabs with height |
+| 16 | Ivy wall | `WindFoliage` cards | leaf density, colour |
+| 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | Blender props |
+| 18 | Humans (legs at the door) | code cylinders | Blender: legs, shoes, coat hem |
+| 19 | Mouse | Blender (animals) | fur/colour check at cat height |
+| 20 | Pigeons | Blender | sheen, perched pose |
+| 21 | Blackbirds | Blender | check |
+| 22 | Hrozna (corgi) | Blender | check |
+| 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | Blender | check |
+| 24 | Fatsocat, the grey cat (NPC cats) | Drahomil model + fur | colour per cat, fur settings |
+| 25 | Drahomil | Blender + shell fur | fur at night, eye shine |
+| 26 | Town buildings near the flat | code extrusions | window frames, roof edges |
+| 27 | Courtyard / street props (bins, cars, lamps) | code | Blender props |
+| 28 | Quay, bridges, boats, water | code | water colour and glint, quay stones |
+| 29 | Bakery, begijnhof | code | facades |
+| 30 | Sky, clouds, fog | shaders | blue-hour colour check |
+| 31+ | Day/night cycle | `SkyMood` presets | review, then decide |
+
+## Rounds
+
+### Round 1: kitchen island
+
+- **Review:** a Kenney drawer cabinet and stove stretched to 2.0 × 0.95 m, a code box for the worktop and the hob. The
+  owner described it as white handle-less drawers with a dark-grey top; the Kenney cabinets have handles and a
+  different drawer layout, and the stretch made the handles wide.
+- **Change:** Blender model `island` (2,464 triangles, palette material): 3 × 3 white drawer fronts with 3 mm shadow
+  gaps (the gaps carry the shape; no handles), end and back panels, a recessed dark plinth, a 3 cm dark-grey worktop
+  with a small overhang, a black induction hob with ring marks. Collider shaped from the mesh.
+- **Light:** the worktop is the darkest surface in the kitchen; the sink spots and the court light reach it. No
+  change needed.
+- **Checked:** Blender look-dev render; Unity `kitchen` view (Day).

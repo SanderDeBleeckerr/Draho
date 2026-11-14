@@ -39,6 +39,7 @@ ap.add_argument("--shading", choices=("facet", "soft"), default="soft",
 args = ap.parse_args(argv)
 CREASE_DEG = 70  # ridges sharper than this keep their points through the subdivision
 SHARP_DEG = 35   # "soft" shading: edges sharper than this stay sharp
+FUR_STAND, FUR_LIE = 0.45, 0.9  # the fur leans about 63 degrees from the skin normal towards its lay direction
 NOSE_RAISE = 0.004 if args.subdiv > 0 else 0.0  # the rounded snout's tip sits ~4 mm lower
 
 FPS = 24
@@ -1141,6 +1142,28 @@ if args.fur_shells > 0:
     bm.free()
     if "custom_normal" in fur_mesh.attributes:
         fur_mesh.attributes.remove(fur_mesh.attributes["custom_normal"])
+    # Combing. Hair that stands straight up looks like a hedgehog; a cat's coat lies flat: back from the nose,
+    # along the spine and the tail to its tip, and down the legs. The shader pushes the layers out along the
+    # vertex normal, so the lay is baked into the fur mesh's normals: each normal leans from the skin normal
+    # towards the lay direction. Unity skins normals, so the lay follows the legs and the tail.
+    away_from_body = ("Tail", "Ear.", "UpperArm.", "Forearm.", "Hand.", "Fingers.", "Thigh.", "Shin.", "Foot.", "Toe.")
+    lay = {}
+    for vg in body.vertex_groups:
+        bone = arm.data.bones.get(vg.name)
+        along = bone is not None and vg.name.startswith(away_from_body)
+        lay[vg.index] = (bone.tail_local - bone.head_local).normalized() if along else -FWD
+    head_group = body.vertex_groups["Head"].index
+    combed = []
+    for v in fur_mesh.vertices:
+        normal = v.normal.copy()
+        # On the head the coat runs away from the nose in every direction (up the forehead, out over the cheeks).
+        from_nose = (v.co - tip).normalized()
+        flow = sum(((from_nose if g.group == head_group else lay[g.group]) * g.weight for g in v.groups), Vector())
+        flow -= normal * flow.dot(normal)   # along the skin
+        if flow.length > 1e-4:
+            normal = (normal * FUR_STAND + flow.normalized() * FUR_LIE).normalized()
+        combed.append(normal)
+    fur_mesh.normals_split_custom_set_from_vertices(combed)
     fur_mesh.materials.clear()
     fur_mesh.materials.append(material("FurShell", (0.03, 0.03, 0.035), 0.9))
     print(f"CHECK fur shells {args.fur_shells}: {sum(len(p.vertices) - 2 for p in fur_mesh.polygons)} triangles, "

@@ -121,9 +121,16 @@ Rules:
   no geometry shader, so the layers are in the mesh: the converter's step 5b writes `DrahomilFur`, 8 copies of
   the fur faces (38,016 triangles, one draw call, no shadow), with the layer, the rest position and a fur
   length mask in its UV channels. [`Draho/ShellFur`](../Draho/Assets/_Draho/Art/Shaders/ShellFur.shader)
-  pushes the layers out (9 mm) and draws 520 strands per metre from the rest position, so it needs no texture
-  or unwrap. The mask leaves the eyes, nose and inner ears clear and shortens the fur on the head, ears and
-  lower legs. `PlaygroundBuilder.FurShellMaterial` sets the look; a scene rebuild resets it.
+  pushes the layers out (14 mm along the hair) and draws 520 strands per metre from the rest position, so it
+  needs no texture or unwrap. The mask leaves the eyes, nose and inner ears clear and shortens the fur on the
+  head, ears and lower legs. `PlaygroundBuilder.FurShellMaterial` sets the look; a scene rebuild resets it.
+  - **Combed, not spiky.** Hair that stands straight up looks like a hedgehog. The fur mesh's normals lean
+    about 63° from the skin towards the lay of the coat: away from the nose on the head, back along the body,
+    down the legs, along the tail. The layers go out along these normals, so the hairs lie flat and overlap.
+    Unity skins normals, so the lay follows the legs and tail. The light uses the surface itself (from the
+    pixel's position), not the leaning normals.
+  - **One colour.** The lowest layer is a solid undercoat, and the body under the fur uses the same shader
+    with `_Skin` on, so no lighter skin shows between the hairs or round the eyes. The body casts the shadow.
   `--fur-shells 0` builds the cat without fur. Open: frame time on a phone (38k extra triangles and
   alpha-tested overdraw), and whether fur fits the low-poly style at all: the owner decides.
 

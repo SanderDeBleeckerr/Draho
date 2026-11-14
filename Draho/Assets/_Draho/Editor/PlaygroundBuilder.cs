@@ -434,8 +434,15 @@ namespace Draho.EditorTools
                 AssetDatabase.CreateAsset(mat, path);
             }
             mat.shader = shader;
-            mat.SetColor("_BaseColor", fur.GetColor("_BaseColor"));
-            mat.SetFloat("_FurLength", 0.009f);
+            mat.SetFloat("_Skin", 0f);
+            // The body under the fur gets the same shader (as bare skin), so skin and coat have one colour.
+            Color colour = fur.GetColor("_BaseColor");
+            fur.shader = shader;
+            fur.SetColor("_BaseColor", colour);
+            fur.SetFloat("_Skin", 1f);
+            EditorUtility.SetDirty(fur);
+            mat.SetColor("_BaseColor", colour);
+            mat.SetFloat("_FurLength", 0.014f);
             mat.SetFloat("_Density", 520f);
             mat.SetFloat("_RootShade", 0.8f);
             mat.SetFloat("_Rim", 0.15f);

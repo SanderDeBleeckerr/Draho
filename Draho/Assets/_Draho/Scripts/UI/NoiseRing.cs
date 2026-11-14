@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Draho.UI
 {
     /// <summary>
-    /// A faint ring on the ground around Drahomil: how far his steps can be heard (sneak small and green,
-    /// walk yellow, run large and orange). It shows only when an animal that listens is near, so the
+    /// A faint ring on the ground around Drahomil: how far his steps can be heard (sneak small and sage,
+    /// walk soft yellow, run large and warm). Thin and see-through on purpose: a hint, not a target marker. It shows only when an animal that listens is near, so the
     /// player can see why a mouse, a bird or Hrozna noticed him (research: readable stealth feedback).
     /// </summary>
     [RequireComponent(typeof(LineRenderer))]
@@ -27,7 +27,7 @@ namespace Draho.UI
             line.loop = true;
             line.useWorldSpace = true;
             line.positionCount = segments;
-            line.widthMultiplier = 0.02f;
+            line.widthMultiplier = 0.008f;
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var found = new System.Collections.Generic.List<Component>();
             found.AddRange(FindObjectsByType<Mouse>(FindObjectsInactive.Include, FindObjectsSortMode.None));
@@ -52,17 +52,18 @@ namespace Draho.UI
                 : cat.Speed > cat.Stats.walkSpeed * 1.5f || cat.IsAirborne ? 2.4f
                 : 1.2f;
             radius = Mathf.Lerp(radius, target, 1f - Mathf.Exp(-8f * Time.deltaTime));
-            alpha = Mathf.MoveTowards(alpha, near && !cat.IsClimbing ? 0.55f : 0f, 2f * Time.deltaTime);
+            alpha = Mathf.MoveTowards(alpha, near && !cat.IsClimbing ? 0.28f : 0f, 1.5f * Time.deltaTime);
             line.enabled = alpha > 0.01f;
             if (!line.enabled) return;
 
-            Color c = radius < 0.6f ? new Color(0.5f, 1f, 0.6f) : radius < 1.6f ? new Color(1f, 0.9f, 0.4f) : new Color(1f, 0.55f, 0.3f);
+            // Muted palette colours (docs/ART_STYLE.md): leaf_light, pale_yellow, terracotta.
+            Color c = radius < 0.6f ? new Color(0.64f, 0.65f, 0.49f) : radius < 1.6f ? new Color(0.95f, 0.87f, 0.65f) : new Color(0.64f, 0.5f, 0.41f);
             c.a = alpha;
             line.startColor = line.endColor = c;
             for (int i = 0; i < segments; i++)
             {
                 float a = i * Mathf.PI * 2f / segments;
-                line.SetPosition(i, new Vector3(p.x + Mathf.Cos(a) * radius, p.y + 0.03f, p.z + Mathf.Sin(a) * radius));
+                line.SetPosition(i, new Vector3(p.x + Mathf.Cos(a) * radius, p.y + 0.015f, p.z + Mathf.Sin(a) * radius));
             }
         }
     }

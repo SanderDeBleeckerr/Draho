@@ -31,6 +31,8 @@ namespace Draho.EditorTools
             ("living_low", new Vector3(4.3f, 0.35f, 0.5f), new Vector3(1.2f, 0.45f, 4.2f)),    // cat height
             ("garden", new Vector3(0.6f, 1.4f, 2.5f), new Vector3(-10f, 0.6f, 2.5f)),          // out of the sliding door
             ("court", new Vector3(7.3f, 1.6f, 3.3f), new Vector3(4.9f, 0.2f, 4.8f)),           // the inner court
+            ("kitchen", new Vector3(4.9f, 1.1f, 2.2f), new Vector3(7.6f, 0.8f, 2.4f)),         // the front door and the mouse hole
+            ("sofa", new Vector3(2.6f, 1.3f, 2.2f), new Vector3(2.6f, 0.4f, 4.5f)),            // the sofa: seat, back and arms
         };
 
         /// <summary>The fixed views, plus a side view of the cat (readability).</summary>

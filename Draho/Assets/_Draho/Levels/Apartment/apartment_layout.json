@@ -52,6 +52,16 @@
    "kenney": "wallWindowSlide",
    "note": "Sketchfab 'Pro Line Contemporary Sliding Door' (CC BY). Opens when the cat waits in front of it, inside or in the garden.",
    "model": "SlidingDoor"
+  },
+  {
+   "id": "front_door",
+   "label": "Front door",
+   "wall": "east",
+   "from": 0.6,
+   "to": 1.4,
+   "height": 2.08,
+   "note": "The flat's front door, set into the kitchen's east wall (ApartmentBuilder.BuildHomecoming).",
+   "model": "Door"
   }
  ],
  "props": [
@@ -323,10 +333,10 @@
  "mouse_holes": [
   {
    "id": "hole_fridge",
-   "x": 7.6,
-   "z": 1.05,
-   "facing": "west",
-   "note": "East kitchen wall, next to the fridge."
+   "x": 6.6,
+   "z": 5.0,
+   "facing": "south",
+   "note": "North kitchen wall, clear of the furniture. (It was in the east wall behind the front door.)"
   },
   {
    "id": "hole_living",

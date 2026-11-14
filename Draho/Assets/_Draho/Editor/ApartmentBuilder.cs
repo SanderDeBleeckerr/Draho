@@ -293,6 +293,7 @@ namespace Draho.EditorTools
                     WallSegment($"Wall_{side}_above_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height, h, t, wall);
                     if (o.model == "SlidingDoor")
                         SlidingDoorAt(o, alongX, alongX ? a.y : a.x, side);
+                    else if (o.model == "Door") { } // the front door: BuildHomecoming sets it into this opening
                     else
                         GlassPanel($"Glass_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height);
                     cursor = o.to;
@@ -827,15 +828,27 @@ namespace Draho.EditorTools
             lid.transform.rotation = Quaternion.Euler(-25f, 0f, 0f); // open a crack, lifted by the storm
             lid.transform.SetParent(hatch, true);
 
-            // The front door: on the kitchen's east wall, between the fridge and the island.
-            float t = layout.wall.thickness, wallX = 7.6f - t / 2;
+            // The front door: in the kitchen's east wall, between the fridge and the island. The wall has a real
+            // opening there (layout opening "front_door"); the leaf is set back into it, with linings on the reveal and
+            // an architrave on the room side. (It used to be a board 11 cm in front of the wall, and the kitchen mouse
+            // hole was behind it, so the mouse ran into the door.)
+            var opening = (layout.openings ?? new Opening[0]).FirstOrDefault(o => o.id == "front_door");
+            float t = layout.wall.thickness, face = 7.6f;                    // the wall's room-side face
+            float z0 = opening?.from ?? 0.6f, z1 = opening?.to ?? 1.4f, doorTop = opening?.height ?? 2.08f, zc = (z0 + z1) / 2;
             var doorMat = Mat("Apt_FrontDoor", new Color(0.36f, 0.27f, 0.2f), 0.25f);
             var frame = Mat("Apt_DoorFrame", new Color(0.88f, 0.87f, 0.84f), 0.3f);
-            Box("FrontDoor", new Vector3(wallX - 0.015f, 1.0f, 1.0f), new Vector3(0.03f, 2.0f, 0.8f), doorMat, collider: false);
-            Box("FrontDoorFrame", new Vector3(wallX - 0.02f, 2.04f, 1.0f), new Vector3(0.04f, 0.08f, 0.96f), frame, collider: false);
+            const float doorLining = 0.03f, setBack = 0.12f, leafT = 0.04f;
+            Box("FrontDoor", new Vector3(face + setBack + leafT / 2, (doorTop - doorLining) / 2, zc),
+                new Vector3(leafT, doorTop - doorLining, z1 - z0 - 2 * doorLining), doorMat);   // solid: the cat stays in
+            Box("FrontDoorLining", new Vector3(face + t / 2, doorTop - doorLining / 2, zc), new Vector3(t, doorLining, z1 - z0), frame, collider: false);
+            foreach (float z in new[] { z0 + doorLining / 2, z1 - doorLining / 2 })
+                Box("FrontDoorLining", new Vector3(face + t / 2, doorTop / 2, z), new Vector3(t, doorTop, doorLining), frame, collider: false);
+            Box("FrontDoorArchitrave", new Vector3(face - 0.01f, doorTop + 0.04f, zc), new Vector3(0.02f, 0.08f, z1 - z0 + 0.16f), frame, collider: false);
             foreach (float s in new[] { -1f, 1f })
-                Box("FrontDoorFrame", new Vector3(wallX - 0.02f, 1.0f, 1.0f + s * 0.44f), new Vector3(0.04f, 2.08f, 0.08f), frame, collider: false);
-            Box("DoorHandle", new Vector3(wallX - 0.05f, 1.0f, 0.7f), new Vector3(0.04f, 0.03f, 0.12f), Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), collider: false);
+                Box("FrontDoorArchitrave", new Vector3(face - 0.01f, (doorTop + 0.08f) / 2, zc + s * ((z1 - z0) / 2 + 0.04f)),
+                    new Vector3(0.02f, doorTop + 0.08f, 0.08f), frame, collider: false);
+            Box("DoorHandle", new Vector3(face + setBack - 0.03f, 1.0f, z0 + 0.12f), new Vector3(0.04f, 0.03f, 0.12f),
+                Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), collider: false);
 
             // The humans, seen from cat height: legs, shoes and the hem of a coat. +Z of each person faces the room.
             var humans = new GameObject("Humans").transform;
@@ -1921,12 +1934,45 @@ namespace Draho.EditorTools
                 Fit(root, item, local, new Vector3(0.28f, 0.36f, 0.28f), yaw, Color.white);
             }
 
+            // Upholstered furniture: one box the size of the whole sofa put the cat on top of the backrest height,
+            // "sitting on air" above the seat. Use the model's own shape instead (static mesh colliders), so the seat,
+            // the backrest and the armrests each have their real height.
+            bool shaped = body.Any(s => s.Contains("Sofa") || s.Contains("Chair") || s.Contains("bed") || s.Contains("Bed"));
+            if (shaped && ShapedCollider(root, p.id)) return;
             if (p.h > 0.05f) // rugs are walk-over
             {
                 var col = root.gameObject.AddComponent<BoxCollider>();
                 col.center = new Vector3(0, p.h / 2, 0);
                 col.size = new Vector3(p.w, p.h, p.d);
             }
+        }
+
+        /// <summary>
+        /// One static mesh collider on the prop's root, from all its meshes (Kenney models are low-poly). The mesh is
+        /// baked into the root's own unscaled space and saved as an asset: the models sit under a non-uniformly scaled
+        /// slot, and Unity cannot cook such a collider at run time from a mesh that is not readable (WebGL).
+        /// </summary>
+        static bool ShapedCollider(Transform root, string id)
+        {
+            var parts = root.GetComponentsInChildren<MeshFilter>()
+                .Where(mf => mf.sharedMesh != null)
+                .SelectMany(mf => Enumerable.Range(0, mf.sharedMesh.subMeshCount).Select(i => new CombineInstance
+                {
+                    mesh = mf.sharedMesh,
+                    subMeshIndex = i,
+                    transform = root.worldToLocalMatrix * mf.transform.localToWorldMatrix,
+                }))
+                .ToArray();
+            if (parts.Length == 0) return false;
+            var mesh = new Mesh { name = $"{id}_collider" };
+            mesh.CombineMeshes(parts, true, true);
+            string dir = $"{PlaygroundBuilder.ArtDir}/Colliders";
+            System.IO.Directory.CreateDirectory(dir);
+            string path = $"{dir}/{id}_collider.asset";
+            AssetDatabase.DeleteAsset(path); // remade every build, like the cloud cookie
+            AssetDatabase.CreateAsset(mesh, path);
+            root.gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
+            return true;
         }
 
         /// <summary>Instantiates a Kenney model and scales it to fill exactly the given box (bottom at local.y).</summary>

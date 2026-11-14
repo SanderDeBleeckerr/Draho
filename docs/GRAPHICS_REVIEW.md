@@ -14,7 +14,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | # | Entity | Now | Plan |
 |---|---|---|---|
 | 1 | Kitchen island | Kenney cabinets + code worktop | **Done, round 1** |
-| 2 | Back counter (sink, coffee machine) | Kenney cabinets, flat top | Blender: drawers like the island, a sink with tap, a coffee machine |
+| 2 | Back counter (sink, coffee machine) | Kenney cabinets, flat top | **Done, round 2** |
 | 3 | Fridge column | Kenney fridge, stretched | Blender: tall white column, handle-less, a seam |
 | 4 | Plant stand by the sliding door | Kenney potted plant | Blender: pot, faceted leaves (house rule: organic = faceted) |
 | 5 | Sliding door | Sketchfab, white | check glass sorting (owner's "transparent frame" glitch), frame colour |
@@ -58,3 +58,16 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** the worktop is the darkest surface in the kitchen; the sink spots and the court light reach it. No
   change needed.
 - **Checked:** Blender look-dev render; Unity `kitchen` view (Day).
+
+### Round 2: back counter
+
+- **Review:** Kenney cabinet, sink and coffee-machine modules stretched to 2.1 m; the sink was a flat panel in a
+  flat top and the coffee machine a stretched block. It sits under the sink spots (IndoorLight), so it is the most
+  lit thing in the kitchen at night.
+- **Change:** Blender model `back_counter` (2,468 triangles): four columns of white handle-less fronts matching
+  the island (two doors under the sink), a recessed plinth, the dark worktop with a real stainless basin cut in
+  (boolean), a drain, a mixer tap with an arched spout and a lever, a coffee machine with a drip tray, a water tank
+  and a white cup at the left end.
+- **Light:** the sink spots land on the basin and the tap; fine by day and at night. Noted for the day/night
+  review: at Night the dining corner next to it gets almost no light (the living-room lamp is far).
+- **Checked:** Blender look-dev render; Unity `dining` view (Night) with the counter in the spot light.

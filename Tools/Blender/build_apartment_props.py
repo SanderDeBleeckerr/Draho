@@ -340,6 +340,67 @@ def island():
     return parts
 
 
+def _cut(target, cutter):
+    """Boolean difference (exact), then remove the cutter. Its faces keep the cutter's palette colour."""
+    bpy.context.view_layer.update()
+    mod = target.modifiers.new(cutter.name, "BOOLEAN")
+    mod.operation, mod.solver, mod.object = "DIFFERENCE", "EXACT", cutter
+    with bpy.context.temp_override(object=target, active_object=target, selected_objects=[target]):
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.data.objects.remove(cutter)
+
+
+@prop
+def back_counter():
+    """2.1 x 0.6 x 0.9 m counter against the south wall, matching the island: four columns of white handle-less
+    fronts (two doors under the sink), a recessed plinth, the dark worktop with a stainless sink cut into it, a
+    mixer tap, and a coffee machine with a cup at the left end. Front faces Blender -Y (the room)."""
+    W, D, H = 2.1, 0.6, 0.9
+    PLINTH, TOP = 0.1, 0.03
+    body_h = H - TOP
+    parts = [ds.box("Carcass", (0, 0.02, PLINTH + (body_h - PLINTH) / 2), (W - 0.02, D - 0.06, body_h - PLINTH), "grey_light", bevel=0.004),
+             ds.box("Plinth", (0, 0.05, PLINTH / 2), (W - 0.04, D - 0.16, PLINTH), "grey_deep", bevel=0.003)]
+    top = ds.box("Worktop", (0, 0, H - TOP / 2), (W + 0.02, D + 0.02, TOP), "grey_dark", bevel=0.006)
+    cols, gap = 4, 0.003
+    fw = (W - 0.02 - gap * (cols + 1)) / cols
+    sink_x = -W / 2 + 0.01 + gap + fw / 2 + 2 * (fw + gap)
+    for c in range(cols):
+        x = -W / 2 + 0.01 + gap + fw / 2 + c * (fw + gap)
+        z = H - TOP - gap
+        if c == 2:                                                   # two doors under the sink
+            fh = body_h - PLINTH - 2 * gap
+            for s in (-1, 1):
+                parts.append(ds.box("Door", (x + s * (fw / 4 + gap / 4), -D / 2 + 0.012, PLINTH + gap + fh / 2),
+                                    (fw / 2 - gap / 2, 0.02, fh), "white", bevel=0.003))
+            continue
+        for h in (0.16, 0.26, 0.33):
+            fh = h - gap
+            parts.append(ds.box("Drawer", (x, -D / 2 + 0.012, z - fh / 2), (fw, 0.02, fh), "white", bevel=0.003))
+            z -= h
+    # The sink: a basin cut into the worktop (the cutter's faces stay "metal").
+    basin = ds.box("Basin", (sink_x, -0.02, H - 0.09), (0.46, 0.36, 0.2), "metal", bevel=0)
+    _cut(top, basin)
+    parts.append(top)
+    parts.append(ds.cylinder("Drain", (sink_x, -0.02, H - 0.188), 0.03, 0.002, "metal_dark", segments=12, bevel=0))
+    # Mixer tap behind the sink: a column, an arched spout, a lever.
+    tx, ty = sink_x, D / 2 - 0.09
+    parts.append(ds.cylinder("TapBase", (tx, ty, H), 0.025, 0.03, "metal", segments=12, bevel=0.002))
+    parts.append(ds.cylinder("TapColumn", (tx, ty, H + 0.03), 0.014, 0.26, "metal", segments=10, bevel=0))
+    spout = ds.cylinder("TapSpout", (0, 0, 0), 0.011, 0.2, "metal", segments=10, bevel=0)
+    spout.rotation_euler.x = math.radians(90 + 15)                  # forward and a little down, over the basin
+    spout.location = (tx, ty, H + 0.28)
+    parts.append(spout)
+    parts.append(ds.box("TapLever", (tx + 0.035, ty, H + 0.2), (0.06, 0.012, 0.012), "metal", bevel=0.002))
+    # Coffee machine at the left end, a white cup under its spout.
+    cx = -W / 2 + 0.26
+    parts.append(ds.box("CoffeeBody", (cx, 0.08, H + 0.19), (0.24, 0.32, 0.38), "metal_dark", bevel=0.015))
+    parts.append(ds.box("CoffeeHead", (cx, -0.09, H + 0.31), (0.14, 0.06, 0.06), "black", bevel=0.01))
+    parts.append(ds.box("DripTray", (cx, -0.08, H + 0.012), (0.18, 0.1, 0.024), "metal", bevel=0.004))
+    parts.append(ds.cylinder("Cup", (cx, -0.09, H + 0.024), 0.035, 0.07, "white", segments=12, bevel=0.003))
+    parts.append(ds.box("Tank", (cx + 0.125, 0.12, H + 0.17), (0.02, 0.2, 0.3), "grey_light", bevel=0.004))
+    return parts
+
+
 @prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping

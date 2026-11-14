@@ -32,7 +32,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | **Done, round 17** |
 | 18 | Humans (legs at the door) | **Done, round 18** | Blender: legs, shoes, coat hem |
 | 19 | Mouse | **Done, round 19** | fur/colour check at cat height |
-| 20 | Pigeons | Blender | sheen, perched pose |
+| 20 | Pigeons | **Done, round 20** | sheen, perched pose |
 | 21 | Blackbirds | Blender | check |
 | 22 | Hrozna (corgi) | Blender | check |
 | 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | Blender | check |

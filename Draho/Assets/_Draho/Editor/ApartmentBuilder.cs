@@ -1025,12 +1025,21 @@ namespace Draho.EditorTools
             var coat2 = Mat("Human_Coat2", new Color(0.2f, 0.3f, 0.26f), 0.2f);
             var shoe = Mat("Human_Shoe", new Color(0.08f, 0.07f, 0.07f), 0.4f);
             var people = new[] { (new Vector3(7.05f, 0f, 0.85f), jeans, coat), (new Vector3(6.85f, 0f, 1.3f), trousers, coat2) };
+            int index = 0;
             foreach (var (pos, legs, top) in people)
             {
                 var person = new GameObject("Person").transform;
                 person.SetParent(humans, false);
                 person.position = pos;
                 person.rotation = Quaternion.Euler(0f, -90f, 0f); // facing into the kitchen (-x)
+                // Blender legs, shoes and coat (build_apartment_props.py human_a / human_b); else the primitives below.
+                var body = FurnitureModel(index++ == 0 ? "human_a" : "human_b", person);
+                if (body != null)
+                {
+                    body.localPosition = Vector3.zero;
+                    body.localRotation = Quaternion.identity;
+                    continue;
+                }
                 foreach (float s in new[] { -1f, 1f })
                 {
                     var leg = GameObject.CreatePrimitive(PrimitiveType.Cylinder);

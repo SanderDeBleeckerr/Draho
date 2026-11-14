@@ -780,6 +780,44 @@ def wild_barrel():
     return parts
 
 
+def _human(trousers, coat, shoes, coat_len, bag=False):
+    """A human as the cat sees one: legs, shoes and the hem of a coat (the top is out of view at 1.4 m). Trouser
+    legs taper to the ankle with a slight bend at the knee, shoes with a sole and a rounded toe (front: Blender -Y),
+    a coat hem flaring a little. Origin between the feet; smooth shading (cloth, not faceted)."""
+    parts = []
+    for s in (-1, 1):
+        x = s * 0.1
+        parts.append(ds.cylinder("Shin", (x, 0, 0.08), 0.055, 0.45, trousers, segments=10, radius_top=0.062, bevel=0, smooth=True))
+        thigh = ds.cylinder("Thigh", (0, 0, 0), 0.064, 0.5, trousers, segments=10, radius_top=0.078, bevel=0, smooth=True)
+        thigh.rotation_euler.x = math.radians(-4)
+        thigh.location = (x, 0.01, 0.52)
+        parts.append(thigh)
+        parts.append(ds.box("Sole", (x, -0.04, 0.012), (0.1, 0.28, 0.024), "black", bevel=0.008))
+        parts.append(ds.box("Shoe", (x, -0.04, 0.055), (0.095, 0.26, 0.065), shoes, bevel=0.025))
+    hem = ds.cylinder("Coat", (0, 0, 1.4 - coat_len), 0.25, coat_len, coat, segments=14, radius_top=0.21, bevel=0, smooth=True)
+    hem.scale = (1.0, 0.72, 1.0)
+    parts.append(hem)
+    if bag:
+        # Set down on the floor beside the feet (no hand in view to hold it).
+        parts.append(ds.box("Bag", (0.27, 0.02, 0.16), (0.12, 0.28, 0.32), "oak_light", bevel=0.01))
+        for s in (-1, 1):
+            parts.append(ds.box("BagHandle", (0.27, s * 0.06, 0.36), (0.012, 0.012, 0.08), "oak", bevel=0.002))
+        parts.append(ds.blob("Bread", (0.27, 0.08, 0.36), 0.04, (1.0, 1.0, 2.2), "oak_light", subdiv=1, seed=3))
+    return parts
+
+
+@prop
+def human_a():
+    """The first human at the door: jeans, a long brown coat, black shoes."""
+    return _human("navy", "oak", "black", 0.62)
+
+
+@prop
+def human_b():
+    """The second human: dark trousers, a short green coat, brown shoes and a paper shopping bag."""
+    return _human("grey_deep", "leaf_dark", "walnut_dark", 0.5, bag=True)
+
+
 @prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping

@@ -30,7 +30,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 15 | Lawn, path, terrace | flat colour, tiles | **Done, round 15** (grass tufts) |
 | 16 | Ivy | leaf mesh | **Done, round 16** (and the chapter 9 route) |
 | 17 | Wild garden (bushes, wheelbarrow, chair, barrel) | code primitives | **Done, round 17** |
-| 18 | Humans (legs at the door) | code cylinders | Blender: legs, shoes, coat hem |
+| 18 | Humans (legs at the door) | **Done, round 18** | Blender: legs, shoes, coat hem |
 | 19 | Mouse | Blender (animals) | fur/colour check at cat height |
 | 20 | Pigeons | Blender | sheen, perched pose |
 | 21 | Blackbirds | Blender | check |
@@ -239,3 +239,14 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   carry colliders stay (renderers removed); the nest's leaves and hoglets stay. New capture view `wild_garden`.
 - **Light:** the faceted brambles take the sun facet by facet; the barrow's red is the one warm colour in the green.
 - **Checked:** Blender look-dev render; Unity `wild_garden` view (Day).
+
+## Round 18: the humans at the front door
+
+- **Shape:** the code cylinders are replaced by two Blender figures cut off at the coat hem (only the legs show
+  when the door opens at cat height). `human_a` (navy trousers, oak coat, black shoes) and `human_b` (deep grey
+  trousers, dark-green coat, walnut shoes, a shopping bag with bread set down beside the feet). Both are about 1.4 m
+  tall and use faceted organic legs, bevelled shoes with soles and a flared hem, at roughly 900-1000 tris each.
+- **Texture:** DrahoPalette cells only; the coats keep the two coat colours of the old code materials.
+- **Light:** they stand in the stairwell in the door's light; the bag's pale oak catches the light from the hall.
+- **Checked:** Blender look-dev; the Unity rebuild (`FurnitureModel` per person, primitive fallback kept). They sit
+  outside the door, so the kitchen capture shows the closed door only.

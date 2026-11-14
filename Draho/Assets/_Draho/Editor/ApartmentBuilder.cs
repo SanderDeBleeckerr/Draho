@@ -3971,10 +3971,39 @@ namespace Draho.EditorTools
                 pipe.transform.localPosition = Vector3.up * (c.bottom + len / 2);
                 pipe.transform.localScale = new Vector3(c.radius * 2, len / 2, c.radius * 2);
                 pipe.GetComponent<Renderer>().sharedMaterial = Mat($"Apt_{c.id}", Hex(c.color), 0.5f);
-                for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
-                    Box("Bracket", root.position + Vector3.up * y + (c.wall == "-x" ? Vector3.left : c.wall == "+x" ? Vector3.right : Vector3.back) * c.radius,
-                        new Vector3(c.radius * 2.4f, 0.03f, c.radius * 2.4f),
-                        Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
+                Vector3 toWall = c.wall == "-x" ? Vector3.left : c.wall == "+x" ? Vector3.right : c.wall == "+z" ? Vector3.forward : Vector3.back;
+                // Blender parts (build_apartment_props.py pipe_*): 1 m segments with socket collars, clip brackets with
+                // an arm to the wall, a shoe at the foot. The primitive stays as the climbing collider only.
+                var segAsset = AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/pipe_segment.fbx");
+                if (segAsset != null)
+                {
+                    Object.DestroyImmediate(pipe.GetComponent<MeshRenderer>());
+                    float s = c.radius / 0.05f;
+                    var facing = Quaternion.LookRotation(-toWall);                    // the parts' -Z (Blender +Y) is the wall side
+                    bool shoe = c.bottom < 0.05f;
+                    float y0 = c.bottom + (shoe ? 0.2f : 0f);
+                    if (shoe)
+                    {
+                        var sh = FurnitureModel("pipe_shoe", root);
+                        if (sh != null) { sh.SetPositionAndRotation(root.position, facing); sh.localScale = new Vector3(s, 1f, s); }
+                    }
+                    for (float y = y0; y < c.h - 0.01f; y += 1f)
+                    {
+                        var seg = FurnitureModel("pipe_segment", root);
+                        seg.SetPositionAndRotation(root.position + Vector3.up * y, facing);
+                        seg.localScale = new Vector3(s, Mathf.Min(1f, c.h - y), s);
+                    }
+                    for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
+                    {
+                        var br = FurnitureModel("pipe_bracket", root);
+                        if (br != null) { br.SetPositionAndRotation(root.position + Vector3.up * y, facing); br.localScale = new Vector3(s, 1f, s); }
+                    }
+                }
+                else
+                    for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
+                        Box("Bracket", root.position + Vector3.up * y + toWall * c.radius,
+                            new Vector3(c.radius * 2.4f, 0.03f, c.radius * 2.4f),
+                            Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
                 climbable.Configure(c.climb_top, c.standable);
                 return;
             }

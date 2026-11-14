@@ -22,7 +22,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 7 | Ceiling and lamps | flat box, no fittings | **Done, round 7** |
 | 8 | Walls, ceiling and floor | flat colour, tile texture | **Done, round 8** |
 | 9 | Court light well (shaft walls, windows, gutter) | code boxes | **Done, round 9** |
-| 10 | Drainpipe | code cylinder | Blender: segments, brackets, shoe |
+| 10 | Drainpipes | code cylinder | **Done, round 10** |
 | 11 | Garden picnic table | code boxes | Blender: planks, A-frame legs |
 | 12 | Garden lamp | code primitives | Blender: lantern with glass |
 | 13 | Garden fences (neighbour, end, wild) | code boxes | check scale, posts, planks variation |
@@ -148,3 +148,15 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   stone sills (pigeon perches) stay. New `ArtCapture` view `light_well` (looking up from the court).
 - **Light:** the frames catch the sky light and the sun high in the well; the panes stay dark against the plaster.
 - **Checked:** Blender look-dev render; Unity `light_well` view (Day), pigeons on the sills.
+
+### Round 10: drainpipes
+
+- **Review:** every climbable drainpipe (the court pipe the owner kept, the pipes up the high walls) was one stretched
+  cylinder with flat square plates for brackets.
+- **Change:** three Blender parts assembled along each pipe by ApartmentBuilder (scaled to the pipe's radius):
+  `pipe_segment` (1 m with a socket collar, 184 triangles), `pipe_bracket` (clip ring, arm and fixing plate with
+  screws, towards the wall), `pipe_shoe` (an outlet bending away from the wall over a small grate, where the pipe
+  reaches the ground). The primitive cylinder stays as the climbing collider (no gameplay change).
+- **Light:** the collars and the dark brackets break the pipe into readable lengths; the smooth zinc catches the
+  well's sky light along one side.
+- **Checked:** Blender export (bounds); Unity `court_window` view (Day).

@@ -530,6 +530,36 @@ def shaft_window_narrow():
 
 
 @prop
+def pipe_segment():
+    """One metre of zinc drainpipe (radius 5 cm, the layout's default) with the socket collar at its top joint.
+    ApartmentBuilder stacks these along every climbable pipe and scales them to the pipe's radius. Origin: bottom."""
+    return [ds.cylinder("Pipe", (0, 0, 0), 0.05, 1.0, "metal", segments=12, bevel=0, smooth=True),
+            ds.cylinder("Collar", (0, 0, 0.94), 0.057, 0.06, "metal", segments=12, bevel=0.004, smooth=True)]
+
+
+@prop
+def pipe_bracket():
+    """A drainpipe bracket: a clip ring round the pipe, an arm to the wall (Blender +Y = towards the wall) and a
+    fixing plate with two screws. Origin: the pipe's axis at the ring's height."""
+    return [ds.cylinder("Ring", (0, 0, -0.015), 0.059, 0.03, "metal_dark", segments=12, bevel=0.003, smooth=True),
+            ds.box("Arm", (0, 0.075, 0), (0.025, 0.05, 0.02), "metal_dark", bevel=0.003),
+            ds.box("Plate", (0, 0.1, 0), (0.07, 0.008, 0.05), "metal_dark", bevel=0.002),
+            ds.cylinder("Screw", (-0.022, 0.096, 0), 0.006, 0.004, "metal", segments=6, bevel=0),
+            ds.cylinder("Screw", (0.022, 0.096, 0), 0.006, 0.004, "metal", segments=6, bevel=0)]
+
+
+@prop
+def pipe_shoe():
+    """The outlet at the foot of a drainpipe: a 30 cm bend kicking out away from the wall (Blender -Y) over a small
+    drain grate. Origin: the pipe's axis on the ground."""
+    shoe = ds.cylinder("Shoe", (0, 0, 0), 0.05, 0.2, "metal", segments=12, bevel=0, smooth=True)
+    shoe.rotation_euler.x = math.radians(-40)         # the top stays on the pipe, the mouth points out from the wall
+    shoe.location = (0, -0.1, 0.06)
+    grate = ds.box("Grate", (0, -0.14, 0.004), (0.16, 0.16, 0.008), "grey_deep", bevel=0.002)
+    return [ds.cylinder("Joint", (0, 0, 0.22), 0.057, 0.06, "metal", segments=12, bevel=0.004, smooth=True), shoe, grate]
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

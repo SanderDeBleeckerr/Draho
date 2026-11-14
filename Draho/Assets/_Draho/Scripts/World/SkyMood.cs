@@ -224,7 +224,7 @@ namespace Draho.World
         public static float Indoors { get; set; }
 
         /// <summary>The share of the sky's ambient light that reaches inside the flat.</summary>
-        public const float IndoorAmbient = 0.72f;
+        public const float IndoorAmbient = 0.66f;
 
         static float Smooth(float t) => t * t * (3f - 2f * t);
 

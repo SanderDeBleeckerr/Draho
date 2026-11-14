@@ -135,7 +135,7 @@ namespace Draho.EditorTools
             public string[] glass, outer_walls;
             public Door[] doors;
         }
-        [Serializable] class Door { public string id, side; public float from, to, open_gap; }
+        [Serializable] class Door { public string id, side; public float from, to, open_gap, open_angle; }
         [Serializable] class Edge
         {
             public string id, color, style, post_color, material;
@@ -476,9 +476,11 @@ namespace Draho.EditorTools
         static void BuildCourt(Layout layout, Court c)
         {
             float h = c.glass_height > 0 ? c.glass_height : layout.wall.height;
-            var pebbles = Mat("Apt_Pebbles", Hex(c.color), 0.2f, PebbleTexture(), new Vector2(c.x1 - c.x0, c.z1 - c.z0) / 0.9f); // cobbles about 11 cm
+            // The ground under the stones: plain grey, a little lighter in the middle of the court and darker towards the
+            // walls (owner: the pebble texture under the 3D stones was confusing). One texture across the whole court.
+            var ground = Mat("Apt_CourtGround", Color.white, 0.15f, CourtGroundTexture(), Vector2.one);
             Box("Court_Stones", new Vector3((c.x0 + c.x1) / 2, 0.005f, (c.z0 + c.z1) / 2),
-                new Vector3(c.x1 - c.x0, 0.01f, c.z1 - c.z0), pebbles, collider: false);
+                new Vector3(c.x1 - c.x0, 0.01f, c.z1 - c.z0), ground, collider: false);
             // Round stones with real height on top (Tools/Blender/build_apartment_props.py, a bed made for this court's
             // size); the texture underneath shows between them. Walk-over: the floor collider stays flat.
             var bed = FurnitureModel("court_pebbles", level);
@@ -495,10 +497,7 @@ namespace Draho.EditorTools
                 foreach (var d in doors)
                 {
                     GlassPanel($"CourtGlass_{side}", alongX, line, cursor, d.from, h);
-                    // The door panel, pushed open a crack at its far end.
-                    float gap = Mathf.Max(d.open_gap, MinDoorGap);
-                    GlassPanel($"CourtDoor_{d.id}", alongX, line + 0.04f, d.from, d.to - gap, h);
-                    WallSegment($"CourtDoor_{d.id}_post", alongX, line, d.from - 0.03f, d.from, 0f, h, 0.06f, frame);
+                    CourtCasement(d, alongX, line, side, c, h, frame);
                     cursor = d.to;
                 }
                 GlassPanel($"CourtGlass_{side}", alongX, line, cursor, end, h);
@@ -506,6 +505,45 @@ namespace Draho.EditorTools
             // Corner posts where the glass walls meet.
             WallSegment("CourtPost", true, c.z0, c.x0 - 0.03f, c.x0 + 0.03f, 0f, h, 0.06f, frame);
             if (c.shaft_height > h) CourtShaft(layout, c, h);
+        }
+
+        /// <summary>
+        /// The opening to the inner court is a tall window on a hinge at its "from" end, swung open about 35 degrees
+        /// into the court (owner, November 2026; it used to be a sliding panel open a crack). A dark frame round the
+        /// glass, frame posts on both sides of the opening; the open sash is solid, so the cat walks round it.
+        /// </summary>
+        static void CourtCasement(Door d, bool alongX, float line, string side, Court c, float h, Material frame)
+        {
+            float w = d.to - d.from, angle = d.open_angle > 0f ? d.open_angle : 35f;
+            WallSegment($"CourtDoor_{d.id}_post", alongX, line, d.from - 0.04f, d.from, 0f, h, 0.06f, frame);
+            WallSegment($"CourtDoor_{d.id}_post", alongX, line, d.to, d.to + 0.04f, 0f, h, 0.06f, frame);
+            WallSegment($"CourtDoor_{d.id}_sill", alongX, line, d.from, d.to, 0f, 0.02f, 0.06f, frame);
+            WallSegment($"CourtDoor_{d.id}_head", alongX, line, d.from, d.to, h - 0.04f, h, 0.06f, frame);
+            // Into the court: +x for the west glass wall, +z for the south one.
+            Vector3 intoCourt = side == "west" ? Vector3.right : side == "east" ? Vector3.left : side == "south" ? Vector3.forward : Vector3.back;
+            Vector3 along = alongX ? Vector3.right : Vector3.forward;
+            var hinge = new GameObject($"CourtWindow_{d.id}").transform;
+            hinge.SetParent(level, false);
+            hinge.position = (alongX ? new Vector3(d.from, 0f, line) : new Vector3(line, 0f, d.from)) + intoCourt * 0.03f;
+            // Turn the sash about the hinge so its free end swings into the court.
+            float sign = Mathf.Sign(Vector3.Cross(along, intoCourt).y);
+            hinge.rotation = Quaternion.LookRotation(along) * Quaternion.Euler(0f, sign * angle, 0f);
+            const float bar = 0.05f, depth = 0.05f;
+            void Part(string name, Vector3 local, Vector3 size, Material m, bool solid)
+            {
+                var g = Box(name, Vector3.zero, size, m, collider: solid);
+                g.transform.SetParent(hinge, false);
+                g.transform.localPosition = local;
+                g.transform.localRotation = Quaternion.identity;
+                if (m == GlassMat()) g.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            }
+            // Local frame: +z along the sash from the hinge, +y up, x across.
+            Part("SashGlass", new Vector3(0f, h / 2, w / 2), new Vector3(0.02f, h - 2 * bar, w - 2 * bar), GlassMat(), true);
+            Part("SashFrame", new Vector3(0f, bar / 2 + 0.02f, w / 2), new Vector3(depth, bar, w), frame, false);
+            Part("SashFrame", new Vector3(0f, h - bar / 2 - 0.02f, w / 2), new Vector3(depth, bar, w), frame, false);
+            Part("SashFrame", new Vector3(0f, h / 2, bar / 2), new Vector3(depth, h - 0.04f, bar), frame, false);
+            Part("SashFrame", new Vector3(0f, h / 2, w - bar / 2), new Vector3(depth, h - 0.04f, bar), frame, false);
+            Part("SashHandle", new Vector3(0.04f, 1.05f, w - bar - 0.02f), new Vector3(0.03f, 0.12f, 0.025f), Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), false);
         }
 
         /// <summary>
@@ -2163,6 +2201,7 @@ namespace Draho.EditorTools
                 float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
                 float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
                 if (e.style == "posts") PostFence(e, alongX, line, a, b);
+                else if (e.style == "mesh") MeshFence(e, alongX, line, a, b);
                 else
                 {
                     var mat = e.material == "brick"
@@ -3723,6 +3762,36 @@ namespace Draho.EditorTools
         }
 
         /// <summary>Concrete posts with horizontal wooden planks between them.</summary>
+        /// <summary>
+        /// A green welded-wire garden fence (the panels sold everywhere in Belgium): square green posts, a grid of thin
+        /// wires (20 cm wide, 5 cm high meshes with a fold near the top), a top rail. Low enough to jump on: the
+        /// collider is one 12 cm strip, so the cat lands on top and walks along it (e.h at most the cat's jump height).
+        /// </summary>
+        static void MeshFence(Edge e, bool alongX, float line, float a, float b)
+        {
+            var root = new GameObject(e.id).transform;
+            root.SetParent(level, false);
+            var green = Mat($"Apt_{e.id}", Hex(e.color), 0.3f);
+            var post = Mat($"Apt_{e.id}_post", Hex(e.post_color ?? e.color), 0.3f);
+            Vector3 At(float along, float y, float across = 0f) => alongX ? new Vector3(along, y, line + across) : new Vector3(line + across, y, along);
+            Vector3 Size(float along, float y, float across) => alongX ? new Vector3(along, y, across) : new Vector3(across, y, along);
+            void Part(string name, Vector3 c, Vector3 s, Material m) => Box(name, c, s, m, collider: false).transform.SetParent(root, true);
+            float spacing = e.post_spacing > 0f ? e.post_spacing : 2.5f;
+            int posts = Mathf.Max(1, Mathf.RoundToInt((b - a) / spacing));
+            for (int i = 0; i <= posts; i++)
+                Part("Post", At(a + (b - a) * i / posts, (e.h + 0.05f) / 2), Size(0.06f, e.h + 0.05f, 0.06f), post);
+            const float wire = 0.006f;
+            for (float t = a + 0.1f; t < b - 0.05f; t += 0.2f)                       // vertical wires
+                Part("Wire", At(t, e.h / 2), Size(wire, e.h, wire), green);
+            for (float y = 0.05f; y < e.h; y += y < e.h - 0.25f ? 0.2f : 0.05f)       // horizontal wires: tighter at the fold
+                Part("Wire", At((a + b) / 2, y), Size(b - a, wire, wire), green);
+            Part("Fold", At((a + b) / 2, e.h - 0.18f, 0.02f), Size(b - a, 0.012f, 0.025f), green); // the panel's stiffening fold
+            Part("TopRail", At((a + b) / 2, e.h - 0.01f), Size(b - a, 0.02f, 0.03f), post);
+            var col = Box("Collider", At((a + b) / 2, e.h / 2), Size(b - a, e.h, 0.12f), null);
+            Object.DestroyImmediate(col.GetComponent<Renderer>());
+            col.transform.SetParent(root, true);
+        }
+
         static void PostFence(Edge e, bool alongX, float line, float a, float b)
         {
             var root = new GameObject(e.id).transform;
@@ -5027,6 +5096,15 @@ namespace Draho.EditorTools
             float bottom = Mathf.Lerp(N(x, y - size), N(x - size, y - size), fx);
             return Mathf.Lerp(top, bottom, fy);
         }
+
+        /// <summary>A soft grey gradient: lighter in the middle, darker at the edges (the court's ground under the stones).</summary>
+        static Texture2D CourtGroundTexture() => MakeTexture("CourtGround.png", 64, (x, y, size) =>
+        {
+            float u = (x + 0.5f) / size * 2f - 1f, v = (y + 0.5f) / size * 2f - 1f;
+            float edge = Mathf.Clamp01(Mathf.Max(Mathf.Abs(u), Mathf.Abs(v)));
+            float g = Mathf.Lerp(0.42f, 0.3f, edge * edge);
+            return new Color(g, g * 0.99f, g * 0.97f);
+        });
 
         static Texture2D PebbleTexture() => MakeTexture("Pebbles.png", 256, (x, y, size) =>
         {

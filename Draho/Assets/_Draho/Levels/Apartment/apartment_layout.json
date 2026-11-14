@@ -291,6 +291,23 @@
    "gap_h": 0.4
   },
   {
+   "id": "garden_end_fence",
+   "label": "Green welded-wire fence at the far end of the garden (owner, November 2026: no outbuilding; grass behind). Low enough for the cat to jump on and walk along.",
+   "style": "mesh",
+   "from": [
+    -24.0,
+    0.0
+   ],
+   "to": [
+    -24.0,
+    5.0
+   ],
+   "h": 1.0,
+   "color": "#3F6B3A",
+   "post_color": "#33552F",
+   "post_spacing": 2.5
+  },
+  {
    "id": "wild_end_fence",
    "label": "Old fence at the far end of the wild garden; a broken plank behind the fox's den",
    "style": "posts",
@@ -648,17 +665,6 @@
    "h": 3.7,
    "color": "#B07A62",
    "roof_color": "#6B6862"
-  },
-  {
-   "id": "end_shed",
-   "label": "Outbuilding at the garden end (4.2 m)",
-   "x0": -28,
-   "x1": -24,
-   "z0": 0,
-   "z1": 5,
-   "h": 4.2,
-   "color": "#9A8A78",
-   "roof_color": "#5E5B56"
   },
   {
    "id": "neighbour_workshop",
@@ -1531,6 +1537,17 @@
    "color": "#4B6A33",
    "material": "grass",
    "note": "Chapter 9: the grass bank with trees between the far end of the wild garden and the river (open aerial data); the quay ends here."
+  },
+  {
+   "id": "beyond_garden_end",
+   "x0": -35,
+   "x1": -24,
+   "z0": -1,
+   "z1": 5,
+   "top": 0.0,
+   "color": "#4B6A33",
+   "material": "grass",
+   "note": "The neighbours' grass behind the green fence at the end of the garden (where an outbuilding stood until November 2026)."
   }
  ],
  "water": {

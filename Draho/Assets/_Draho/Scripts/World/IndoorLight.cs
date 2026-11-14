@@ -71,7 +71,7 @@ namespace Draho.World
             {
                 window.color = sky;
                 // Spot lights fall off with the square of the distance: about 14 gives a bright patch 2-3 m inside.
-                window.intensity = Mathf.Lerp(16f, 1.8f, night) + 2f * evening;
+                window.intensity = Mathf.Lerp(15f, 1.7f, night) + 2f * evening;
             }
             if (court != null)
             {

@@ -428,7 +428,7 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "Chapter 8: The Inner Court. Roo-coo... roo-coo... Pigeons have landed in the light well above the little court behind the glass!",
-                    Goal = "The court door next to the cat tree is open a crack. Squeeze through.",
+                    Goal = "The tall window next to the cat tree stands open. Slip past it into the court.",
                     Target = () => P(4.6f, 0f, 3.8f),
                     Done = () => InCourt(cat.transform.position),
                 },

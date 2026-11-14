@@ -20,7 +20,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 5 | Sliding door | Sketchfab, white | **Done, round 5** (transparent-frame glitch) |
 | 6 | Front door | code boxes | **Done, round 6** |
 | 7 | Ceiling and lamps | flat box, no fittings | **Done, round 7** |
-| 8 | Walls and floor | flat colour, tile texture | subtle plaster gradient, skirting colour, tile grout check |
+| 8 | Walls, ceiling and floor | flat colour, tile texture | **Done, round 8** |
 | 9 | Court light well (shaft walls, windows, gutter) | code boxes | window frames and sills in Blender |
 | 10 | Drainpipe | code cylinder | Blender: segments, brackets, shoe |
 | 11 | Garden picnic table | code boxes | Blender: planks, A-frame legs |
@@ -125,3 +125,15 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** at Night the lamp now warms the ceiling, the back wall and the rug while the window side stays moonlit
   blue: the cool/warm split of ART_STYLE §3.
 - **Checked:** Blender export (heights 2.18-2.6 m); Unity `living` and `living_low` views (Night).
+
+### Round 8: walls, ceiling and floor
+
+- **Review:** the flat had no ceiling: you saw the underside of the upper-floor buildings, with their outside plaster
+  texture (and its normal map) stretched across the room, blotchy under the night lamp. The walls were one flat
+  colour from floor to ceiling. The floor tiles and grout read well; no change.
+- **Change:** a flat off-white ceiling over the living room and the kitchen (not over the open court). The
+  full-height wall pieces get a soft vertical gradient (about 8 % darker at the floor, a 64 px tint texture); the
+  short pieces above the openings stay flat so no dark band runs over the windows.
+- **Light:** the ceiling now catches the lamp's warm pool at night and the window's bounce by day; the gradient adds
+  the floor-level shade that baked light would give, at no cost.
+- **Checked:** Unity `living` (Day) and `living_low` (Night) views.

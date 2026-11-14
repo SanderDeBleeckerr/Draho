@@ -274,6 +274,10 @@ namespace Draho.EditorTools
         {
             float t = layout.wall.thickness, h = layout.wall.height;
             var wall = Mat("Apt_Wall", Hex(layout.wall.color), 0.1f);
+            // Full-height pieces: the same plaster with a soft vertical gradient (about 8 % darker at the floor), the
+            // way a room's walls darken towards the floor away from the ceiling's bounce. The short pieces above the
+            // openings keep the flat material (the gradient would draw a dark band over every window).
+            var wallTall = Mat("Apt_WallGradient", Hex(layout.wall.color), 0.1f, WallGradientTexture(), Vector2.one);
             var sides = new (string side, Vector2 a, Vector2 b)[]
             {
                 ("south", new Vector2(inside.xMin - t, inside.yMin - t / 2), new Vector2(inside.xMax + t, inside.yMin - t / 2)),
@@ -305,7 +309,7 @@ namespace Draho.EditorTools
                 foreach (var o in cuts)
                 {
                     Skirting(side, alongX, alongX ? a.y : a.x, cursor, o.from);
-                    WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, o.from, 0f, h, t, wall);
+                    WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, o.from, 0f, h, t, wallTall);
                     WallSegment($"Wall_{side}_above_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height, h, t, wall);
                     if (o.model == "SlidingDoor")
                         SlidingDoorAt(o, alongX, alongX ? a.y : a.x, side);
@@ -316,7 +320,19 @@ namespace Draho.EditorTools
                     cursor = o.to;
                 }
                 Skirting(side, alongX, alongX ? a.y : a.x, cursor, end);
-                WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, end, 0f, h, t, wall);
+                WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, end, 0f, h, t, wallTall);
+            }
+
+            // The ceiling: flat off-white plaster over the rooms (not the open court). Without it the underside of the
+            // upper floors showed, with their outside plaster texture stretched across the room (blotchy at night).
+            var ceiling = Mat("Apt_Ceiling", new Color(0.93f, 0.92f, 0.9f), 0.05f);
+            var court = (layout.courts ?? new Court[0]).FirstOrDefault();
+            foreach (var r in layout.rooms.Where(x => !x.outdoor))
+            {
+                float z1 = r.z1;
+                if (court != null && r.x0 >= court.x0 - 0.01f && r.x1 <= court.x1 + 0.01f) z1 = Mathf.Min(z1, court.z0);
+                Box($"Ceiling_{r.id}", new Vector3((r.x0 + r.x1) / 2, h - 0.01f, (r.z0 + z1) / 2), new Vector3(r.x1 - r.x0, 0.02f, z1 - r.z0),
+                    ceiling, collider: false);
             }
         }
 
@@ -5141,6 +5157,14 @@ namespace Draho.EditorTools
             float bottom = Mathf.Lerp(N(x, y - size), N(x - size, y - size), fx);
             return Mathf.Lerp(top, bottom, fy);
         }
+
+        /// <summary>White, darkening softly towards the bottom (v = 0): the walls' floor-to-ceiling gradient (a tint).</summary>
+        static Texture2D WallGradientTexture() => MakeTexture("WallGradient.png", 64, (x, y, size) =>
+        {
+            float v = (y + 0.5f) / size;
+            float g = Mathf.Lerp(0.92f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(v / 0.6f)));
+            return new Color(g, g, g * 0.995f);
+        });
 
         /// <summary>A soft grey gradient: lighter in the middle, darker at the edges (the court's ground under the stones).</summary>
         static Texture2D CourtGroundTexture() => MakeTexture("CourtGround.png", 64, (x, y, size) =>

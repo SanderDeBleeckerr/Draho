@@ -424,6 +424,30 @@ def fridge():
 
 
 @prop
+def plant_stand():
+    """0.4 x 0.4 x 0.7 m snake plant in a terracotta pot by the sliding door. Organic, so faceted (house rule): eleven
+    flat-shaded blades, each a tapering three-sided spike flattened to a blade and leaning out a little, in two greens
+    with a few lighter ones; the pot with a rim and the soil."""
+    import random
+    rnd = random.Random(5)
+    parts = [ds.cylinder("Pot", (0, 0, 0), 0.13, 0.26, "terracotta", segments=10, radius_top=0.16, bevel=0.006, smooth=False),
+             ds.cylinder("Rim", (0, 0, 0.24), 0.17, 0.035, "terracotta", segments=10, bevel=0.004, smooth=False),
+             ds.cylinder("Soil", (0, 0, 0.255), 0.15, 0.012, "soil", segments=10, bevel=0, smooth=False)]
+    for i in range(14):
+        a = i * 2.39996 + rnd.uniform(-0.2, 0.2)                            # golden-angle spread
+        r = 0.02 + 0.08 * ((i % 4) / 3)
+        h = rnd.uniform(0.36, 0.5) * (1.0 if i % 4 else 0.8)
+        colour = "leaf_light" if i % 5 == 0 else rnd.choice(("leaf", "leaf_dark", "leaf"))
+        # Snake-plant blades are broad (5-7 cm) and stiff: a wide, flat spike with a sharp tip.
+        blade = ds.cylinder("Blade", (0, 0, 0), 0.055, h, colour, segments=4, radius_top=0.0, bevel=0, smooth=False)
+        blade.scale = (1.0, 0.22, 1.0)                                      # flat blade
+        blade.rotation_euler = (math.radians(rnd.uniform(4, 14)) * math.cos(a), math.radians(rnd.uniform(4, 14)) * math.sin(a), a)
+        blade.location = (math.cos(a) * r * 0.6, math.sin(a) * r * 0.6, 0.255)
+        parts.append(blade)
+    return parts
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

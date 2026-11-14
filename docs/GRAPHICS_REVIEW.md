@@ -16,7 +16,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 1 | Kitchen island | Kenney cabinets + code worktop | **Done, round 1** |
 | 2 | Back counter (sink, coffee machine) | Kenney cabinets, flat top | **Done, round 2** |
 | 3 | Fridge column | Kenney fridge, stretched | **Done, round 3** |
-| 4 | Plant stand by the sliding door | Kenney potted plant | Blender: pot, faceted leaves (house rule: organic = faceted) |
+| 4 | Plant stand by the sliding door | Kenney potted plant | **Done, round 4** |
 | 5 | Sliding door | Sketchfab, white | check glass sorting (owner's "transparent frame" glitch), frame colour |
 | 6 | Front door | code boxes | Blender: panelled leaf, handle, frame |
 | 7 | Ceiling and lamps | flat box, no fittings | Blender: ceiling lights (pendant over the island, shade in the living room) |
@@ -81,3 +81,13 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   edge of each door instead of handles, white side panels, a recessed plinth.
 - **Light:** a large white surface at the east end of the south wall; the sink spots light its side. No change.
 - **Checked:** Blender look-dev render; the Unity scene builds with it (no capture view shows that corner yet).
+
+### Round 4: plant by the sliding door
+
+- **Review:** the Kenney potted plant stretched to 0.4 × 0.4 × 0.7 m: a smooth olive pot and a few spikes, recoloured
+  by name. It stands in the daylight patch by the sliding door, so it is seen in every living-room shot.
+- **Change:** Blender model `plant_stand` (192 triangles, faceted: organic shapes are flat-shaded): a terracotta pot
+  with a rim and soil, a snake plant of 14 broad, flat, sharp blades leaning out on a golden-angle spread, in two
+  greens with a few lighter blades so the clump reads against the wall.
+- **Light:** the window light catches the faceted blades (each face its own tone); the pot sits in the floor patch.
+- **Checked:** Blender look-dev render; Unity `sliding_door` view (Day).

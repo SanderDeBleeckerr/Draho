@@ -18,7 +18,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 3 | Fridge column | Kenney fridge, stretched | **Done, round 3** |
 | 4 | Plant stand by the sliding door | Kenney potted plant | **Done, round 4** |
 | 5 | Sliding door | Sketchfab, white | **Done, round 5** (transparent-frame glitch) |
-| 6 | Front door | code boxes | Blender: panelled leaf, handle, frame |
+| 6 | Front door | code boxes | **Done, round 6** |
 | 7 | Ceiling and lamps | flat box, no fittings | Blender: ceiling lights (pendant over the island, shade in the living room) |
 | 8 | Walls and floor | flat colour, tile texture | subtle plaster gradient, skirting colour, tile grout check |
 | 9 | Court light well (shaft walls, windows, gutter) | code boxes | window frames and sills in Blender |
@@ -102,3 +102,14 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Light:** the frame casts the window light's shadow onto the floor; the panes cast none (round 4 of the lighting).
 - **Checked:** Unity with the door forced open (`ArtCapture -captureOpenDoors`), `living_low` and `sliding_door`
   views; the frame material is saved with `_Cull: 0`.
+
+### Round 6: front door
+
+- **Review:** since the earlier fix the door sits in a real opening with linings and an architrave, but the leaf was a
+  flat brown 4 cm box with a block for a handle.
+- **Change:** Blender model `front_door_leaf` (1,552 triangles): a walnut leaf with two moulded panels on the room
+  side, a lever handle on a round rose, a lock cylinder and a peephole at eye height. The old box stays as the
+  invisible collider (the cat and the mouse cannot pass; probe hits it at x 7.72).
+- **Light:** in the kitchen's shade the mouldings and the metal handle are what read; the court light reaches it in
+  the evening.
+- **Checked:** Blender look-dev render; Unity `kitchen` view (Evening); collider probe.

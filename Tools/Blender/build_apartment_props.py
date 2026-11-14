@@ -448,6 +448,34 @@ def plant_stand():
 
 
 @prop
+def front_door_leaf():
+    """The flat's front door leaf, 0.74 x 2.05 x 0.04 m, set into the kitchen's east wall by ApartmentBuilder
+    (BuildHomecoming). Walnut with two moulded panels on the room side (Blender -Y), a lever handle on a round rose
+    and a lock cylinder near the opening edge (Blender -X), a peephole at eye height. Origin: bottom middle."""
+    W, H, T = 0.74, 2.05, 0.04
+    parts = [ds.box("Leaf", (0, 0, H / 2), (W, T, H), "walnut", bevel=0.004)]
+    m = 0.012                                                                # moulding: 12 mm square strips
+    for (zc, ph) in ((H * 0.68, 0.86), (H * 0.24, 0.66)):                    # upper and lower panel
+        pw = W - 0.24
+        for s in (-1, 1):
+            parts.append(ds.box("Moulding", (s * (pw / 2 - m / 2), -T / 2 - m / 2, zc), (m, m, ph), "walnut_dark", bevel=0.002))
+            parts.append(ds.box("Moulding", (0, -T / 2 - m / 2, zc + s * (ph / 2 - m / 2)), (pw, m, m), "walnut_dark", bevel=0.002))
+    hx = -W / 2 + 0.08
+    rose = ds.cylinder("Rose", (0, 0, 0), 0.026, 0.01, "metal", segments=16, bevel=0.002)
+    rose.rotation_euler.x = math.radians(90)
+    rose.location = (hx, -T / 2, 1.05)
+    lever = ds.box("Lever", (hx + 0.06, -T / 2 - 0.05, 1.05), (0.13, 0.018, 0.018), "metal", bevel=0.004)
+    neck = ds.box("LeverNeck", (hx, -T / 2 - 0.025, 1.05), (0.018, 0.05, 0.018), "metal", bevel=0.003)
+    lock = ds.cylinder("Lock", (0, 0, 0), 0.016, 0.012, "metal_dark", segments=12, bevel=0.002)
+    lock.rotation_euler.x = math.radians(90)
+    lock.location = (hx, -T / 2, 0.92)
+    peep = ds.cylinder("Peephole", (0, 0, 0), 0.01, 0.01, "metal", segments=10, bevel=0)
+    peep.rotation_euler.x = math.radians(90)
+    peep.location = (0, -T / 2, 1.55)
+    return parts + [rose, lever, neck, lock, peep]
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

@@ -965,8 +965,16 @@ namespace Draho.EditorTools
             var doorMat = Mat("Apt_FrontDoor", new Color(0.36f, 0.27f, 0.2f), 0.25f);
             var frame = Mat("Apt_DoorFrame", new Color(0.88f, 0.87f, 0.84f), 0.3f);
             const float doorLining = 0.03f, setBack = 0.12f, leafT = 0.04f;
-            Box("FrontDoor", new Vector3(face + setBack + leafT / 2, (doorTop - doorLining) / 2, zc),
+            var leaf = Box("FrontDoor", new Vector3(face + setBack + leafT / 2, (doorTop - doorLining) / 2, zc),
                 new Vector3(leafT, doorTop - doorLining, z1 - z0 - 2 * doorLining), doorMat);   // solid: the cat stays in
+            // The panelled leaf from Blender (build_apartment_props.py front_door_leaf); the box stays as its collider.
+            var leafModel = FurnitureModel("front_door_leaf", level);
+            if (leafModel != null)
+            {
+                leafModel.position = new Vector3(face + setBack + leafT / 2, 0f, zc);
+                leafModel.rotation = Quaternion.LookRotation(Vector3.left);           // its front (+Z) faces the kitchen
+                Object.DestroyImmediate(leaf.GetComponent<Renderer>());
+            }
             Box("FrontDoorLining", new Vector3(face + t / 2, doorTop - doorLining / 2, zc), new Vector3(t, doorLining, z1 - z0), frame, collider: false);
             foreach (float z in new[] { z0 + doorLining / 2, z1 - doorLining / 2 })
                 Box("FrontDoorLining", new Vector3(face + t / 2, doorTop / 2, z), new Vector3(t, doorTop, doorLining), frame, collider: false);
@@ -974,8 +982,9 @@ namespace Draho.EditorTools
             foreach (float s in new[] { -1f, 1f })
                 Box("FrontDoorArchitrave", new Vector3(face - 0.01f, (doorTop + 0.08f) / 2, zc + s * ((z1 - z0) / 2 + 0.04f)),
                     new Vector3(0.02f, doorTop + 0.08f, 0.08f), frame, collider: false);
-            Box("DoorHandle", new Vector3(face + setBack - 0.03f, 1.0f, z0 + 0.12f), new Vector3(0.04f, 0.03f, 0.12f),
-                Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), collider: false);
+            if (leafModel == null) // the Blender leaf has its own handle
+                Box("DoorHandle", new Vector3(face + setBack - 0.03f, 1.0f, z0 + 0.12f), new Vector3(0.04f, 0.03f, 0.12f),
+                    Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), collider: false);
 
             // The humans, seen from cat height: legs, shoes and the hem of a coat. +Z of each person faces the room.
             var humans = new GameObject("Humans").transform;

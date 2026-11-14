@@ -595,6 +595,36 @@ def picnic_table():
 
 
 @prop
+def garden_lantern():
+    """The wall lantern by the sliding door (chapter 9), in black iron. Origin: the point on the house wall where it
+    hangs; Blender -Y is away from the wall. A wall plate, an arm with a diagonal brace, a hook, and a lantern frame
+    round the glowing glass (the glass stays in Unity: NightLamp switches its glow): four corner posts, a base plate,
+    a pyramid roof with a finial."""
+    iron = "black"
+    c = -0.17                                                    # the lantern's centre, 17 cm out from the wall
+    parts = [ds.box("Plate", (0, 0.01, 0.02), (0.1, 0.02, 0.2), iron, bevel=0.004),
+             ds.box("Arm", (0, (c + 0.0) / 2, 0.06), (0.018, abs(c), 0.018), iron, bevel=0.003)]
+    brace = ds.box("Brace", (0, 0, 0), (0.012, 0.14, 0.012), iron, bevel=0.002)
+    brace.rotation_euler.x = math.radians(-40)
+    brace.location = (0, -0.05, 0.0)
+    parts.append(brace)
+    parts.append(ds.cylinder("Hook", (0, c, 0.03), 0.006, 0.035, iron, segments=6, bevel=0))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            parts.append(ds.box("Post", (sx * 0.052, c + sy * 0.052, -0.05), (0.012, 0.012, 0.17), iron, bevel=0.002))
+    parts.append(ds.box("Base", (0, c, -0.135), (0.12, 0.12, 0.015), iron, bevel=0.003))
+    parts.append(ds.box("Collar", (0, c, 0.035), (0.12, 0.12, 0.012), iron, bevel=0.003))
+    roof = ds.cylinder("Roof", (0, c, 0.04), 0.09, 0.07, iron, segments=4, radius_top=0.012, bevel=0, smooth=False)
+    roof.rotation_euler.z = math.radians(45)
+    roof.location = (0, c, 0.04)
+    parts.append(roof)
+    parts.append(ds.cylinder("Finial", (0, c, 0.11), 0.012, 0.03, iron, segments=6, radius_top=0.0, bevel=0, smooth=False))
+    for sx in (-1, 1):                                           # thin glazing bars on the front and back
+        parts.append(ds.box("Bar", (0, c + sx * 0.052, -0.05), (0.006, 0.006, 0.16), iron, bevel=0))
+    return parts
+
+
+@prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
     roof board. The logs run front to back with their cut ends to the garden (front, Blender -Y) and every log

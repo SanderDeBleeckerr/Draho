@@ -635,11 +635,19 @@ namespace Draho.EditorTools
             var root = new GameObject("GardenLamp");
             root.transform.SetParent(level, false);
             root.transform.position = new Vector3(-0.05f, 1.95f, 1.0f);
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.01f, 0f, 0f), new Vector3(0.02f, 0.16f, 0.1f), iron);   // wall plate
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.09f, 0.05f, 0f), new Vector3(0.16f, 0.02f, 0.02f), iron); // arm
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, 0.03f, 0f), new Vector3(0.12f, 0.02f, 0.12f), iron); // roof
-            var bulb = Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.05f, 0f), new Vector3(0.09f, 0.14f, 0.09f), glass);
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.13f, 0f), new Vector3(0.11f, 0.02f, 0.11f), iron); // base
+            // The iron lantern from Blender (build_apartment_props.py garden_lantern), hung on the wall facing the
+            // garden (-x); without it, the old cube parts. The glowing glass stays here: NightLamp switches it.
+            var lantern = FurnitureModel("garden_lantern", root.transform);
+            if (lantern != null)
+                lantern.SetPositionAndRotation(root.transform.position, Quaternion.LookRotation(Vector3.left));
+            else
+            {
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.01f, 0f, 0f), new Vector3(0.02f, 0.16f, 0.1f), iron);   // wall plate
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.09f, 0.05f, 0f), new Vector3(0.16f, 0.02f, 0.02f), iron); // arm
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, 0.03f, 0f), new Vector3(0.12f, 0.02f, 0.12f), iron); // roof
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.13f, 0f), new Vector3(0.11f, 0.02f, 0.11f), iron); // base
+            }
+            var bulb = Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.05f, 0f), new Vector3(0.09f, 0.155f, 0.09f), glass);
             var light = new GameObject("GardenLampLight").AddComponent<Light>();
             light.transform.SetParent(root.transform, false);
             light.transform.localPosition = new Vector3(-0.3f, -0.08f, 0f);

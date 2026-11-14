@@ -24,7 +24,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 9 | Court light well (shaft walls, windows, gutter) | code boxes | **Done, round 9** |
 | 10 | Drainpipes | code cylinder | **Done, round 10** |
 | 11 | Garden picnic table | code boxes | **Done, round 11** |
-| 12 | Garden lamp | code primitives | Blender: lantern with glass |
+| 12 | Garden lamp | code primitives | **Done, round 12** |
 | 13 | Garden fences (neighbour, end, wild) | code boxes | check scale, posts, planks variation |
 | 14 | Garden trees (maple, others) | code blobs | Blender: faceted canopy clusters, trunk |
 | 15 | Lawn, path, terrace | flat colour, tiles | grass variation (vertex colour), path slabs with height |
@@ -170,3 +170,15 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   layout's `facing` is now "south" (the code builder ignored it; this keeps the table along the garden).
 - **Light:** full sun on the terrace by day: the plank gaps and the leg shadows give it texture.
 - **Checked:** Blender look-dev render; Unity `garden` view (Day).
+
+### Round 12: garden wall lantern
+
+- **Review:** chapter 9's lantern by the sliding door was five cubes: a plate, a stick, a flat roof, a glowing block and
+  a base. The moths circle it at night; the cat jumps from the table towards it.
+- **Change:** Blender model `garden_lantern` (1,038 triangles, black iron): a wall plate, an arm with a diagonal
+  brace and a hook, four corner posts and glazing bars round the glass, a base plate, a pyramid roof with a finial.
+  The glowing glass stays a separate Unity part (slightly taller to fill the frame) so `NightLamp` keeps switching
+  its glow; the old cubes stay only as the fallback.
+- **Light:** at night the glass glows inside the dark frame; the frame's posts break the glow into panes.
+- **Checked:** Blender look-dev render; the Unity scene builds with it (no capture view looks at the outside wall
+  beside the door yet).

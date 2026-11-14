@@ -4673,7 +4673,7 @@ namespace Draho.EditorTools
         /// <summary>Fatsocat (the big white rival) and Zlatenka (the leopard tortoise) in the garden.</summary>
         static void BuildGardenCharacters()
         {
-            var fat = PlaygroundBuilder.NpcCatModel("Fatsocat", level, new Color(0.93f, 0.93f, 0.9f), 1.45f);
+            var fat = PlaygroundBuilder.NpcCatModel("Fatsocat", level, new Color(0.93f, 0.93f, 0.9f), 1.4f, girth: 1.3f); // big and stout
             var model = fat.transform.GetChild(0);
             model.localScale = Vector3.Scale(model.localScale, new Vector3(1.3f, 1.05f, 1.1f)); // very fat
             fat.transform.SetPositionAndRotation(new Vector3(-23.6f, 0f, 2.5f), Quaternion.Euler(0f, 90f, 0f));

@@ -244,15 +244,18 @@ namespace Draho.EditorTools
         /// <summary>The Animator does not run in edit mode: put the cat in the first frame of its Idle clip.</summary>
         static void PoseCat()
         {
-            var cat = UnityEngine.Object.FindAnyObjectByType<Draho.Cat.CatMotor>();
-            var animator = cat != null ? cat.GetComponentInChildren<Animator>() : null;
-            if (animator == null || animator.runtimeAnimatorController == null) return;
-            foreach (var clip in animator.runtimeAnimatorController.animationClips)
+            // Drahomil and every other rigged animal (Fatsocat, the neighbourhood cats): without a sampled clip a
+            // skinned mesh shows its bind pose in edit mode (the cats stood upright like people).
+            foreach (var animator in UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsSortMode.None))
             {
-                if (clip.name != "Idle") continue;
-                clip.SampleAnimation(animator.gameObject, 0f);
-                Debug.Log("ARTCAPTURE cat posed: Idle");
-                return;
+                if (animator.runtimeAnimatorController == null) continue;
+                foreach (var clip in animator.runtimeAnimatorController.animationClips)
+                {
+                    if (clip.name != "Idle") continue;
+                    clip.SampleAnimation(animator.gameObject, 0f);
+                    Debug.Log($"ARTCAPTURE posed {animator.name}: Idle");
+                    break;
+                }
             }
         }
 

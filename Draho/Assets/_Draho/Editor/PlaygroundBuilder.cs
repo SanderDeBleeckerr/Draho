@@ -522,12 +522,21 @@ namespace Draho.EditorTools
         /// Another cat (a character, not the player): the Drahomil model with its own fur colour and size,
         /// the same animator (it idles), no motor. Used by the level builder.
         /// </summary>
-        internal static GameObject NpcCatModel(string name, Transform parent, Color fur, float scale)
+        internal static GameObject NpcCatModel(string name, Transform parent, Color fur, float scale, float girth = 1f)
         {
             var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(CatFbx);
             var root = new GameObject(name);
             root.transform.SetParent(parent, false);
-            var model = (GameObject)PrefabUtility.InstantiatePrefab(fbx, root.transform);
+            // girth > 1 widens the cat sideways only (a stout cat), on a node between the root and the rigged model,
+            // so the animator (which drives the bones, not this node) keeps the shape.
+            var build = root.transform;
+            if (!Mathf.Approximately(girth, 1f))
+            {
+                build = new GameObject("Girth").transform;
+                build.SetParent(root.transform, false);
+                build.localScale = new Vector3(girth, 1f, 1f);
+            }
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(fbx, build);
             PrefabUtility.UnpackPrefabInstance(model, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             model.name = "Model";
             FixModelOrientationAndScale(model);

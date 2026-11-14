@@ -36,7 +36,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 21 | Blackbirds | **Done, round 21** | check |
 | 22 | Hrozna (corgi) | **Done, round 22** | check |
 | 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | **Done, round 23** | check |
-| 24 | Fatsocat, the grey cat (NPC cats) | Drahomil model + fur | colour per cat, fur settings |
+| 24 | Fatsocat, the grey cat (NPC cats) | **Done, round 24** | colour per cat, fur settings |
 | 25 | Drahomil | Blender + shell fur | fur at night, eye shine |
 | 26 | Town buildings near the flat | code extrusions | window frames, roof edges |
 | 27 | Courtyard / street props (bins, cars, lamps) | code | Blender props |
@@ -328,3 +328,18 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 - **Gull:** got the folded wings and the smaller head in round 20.
 - **Checked:** Blender QA (ducks: no floating parts, no z-fighting); Unity animal studio: drake `Duck_2` and hen
   `Duck_8`.
+
+## Round 24: Fatsocat and the grey cat (the NPC cats)
+
+- **Capture fix:** the review captures showed both cats standing upright like people. Their shadows showed four
+  legs, so this was the bind pose of the skinned mesh in edit mode: only Drahomil had an Idle frame sampled.
+  `ArtCapture.PoseCat` now samples Idle on every animator with an Idle clip. This affected the captures only. In
+  play mode the animator poses the cats.
+- **Shape:** Fatsocat ("the big white rival") was only Drahomil at 1.45x, a big cat but not a fat one.
+  `NpcCatModel` takes a `girth`, a width-only scale on a `Girth` node between the root and the rigged model, so the
+  animator, which drives the bones, does not undo it. Fatsocat is 1.4x with girth 1.3: 0.41 m wide (was 0.32) and
+  1.11 m long. The grey cat is unchanged (1.05x).
+- **Texture/light:** the fur colours are unchanged: off-white (0.93, 0.93, 0.90) and blue-grey (0.46, 0.47, 0.50) in
+  the shared fur-shell shader. The off-white is kept a little below pure white, so he keeps his form in the noon sun
+  instead of blowing out; the captures show the shading across his flank.
+- **Checked:** Unity animal studio (front, side, top) for Fatsocat and GreyCat, both now posed.

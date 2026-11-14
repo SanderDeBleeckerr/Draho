@@ -34,7 +34,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 19 | Mouse | **Done, round 19** | fur/colour check at cat height |
 | 20 | Pigeons | **Done, round 20** | sheen, perched pose |
 | 21 | Blackbirds | **Done, round 21** | check |
-| 22 | Hrozna (corgi) | Blender | check |
+| 22 | Hrozna (corgi) | **Done, round 22** | check |
 | 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | Blender | check |
 | 24 | Fatsocat, the grey cat (NPC cats) | Drahomil model + fur | colour per cat, fur settings |
 | 25 | Drahomil | Blender + shell fur | fur at night, eye shine |
@@ -294,3 +294,18 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   captures a male and the hen.
 - **Checked:** Blender QA (no floating parts, no z-fighting); Unity animal studio: `blackbird_3` (male) and
   `blackbird_2` (hen), front, side, top and flap.
+
+## Round 22: Hrozna (the corgi)
+
+- **Shape:** the legs were white pillars with flat tops under a boxy body, so they read as stilts stuck on.
+  - Each leg now starts inside the body and tapers through a middle ring.
+  - A tan shoulder (front) and haunch (back) bulge over the top of each leg, so the legs grow out of the body.
+  - The body loft goes from 8 to 10 sides.
+  - The tail hung straight back like the fox's brush. It is now a fluffy corgi tail carried up in an arc (tip 16 cm
+    above the root), with 8 sides instead of 6.
+  - 704 tris.
+- **Texture:** the legs are tan above and white below (socks), which matches a red Pembroke. The tan/white
+  split on the face and chest is unchanged.
+- **Light:** the haunch and shoulder bulges take the sun on their tops, so the body is no longer one flat side.
+- **Checked:** Blender QA (no floating parts, no z-fighting); Unity animal studio front, side and top. The run also
+  confirmed round 21's capture change: it takes a male blackbird and the hen.

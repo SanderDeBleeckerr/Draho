@@ -455,7 +455,7 @@ def hrozna():
     k.loft([(-0.31, 0.215, 0.022, 0.020), (-0.26, 0.210, 0.108, 0.098), (-0.10, 0.200, 0.126, 0.115),
             (0.10, 0.200, 0.126, 0.120), (0.22, 0.212, 0.102, 0.112), (0.29, 0.272, 0.070, 0.082),
             (0.35, 0.330, 0.032, 0.034)],
-           lambda p: "linen" if (p.z > 0.13 and p.y < 0.27) or p.y < 0.125 else "a_corgi_tan", segments=8)
+           lambda p: "linen" if (p.z > 0.13 and p.y < 0.27) or p.y < 0.125 else "a_corgi_tan", segments=10)
 
     def face(p):
         return "linen" if p.y < 0.312 or abs(p.x) < 0.02 else "a_corgi_tan"
@@ -467,15 +467,21 @@ def hrozna():
         k.limb((side * 0.070, 0.405, 0.305), (side * 0.102, 0.535, 0.298), 0.066, 0.008, "a_corgi_tan", sides=5,
                mid=(0.6, 0.044))
         for z in (0.19, -0.19):
-            k.limb((side * 0.086, 0.135, z), (side * 0.086, 0.018, z), 0.047, 0.038, "linen", sides=6)
+            # the leg starts inside the body (no flat-topped pillar under it): tan above, white socks below
+            k.limb((side * 0.084, 0.175, z), (side * 0.086, 0.018, z), 0.050, 0.038,
+                   lambda p: "linen" if p.y < 0.075 else "a_corgi_tan", sides=6, mid=(0.45, 0.046))
             k.ball((side * 0.086, 0.017, z + 0.018), 0.043, "linen", scale=(1, 0.42, 1.3))
+        # shoulder and haunch: the muscle over the top of each leg, so the legs grow out of the body
+        k.ball((side * 0.098, 0.150, 0.180), 0.058, "a_corgi_tan", scale=(0.62, 1.1, 1.0))
+        k.ball((side * 0.100, 0.160, -0.175), 0.074, "a_corgi_tan", scale=(0.62, 1.0, 1.2))
     k.finish("Hrozna_Body", body)
 
     tail = pivot("Tail", (0, 0.22, -0.3), body)
     k = Kit()
-    k.loft([(0.03, 0.0, 0.024, 0.024), (-0.09, -0.012, 0.054, 0.054), (-0.25, -0.042, 0.062, 0.060),
-            (-0.38, -0.066, 0.030, 0.030), (-0.445, -0.076, 0.005, 0.005)],
-           lambda p: "linen" if p.z < -0.355 else "a_corgi_tan", segments=6)
+    # a fluffy corgi tail carried up in a low arc (it hung straight back like the fox's brush)
+    k.loft([(0.03, 0.0, 0.026, 0.026), (-0.08, 0.030, 0.058, 0.056), (-0.19, 0.085, 0.066, 0.062),
+            (-0.29, 0.135, 0.046, 0.044), (-0.34, 0.160, 0.010, 0.010)],
+           lambda p: "linen" if p.z < -0.29 else "a_corgi_tan", segments=8)
     k.finish("Hrozna_Tail", tail)
     return root
 

@@ -1879,6 +1879,7 @@ namespace Draho.EditorTools
             float yaw = FacingYaw(p.facing);
             Color color = Hex(p.color);
 
+            if (BlenderProp(root, p, yaw)) return;
             if (p.id == "cat_tree") { CatTree(root, p, color); return; }
             if (p.id == "picnic_table") { PicnicTable(root, p, color); return; }
             if (p.id == "firewood") { Firewood(root, p, color); return; }
@@ -1945,6 +1946,36 @@ namespace Draho.EditorTools
                 col.center = new Vector3(0, p.h / 2, 0);
                 col.size = new Vector3(p.w, p.h, p.d);
             }
+        }
+
+        /// <summary>
+        /// A piece of furniture made in Blender (Tools/Blender/build_apartment_props.py, Art/Furniture/[id].fbx): real size,
+        /// palette material, a collider shaped from the mesh. False (nothing built) when there is no model for this id,
+        /// so the Kenney model or the code-built shape stays.
+        /// </summary>
+        static bool BlenderProp(Transform root, Prop p, float yaw)
+        {
+            string path = $"{PlaygroundBuilder.ArtDir}/Furniture/{p.id}.fbx";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) return false;
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path));
+            PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            go.transform.SetParent(root, false);
+            go.transform.localPosition = Vector3.zero;
+            // The Blender pieces face Unity +Z; the layout's "south" (yaw 0) is -Z, like the Kenney models.
+            go.transform.localRotation = Quaternion.Euler(0f, yaw + 180f, 0f);
+            var mat = AnimalModels.PaletteMaterial();
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                r.sharedMaterial = mat;
+                r.shadowCastingMode = ShadowCastingMode.On;
+            }
+            if (p.h > 0.05f && !ShapedCollider(root, p.id)) // rugs are walk-over: no collider
+            {
+                var col = root.gameObject.AddComponent<BoxCollider>();
+                col.center = new Vector3(0, p.h / 2, 0);
+                col.size = new Vector3(p.w, p.h, p.d);
+            }
+            return true;
         }
 
         /// <summary>

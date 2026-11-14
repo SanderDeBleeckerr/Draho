@@ -7,6 +7,13 @@ The game uses Unity.
 
 ![Drahomil, low-poly](docs/images/lowpoly_cat_sheet.png)
 
+
+## State of the project
+
+2026-11-14 - Added sponsor link and updated Draho's model to have fur-like texture. Changed some unrealistic animations such as the cat sitting after being idle. Setup a blender MCP connection for fixing the bad graphical models that are present in the levels right now. 
+
+## Specifics
+
 - [Game Design Document](docs/GDD.md)
 - [Art style](docs/ART_STYLE.md): cozy low-poly at blue hour (the [brief](docs/ART_DIRECTION_BRIEF.md)), the palette, the concept frames and the Blender pipeline
 - [Version 1 Technical Plan](docs/V1_PLAN.md)
@@ -23,6 +30,7 @@ jump onto furniture and duck. Wait in front of the sliding garden door and it op
 The level is built from the blueprint file `Draho/Assets/_Draho/Levels/Apartment/apartment_layout.json`
 with Kenney furniture. The old test playground (a floor in empty space) is the second scene.
 
+
 ## The town round the level
 
 Past the playable level, about 700 real buildings, the streets, the river arms, the bridges, the gardens and about
@@ -31,6 +39,19 @@ height model, the summer colour and infrared aerial photos), turned into game me
 repository; the repository keeps only `Draho/Assets/_Draho/Levels/Apartment/surroundings.json` (no coordinates).
 The builder extrudes walls with window facades, gable roofs with chimneys, flat roofs with parapets and roof boxes,
 and adds parked cars, street lamps, moored boats, quays and gulls. See [the research notes](docs/RESEARCH_NOTES.md).
+
+## How to play
+
+
+| Control | Editor | iPhone |
+|---|---|---|
+| Move | WASD / arrow keys | Left thumb (floating joystick) |
+| Run | Hold Shift | Push the joystick to the edge |
+| Jump (keeps the running speed) | Space | **Tap the stick** (a short touch, no push) |
+| Stand up on the hind legs (when standing still) | Space | **Tap the stick** |
+| Climb (ivy, trees, drainpipes, sheds) | Space, then W / S | **Hold the middle of the stick** to stand up and climb, or **jump against it**: the cat holds on. Push up / down to climb; tap to drop off |
+| Duck / sneak (on/off) | C or Ctrl | **DUCK** button (bottom right) |
+| Orbit the camera | Drag with the right mouse button | Swipe with the right thumb |
 
 ## Open the project
 
@@ -43,16 +64,6 @@ and adds parked cars, street lamps, moored boats, quays and gulls. See [the rese
 6. Press **Play**.
 7. Commit the files that Unity made: `ProjectSettings/`, `Packages/packages-lock.json`,
    all `.meta` files, and the generated assets.
-
-| Control | Editor | iPhone |
-|---|---|---|
-| Move | WASD / arrow keys | Left thumb (floating joystick) |
-| Run | Hold Shift | Push the joystick to the edge |
-| Jump (keeps the running speed) | Space | **Tap the stick** (a short touch, no push) |
-| Stand up on the hind legs (when standing still) | Space | **Tap the stick** |
-| Climb (ivy, trees, drainpipes, sheds) | Space, then W / S | **Hold the middle of the stick** to stand up and climb, or **jump against it**: the cat holds on. Push up / down to climb; tap to drop off |
-| Duck / sneak (on/off) | C or Ctrl | **DUCK** button (bottom right) |
-| Orbit the camera | Drag with the right mouse button | Swipe with the right thumb |
 
 ## Rebuild the cat model
 

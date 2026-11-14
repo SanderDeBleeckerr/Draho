@@ -37,7 +37,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 22 | Hrozna (corgi) | **Done, round 22** | check |
 | 23 | Zlatenka (tortoise), hedgehog, fox, ducks, gull | **Done, round 23** | check |
 | 24 | Fatsocat, the grey cat (NPC cats) | **Done, round 24** | colour per cat, fur settings |
-| 25 | Drahomil | Blender + shell fur | fur at night, eye shine |
+| 25 | Drahomil | **Done, round 25** | fur at night, eye shine |
 | 26 | Town buildings near the flat | code extrusions | window frames, roof edges |
 | 27 | Courtyard / street props (bins, cars, lamps) | code | Blender props |
 | 28 | Quay, bridges, boats, water | code | water colour and glint, quay stones |
@@ -343,3 +343,17 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   the shared fur-shell shader. The off-white is kept a little below pure white, so he keeps his form in the noon sun
   instead of blowing out; the captures show the shading across his flank.
 - **Checked:** Unity animal studio (front, side, top) for Fatsocat and GreyCat, both now posed.
+
+## Round 25: Drahomil
+
+- **Light (changed):** indoors he was a flat black silhouette, and the rim light that follows him drew no outline.
+  The rim light only added to the diffuse term, `albedo x light`, and his fur albedo is about 0.03, so the
+  light disappeared. `ShellFur.shader` now has a sheen term: each extra light (the rim light, and the lamps for any
+  cat) adds `light x attenuation x grazing^2 x _Rim x layer x 3`, whatever the fur colour. Hair at a glancing angle
+  catches the light behind it, as on a real black cat. The sheen grows towards the hair tips (`layer`), so it reads as
+  a soft fur edge along the spine, ears and tail, not a glow (ART_STYLE §4).
+- **Capture fix:** the `cat_face` camera stood inside the kitchen island (the island now reaches the cat's right
+  side at the spawn) and showed only a white panel. It now shoots from the cat's left: the face, amber eyes, pink
+  nose and whiskers are all clear.
+- **Checked:** the full Unity capture cycle: the cat, cat_back and cat_face views in Day, Evening and Night (sheen
+  on the spine and tail at night; the eyes and whiskers clear by day), and the room views unchanged.

@@ -54,7 +54,8 @@ namespace Draho.EditorTools
                 list.Add(("cat_back", t.position - t.forward * 0.5f + t.right * 0.6f + Vector3.up * 0.38f,
                     t.position + Vector3.up * 0.17f));
                 // Close on the face from the front quarter: the fur must leave the eyes and nose clear.
-                list.Add(("cat_face", t.position + t.forward * 0.62f + t.right * 0.2f + Vector3.up * 0.26f,
+                // (From the cat's left: on its right the kitchen island now stands, and the camera was inside it.)
+                list.Add(("cat_face", t.position + t.forward * 0.62f - t.right * 0.25f + Vector3.up * 0.26f,
                     t.position + t.forward * 0.24f + Vector3.up * 0.2f));
             }
             list.AddRange(FixedViews);

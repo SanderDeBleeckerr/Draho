@@ -155,6 +155,10 @@ Shader "Draho/ShellFur"
                 half3 albedo = _BaseColor.rgb * lerp(_RootShade, 1.0, layer) * lerp(half3(1, 1, 1), _TipColor.rgb, layer * layer);
 
                 half3 light = Diffuse(GetMainLight(TransformWorldToShadowCoord(i.positionWS)), n);
+                // Sheen: hair at a glancing angle to the eye reflects a light behind it whatever the fur's colour.
+                // Diffuse light alone barely shows on black fur (albedo ~0.03), so the rim light drew no outline.
+                half grazing = pow(1.0 - saturate(dot(n, view)), 2.0);
+                half3 sheen = 0;
                 #ifdef _ADDITIONAL_LIGHTS
                 uint meshLayers = GetMeshRenderingLayer();
                 uint count = GetAdditionalLightsCount();
@@ -166,13 +170,14 @@ Shader "Draho/ShellFur"
                     #endif
                     {
                         light += Diffuse(extra, n);
+                        sheen += extra.color * (extra.distanceAttenuation * saturate(dot(n, extra.direction) + 0.35));
                     }
                 }
                 #endif
                 half3 ambient = SampleSH(n);
                 // Hair tips at a glancing angle catch the sky: a soft edge, so the dark cat reads on dark floors.
                 half rim = pow(1.0 - saturate(dot(n, view)), 3.0) * _Rim * layer;
-                half3 colour = albedo * (light + ambient) + rim * ambient;
+                half3 colour = albedo * (light + ambient) + rim * ambient + sheen * (grazing * _Rim * layer * 3.0);
                 return half4(MixFog(colour, i.fogAndMask.x), 1);
             }
             ENDHLSL

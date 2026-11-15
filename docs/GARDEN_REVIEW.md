@@ -15,7 +15,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 4 | Grass tufts | sparse spiky tufts | **Done, round 4** |
 | 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | **Done, round 5** |
 | 6 | Ivy on the wall | flat green panel | **Done, round 6** |
-| 7 | Stepping-stone path | grey slabs | worn edges, moss, sunk in the lawn |
+| 7 | Stepping-stone path | grey slabs | **Done, round 7** |
 | 8 | Terrace tiles | plain grey grid | check |
 | 9 | Fallen leaves | flat cubes | Blender leaf shapes |
 | 10 | Blue tarp | three boxes | Blender crumpled tarp |
@@ -161,3 +161,21 @@ on the existing wind-sway material.
   dark mass stops the white wall glowing through.
 - **Checked:** the triangle winding by hand before building (lesson from round 5), and the stems are double-sided. Unity
   `garden_end`, `garden_mid` and `garden_over` in Day and Evening.
+
+## Round 7: the stepping-stone path
+
+**Brief:** a prop in three variants (Blender), 108 tris each, pivot at the middle of the base, no collider (the lawn
+carries the cat).
+
+- **Before:** about 30 identical 30 x 60 cm boxes, 4 cm apart. They read as one pale, ruler-straight concrete strip.
+- **Now:** `stepping_stone_a`, `stepping_stone_b` and `stepping_stone_c`:
+  - Each is a natural flagstone of about 40-50 x 33-38 cm, 4 cm thick, with an irregular, chipped outline (14 points
+    round a rounded rectangle) and a bevelled top edge.
+  - The top is a flat face inside a ring of edge faces. The first version fanned the top from a raised middle and
+    showed pinwheel facets in the sun.
+  - Each variant has its own grey (`grey_mid`, `stone`, `grey_dark`), with darker sides and moss on about 30 % of the
+    top-edge faces. The first version used the light greys and glowed white in the sun.
+- **Placement** (`BuildPaths`): one stone per stride of about 0.6 m, with lawn between them. Each is turned ±12°,
+  nudged ±4 cm sideways and scaled 0.92-1.08, and set 6 mm proud of the turf, so the line reads as laid by hand,
+  alongside round 3's trodden strip.
+- **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` (Day), plus a cat-height crop.

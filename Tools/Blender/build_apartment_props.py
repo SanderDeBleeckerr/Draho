@@ -1002,6 +1002,66 @@ def dandelion():
     return parts
 
 
+def _stepping_stone(seed, size=(0.46, 0.36), tone="grey_mid"):
+    """A natural stepping stone (garden review round 7): an irregular, chipped outline (14 points round a rounded
+    rectangle), 4 cm thick, a flat top in one face (a fan from a raised middle showed pinwheel facets) inside a ring
+    of edge faces, the top edge bevelled; one grey per stone, a few edge faces of moss. Origin at the middle of its
+    base; about 70 tris."""
+    import bmesh
+    import random
+    rnd = random.Random(seed)
+    a, b = size[0] / 2, size[1] / 2
+    n = 14
+    ring = []
+    for i in range(n):
+        t = i / n * math.tau
+        cx, cy = math.cos(t), math.sin(t)
+        r = 1.0 / ((abs(cx) ** 3 + abs(cy) ** 3) ** (1 / 3))
+        r *= rnd.uniform(0.86, 1.0)
+        ring.append((cx * r * a, cy * r * b))
+    bm = bmesh.new()
+    T, bev = 0.04, 0.008
+    bottom = [bm.verts.new((x, y, 0.0)) for x, y in ring]
+    lip = [bm.verts.new((x, y, T - bev)) for x, y in ring]
+    top = [bm.verts.new((x * 0.95, y * 0.95, T)) for x, y in ring]
+    inner = [bm.verts.new((x * 0.8, y * 0.8, T)) for x, y in ring]
+    for i in range(n):
+        j = (i + 1) % n
+        bm.faces.new((bottom[i], bottom[j], lip[j], lip[i]))
+        bm.faces.new((lip[i], lip[j], top[j], top[i]))
+        bm.faces.new((top[i], top[j], inner[j], inner[i]))
+    bm.faces.new(inner)
+    bm.faces.new(bottom[::-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    o = ds._obj("SteppingStone", bm, (0, 0, 0))
+    ds.facet(o)
+    darker = {"stone": "grey_mid", "grey_mid": "grey_dark", "grey_dark": "grey_deep"}[tone]
+    def colour(poly):
+        c = poly.center
+        if c.z < T - bev - 0.001:
+            return darker                                   # the sides
+        if len(poly.vertices) == 4 and c.z > T - 0.001 and rnd.random() < 0.3:
+            return "leaf_dark"                              # moss on the top edge
+        return tone
+    ds.paint(o, colour)
+    return [o]
+
+
+@prop
+def stepping_stone_a():
+    return _stepping_stone(41, tone="grey_mid")
+
+
+@prop
+def stepping_stone_b():
+    return _stepping_stone(42, (0.42, 0.38), tone="stone")
+
+
+@prop
+def stepping_stone_c():
+    return _stepping_stone(43, (0.5, 0.34), tone="grey_dark")
+
+
 def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
     """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
     branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at

@@ -4042,6 +4042,24 @@ namespace Draho.EditorTools
                 const float gap = 0.04f;
                 int count = Mathf.Max(1, Mathf.FloorToInt(length / (slab + gap)));
                 Quaternion along = Quaternion.LookRotation((b - a).normalized);
+                // Garden review round 7: natural stepping stones (Blender, three variants), one per stride of about 0.6 m
+                // with lawn between them, each turned, nudged and sized a little differently, flush with the turf. The
+                // boxes 4 cm apart read as one pale concrete strip.
+                if (AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/stepping_stone_a.fbx") != null)
+                {
+                    Vector3 side = Vector3.Cross(Vector3.up, (b - a).normalized);
+                    int steps = Mathf.Max(1, Mathf.RoundToInt(length / 0.6f));
+                    for (int i = 0; i < steps; i++)
+                    {
+                        string variant = "stepping_stone_" + "abc"[rng.Next(3)];
+                        var st = FurnitureModel(variant, root);
+                        float r() => (float)rng.NextDouble() - 0.5f;
+                        st.position = a + (b - a) * ((i + 0.5f) / steps) + side * r() * 0.08f + Vector3.up * -0.034f; // 6 mm proud of the turf
+                        st.rotation = along * Quaternion.Euler(0f, 90f + r() * 24f, 0f);
+                        st.localScale = Vector3.one * (0.92f + 0.16f * ((float)rng.NextDouble()));
+                    }
+                    continue;
+                }
                 for (int i = 0; i < count; i++)
                 {
                     // Flush with the lawn (its top is at -0.01); no collider: the lawn carries the cat.

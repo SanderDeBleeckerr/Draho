@@ -81,7 +81,8 @@ namespace Draho.EditorTools
 
         void OnPreprocessModel()
         {
-            if (!assetPath.Contains("/Art/Animals/")) return;
+            // Animals and the apartment furniture (Tools/Blender/build_apartment_props.py): the same Blender export.
+            if (!assetPath.Contains("/Art/Animals/") && !assetPath.Contains("/Art/Furniture/")) return;
             var mi = (ModelImporter)assetImporter;
             mi.animationType = ModelImporterAnimationType.None; // the game scripts move the parts
             mi.bakeAxisConversion = true;  // Blender Z-up to Unity Y-up for every node, pivots included

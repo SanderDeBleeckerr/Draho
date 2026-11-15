@@ -1,5 +1,5 @@
 // Plays the live WebGL build in headless Chromium and saves screenshots + the console log.
-// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|board|bounty|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|naps|rested|wet|cones|epilogue|glowworms|clouds|gifts|views|meteor|suitcase|bolt|tail|shake|mist|scratch|sniff|cycle|storyhud|splash|notes|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|rewards|start|gardenview|foxday|resume|roofjump|hogview|around|overview|streetview]
+// Usage: node Tools/Playtest/playtest.cjs [url] [outDir] [tour|perf|rivals|flat|flatloud|wayback|climb|climbhold|grab|roof|pipe|fence|hedgehog|nest|quay|ducks|ledge|roofroute|begwall|begijnhof|greycat|exit|bakery|mouse|garden|birds|court|sneak|sky|moths|fox|home|highroof|storm|homecoming|eyes|gull|butterflies|fisher|squeak|sunbeam|catnip|glint|sit|wet|cones|epilogue|glowworms|clouds|gifts|meteor|suitcase|bolt|tail|shake|mist|cycle|storyhud|splash|smoke|tv|street|laser|swifts|river|bricks|slates|voice|rainbow|start|gardenview|foxday|resume|roofjump|hogview|around|overview|streetview]
 // Needs the global playwright package (NODE_PATH) and Chromium in /opt/pw-browsers.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -170,13 +170,6 @@ const steps = {
     ['03_turn', 'move', '-0.4,1,0,0.4'],
     ['04_settle', 'wait', '2'],
   ],
-  // Start with ?beat=5&at=2.2,2.6,0&fresh=1 : on the rug nap spot; sit still until it is found; then the garden table spot.
-  naps: [
-    ['02_ring', 'wait', '1'],
-    ['03_sit_on_it', 'wait', '6'],
-    ['04_table', 'call', 'StoryDirector.TestTeleport:-1.4,2.6,90,0.8'],
-    ['05_sit_table', 'wait', '6'],
-  ],
   // Start with ?beat=38&at=-8,2.5,180 : night on the lawn; a slow test shooting star in front of the camera.
   meteor: [
     ['02_look_up', 'call', 'Main Camera.TestView:-5,1.4'],
@@ -184,16 +177,8 @@ const steps = {
     ['04_streak', 'wait', '0.8'],
     ['05_streak_more', 'wait', '0.8'],
   ],
-  // Start with ?beat=5&at=14.4,4.6,180,12.4&fresh=1 : by day on the big roof's ridge viewpoint; stand still: the camera
-  // pulls back and sweeps round the cat.
-  views: [
-    ['02_ring', 'wait', '2.5'],
-    ['03_sweep', 'wait', '3'],
-    ['04_sweep_more', 'wait', '4'],
-    ['05_back', 'wait', '5'],
-  ],
   // Start with ?beat=55&at=5.0,4.0,90 : the epilogue in the court, facing the bottle cap; walk into it (picked up in
-  // the mouth), then jump to the front door: the humans react, Gifts 1/6.
+  // the mouth), then jump to the front door: the humans react.
   gifts: [
     ['02_cap', 'wait', '2'],
     ['03_pick', 'move', '0,1,0,1'],
@@ -216,7 +201,7 @@ const steps = {
     ['04_walk', 'move', '0,1,0,2.5'],
     ['05_after', 'wait', '1'],
   ],
-  // Start with ?beat=54&at=3.4,3.4,60 : THE END; after 14 s the free-roam epilogue (day, the board works again).
+  // Start with ?beat=54&at=3.4,3.4,60 : THE END; after 14 s the free-roam epilogue (day).
   epilogue: [
     ['02_the_end', 'wait', '3'],
     ['03_epilogue', 'wait', '14'],
@@ -238,15 +223,6 @@ const steps = {
     ['05_wet_look', 'wait', '1.5'],
     ['06_wet_walk', 'move', '0,1,0,2'],
     ['07_wet_turn', 'move', '1,0,0,1.5'],
-  ],
-  // Start with ?beat=38&at=-8,2.5,180 : night on the lawn; all nap spots done: a warm glow in the fur, higher jumps.
-  rested: [
-    ['02_before', 'wait', '1.5'],
-    ['03_jump_before', 'movejump', '0,1,1,1.2,0.5'],
-    ['04_rested', 'call', 'WellRested.TestComplete'],
-    ['05_glow', 'wait', '1.5'],
-    ['06_jump_after', 'movejump', '0,1,1,1.2,0.5'],
-    ['07_glow_walk', 'move', '1,0,0,1.5'],
   ],
   // Start with ?beat=5&at=-8,2.5,180 : on the lawn by day; stand still: after 4 s the cat sits down; walk on.
   sit: [
@@ -327,14 +303,6 @@ const steps = {
     ['05_quay', 'call', 'StoryDirector.TestTeleport:-33,-50,180'], ['05b', 'wait', '6'],
     ['06_begijnhof', 'call', 'StoryDirector.TestTeleport:60,-235,180'], ['06b', 'wait', '6'],
     ['07_far_bank', 'call', 'StoryDirector.TestTeleport:-53,-60,180'], ['07b', 'wait', '6'],
-  ],
-  // Start with ?beat=1&at=5.9,1.05,90 : the kitchen mouse comes out; the test hook catches it; then read the board.
-  bounty: [
-    ['02_mouse_out', 'wait', '4'],
-    ['03_catch', 'call', 'Mouse.TestCatch'],
-    ['04_paid', 'wait', '3'],
-    ['05_to_board', 'call', 'StoryDirector.TestTeleport:7.0,2.0,90'],
-    ['06_board', 'wait', '2'],
   ],
   // Start with ?beat=30&at=-4,7.1,90 : in the wild garden before the neighbour's window; jump in, sneak to the toy.
   flat: [
@@ -455,13 +423,6 @@ const steps = {
     ['05_turn', 'move', '-1,0,0,1.5'],
     ['06_walk_on', 'move', '0,1,0,3'],
   ],
-  // Start with ?beat=5&at=-10,2.5,0 : both set rewards at once (sharp claws, the red collar with a bell); walk to
-  // the side to see the collar.
-  rewards: [
-    ['02_all', 'call', 'SetRewards.TestAll'],
-    ['03_side', 'move', '1,0,0,0.8'],
-    ['04_collar', 'wait', '1'],
-  ],
   // Start with ?beat=5&at=-8,2.5,180 : a test meow, then a jump down from the table for a landing thump (log only:
   // the headless test cannot hear).
   voice: [
@@ -516,11 +477,6 @@ const steps = {
     ['02_look_up', 'call', 'Main Camera.TestView:5,2.2'],
     ['03_smoke', 'wait', '4'],
   ],
-  // Start with ?beat=5&at=-8,2.5,180 : sit a while: Drahomil's notes (all categories) show on the board panel.
-  notes: [
-    ['02_sit', 'wait', '15'],
-    ['03_walk_away', 'move', '0,1,0,1.5'],
-  ],
   // Start with ?beat=48&at=14.4,4.6,180,11.9 : the storm on the slate; splashes where the rain lands round the cat.
   splash: [
     ['02_rain', 'wait', '3'],
@@ -541,20 +497,6 @@ const steps = {
     ['04_evening_look', 'wait', '6'],
     ['05_night', 'call', 'DayCycle.TestAdvance'],
     ['06_night_look', 'wait', '8'],
-  ],
-  // Start with ?beat=5&at=-8,2.5,180&fresh=1 : the lawn; crouch and keep still: a sniff names the nearest thing not
-  // yet found, with distance and direction, and a scent trail drifts that way.
-  sniff: [
-    ['02_duck', 'duck', ''],
-    ['03_sniff', 'wait', '2.5'],
-    ['04_trail', 'wait', '0.8'],
-  ],
-  // Start with ?beat=5&at=-2.35,1.45,0 : by the garden table leg; rear up (jump standing still) in the ring: claw
-  // marks and "Scritch-scratch".
-  scratch: [
-    ['02_ring', 'wait', '1.5'],
-    ['03_rear', 'jump', ''],
-    ['04_scratched', 'wait', '1.5'],
   ],
   // Start with ?fresh=1 (a new game, the first morning): mist lies in the gardens; then ?beat=5&at=-4,2.5,270 with
   // the test hook for a look down the garden.
@@ -777,17 +719,6 @@ const steps = {
     ['05_climb_house', 'hold', '7'],
     ['06_on_roof', 'wait', '1.5'],
   ],
-  // Start with ?beat=3&at=6.4,2,90 : in the kitchen at the bounty board; then (teleport) pick up two feathers.
-  board: [
-    ['02_walk_to_board', 'move', '0,1,0,1.5'],
-    ['03_read_board', 'wait', '2'],
-    ['04_feather', 'call', 'StoryDirector.TestTeleport:-1.4,2.3,0,0.77'],
-    ['05_pick', 'move', '0,1,0,1.5'],
-    ['06_feather2', 'call', 'StoryDirector.TestTeleport:-19,3.0,0'],
-    ['07_pick', 'move', '0,1,0,2'],
-    ['08_wait', 'wait', '7'],
-    ['09_reload', 'reload', 'https://sanderdebleeckerr.github.io/Draho/'],
-  ],
   // Start with ?beat=6&at=-22,0.9,180 : close to the ivy; jump at it, hang on, climb a bit, tap to drop off.
   grab: [
     ['02_jump_at_ivy', 'movejump', '0,1,0,1.2,0.2'],
@@ -858,5 +789,5 @@ await shot('99_end');
 
 fs.writeFileSync(`${out}/console.log`, log.join('\n') + '\n');
 await browser.close();
-console.log(log.filter(l => /STORY|STATE|CAT|SAVE|COINS|COLLECT|TOAST|PERF|shot|input|exception/i.test(l)).join('\n'));
+console.log(log.filter(l => /STORY|STATE|CAT|SAVE|TOAST|PERF|shot|input|exception/i.test(l)).join('\n'));
 })();

@@ -26,9 +26,7 @@ namespace Draho.World
         [SerializeField] float hearStill = 0.25f;
         [SerializeField] float catchRadius = 0.28f;
         [SerializeField] float hideTime = 4f;
-        [Header("Bounty")]
         [SerializeField] string displayName = "Kitchen mouse";
-        [SerializeField] int bounty = 10;
         [Tooltip("Seconds after a catch before a (warier) mouse moves in again.")]
         [SerializeField] float respawnTime = 50f;
 
@@ -49,7 +47,6 @@ namespace Draho.World
 
         public bool IsCaught => state == State.Caught;
         public string DisplayName => displayName;
-        public int Bounty => bounty;
         /// <summary>How often a mouse of this territory was caught (this session); each catch makes the next one warier.</summary>
         public int Catches { get; private set; }
         public bool IsVisible => state == State.Wander || state == State.Flee;
@@ -57,11 +54,7 @@ namespace Draho.World
         public event System.Action Caught;
 
         /// <summary>Set up by the level builder (edit time).</summary>
-        public void SetBounty(string name, int coins)
-        {
-            displayName = name;
-            bounty = coins;
-        }
+        public void SetName(string name) => displayName = name;
 
         public void Configure(Transform[] mouseHoles, Transform bodyVisual, Transform tailVisual)
         {
@@ -120,7 +113,7 @@ namespace Draho.World
                 Catches++;
                 timer = respawnTime;
                 SetVisible(false);
-                Debug.Log($"STORY mouse caught: {displayName} (bounty {bounty})");
+                Debug.Log($"STORY mouse caught: {displayName}");
                 Caught?.Invoke();
                 return;
             }

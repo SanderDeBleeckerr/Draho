@@ -34,7 +34,7 @@ namespace Draho.World
             ring.useWorldSpace = true;
             ring.loop = true;
             ring.positionCount = 32;
-            ring.widthMultiplier = 0.03f;
+            ring.widthMultiplier = 0.01f;
             ring.enabled = false;
             if (squeak == null) squeak = MakeSqueak();
             baseScale = transform.localScale;
@@ -65,7 +65,7 @@ namespace Draho.World
                     float a = i * Mathf.PI * 2f / ring.positionCount;
                     ring.SetPosition(i, transform.position + new Vector3(Mathf.Cos(a) * r, 0.03f, Mathf.Sin(a) * r));
                 }
-                var c = new Color(1f, 0.85f, 0.3f, 1f - ripple);
+                var c = new Color(0.95f, 0.87f, 0.65f, 0.45f * (1f - ripple)); // pale_yellow, faint
                 ring.startColor = ring.endColor = c;
             }
         }

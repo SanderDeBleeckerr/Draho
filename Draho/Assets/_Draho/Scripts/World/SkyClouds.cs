@@ -35,7 +35,10 @@ namespace Draho.World
             if (Storm.Active) { lit = new Color(0.3f, 0.31f, 0.34f); shade = new Color(0.16f, 0.17f, 0.2f); opacity = 1f; }
             else switch (SkyMood.Current)
             {
-                case SkyMood.Mood.Evening: lit = new Color(1f, 0.72f, 0.52f); shade = new Color(0.55f, 0.42f, 0.5f); opacity = 0.9f; break;
+                // Evening (round 30): the low sun lights the clouds warm and bright; the old shade (0.55, 0.42, 0.5) left them
+                // a muddy brown-mauve against the blue. The shader is unlit, but the evening exposure is low: HDR colours (above
+                // 1) so the clouds glow brighter than the dimmed land, a salmon underside and a peach top.
+                case SkyMood.Mood.Evening: lit = new Color(1.7f, 1.25f, 0.88f); shade = new Color(1.25f, 0.8f, 0.74f); opacity = 0.9f; break;
                 case SkyMood.Mood.Dawn: lit = new Color(1f, 0.8f, 0.72f); shade = new Color(0.62f, 0.55f, 0.65f); opacity = 0.85f; break;
                 default: lit = Color.white; shade = new Color(0.72f, 0.75f, 0.82f); opacity = 0.95f; break;
             }

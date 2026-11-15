@@ -5,6 +5,8 @@ What it does:
   2. Records the Run animation in world space.
   3. Makes the standing pose the new rest pose (the original rest pose lies on its side), in metres,
      facing +Y, up +Z (the same convention as Tools/Blender/build_drahomil.py).
+     3b. Refines the body: welds the split faces, one subdivision level, smooth shading with sharp ridges
+     (--subdiv, --shading; docs/ART_STYLE.md §4).
   4. Writes Run again on the clean rig and adds procedural Idle and Walk clips (IK legs, baked).
   5. Adds eyes, pupils and a nose (the model has no face), and names the materials for Unity.
   6. Exports Draho/Assets/_Draho/Art/Cat/Drahomil.fbx.
@@ -29,7 +31,16 @@ ap.add_argument("--glb", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--renders")
 ap.add_argument("--textures", help="where to write CatEye.png / CatNose.png (default: <out dir>/Textures)")
+ap.add_argument("--subdiv", type=int, default=1, help="Catmull-Clark levels on the body (0 = the source mesh)")
+ap.add_argument("--fur-shells", type=int, default=8,
+                help="layers of the fur shell mesh DrahomilFur for Draho/ShellFur (0 = no fur mesh)")
+ap.add_argument("--shading", choices=("facet", "soft"), default="soft",
+                help="facet: flat faces; soft: smooth with sharp ridges (see step 3b)")
 args = ap.parse_args(argv)
+CREASE_DEG = 70  # ridges sharper than this keep their points through the subdivision
+SHARP_DEG = 35   # "soft" shading: edges sharper than this stay sharp
+FUR_STAND, FUR_LIE = 0.45, 0.9  # the fur leans about 63 degrees from the skin normal towards its lay direction
+NOSE_RAISE = 0.004 if args.subdiv > 0 else 0.0  # the rounded snout's tip sits ~4 mm lower
 
 FPS = 24
 RENAME = {
@@ -153,6 +164,75 @@ arm.name = "DrahomilRig"
 arm.data.name = "DrahomilRig"
 body.name = "DrahomilBody"
 
+# ---------------------------------------------------------------------------
+# 3b. Refine the body (docs/ART_STYLE.md §4-5: the cat's budget is 8-15k triangles, the source has 800).
+#     The glTF stores every flat face with its own vertices, so weld first; then one Catmull-Clark level
+#     rounds the blocky chest, legs and tail. Creased ridges (ears, paws) keep their points.
+#     Subdivision interpolates the vertex weights, so the skinning carries over.
+# ---------------------------------------------------------------------------
+import bmesh  # noqa: E402  (after bpy, see build_drahomil.py)
+
+if args.subdiv > 0:
+    bm = bmesh.new()
+    bm.from_mesh(body.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-4)
+    # The hind paws have small inner "fin" faces: after the weld, three faces share one edge there.
+    # A fin touches two such edges; the surface faces touch one.
+    fins = [f for f in bm.faces if sum(len(e.link_faces) > 2 for e in f.edges) >= 2]
+    bmesh.ops.delete(bm, geom=fins, context="FACES")
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])  # welded neighbours must agree on the winding
+    print(f"CHECK body weld: removed {len(fins)} inner faces, "
+          f"{sum(len(e.link_faces) > 2 for e in bm.edges)} non-manifold edges left")
+    crease = bm.edges.layers.float.get("crease_edge") or bm.edges.layers.float.new("crease_edge")
+    # Only the ears and paws keep sharp ridges. The source tail and legs have a square cross-section:
+    # creased, the tail stayed a square block stuck into the rump.
+    deform = bm.verts.layers.deform.verify()
+    keep_sharp = {vg.index for vg in body.vertex_groups
+                  if vg.name.startswith(("Ear.", "Fingers.", "Toe.", "Hand.", "Foot."))}
+
+    def is_pointed(v):
+        weights = v[deform]
+        return bool(weights) and max(weights.keys(), key=lambda g: weights[g]) in keep_sharp
+
+    for e in bm.edges:
+        if (len(e.link_faces) == 2 and math.degrees(e.calc_face_angle(0.0)) > CREASE_DEG
+                and all(is_pointed(v) for v in e.verts)):
+            e[crease] = 1.0
+    bm.to_mesh(body.data)
+    bm.free()
+    if "custom_normal" in body.data.attributes:  # the glTF's flat normals; ours come from the shading below
+        body.data.attributes.remove(body.data.attributes["custom_normal"])
+    sub = body.modifiers.new("Refine", "SUBSURF")
+    sub.levels = args.subdiv
+    body.modifiers.move(len(body.modifiers) - 1, 0)  # before the Armature modifier, so it applies cleanly
+    select_only(body)
+    bpy.ops.object.modifier_apply(modifier=sub.name)
+    if "crease_edge" in body.data.attributes:
+        body.data.attributes.remove(body.data.attributes["crease_edge"])
+    # Subdivision blends the weights of neighbouring vertices: keep the 4 strongest bones per vertex
+    # (Unity's default skin weights) and normalise, so Unity does not drop weights on its own.
+    for v in body.data.vertices:
+        gs = sorted(((g.group, g.weight) for g in v.groups if g.weight > 0), key=lambda gw: -gw[1])
+        keep, drop = gs[:4], gs[4:]
+        total = sum(w for _, w in keep) or 1.0
+        for gi, _ in drop:
+            body.vertex_groups[gi].remove([v.index])
+        for gi, w in keep:
+            body.vertex_groups[gi].add([v.index], w / total, "REPLACE")
+
+# Shading. "facet": flat faces (the house rule for organic models). "soft": smooth, with sharp edges kept on
+# ridges steeper than SHARP_DEG (ears, spine, paws), so the subdivided body reads as clean planes.
+bm = bmesh.new()
+bm.from_mesh(body.data)
+for f in bm.faces:
+    f.smooth = args.shading == "soft"
+for e in bm.edges:
+    e.smooth = not (len(e.link_faces) == 2 and math.degrees(e.calc_face_angle(0.0)) > SHARP_DEG)
+bm.to_mesh(body.data)
+bm.free()
+print(f"CHECK body refined: subdiv {args.subdiv}, shading {args.shading}, "
+      f"{sum(len(p.vertices) - 2 for p in body.data.polygons)} fur triangles")
+
 # Ground: lowest rest vertex at z = 0, body centred on x/y = 0 under the hips.
 zmin = min(v.co.z for v in body.data.vertices)
 hips = arm.data.bones["Hips"].head_local
@@ -236,6 +316,25 @@ for owner in LEGS:
     e.location = arm.matrix_world @ arm.data.bones[owner].tail_local
     targets[owner] = (e, e.location.copy())
 
+# Hind legs when the cat ducks. The IK above only pins the hock (the end of the shin): with the hips
+# 7 cm lower, the knee folded any way it liked (down to the floor, across the body) and the paw hung
+# from the hock, in the air or dragged behind. For the crouch clips the paw is the target instead: the
+# hock is placed above it, a pole keeps the knee forward, and the foot bone aims at the paw.
+HIND = {"Shin.L": "Foot.L", "Shin.R": "Foot.R"}  # IK owner -> foot bone (hock to paw)
+FOOT_LEN = arm.data.bones["Foot.L"].length
+CROUCH_TUCK = 0.023  # the hind paws step this far forward, under the body
+paw_targets, knee_poles = {}, {}
+for owner, foot in HIND.items():
+    p = bpy.data.objects.new(f"Paw_{owner}", None)
+    scene.collection.objects.link(p)
+    p.location = arm.matrix_world @ arm.data.bones[foot].tail_local
+    paw_targets[owner] = (p, p.location.copy())
+    k = bpy.data.objects.new(f"Knee_{owner}", None)
+    scene.collection.objects.link(k)
+    hip = arm.matrix_world @ arm.data.bones[owner].parent.head_local
+    k.location = hip + Vector((0.6 * hip.x, 0.5, -0.1))  # far ahead, a little outwards
+    knee_poles[owner] = k
+
 
 def leg_offset(u, duty, stride, lift, hover=0.0):
     """Paw path for one leg; u in [0,1). Stance: back along the ground. Swing: forward in an arc.
@@ -256,9 +355,17 @@ def leg_offset(u, duty, stride, lift, hover=0.0):
 PAWS = ("Fingers.L", "Fingers.R", "Toe.L", "Toe.R")
 
 
-def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False):
+def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False, hind_paws=False, pole_at=None, sagittal=False):
+    """pole_at: {IK owner: t} - the moment of the cycle at which to choose that leg's knee pole angle (default 0).
+    The choice needs a bent knee: in the walk the hind leg is nearly straight at t = 0, every angle looked the
+    same and the one picked turned the knee sideways, so the paw crossed under the body mid-swing.
+    sagittal: keep each hind leg in its own upright plane - the knee pole straight ahead of the hip, the pole
+    angle (every 15 degrees) scored on a forward knee that stays over the hip sideways, and the toes held in
+    their rest direction (left free, they rolled with the foot and pointed across the body)."""
     for owner, (e, base) in targets.items():
         e.animation_data_clear()
+    for owner, (p, base) in paw_targets.items():
+        p.animation_data_clear()
     cons = []
     if use_ik:
         for owner, (e, base) in targets.items():
@@ -277,6 +384,48 @@ def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False):
             c = arm.pose.bones[n].constraints.new("DAMPED_TRACK")
             c.target = aim
             cons.append((n, c))
+    saved_poles = {o: k.location.copy() for o, k in knee_poles.items()}
+    if hind_paws and sagittal:
+        for owner, k in knee_poles.items():
+            hip = arm.matrix_world @ arm.data.bones[owner].parent.head_local
+            k.location = hip + Vector((0.0, 0.5, -0.1))          # straight ahead of the hip
+        for n in ("Toe.L", "Toe.R"):
+            # Straight ahead in the toe's rest heading, tipped down so the toe tip touches the floor when the paw
+            # stands (the rest direction is level and held the tips 1.7 cm in the air).
+            bone = arm.data.bones[n]
+            head = arm.matrix_world @ bone.head_local
+            d = arm.matrix_world.to_3x3() @ (bone.tail_local - bone.head_local)
+            flat = Vector((d.x, d.y, 0.0)).normalized()
+            length = d.length                                    # in world units (the armature is scaled)
+            dz = -min(head.z, length * 0.9) / length
+            print(f"CHECK walk toe aim {n}: head z {head.z:.4f} length {length:.4f} tilt {math.degrees(math.asin(dz)):.1f} deg")
+            aim = bpy.data.objects.new(f"Aim_{n}", None)
+            scene.collection.objects.link(aim)
+            aim.location = head + (flat * math.sqrt(1 - dz * dz) + UP * dz) * 50
+            c = arm.pose.bones[n].constraints.new("DAMPED_TRACK")
+            c.target = aim
+            cons.append((n, c))
+    if hind_paws:
+        for owner, foot in HIND.items():
+            reset_pose()
+            pose_fn((pole_at or {}).get(owner, 0.0), 0)
+            ik = next(c for o, c in cons if o == owner and c.type == "IK")
+            ik.pole_target = knee_poles[owner]
+            # The pole angle depends on the bone roll: take the turn that puts the knee furthest forward
+            # (sagittal: and keeps it over the hip sideways).
+            hip_x = (arm.matrix_world @ arm.data.bones[owner].parent.head_local).x
+            knee_y = {}
+            for deg in (range(-180, 180, 15) if sagittal else (0, 90, 180, -90)):
+                ik.pole_angle = math.radians(deg)
+                bpy.context.view_layer.update()
+                knee = arm.matrix_world @ arm.pose.bones[owner].head
+                knee_y[deg] = knee.y - (4.0 * abs(knee.x - hip_x) if sagittal else 0.0)
+            ik.pole_angle = math.radians(max(knee_y, key=knee_y.get))
+            print(f"CHECK {name} {owner} pole angle {max(knee_y, key=knee_y.get)} (knee y by angle: "
+                  f"{ {d: round(y, 3) for d, y in knee_y.items()} })")
+            c = arm.pose.bones[foot].constraints.new("DAMPED_TRACK")
+            c.target = paw_targets[owner][0]
+            cons.append((foot, c))
     tmp = new_action(name + "_fk")
     for f in range(frames + 1):
         t = f / frames
@@ -291,10 +440,12 @@ def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False):
     baked.name = name
     baked.use_fake_user = True
     for owner, c in cons:
-        if c.type == "DAMPED_TRACK":
+        if c.type == "DAMPED_TRACK" and c.target.name.startswith("Aim_"):
             bpy.data.objects.remove(c.target, do_unlink=True)
         arm.pose.bones[owner].constraints.remove(c)
     bpy.data.actions.remove(tmp)
+    for o, loc in saved_poles.items():
+        knee_poles[o].location = loc
     return baked
 
 
@@ -315,16 +466,46 @@ def move_world(pb, offset):
     pb.matrix = Matrix.Translation(offset) @ pb.matrix
 
 
-def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0):
+def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0, tuck=None, foot=None):
+    """tuck (metres): the hind legs are driven from the paw (see HIND), set this far forward of the rest spot.
+    foot(owner, back) -> angle of the foot (hock to paw) above the floor, in radians; back = 0 with the paw fully
+    forward, 1 fully back. Default: the crouch's low foot, 30 degrees forward to 60 degrees at push-off."""
     for owner, phase in phases.items():
         e, base = targets[owner]
         out = SIDE * (spread if owner.endswith(".L") else -spread)  # elbows and knees out when low
-        e.location = base + out + (leg_offset((t + phase) % 1.0, duty, stride, lift, hover) if duty else Vector())
+        off = leg_offset((t + phase) % 1.0, duty, stride, lift, hover) if duty else Vector()
+        if tuck is not None and owner in HIND:
+            p, paw_base = paw_targets[owner]
+            p.location = paw_base + out + FWD * tuck + off
+            p.keyframe_insert("location", frame=f)
+            # The foot (hock to paw) lies low while the paw is forward and stands up as the leg pushes off.
+            back = 0.5 - off.dot(FWD) / stride if duty else 0.5   # 0 = paw fully forward, 1 = fully back
+            a = foot(owner, back) if foot else math.radians(30 + 30 * back)
+            e.location = p.location + (UP * math.sin(a) - FWD * math.cos(a)) * FOOT_LEN
+        else:
+            e.location = base + out + off
         e.keyframe_insert("location", frame=f)
 
 
+# The walk's hind legs used to pin only the hock (IK on the shin, no pole). Nothing said which way the knee
+# bends, so in the slow walk the knee swung in and the hind paws crossed under the body, scissoring (owner's
+# video DrahoNonchalantWalk.mp4). Like the crouch and the sit, the walk now drives each hind leg from the paw:
+# the hock stands above and behind it at the rest pose's foot angle (a little flatter as the paw reaches
+# forward, steeper at push-off), a pole keeps the knee forward and out, and the foot aims at the paw.
+def _rest_foot_angle(owner):
+    hock = targets[owner][1]
+    paw = paw_targets[owner][1]
+    d = hock - paw
+    return math.atan2(d.z, max(-d.y, 1e-4))
+
+
+WALK_FOOT = {owner: _rest_foot_angle(owner) for owner in HIND}
+print("CHECK walk rest foot angles (deg): " + " ".join(f"{o}={math.degrees(a):.1f}" for o, a in WALK_FOOT.items()))
+
+
 def walk_pose(t, f):
-    set_legs(t, LEGS, WALK_DUTY, WALK_STRIDE, WALK_LIFT, f)
+    set_legs(t, LEGS, WALK_DUTY, WALK_STRIDE, WALK_LIFT, f, tuck=0.0,
+             foot=lambda owner, back: WALK_FOOT[owner] + math.radians(10) * (back - 0.5) * 2)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     rot_world(pb["Hips"], FWD, 0.05 * math.sin(w))          # hip roll
@@ -368,7 +549,7 @@ def crouch_body(pb, w, bob=0.0):
 
 
 def crouch_idle_pose(t, f):
-    set_legs(t, LEGS, 0, 0, 0, f, spread=0.012)
+    set_legs(t, LEGS, 0, 0, 0, f, spread=0.012, tuck=CROUCH_TUCK)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     crouch_body(pb, 2 * w)
@@ -378,7 +559,8 @@ def crouch_idle_pose(t, f):
 
 
 def crouch_walk_pose(t, f):
-    set_legs(t, STALK_LEGS, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT, f, hover=0.35, spread=0.012)
+    set_legs(t, STALK_LEGS, CROUCH_DUTY, CROUCH_STRIDE, CROUCH_LIFT, f, hover=0.35, spread=0.012,
+             tuck=CROUCH_TUCK)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     # Two small dips per cycle (one for each hind step), out of phase between hips and shoulders.
@@ -488,7 +670,10 @@ def climb_pose(t, f):
         rot_world(pb[name], UP, 0.15 * math.sin(w - 0.6 * i))
 
 
-SIT_ANGLE, SIT_DROP = 0.75, 0.115  # body nose-up about the hips (43 degrees); the hips sink onto the ground
+# Body nose-up about the hips (29 degrees); the hips sink onto the ground. At 43 degrees the shoulders were
+# 17 cm above the wrists and the front legs are 13 cm long: the front paws hung in the air.
+SIT_ANGLE, SIT_DROP = 0.5, 0.115
+SIT_PAW_FWD, SIT_PAW_OUT = 0.11, 0.022  # the hind paws: this far ahead of the hip joint, and out to the side
 
 
 def sit_pose(t, f):
@@ -497,33 +682,51 @@ def sit_pose(t, f):
     w = 2 * math.pi * t
     drop = UP * -SIT_DROP
     for owner, (e, base) in targets.items():
-        if owner.startswith("Shin"):
-            e.location = base + FWD * 0.03                        # hind paws a little forward, under the hips
+        if owner in HIND:
+            # Haunches: the hind paw lies flat on the floor beside the body, ahead of the hip; the hock rests
+            # just behind it; the knee points forward, up and out. (Pinning only the hock, as before, folded
+            # the leg up inside the body: from behind the sitting cat was a narrow pillar.)
+            out = 1.0 if base.x > 0 else -1.0
+            hip = arm.matrix_world @ arm.data.bones[owner].parent.head_local + drop
+            paw, paw_base = paw_targets[owner]
+            paw.location = Vector((paw_base.x + out * SIT_PAW_OUT, hip.y + SIT_PAW_FWD, paw_base.z))
+            paw.keyframe_insert("location", frame=f)
+            a = math.radians(10)
+            e.location = paw.location + (UP * math.sin(a) - FWD * math.cos(a)) * FOOT_LEN
+            knee_poles[owner].location = hip + Vector((out * 0.35, 0.5, 0.25))
         else:                                                    # front paws on the floor, straight under the shoulders
             side = owner.split(".")[1]
             shoulder = turned(arm.matrix_world @ arm.data.bones[f"UpperArm.{side}"].head_local, SIT_ANGLE, HIP_PIVOT, drop)
-            e.location = Vector((base.x, shoulder.y + 0.01, base.z))
+            e.location = Vector((base.x, shoulder.y - 0.015, base.z))
         e.keyframe_insert("location", frame=f)
     move_world(pb["Root"], drop)
     rot_about(pb["Root"], SIDE, SIT_ANGLE, HIP_PIVOT + drop)
-    rot_world(pb["Neck"], SIDE, -0.35)                         # head back to level
+    rot_world(pb["Neck"], SIDE, -0.5)                          # the neck stands up from the leaning chest
+    rot_world(pb["Head"], SIDE, 0.4)                           # head back to level
     rot_world(pb["Head"], UP, 0.3 * math.sin(w))               # looks round slowly
     rot_world(pb["Chest"], SIDE, 0.012 * math.sin(4 * w))      # breathing
     twitch = max(0.0, math.sin(5 * w + 1)) ** 10
     rot_world(pb["Ear.R"], FWD, 0.3 * twitch)
     for i, name in enumerate(TAILS):                           # along the floor, then round the front paws
-        rot_world(pb[name], SIDE, -0.8 if i == 0 else -0.04)
+        rot_world(pb[name], SIDE, -(SIT_ANGLE - 0.05) if i == 0 else -0.04)  # undo the body's lean
         rot_world(pb[name], UP, 0.55 + 0.03 * math.sin(w - 0.5 * i) if i > 0 else 0.25)
 
 
-walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True)
+# Each hind leg's pole is chosen at its mid-swing, when the knee is bent.
+walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True, hind_paws=True,
+                 pole_at={o: (WALK_DUTY + (1 - WALK_DUTY) / 2 - LEGS[o]) % 1.0 for o in HIND}, sagittal=True)
 idle = bake_clip("Idle", IDLE_FRAMES, idle_pose, use_ik=True)
-crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True, flat_paws=True)
-crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True, flat_paws=True)
+crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True, flat_paws=True, hind_paws=True)
+crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True, flat_paws=True, hind_paws=True)
 jump = bake_clip("Jump", AIR_FRAMES, jump_pose, use_ik=False)
 fall = bake_clip("Fall", AIR_FRAMES, fall_pose, use_ik=False)
 rear = bake_clip("Rear", IDLE_FRAMES // 2, rear_pose, use_ik=True)
-sit = bake_clip("Sit", IDLE_FRAMES, sit_pose, use_ik=True, flat_paws=True)
+sit = bake_clip("Sit", IDLE_FRAMES, sit_pose, use_ik=True, flat_paws=True, hind_paws=True)
+scene.frame_set(0)
+_sat = body.evaluated_get(bpy.context.evaluated_depsgraph_get())
+_low = sorted((_sat.matrix_world @ v.co for v in _sat.to_mesh().vertices), key=lambda c: c.z)[0]
+_sat.to_mesh_clear()
+print(f"CHECK sit lowest body point z {_low.z:.3f} at y {_low.y:.3f} (0 = the floor)")
 # While climbing the paws lie flat on the wall, toes up: track a point high up, just off the wall.
 up_target = bpy.data.objects.new("PawsUp", None)
 scene.collection.objects.link(up_target)
@@ -876,10 +1079,11 @@ def rounded(points, iterations=3):
 
 NOSE_W, NOSE_TOP, NOSE_BOTTOM = 0.0095, 0.004, -0.0072
 nose_outline = rounded([(-NOSE_W, NOSE_TOP), (0.0, NOSE_BOTTOM), (NOSE_W, NOSE_TOP)])[::-1]
-loc, n = surface_hit(Vector((0, tip.y + 0.2, tip.z + 0.002)), Vector((0, -1, 0)))
-# The snout tip faces mostly up; project the nose halfway between "up" and "forward", so it reads well
-# from the front and from above.
-x, y, z = frame_at((n + FWD).normalized())
+loc, n = surface_hit(Vector((0, tip.y + 0.2, tip.z + 0.002 + NOSE_RAISE)), Vector((0, -1, 0)))
+# Project the nose between "up" and "forward", so it reads well from the front and from above. On the
+# refined (rounded) snout the tip faces forward, so tilt the frame up: the pad then lies on the top of
+# the snout instead of sticking out of its tip.
+x, y, z = frame_at((n + FWD + (UP if args.subdiv > 0 else Vector())).normalized())
 parts.append(decal("Nose", "Nose", nose_outline, (x, y, z), loc, 0.0003, "Head", dome=0.0016, rings=5,
                    uv_box=(-NOSE_W, NOSE_BOTTOM, NOSE_W, NOSE_TOP)))
 nose_bottom = loc + y * (NOSE_BOTTOM + 0.0008)
@@ -935,10 +1139,113 @@ size = [max(v.co[i] for v in body.data.vertices) - min(v.co[i] for v in body.dat
 print(f"CHECK size x {size[0]:.3f} y {size[1]:.3f} z {size[2]:.3f} m (y = nose to tail tip)")
 
 # ---------------------------------------------------------------------------
+# 5b. Fur shells for Unity's Draho/ShellFur shader (docs/ART_STYLE.md §4).
+#     Strand fur (Blender's hair curves) cannot run in a phone browser. Shell fur can: the fur surface is
+#     drawn in several layers and the shader cuts each layer into strand dots. WebGL has no geometry shader
+#     to make the layers, so they are in the mesh: N copies of the fur faces, all at the skin (the shader
+#     pushes them out, so the rest-pose size check in Unity still sees the plain cat).
+#     UVMap = (layer 1/N..1, rest z), FurRest = (rest x, rest y): the strand pattern is a function of the
+#     rest position, so it needs no unwrap and stays fixed on the skin. FurMask.x = fur length 0..1.
+# ---------------------------------------------------------------------------
+fur = None
+if args.fur_shells > 0:
+    fur_slot = next(i for i, m in enumerate(body.data.materials) if m.name == "Fur")
+    fur_mesh = body.data.copy()
+    fur_mesh.name = "DrahomilFur"
+    fur = bpy.data.objects.new("DrahomilFur", fur_mesh)
+    scene.collection.objects.link(fur)
+    for vg in body.vertex_groups:  # same order as the body: the copied weights refer to the group index
+        fur.vertex_groups.new(name=vg.name)
+    fur.parent = arm
+    fur.matrix_parent_inverse = body.matrix_parent_inverse.copy()
+    fur.matrix_world = body.matrix_world
+    fur.modifiers.new("Armature", "ARMATURE").object = arm
+    # Fur length per vertex (0..1): none round the eyes, nose, mouth and inner ears (the layers would cover
+    # them), shorter on the head, ears and lower legs, full on the body and tail.
+    from mathutils.kdtree import KDTree  # noqa: E402
+    face_slots = {i for i, m in enumerate(body.data.materials) if m.name in ("Eye", "Pupil", "Nose", "InnerEar")}
+    face_verts = sorted({vi for p in body.data.polygons if p.material_index in face_slots for vi in p.vertices})
+    near_face = KDTree(len(face_verts))
+    for n, vi in enumerate(face_verts):
+        near_face.insert(body.data.vertices[vi].co, n)
+    near_face.balance()
+    part_length = {"Head": 0.55, "Neck": 0.8, "Ear.L": 0.3, "Ear.R": 0.3}
+    for side in ("L", "R"):
+        part_length.update({f"Forearm.{side}": 0.7, f"Shin.{side}": 0.7, f"Hand.{side}": 0.45,
+                            f"Fingers.{side}": 0.4, f"Foot.{side}": 0.5, f"Toe.{side}": 0.4})
+    group_length = {vg.index: part_length.get(vg.name, 1.0) for vg in body.vertex_groups}
+    fur_length = []
+    for v in body.data.vertices:
+        total = sum(g.weight for g in v.groups) or 1.0
+        length = sum(g.weight * group_length[g.group] for g in v.groups) / total if v.groups else 1.0
+        gap = near_face.find(v.co)[2]
+        length *= smooth01((gap - 0.003) / 0.015)   # 0 within 3 mm of a face part, full from 18 mm
+        fur_length.append(length)
+
+    bm = bmesh.new()
+    bm.from_mesh(fur_mesh)
+    rest_layer = bm.loops.layers.uv.new("FurRest")  # Unity: uv1 (the layer order is the channel order)
+    mask_layer = bm.loops.layers.uv.new("FurMask")  # Unity: uv2
+    for f in bm.faces:  # before the delete: the vertex indices still match the body's
+        for loop in f.loops:
+            loop[mask_layer].uv = (fur_length[loop.vert.index], 0.0)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index != fur_slot], context="FACES")
+    for f in bm.faces:
+        f.smooth = True
+        f.material_index = 0
+    for e in bm.edges:  # no sharp edges: split normals would open gaps between the pushed-out layers
+        e.smooth = True
+    uv_layer = bm.loops.layers.uv["UVMap"]
+
+    def tag_shell(faces, layer):
+        for f in faces:
+            for loop in f.loops:
+                co = loop.vert.co
+                loop[uv_layer].uv = (layer, co.z)
+                loop[rest_layer].uv = (co.x, co.y)
+
+    skin = bm.verts[:] + bm.edges[:] + bm.faces[:]
+    skin_faces = bm.faces[:]
+    for i in range(2, args.fur_shells + 1):
+        copy = bmesh.ops.duplicate(bm, geom=skin)["geom"]
+        tag_shell([g for g in copy if isinstance(g, bmesh.types.BMFace)], i / args.fur_shells)
+    tag_shell(skin_faces, 1 / args.fur_shells)
+    bm.to_mesh(fur_mesh)
+    bm.free()
+    if "custom_normal" in fur_mesh.attributes:
+        fur_mesh.attributes.remove(fur_mesh.attributes["custom_normal"])
+    # Combing. Hair that stands straight up looks like a hedgehog; a cat's coat lies flat: back from the nose,
+    # along the spine and the tail to its tip, and down the legs. The shader pushes the layers out along the
+    # vertex normal, so the lay is baked into the fur mesh's normals: each normal leans from the skin normal
+    # towards the lay direction. Unity skins normals, so the lay follows the legs and the tail.
+    away_from_body = ("Tail", "Ear.", "UpperArm.", "Forearm.", "Hand.", "Fingers.", "Thigh.", "Shin.", "Foot.", "Toe.")
+    lay = {}
+    for vg in body.vertex_groups:
+        bone = arm.data.bones.get(vg.name)
+        along = bone is not None and vg.name.startswith(away_from_body)
+        lay[vg.index] = (bone.tail_local - bone.head_local).normalized() if along else -FWD
+    head_group = body.vertex_groups["Head"].index
+    combed = []
+    for v in fur_mesh.vertices:
+        normal = v.normal.copy()
+        # On the head the coat runs away from the nose in every direction (up the forehead, out over the cheeks).
+        from_nose = (v.co - tip).normalized()
+        flow = sum(((from_nose if g.group == head_group else lay[g.group]) * g.weight for g in v.groups), Vector())
+        flow -= normal * flow.dot(normal)   # along the skin
+        if flow.length > 1e-4:
+            normal = (normal * FUR_STAND + flow.normalized() * FUR_LIE).normalized()
+        combed.append(normal)
+    fur_mesh.normals_split_custom_set_from_vertices(combed)
+    fur_mesh.materials.clear()
+    fur_mesh.materials.append(material("FurShell", (0.03, 0.03, 0.035), 0.9))
+    print(f"CHECK fur shells {args.fur_shells}: {sum(len(p.vertices) - 2 for p in fur_mesh.polygons)} triangles, "
+          f"{len(fur_mesh.vertices)} vertices, uv layers {[u.name for u in fur_mesh.uv_layers]}")
+
+# ---------------------------------------------------------------------------
 # 6. Export
 # ---------------------------------------------------------------------------
 os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
-select_only(arm, body)
+select_only(arm, body, *([fur] if fur else []))
 arm.animation_data.action = idle
 scene.frame_set(0)  # the stored pose must be a standing cat (Unity checks the facing with it)
 bpy.ops.export_scene.fbx(
@@ -954,6 +1261,8 @@ print("EXPORTED", args.out)
 # ---------------------------------------------------------------------------
 if args.renders:
     os.makedirs(args.renders, exist_ok=True)
+    if fur:
+        fur.hide_render = True  # the layers lie on the skin until Unity's shader pushes them out
     bpy.ops.mesh.primitive_plane_add(size=4)
     bpy.context.object.data.materials.append(material("Floor", (0.45, 0.43, 0.4), 0.8))
     world = bpy.data.worlds.new("W")
@@ -1003,6 +1312,10 @@ if args.renders:
                   res=(500, 400))
             if name == "climb":
                 scene.collection.objects.unlink(wall)
+    arm.animation_data.action = sit
+    scene.frame_set(0)
+    shoot(os.path.join(args.renders, "lowpoly_cat_pose_sit_back.png"), (0.25, -0.8, 0.45), (0, -0.05, 0.14), res=(500, 400))
+    shoot(os.path.join(args.renders, "lowpoly_cat_pose_sit_front.png"), (0.45, 0.7, 0.35), (0, 0.0, 0.15), res=(500, 400))
     for name, action in (("crouchidle", crouch_idle), ("jump", jump), ("fall", fall), ("sit", sit)):
         arm.animation_data.action = action
         scene.frame_set(0)

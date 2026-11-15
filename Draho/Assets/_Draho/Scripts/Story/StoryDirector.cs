@@ -32,6 +32,9 @@ namespace Draho.Story
             public Func<bool> Done;
             public Action Begin;
             public Func<Vector3?> Target; // where the goal compass points (null: no compass)
+            // The time of day this beat needs (the day/night cycle runs all game): while the beat is on, the clock does
+            // not leave that part of the day (SkyMood.Hold), and it runs on to it if the beat starts at another time.
+            public SkyMood.Mood? HoldTime;
         }
 
         Beat[] beats;
@@ -111,7 +114,7 @@ namespace Draho.Story
             float bestD = float.MaxValue;
             foreach (var b in pigeons)
             {
-                if (b == null || !b.OnGround) continue;
+                if (b == null) continue; // the court pigeons sit up on the ledges now, not on the ground
                 float d = Vector3.Distance(b.transform.position, cat.transform.position);
                 if (d < bestD) { bestD = d; best = b.transform.position; }
             }
@@ -194,7 +197,7 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Got it! Drahomil, mouse hunter. The bounty board by the kitchen pays for every mouse in the neighbourhood.",
+                    Story = "Got it! Drahomil, mouse hunter. You carry it about proudly, then lose interest. Something outside smells even better.",
                     Goal = "Sit in front of the garden door until it opens.",
                     Target = () => door != null ? door.transform.position : (Vector3?)null,
                     Done = () => door == null || door.IsOpen,
@@ -247,6 +250,7 @@ namespace Draho.Story
                 {
                     Story = "A fine jump! Nobody comes up here. Except cats... and butterflies: two dance over a pot of red geraniums.",
                     Goal = "Catch a butterfly. They zigzag, and they escape when you walk at them: sneak close (DUCK), then jump when one flutters low.",
+                    HoldTime = SkyMood.Mood.Day, // butterflies fly by day only
                     Target = () => P(-13.5f, 6.9f, -5f),
                     Done = () => Moth.ButterfliesCaught >= 1,
                 },
@@ -427,22 +431,22 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "Chapter 8: The Inner Court. Roo-coo... roo-coo... Pigeons have landed in the little court behind the glass!",
-                    Goal = "The court door next to the cat tree is open a crack. Squeeze through.",
+                    Story = "Chapter 8: The Inner Court. Roo-coo... roo-coo... Pigeons have landed in the light well above the little court behind the glass!",
+                    Goal = "The tall window next to the cat tree stands open. Slip past it into the court.",
                     Target = () => P(4.6f, 0f, 3.8f),
                     Done = () => InCourt(cat.transform.position),
                 },
                 new Beat
                 {
-                    Story = "Three fat pigeons peck between the round stones. Pigeons watch each other: when one flies, they all fly.",
-                    Goal = "Sneak up (DUCK) and touch a pigeon. Do not go straight at it: walk past it from the side.",
+                    Story = "Three fat pigeons sit on the ledges up the light well, one right above the bedroom window. Pigeons watch each other: when one flies, they all fly.",
+                    Goal = "Climb the drainpipe next to the bedroom window (hold the middle of the stick) and get close to a pigeon.",
                     Target = () => NearestPigeon(),
                     Done = () => Pigeon.AnyTouched,
                 },
                 new Beat
                 {
-                    Story = "Flap-flap-flap! The flock flies up the light well. Something shines behind the drainpipe: your old jingle ball, lost last spring!",
-                    Goal = "Climb the drainpipe in the court (hold the middle of the stick) and take the jingle ball.",
+                    Story = "Flap-flap-flap! The flock flies up the light well. Something shines behind a bracket of the drainpipe: your old jingle ball, lost last spring!",
+                    Goal = "Climb a little higher on the drainpipe and take the jingle ball.",
                     Target = () => jingleBall != null && jingleBall.gameObject.activeSelf ? jingleBall.transform.position : (Vector3?)null,
                     Done = () => jingleBall == null || jingleBall.Taken,
                 },
@@ -495,14 +499,17 @@ namespace Draho.Story
                 },
                 new Beat
                 {
-                    Story = "The river bank! The water whispers in the dark, and an old lamp-post hums on the quay. Home is close: ivy grows up the back of the shed at the end of your own garden.",
-                    Goal = "Climb the ivy on the shed (hold the middle of the stick) and get onto its roof.",
-                    Target = () => new Vector3(-27f, 2f, 5.1f),
-                    Done = () => cat.transform.position.y > 3.9f && cat.transform.position.x > -28.2f && cat.transform.position.x < -23.8f && cat.transform.position.z < 5.05f,
+                    // The garden end is a low green fence now (owner, November 2026; the shed with the ivy is gone):
+                    // from the river bank, across the neighbours' grass, up onto the fence.
+                    Story = "The river bank! The water whispers in the dark, and an old lamp-post hums on the quay. Home is close: across the grass is the low green fence at the end of your own garden.",
+                    Goal = "Cross the grass and jump onto the green fence at the end of your garden.",
+                    Target = () => new Vector3(-24f, 1.0f, 2.5f),
+                    Done = () => cat.transform.position.y > 0.85f && Mathf.Abs(cat.transform.position.x + 24f) < 0.45f
+                                 && cat.transform.position.z > 0f && cat.transform.position.z < 5f,
                 },
                 new Beat
                 {
-                    Story = "From the shed roof you see your own garden, silver in the moonlight, and the warm lamp by your door.",
+                    Story = "From the top of the fence you see your own garden, silver in the moonlight, and the warm lamp by your door.",
                     Goal = "Jump down into your garden and go home to the lamp by the door.",
                     Target = () => gardenLamp != null ? gardenLamp.position : (Vector3?)null,
                     Done = () => InGarden(cat.transform.position) && gardenLamp != null && Vector3.Distance(cat.transform.position, gardenLamp.position - Vector3.up * 1.9f) < 2.5f,
@@ -622,19 +629,23 @@ namespace Draho.Story
                 new Beat
                 {
                     Story = "Epilogue: a new day. Your humans are home, the cat flap is open and the whole town is yours again.",
-                    Goal = "Free roam: bring your humans a gift from every corner of town (6), find every feather and nap spot, fill the bounty board. Lost? Crouch and keep still to sniff.",
+                    Goal = "Free roam: wander where you like. Little things for your humans are lying around town, if you feel like bringing them home.",
                     Begin = () =>
                     {
                         humans?.SettleIn();
                         InEpilogue = true;
                         SkyMood.Set(SkyMood.Mood.Day, 20f);
-                        var p = Draho.Core.Progress.Instance;
-                        if (p != null)
-                            Debug.Log($"STORY epilogue: feathers {p.CollectedCount}/{p.TotalCollectables}, naps {p.NapCount}");
+                        Debug.Log("STORY epilogue");
                     },
                     Done = () => false,
                 },
             };
+            // Chapters 9 and 10 happen in one night (the moths, the fox, the high roofs, the storm): hold the night until
+            // the homecoming beat brings the dawn, so a slow hunter does not see the moths vanish at sunrise.
+            int nightFrom = Array.FindIndex(beats, b => b.Story != null && b.Story.StartsWith("Chapter 9: Night"));
+            int nightTo = Array.FindIndex(beats, b => b.Story != null && b.Story.StartsWith("Warm and dry"));
+            if (nightFrom >= 0 && nightTo > nightFrom)
+                for (int i = nightFrom; i < nightTo; i++) beats[i].HoldTime ??= SkyMood.Mood.Night;
 
             bool urlBeat = ApplyUrlArguments(out int startBeat);
             // Continue a saved game (unless the URL picks a beat, as the playtest does).
@@ -683,6 +694,9 @@ namespace Draho.Story
             beatTime = 0f;
             Beat beat = beats[index];
             beat.Begin?.Invoke();
+            SkyMood.Hold = beat.HoldTime;
+            if (beat.HoldTime.HasValue && SkyMood.Current != beat.HoldTime.Value && SkyMood.Current != SkyMood.Mood.Storm)
+                SkyMood.Set(beat.HoldTime.Value, 8f);
             if (hud != null) hud.Show(beat.Story, beat.Goal);
             Draho.Core.Progress.Instance?.BeatReached(index);
             Debug.Log($"STORY beat {index}: {beat.Story}");

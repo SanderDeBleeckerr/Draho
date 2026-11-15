@@ -111,15 +111,17 @@ def mouse():
     bm = bmesh.new()
     # rump (+Y, back) to snout (-Y, front): one pear-shaped loft, so the head flows out of the body
     loft(bm, [
-        (0.050, 0.026, 0.006),
-        (0.042, 0.029, 0.022),
-        (0.022, 0.031, 0.029),
+        (0.057, 0.025, 0.004),    # rump, rounded off (no flat cut where the tail starts)
+        (0.051, 0.027, 0.016),
+        (0.041, 0.029, 0.025),
+        (0.022, 0.031, 0.030),
         (-0.004, 0.032, 0.027),
-        (-0.028, 0.035, 0.021),   # neck
-        (-0.046, 0.037, 0.019),   # head
-        (-0.066, 0.033, 0.011),
+        (-0.026, 0.034, 0.021),   # neck
+        (-0.042, 0.037, 0.0205),  # head, full cheeks
+        (-0.057, 0.035, 0.0155),
+        (-0.070, 0.032, 0.009),
         (-0.080, 0.030, 0.004),   # snout
-    ], segments=8, width=0.95, height=0.9)
+    ], segments=10, width=0.95, height=0.9)
     bm.faces.index_update()
     # belly a shade lighter: the lowest faces of the loft
     belly = {f.index for f in bm.faces if f.calc_center_median().z < 0.016}
@@ -128,27 +130,35 @@ def mouse():
         # big round mouse ears: flat faceted discs, standing up and turned a little outwards
         faces = blob(bm, (0, 0, 0), 0.0155, scale=(1.0, 0.25, 0.95), subdiv=1)
         verts = {v for f in faces for v in f.verts}
+        # cup the ear: the front face dips back towards the middle, so the pink inside reads as a hollow
+        for v in verts:
+            if v.co.y < 0:
+                v.co.y += 0.0035 * max(0.0, 1.0 - (v.co.x ** 2 + v.co.z ** 2) ** 0.5 / 0.0155)
+        bmesh.ops.rotate(bm, verts=list(verts), cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(14), 3, "X"))  # lean back
         bmesh.ops.rotate(bm, verts=list(verts), cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(-28 * side), 3, "Z"))
-        bmesh.ops.translate(bm, verts=list(verts), vec=(side * 0.018, -0.038, 0.059))
+        bmesh.ops.translate(bm, verts=list(verts), vec=(side * 0.0165, -0.038, 0.0565))  # base sunk into the skull
         bm.faces.index_update()
         ears |= {f.index for f in faces}
     eyes = set()
     for side in (-1, 1):
-        fs = blob(bm, (side * 0.0125, -0.062, 0.043), 0.0042, subdiv=1)
+        fs = blob(bm, (side * 0.0100, -0.060, 0.042), 0.0042, subdiv=1)  # half sunk into the cheek
         bm.faces.index_update()
         eyes |= {f.index for f in fs}
     fs = blob(bm, (0, -0.0815, 0.030), 0.0042, subdiv=1)
     bm.faces.index_update()
     nose = {f.index for f in fs}
     feet = set()
-    for (x, y, z) in ((-0.013, -0.024, 0.0125), (0.013, -0.024, 0.0125), (-0.017, 0.028, 0.0075), (0.017, 0.028, 0.0075)):
-        fs = blob(bm, (x, y, z), 0.008, scale=(0.8, 1.4, 0.95 + (z - 0.0075) * 80), subdiv=1)  # tucked into the belly
+    feet_at = (((-0.013, -0.024, 0.0125), (0.8, 1.4, 1.35)), ((0.013, -0.024, 0.0125), (0.8, 1.4, 1.35)),
+               # long, flat hind feet resting on the floor, heels under the haunch
+               ((-0.018, 0.026, 0.0052), (0.72, 2.1, 0.62)), ((0.018, 0.026, 0.0052), (0.72, 2.1, 0.62)))
+    for (x, y, z), sc in feet_at:
+        fs = blob(bm, (x, y, z), 0.008, scale=sc, subdiv=1)  # tucked into the belly
         bm.faces.index_update()
         feet |= {f.index for f in fs}
     bm.faces.index_update()
     body = mesh_obj("Mouse_Body", bm, parent=body_pivot)
-    paint_faces(body, [(belly, "grey_light"), (ears, "cat_inner_ear"), (eyes, "charcoal"),
-                       (nose, "rose"), (feet, "cat_inner_ear"), (None, "grey_stone")])
+    paint_faces(body, [(belly, "a_mouse_belly"), (ears, "cat_inner_ear"), (eyes, "charcoal"),
+                       (nose, "rose"), (feet, "cat_inner_ear"), (None, "a_mouse_fur")])
 
     # tail: pivot at the base (the script swings it round its up axis), curving back and down to the ground
     tail_pivot = empty("TailPivot", loc=(0, 0.040, 0.018), parent=body_pivot)
@@ -288,7 +298,9 @@ def bird(name, s, c):
         (-0.125, 0.125, 0.012, 0.010), (-0.085, 0.116, 0.038, 0.033), (-0.030, 0.105, 0.058, 0.053),
         (0.025, 0.105, 0.062, 0.060), (0.070, 0.122, 0.050, 0.053), (0.092, 0.150, 0.032, 0.036),
         (0.098, 0.180, 0.018, 0.020))], plumage, segments=8)
-    k.loft([(z * s, y * s, rx * s, ry * s) for z, y, rx, ry in (
+    # tail_len stretches the tail behind its root; tail_lift raises it (a blackbird cocks its long tail)
+    tl, lift = c.get("tail_len", 1.0), c.get("tail_lift", 0.0)
+    k.loft([((-0.105 + (z + 0.105) * tl) * s, (y - (z + 0.105) * tl * lift) * s, rx * s, ry * s) for z, y, rx, ry in (
         (-0.105, 0.124, 0.026, 0.010), (-0.170, 0.112, 0.038, 0.006), (-0.235, 0.100, 0.034, 0.004))], c["tail"])
     for side in (-1, 1):
         k.limb(S(side * 0.022, 0.058, 0.012), S(side * 0.022, 0.008, 0.018), 0.0065 * s, 0.0045 * s, c["feet"], sides=4)
@@ -297,12 +309,12 @@ def bird(name, s, c):
 
     head = pivot("Head", S(0, 0.15, 0.06), body_p)
     k = Kit()
-    k.ball(S(0, 0.03, 0.032), 0.037 * s, c["head"], scale=(0.92, 0.96, 1.06), subdiv=2)
+    k.ball(S(0, 0.028, 0.030), 0.033 * s, c["head"], scale=(0.9, 0.96, 1.08), subdiv=2)  # smaller: a pigeon's head is small
     k.limb(S(0, 0.024, 0.062), S(0, 0.013, 0.100), 0.012 * s, 0.002 * s, c["beak"], sides=4)
     for side in (-1, 1):
         if c.get("eye_ring"):
-            k.ball(S(side * 0.029, 0.039, 0.045), 0.0095 * s, c["eye_ring"], scale=(0.5, 1, 1))
-        k.ball(S(side * 0.0335, 0.039, 0.045), 0.0058 * s, c["eye"], scale=(0.55, 1, 1), euler=(36, 20, 0))
+            k.ball(S(side * 0.0225, 0.038, 0.044), 0.0095 * s, c["eye_ring"], scale=(0.5, 1, 1))
+        k.ball(S(side * 0.0262, 0.038, 0.044), 0.0058 * s, c["eye"], scale=(0.55, 1, 1), euler=(36, 20, 0))
     if c.get("croissant"):
         for side in (-1, 1):  # one curved croissant, held across the beak: two tapered halves meeting at the beak
             k.limb(S(side * -0.008, 0.012, 0.100), S(side * 0.056, -0.012, 0.086), 0.019 * s, 0.005 * s,
@@ -320,16 +332,29 @@ def bird(name, s, c):
             if c.get("bar") and (-0.085 < z < -0.060 or -0.040 < z < -0.020):
                 return c["bar"]
             return c["wing"]
-        k.loft([(z * s, y * s, rx * s, ry * s, side * 0.009 * s) for z, y, rx, ry in (
-            (0.045, -0.026, 0.004, 0.006), (0.018, -0.040, 0.008, 0.032), (-0.050, -0.050, 0.008, 0.037),
-            (-0.112, -0.052, 0.006, 0.021), (-0.180, -0.052, 0.003, 0.004))], feathers, segments=6)
+        # Folded at rest: the wing follows the flank and tapers in over the back, the primaries rising to lie
+        # over the sides of the tail (they used to run straight back and stand off the body in a V).
+        k.loft([(z * s, y * s, rx * s, ry * s, side * x * s) for z, y, rx, ry, x in (
+            (0.045, -0.026, 0.004, 0.006, 0.004), (0.018, -0.036, 0.008, 0.030, 0.006),
+            (-0.050, -0.040, 0.008, 0.036, 0.004), (-0.112, -0.026, 0.006, 0.021, -0.024),
+            (-0.180, -0.016, 0.003, 0.004, -0.041))], feathers, segments=6)
         k.finish(f"{name}_{wing_name}_Mesh", w)
     return root
 
 
 def blackbird():
+    # The male: black with a long cocked tail, an orange-yellow bill and eye ring. The wing (metal_dark) and the belly
+    # (cat_fur_light) are a step lighter than the body, so the black bird keeps its form in shade.
     return bird("Blackbird", 0.75, dict(body="charcoal", belly="cat_fur_light", neck="charcoal", tail="black", feet="walnut",
-                                        head="charcoal", beak="a_beak", eye="black", eye_ring="a_beak", wing="metal_dark"))
+                                        head="charcoal", beak="a_beak", eye="black", eye_ring="a_beak", wing="metal_dark",
+                                        tail_len=1.35, tail_lift=0.12))
+
+
+def blackbird_hen():
+    # The female: dark brown, a paler mottled breast, a dull bill and no eye ring.
+    return bird("Blackbird_Hen", 0.74, dict(body="walnut_dark", belly="walnut", neck="walnut_dark", tail="walnut_dark",
+                                            feet="walnut", head="walnut_dark", beak="oak", eye="black", wing="soil",
+                                            tail_len=1.35, tail_lift=0.12))
 
 
 def pigeon():
@@ -430,7 +455,7 @@ def hrozna():
     k.loft([(-0.31, 0.215, 0.022, 0.020), (-0.26, 0.210, 0.108, 0.098), (-0.10, 0.200, 0.126, 0.115),
             (0.10, 0.200, 0.126, 0.120), (0.22, 0.212, 0.102, 0.112), (0.29, 0.272, 0.070, 0.082),
             (0.35, 0.330, 0.032, 0.034)],
-           lambda p: "linen" if (p.z > 0.13 and p.y < 0.27) or p.y < 0.125 else "a_corgi_tan", segments=8)
+           lambda p: "linen" if (p.z > 0.13 and p.y < 0.27) or p.y < 0.125 else "a_corgi_tan", segments=10)
 
     def face(p):
         return "linen" if p.y < 0.312 or abs(p.x) < 0.02 else "a_corgi_tan"
@@ -442,15 +467,21 @@ def hrozna():
         k.limb((side * 0.070, 0.405, 0.305), (side * 0.102, 0.535, 0.298), 0.066, 0.008, "a_corgi_tan", sides=5,
                mid=(0.6, 0.044))
         for z in (0.19, -0.19):
-            k.limb((side * 0.086, 0.135, z), (side * 0.086, 0.018, z), 0.047, 0.038, "linen", sides=6)
+            # the leg starts inside the body (no flat-topped pillar under it): tan above, white socks below
+            k.limb((side * 0.084, 0.175, z), (side * 0.086, 0.018, z), 0.050, 0.038,
+                   lambda p: "linen" if p.y < 0.075 else "a_corgi_tan", sides=6, mid=(0.45, 0.046))
             k.ball((side * 0.086, 0.017, z + 0.018), 0.043, "linen", scale=(1, 0.42, 1.3))
+        # shoulder and haunch: the muscle over the top of each leg, so the legs grow out of the body
+        k.ball((side * 0.098, 0.150, 0.180), 0.058, "a_corgi_tan", scale=(0.62, 1.1, 1.0))
+        k.ball((side * 0.100, 0.160, -0.175), 0.074, "a_corgi_tan", scale=(0.62, 1.0, 1.2))
     k.finish("Hrozna_Body", body)
 
     tail = pivot("Tail", (0, 0.22, -0.3), body)
     k = Kit()
-    k.loft([(0.03, 0.0, 0.024, 0.024), (-0.09, -0.012, 0.054, 0.054), (-0.25, -0.042, 0.062, 0.060),
-            (-0.38, -0.066, 0.030, 0.030), (-0.445, -0.076, 0.005, 0.005)],
-           lambda p: "linen" if p.z < -0.355 else "a_corgi_tan", segments=6)
+    # a fluffy corgi tail carried up in a low arc (it hung straight back like the fox's brush)
+    k.loft([(0.03, 0.0, 0.026, 0.026), (-0.08, 0.030, 0.058, 0.056), (-0.19, 0.085, 0.066, 0.062),
+            (-0.29, 0.135, 0.046, 0.044), (-0.34, 0.160, 0.010, 0.010)],
+           lambda p: "linen" if p.z < -0.29 else "a_corgi_tan", segments=8)
     k.finish("Hrozna_Tail", tail)
     return root
 
@@ -519,25 +550,29 @@ def duck(name, drake):
     k = Kit()
     k.loft([(-0.255, 0.128, 0.008, 0.008), (-0.195, 0.102, 0.050, 0.034), (-0.10, 0.072, 0.090, 0.066),
             (0.03, 0.066, 0.100, 0.074), (0.14, 0.080, 0.076, 0.064), (0.195, 0.108, 0.030, 0.032)], plumage, segments=8)
-    k.limb((0, 0.095, 0.145), (0, 0.178, 0.150), 0.044, 0.034, plumage, sides=7)
+    # a visible neck (the head used to sit straight on the back, like a decoy)
+    k.limb((0, 0.095, 0.140), (0, 0.192, 0.156), 0.042, 0.030, plumage, sides=7, mid=(0.55, 0.034))
     for side in (-1, 1):
-        k.loft([(0.075, 0.092, 0.012, 0.008, side * 0.083), (0.02, 0.086, 0.016, 0.040, side * 0.094),
-                (-0.09, 0.094, 0.014, 0.040, side * 0.084), (-0.19, 0.112, 0.008, 0.006, side * 0.046)],
-               ("metal" if drake else "walnut"), segments=5)
+        # folded wings lying over the back, tips meeting over the tail (they stood on the flanks like a boat's rim)
+        k.loft([(0.075, 0.116, 0.010, 0.008, side * 0.066), (0.02, 0.127, 0.036, 0.016, side * 0.056),
+                (-0.09, 0.125, 0.034, 0.016, side * 0.046), (-0.19, 0.127, 0.008, 0.006, side * 0.020)],
+               ("metal" if drake else "walnut"), segments=6)
     k.finish(f"{name}_Body", body)
 
-    head = pivot("Head", (0, 0.17, 0.15), body)
+    head = pivot("Head", (0, 0.185, 0.156), body)
     k = Kit()
-    k.ball((0, 0.012, 0.006), 0.5, "a_drake_green" if drake else "oak", scale=(0.104, 0.104, 0.122), subdiv=2)
-    k.loft([(0.046, -0.010, 0.026, 0.013), (0.098, -0.016, 0.026, 0.007), (0.130, -0.018, 0.019, 0.004)], "a_beak", segments=5)
+    k.ball((0, 0.012, 0.006), 0.5, "a_drake_green" if drake else "oak", scale=(0.088, 0.090, 0.108), subdiv=2)
+    # the drake's bill is yellow; the hen's a dull orange-brown
+    k.loft([(0.040, -0.008, 0.023, 0.012), (0.088, -0.014, 0.023, 0.006), (0.116, -0.016, 0.017, 0.004)],
+           "a_beak" if drake else "terracotta", segments=5)
     for side in (-1, 1):
-        k.ball((side * 0.046, 0.024, 0.032), 0.0088, "charcoal", scale=(0.6, 1, 1))
+        k.ball((side * 0.0385, 0.022, 0.028), 0.0080, "charcoal", scale=(0.6, 1, 1))
     k.finish(f"{name}_Head", head)
     return root
 
 
 BUILDERS = {
-    "Mouse": mouse, "Blackbird": blackbird, "Pigeon": pigeon, "Gull": gull, "Fox": fox, "Zlatenka": tortoise,
+    "Mouse": mouse, "Blackbird": blackbird, "Blackbird_Hen": blackbird_hen, "Pigeon": pigeon, "Gull": gull, "Fox": fox, "Zlatenka": tortoise,
     "Hrozna": hrozna, "Hedgehog": hedgehog,
     "Duck_Drake": lambda: duck("Duck_Drake", True), "Duck_Hen": lambda: duck("Duck_Hen", False),
 }

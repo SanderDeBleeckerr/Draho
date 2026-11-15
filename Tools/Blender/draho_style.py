@@ -51,6 +51,7 @@ PALETTE = [
     ("grey_stone", "#75716B"),
     # animals only: the "a_" prefix keeps them out of PaletteMap, so the world does not drift towards them
     ("a_fox_rust", "#A9653B"), ("a_corgi_tan", "#B8824F"), ("a_beak", "#CF9A45"), ("a_drake_green", "#3E6050"),
+    ("a_mouse_fur", "#7D6E62"), ("a_mouse_belly", "#BDB1A2"),  # the house mouse: grey-brown, buff belly
 ]
 NAMES = [n for n, _ in PALETTE]
 GRID = 8            # cells per row

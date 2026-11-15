@@ -9,17 +9,15 @@ namespace Draho.World
     /// <summary>
     /// A gift for the humans in the epilogue (research round 62: cats bring their people "gifts", most often small
     /// prey, also toys and odd finds; a cat that lives indoors brings what it can find). Touch it to pick it up in
-    /// your mouth (one at a time), carry it home to the front door, and the humans react. Saved like a feather.
+    /// your mouth (one at a time), carry it home to the front door, and the humans react. Each gift is a small
+    /// story moment, saved so it plays once; there is no count and no reward.
     /// </summary>
     public class Gift : MonoBehaviour
     {
         [SerializeField] string id;
 
-        /// <summary>The save id (the sniff sense looks for ids not yet collected).</summary>
-        public string Id => id;
         [SerializeField] string title = "a gift";
         [SerializeField] string reaction = "\"For us? Thank you, Drahomil!\"";
-        [SerializeField] int coins = 8;
         [SerializeField] float pickRadius = 0.4f;
         [SerializeField] float deliverRadius = 1.1f;
 
@@ -54,7 +52,10 @@ namespace Draho.World
                 transform.position = hit.point + Vector3.up * 0.02f;
             home = transform.position;
             homeRotation = transform.rotation;
-            done = Progress.Instance != null && Progress.Instance.IsCollected(id);
+            done = Progress.Instance != null && Progress.Instance.IsDone(id);
+            // Hidden until the epilogue. `shown` starts false, so Show(false) alone did nothing: the gifts stayed
+            // visible all game (the gull feather floating on the roof, the bottle cap in the court).
+            shown = true;
             Show(false);
             if (carried == this) carried = null;
         }
@@ -105,12 +106,10 @@ namespace Draho.World
             transform.SetParent(null, true);
             transform.localScale /= 1.5f;
             Show(false);
-            var p = Progress.Instance;
-            p?.Collect(id, coins);
-            int n = p != null ? p.GiftCount : 1;
+            Progress.Instance?.MarkDone(id);
             CatVoice.Meow();
-            ProgressHud.Toast($"You drop {title} at their feet. {reaction} ({n}/6)");
-            Debug.Log($"STORY gift delivered: {id} ({n}/6)");
+            ProgressHud.Toast($"You drop {title} at their feet. {reaction}");
+            Debug.Log($"STORY gift delivered: {id}");
         }
 
         /// <summary>Test hook: SendMessage('Gift_sock', 'TestPick'): pick it up wherever the cat is.</summary>

@@ -21,7 +21,6 @@ namespace Draho.World
         [SerializeField] float walkSpeed = 0.45f;
         [SerializeField] float standoffDistance = 2.2f;
         [SerializeField] float holdTime = 4f;
-        [SerializeField] int reward = 10;
         [SerializeField] int firstBeat = 5; // he shows up once the garden is part of the story
 
         CatMotor cat;
@@ -86,9 +85,7 @@ namespace Draho.World
                     if (hold >= holdTime)
                     {
                         state = State.Retreat;
-                        Progress.Instance?.AddCoins(reward, "garden defended");
-                        Progress.Instance?.Save();
-                        ProgressHud.Toast($"Fatsocat backs off and leaves. Garden defended! +{reward} coins");
+                        ProgressHud.Toast("Fatsocat backs off and leaves. The garden is yours again.");
                         Debug.Log("STORY Fatsocat retreats: garden defended");
                     }
                     break;

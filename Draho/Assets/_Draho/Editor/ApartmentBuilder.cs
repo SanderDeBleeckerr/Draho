@@ -68,11 +68,8 @@ namespace Draho.EditorTools
             public Ground[] bridges;
             public Bakery bakery;
             public MouseTerritory[] mouse_territories;
-            public Feather[] feathers;
-            public float[] bounty_board; // x, y, z, yaw of the cork board
         }
-        [Serializable] class MouseTerritory { public string id, name; public int bounty; public Hole[] holes; }
-        [Serializable] class Feather { public string id; public float x, y, z; }
+        [Serializable] class MouseTerritory { public string id, name; public Hole[] holes; }
         [Serializable] class Bakery
         {
             public float x, z0, z1;
@@ -113,6 +110,7 @@ namespace Draho.EditorTools
             public float x0, x1, z0, z1, h, ridge;
             public float base_y;    // walls start here (upper floors over the apartment)
             public string windows;  // faces with window panes, for example "-x+z"
+            public string flush;    // faces that lie on a wall of the flat or the light well, for example "-x+z": pulled back into that wall
             public string ridge_along; // pitched: "x" or "z" (default: along the long side)
         }
         [Serializable] class QuayLampInfo { public float x, z, h; }
@@ -137,7 +135,7 @@ namespace Draho.EditorTools
             public string[] glass, outer_walls;
             public Door[] doors;
         }
-        [Serializable] class Door { public string id, side; public float from, to, open_gap; }
+        [Serializable] class Door { public string id, side; public float from, to, open_gap, open_angle; }
         [Serializable] class Edge
         {
             public string id, color, style, post_color, material;
@@ -174,6 +172,7 @@ namespace Draho.EditorTools
             foreach (var prop in layout.props) BuildProp(prop);
             BuildGarden(layout);
             BuildPaths(layout);
+            BuildGrassTufts(layout);
             BuildBuildings(layout);
             BuildWildGarden(layout.wild_garden);
             BuildGardenDetails();
@@ -210,7 +209,7 @@ namespace Draho.EditorTools
             var dynamicTypes = new[]
             {
                 typeof(Mouse), typeof(Bird), typeof(Pigeon), typeof(Duck), typeof(Hedgehog), typeof(NpcCat), typeof(Fatsocat), typeof(Tortoise),
-                typeof(Hrozna), typeof(Collectable), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(NapSpot), typeof(WellRested), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(Viewpoint), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(ScratchSpot), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(SetRewards), typeof(NightWindows), typeof(SkyClouds), typeof(ParticleSystem),
+                typeof(Hrozna), typeof(StoryItem), typeof(SlidingDoor), typeof(Animator), typeof(Moth), typeof(NightLamp), typeof(Fox), typeof(Humans), typeof(Fisherman), typeof(SqueakyToy), typeof(SunBeam), typeof(Catnip), typeof(WaterGlint), typeof(WetWeather), typeof(LampCone), typeof(GlowWorms), typeof(CloudShadows), typeof(Gift), typeof(ShootingStars), typeof(LightningBolt), typeof(MorningMist), typeof(DayCycle), typeof(RainSplashes), typeof(ChimneySmoke), typeof(TvGlow), typeof(LaserDot), typeof(Swifts), typeof(Soundscape), typeof(Rainbow), typeof(NightWindows), typeof(SkyClouds), typeof(ParticleSystem),
             };
             bool IsDynamic(Transform t)
             {
@@ -276,6 +275,10 @@ namespace Draho.EditorTools
         {
             float t = layout.wall.thickness, h = layout.wall.height;
             var wall = Mat("Apt_Wall", Hex(layout.wall.color), 0.1f);
+            // Full-height pieces: the same plaster with a soft vertical gradient (about 8 % darker at the floor), the
+            // way a room's walls darken towards the floor away from the ceiling's bounce. The short pieces above the
+            // openings keep the flat material (the gradient would draw a dark band over every window).
+            var wallTall = Mat("Apt_WallGradient", Hex(layout.wall.color), 0.1f, WallGradientTexture(), Vector2.one);
             var sides = new (string side, Vector2 a, Vector2 b)[]
             {
                 ("south", new Vector2(inside.xMin - t, inside.yMin - t / 2), new Vector2(inside.xMax + t, inside.yMin - t / 2)),
@@ -283,6 +286,21 @@ namespace Draho.EditorTools
                 ("west", new Vector2(inside.xMin - t / 2, inside.yMin), new Vector2(inside.xMin - t / 2, inside.yMax)),
                 ("east", new Vector2(inside.xMax + t / 2, inside.yMin), new Vector2(inside.xMax + t / 2, inside.yMax)),
             };
+            // Skirting boards on the room side of every full-height piece of wall: the wall no longer meets the floor
+            // in one hard line (docs/APARTMENT_GRAPHICS.md). 8 cm high, 1.5 cm proud, the trim colour of the doors.
+            var skirtMat = Mat("Apt_Skirting", new Color(0.93f, 0.92f, 0.89f), 0.35f);
+            void Skirting(string side, bool alongX, float line, float from, float to)
+            {
+                float inward = side == "south" || side == "west" ? 1f : -1f;           // towards the room
+                float face = line + inward * t / 2;
+                from = Mathf.Max(from, alongX ? inside.xMin : inside.yMin);              // only along the room
+                to = Mathf.Min(to, alongX ? inside.xMax : inside.yMax);
+                if (to - from < 0.05f) return;
+                const float sh = 0.08f, sd = 0.015f;
+                var pos = alongX ? new Vector3((from + to) / 2, sh / 2, face + inward * sd / 2) : new Vector3(face + inward * sd / 2, sh / 2, (from + to) / 2);
+                var size = alongX ? new Vector3(to - from, sh, sd) : new Vector3(sd, sh, to - from);
+                Box($"Skirting_{side}", pos, size, skirtMat, collider: false);
+            }
             foreach (var (side, a, b) in sides)
             {
                 bool alongX = Mathf.Approximately(a.y, b.y);
@@ -291,36 +309,109 @@ namespace Draho.EditorTools
                 float cursor = start;
                 foreach (var o in cuts)
                 {
-                    WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, o.from, 0f, h, t, wall);
+                    Skirting(side, alongX, alongX ? a.y : a.x, cursor, o.from);
+                    WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, o.from, 0f, h, t, wallTall);
                     WallSegment($"Wall_{side}_above_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height, h, t, wall);
                     if (o.model == "SlidingDoor")
                         SlidingDoorAt(o, alongX, alongX ? a.y : a.x, side);
+                    else if (o.model == "Door") { } // the front door: BuildHomecoming sets it into this opening
+                    else if (o.model == "BedroomWindow") BedroomWindowAt(o, alongX, alongX ? a.y : a.x, side, t);
                     else
                         GlassPanel($"Glass_{o.id}", alongX, alongX ? a.y : a.x, o.from, o.to, o.height);
                     cursor = o.to;
                 }
-                WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, end, 0f, h, t, wall);
+                Skirting(side, alongX, alongX ? a.y : a.x, cursor, end);
+                WallSegment($"Wall_{side}", alongX, alongX ? a.y : a.x, cursor, end, 0f, h, t, wallTall);
+            }
+
+            // The ceiling: flat off-white plaster over the rooms (not the open court). Without it the underside of the
+            // upper floors showed, with their outside plaster texture stretched across the room (blotchy at night).
+            var ceiling = Mat("Apt_Ceiling", new Color(0.93f, 0.92f, 0.9f), 0.05f);
+            var court = (layout.courts ?? new Court[0]).FirstOrDefault();
+            foreach (var r in layout.rooms.Where(x => !x.outdoor))
+            {
+                float z1 = r.z1;
+                if (court != null && r.x0 >= court.x0 - 0.01f && r.x1 <= court.x1 + 0.01f) z1 = Mathf.Min(z1, court.z0);
+                Box($"Ceiling_{r.id}", new Vector3((r.x0 + r.x1) / 2, h - 0.01f, (r.z0 + z1) / 2), new Vector3(r.x1 - r.x0, 0.02f, z1 - r.z0),
+                    ceiling, collider: false);
             }
         }
 
         /// <summary>A wall box along X (fixed z = line) or along Z (fixed x = line), from..to, between y0 and y1.</summary>
-        static void WallSegment(string name, bool alongX, float line, float from, float to, float y0, float y1,
+        static GameObject WallSegment(string name, bool alongX, float line, float from, float to, float y0, float y1,
             float thickness, Material mat)
         {
             float len = to - from;
-            if (len <= 0.001f || y1 - y0 <= 0.001f) return;
+            if (len <= 0.001f || y1 - y0 <= 0.001f) return null;
             float mid = (from + to) / 2, y = (y0 + y1) / 2;
             var pos = alongX ? new Vector3(mid, y, line) : new Vector3(line, y, mid);
             var size = alongX ? new Vector3(len, y1 - y0, thickness) : new Vector3(thickness, y1 - y0, len);
-            Box(name, pos, size, mat);
+            return Box(name, pos, size, mat);
         }
 
-        static void GlassPanel(string name, bool alongX, float line, float from, float to, float height)
+        /// <summary>
+        /// The bedroom window in the inner court: a tall window from the floor to nearly the ceiling, a dark aluminium
+        /// frame, the bedroom's curtain behind the glass (Art/Furniture/bedroom_curtain.fbx) and a dark room behind
+        /// that. A stone ledge over it is a pigeon perch (BuildCourtLife).
+        /// </summary>
+        static void BedroomWindowAt(Opening o, bool alongX, float line, string side, float wallT)
+        {
+            var pane = GlassPanel($"Glass_{o.id}", alongX, line, o.from, o.to, o.height);
+            if (pane != null)
+            {
+                // Less glossy than the other glass: in the shade of the light well the sky's reflection hid the curtain.
+                var dull = new Material(GlassMat()) { name = "Apt_GlassDull" };
+                dull.SetFloat("_Smoothness", 0.35f);
+                pane.GetComponent<Renderer>().sharedMaterial = SaveMaterial(dull);
+            }
+            var frame = Mat("Apt_Frame", new Color(0.18f, 0.19f, 0.2f), 0.4f);
+            foreach (float z in new[] { o.from + 0.025f, o.to - 0.025f })
+                WallSegment($"{o.id}_jamb", alongX, line, z - 0.025f, z + 0.025f, 0f, o.height, 0.06f, frame);
+            float outward = side == "east" || side == "north" ? 1f : -1f;   // away from the court, into the bedroom
+            float mid = (o.from + o.to) / 2, w = o.to - o.from;
+            Vector3 At(float across, float y, float along) => alongX ? new Vector3(along, y, line + outward * across) : new Vector3(line + outward * across, y, along);
+            Vector3 Size(float across, float y, float along) => alongX ? new Vector3(along, y, across) : new Vector3(across, y, along);
+            // The bedroom behind: dark, so the court does not look through the house.
+            Box($"{o.id}_room", At(wallT / 2 + 0.3f, o.height / 2, mid), Size(0.02f, o.height + 0.1f, w + 0.4f),
+                Mat("Apt_BedroomDark", new Color(0.09f, 0.085f, 0.1f), 0.1f), collider: false);
+            // The ledge over the window (a pigeon perch), on the court side.
+            Box($"{o.id}_ledge", At(-wallT / 2 - 0.06f, o.height + 0.025f, mid), Size(0.14f, 0.05f, w + 0.12f),
+                Mat("Apt_Coping", Color.gray, 0.2f), collider: false);
+            var curtain = FurnitureModel("bedroom_curtain", level);
+            if (curtain != null)
+            {
+                curtain.position = At(wallT / 2 + 0.06f, 0f, mid);
+                // The model's front (Unity +Z) faces the court.
+                curtain.rotation = Quaternion.LookRotation(alongX ? new Vector3(0, 0, -outward) : new Vector3(-outward, 0, 0));
+                foreach (var r in curtain.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+        }
+
+        /// <summary>An Art/Furniture model with the palette material under parent, or null when it is missing.</summary>
+        static Transform FurnitureModel(string name, Transform parent)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/{name}.fbx");
+            if (asset == null) return null;
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(asset);
+            PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            go.transform.SetParent(parent, false);
+            var mat = AnimalModels.PaletteMaterial();
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                r.sharedMaterial = mat;
+                r.shadowCastingMode = ShadowCastingMode.On;
+            }
+            return go.transform;
+        }
+
+        static GameObject GlassPanel(string name, bool alongX, float line, float from, float to, float height)
         {
             var frame = Mat("Apt_Frame", new Color(0.18f, 0.19f, 0.2f), 0.4f);
-            WallSegment(name, alongX, line, from, to, 0.02f, height - 0.04f, 0.02f, GlassMat());
+            var pane = WallSegment(name, alongX, line, from, to, 0.02f, height - 0.04f, 0.02f, GlassMat());
+            if (pane != null) pane.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off; // daylight comes through
             WallSegment(name + "_sill", alongX, line, from, to, 0f, 0.02f, 0.06f, frame);
             WallSegment(name + "_head", alongX, line, from, to, height - 0.04f, height, 0.06f, frame);
+            return pane;
         }
 
         /// <summary>
@@ -356,13 +447,59 @@ namespace Draho.EditorTools
             b = WorldBounds(door);
             door.transform.position += root.position - new Vector3(b.center.x, b.min.y, b.center.z);
 
+            // The Sketchfab frames are open shells (the frame has 263 open edges, the sliding sash 132: whole sides were
+            // never modelled). Drawn one-sided, those sides were culled and the frame looked transparent from inside
+            // once the sash had slid open. Render the frame from both sides.
+            var doorFrame = Mat("Apt_DoorFrame", new Color(0.93f, 0.93f, 0.92f), 0.4f);
+            doorFrame.SetFloat("_Cull", (float)CullMode.Off);
+            EditorUtility.SetDirty(doorFrame);
             foreach (var r in door.GetComponentsInChildren<Renderer>())
+            {
                 r.sharedMaterials = r.sharedMaterials.Select(m =>
-                    m != null && m.name.Contains("Glass") ? GlassMat() : Mat("Apt_DoorFrame", new Color(0.93f, 0.93f, 0.92f), 0.4f)).ToArray();
+                    m != null && m.name.Contains("Glass") ? GlassMat() : doorFrame).ToArray();
+                // The panes let the daylight in (WindowLight); the thin frames cast too little shadow to miss.
+                if (r.sharedMaterials.Any(m => m == GlassMat())) r.shadowCastingMode = ShadowCastingMode.Off;
+            }
 
             Transform slider = door.GetComponentsInChildren<Transform>().First(t => t.name == "Slider");
             Transform fixedGlass = door.GetComponentsInChildren<Transform>().First(t => t.name == "FixedGlass");
             Bounds sb = WorldBounds(slider.gameObject), fb = WorldBounds(fixedGlass.gameObject);
+
+            // The frame has a 12 cm kick strip standing in the doorway half (two triangles, behind the sash's bottom
+            // rail when it is closed). Once the sash slid open it stood across the open doorway, and with the
+            // two-sided frame it showed from the room as a white plate (owner, round 28). Drop the triangles that are
+            // vertical (parallel to the wall), low (1.5-20 cm) and lie wholly within the sash's closed span.
+            Vector3 wallAlong = alongX ? Vector3.right : Vector3.forward;
+            float spanMin = Vector3.Dot(sb.min, wallAlong), spanMax = Vector3.Dot(sb.max, wallAlong);
+            var frameFilter = door.GetComponentsInChildren<MeshFilter>().FirstOrDefault(m => m.name == "Frame");
+            if (frameFilter != null)
+            {
+                var mesh = Object.Instantiate(frameFilter.sharedMesh);
+                mesh.name = "SlidingDoorFrame_NoKickStrip";
+                var verts = mesh.vertices;
+                var m2w = frameFilter.transform.localToWorldMatrix;
+                int removed = 0;
+                for (int sub = 0; sub < mesh.subMeshCount; sub++)
+                {
+                    var tris = mesh.GetTriangles(sub);
+                    var keep = new List<int>(tris.Length);
+                    for (int t = 0; t < tris.Length; t += 3)
+                    {
+                        Vector3 a = m2w.MultiplyPoint3x4(verts[tris[t]]), b2 = m2w.MultiplyPoint3x4(verts[tris[t + 1]]), c2 = m2w.MultiplyPoint3x4(verts[tris[t + 2]]);
+                        Vector3 n = Vector3.Cross(b2 - a, c2 - a).normalized;
+                        float lo = Mathf.Min(a.y, b2.y, c2.y) - root.position.y, hi = Mathf.Max(a.y, b2.y, c2.y) - root.position.y;
+                        float pMin = Mathf.Min(Vector3.Dot(a, wallAlong), Vector3.Dot(b2, wallAlong), Vector3.Dot(c2, wallAlong));
+                        float pMax = Mathf.Max(Vector3.Dot(a, wallAlong), Vector3.Dot(b2, wallAlong), Vector3.Dot(c2, wallAlong));
+                        bool vertical = Mathf.Abs(n.y) < 0.05f && Mathf.Abs(Vector3.Dot(n, wallAlong)) < 0.05f;
+                        bool strip = vertical && lo > 0.015f && hi < 0.2f && hi - lo > 0.08f && pMin >= spanMin - 0.1f && pMax <= spanMax + 0.1f;
+                        if (strip) { removed++; continue; }
+                        keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]);
+                    }
+                    mesh.SetTriangles(keep, sub);
+                }
+                frameFilter.sharedMesh = mesh;
+                Debug.Log($"Draho: sliding door frame, removed {removed} kick-strip triangles in the doorway half");
+            }
 
             // Colliders: the sliding panel moves with its collider; the fixed half has its own box.
             var sliderCol = slider.gameObject.AddComponent<BoxCollider>();
@@ -398,9 +535,15 @@ namespace Draho.EditorTools
         static void BuildCourt(Layout layout, Court c)
         {
             float h = c.glass_height > 0 ? c.glass_height : layout.wall.height;
-            var pebbles = Mat("Apt_Pebbles", Hex(c.color), 0.2f, PebbleTexture(), new Vector2(c.x1 - c.x0, c.z1 - c.z0) / 0.9f); // cobbles about 11 cm
+            // The ground under the stones: plain grey, a little lighter in the middle of the court and darker towards the
+            // walls (owner: the pebble texture under the 3D stones was confusing). One texture across the whole court.
+            var ground = Mat("Apt_CourtGround", Color.white, 0.15f, CourtGroundTexture(), Vector2.one);
             Box("Court_Stones", new Vector3((c.x0 + c.x1) / 2, 0.005f, (c.z0 + c.z1) / 2),
-                new Vector3(c.x1 - c.x0, 0.01f, c.z1 - c.z0), pebbles, collider: false);
+                new Vector3(c.x1 - c.x0, 0.01f, c.z1 - c.z0), ground, collider: false);
+            // Round stones with real height on top (Tools/Blender/build_apartment_props.py, a bed made for this court's
+            // size); the texture underneath shows between them. Walk-over: the floor collider stays flat.
+            var bed = FurnitureModel("court_pebbles", level);
+            if (bed != null) bed.position = new Vector3((c.x0 + c.x1) / 2, 0.01f, (c.z0 + c.z1) / 2);
 
             var frame = Mat("Apt_Frame", new Color(0.18f, 0.19f, 0.2f), 0.4f);
             foreach (string side in c.glass ?? new string[0])
@@ -413,10 +556,7 @@ namespace Draho.EditorTools
                 foreach (var d in doors)
                 {
                     GlassPanel($"CourtGlass_{side}", alongX, line, cursor, d.from, h);
-                    // The door panel, pushed open a crack at its far end.
-                    float gap = Mathf.Max(d.open_gap, MinDoorGap);
-                    GlassPanel($"CourtDoor_{d.id}", alongX, line + 0.04f, d.from, d.to - gap, h);
-                    WallSegment($"CourtDoor_{d.id}_post", alongX, line, d.from - 0.03f, d.from, 0f, h, 0.06f, frame);
+                    CourtCasement(d, alongX, line, side, c, h, frame);
                     cursor = d.to;
                 }
                 GlassPanel($"CourtGlass_{side}", alongX, line, cursor, end, h);
@@ -424,6 +564,45 @@ namespace Draho.EditorTools
             // Corner posts where the glass walls meet.
             WallSegment("CourtPost", true, c.z0, c.x0 - 0.03f, c.x0 + 0.03f, 0f, h, 0.06f, frame);
             if (c.shaft_height > h) CourtShaft(layout, c, h);
+        }
+
+        /// <summary>
+        /// The opening to the inner court is a tall window on a hinge at its "from" end, swung open about 35 degrees
+        /// into the court (owner, November 2026; it used to be a sliding panel open a crack). A dark frame round the
+        /// glass, frame posts on both sides of the opening; the open sash is solid, so the cat walks round it.
+        /// </summary>
+        static void CourtCasement(Door d, bool alongX, float line, string side, Court c, float h, Material frame)
+        {
+            float w = d.to - d.from, angle = d.open_angle > 0f ? d.open_angle : 35f;
+            WallSegment($"CourtDoor_{d.id}_post", alongX, line, d.from - 0.04f, d.from, 0f, h, 0.06f, frame);
+            WallSegment($"CourtDoor_{d.id}_post", alongX, line, d.to, d.to + 0.04f, 0f, h, 0.06f, frame);
+            WallSegment($"CourtDoor_{d.id}_sill", alongX, line, d.from, d.to, 0f, 0.02f, 0.06f, frame);
+            WallSegment($"CourtDoor_{d.id}_head", alongX, line, d.from, d.to, h - 0.04f, h, 0.06f, frame);
+            // Into the court: +x for the west glass wall, +z for the south one.
+            Vector3 intoCourt = side == "west" ? Vector3.right : side == "east" ? Vector3.left : side == "south" ? Vector3.forward : Vector3.back;
+            Vector3 along = alongX ? Vector3.right : Vector3.forward;
+            var hinge = new GameObject($"CourtWindow_{d.id}").transform;
+            hinge.SetParent(level, false);
+            hinge.position = (alongX ? new Vector3(d.from, 0f, line) : new Vector3(line, 0f, d.from)) + intoCourt * 0.03f;
+            // Turn the sash about the hinge so its free end swings into the court.
+            float sign = Mathf.Sign(Vector3.Cross(along, intoCourt).y);
+            hinge.rotation = Quaternion.LookRotation(along) * Quaternion.Euler(0f, sign * angle, 0f);
+            const float bar = 0.05f, depth = 0.05f;
+            void Part(string name, Vector3 local, Vector3 size, Material m, bool solid)
+            {
+                var g = Box(name, Vector3.zero, size, m, collider: solid);
+                g.transform.SetParent(hinge, false);
+                g.transform.localPosition = local;
+                g.transform.localRotation = Quaternion.identity;
+                if (m == GlassMat()) g.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            }
+            // Local frame: +z along the sash from the hinge, +y up, x across.
+            Part("SashGlass", new Vector3(0f, h / 2, w / 2), new Vector3(0.02f, h - 2 * bar, w - 2 * bar), GlassMat(), true);
+            Part("SashFrame", new Vector3(0f, bar / 2 + 0.02f, w / 2), new Vector3(depth, bar, w), frame, false);
+            Part("SashFrame", new Vector3(0f, h - bar / 2 - 0.02f, w / 2), new Vector3(depth, bar, w), frame, false);
+            Part("SashFrame", new Vector3(0f, h / 2, bar / 2), new Vector3(depth, h - 0.04f, bar), frame, false);
+            Part("SashFrame", new Vector3(0f, h / 2, w - bar / 2), new Vector3(depth, h - 0.04f, bar), frame, false);
+            Part("SashHandle", new Vector3(0.04f, 1.05f, w - bar - 0.02f), new Vector3(0.03f, 0.12f, 0.025f), Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), false);
         }
 
         /// <summary>
@@ -447,10 +626,15 @@ namespace Draho.EditorTools
             float midX = (c.x0 + c.x1) / 2, midZ = (c.z0 + c.z1) / 2;
             foreach (float floorY in new[] { 3.3f, 6.1f })
             {
-                // A window on the north wall and a smaller one on the west wall, each with a stone sill.
-                Box("ShaftWindow", new Vector3(midX, floorY + 0.7f, c.z1 - 0.005f), new Vector3(1.3f, 1.3f, 0.01f), window, collider: false);
+                // A window on the north wall and a smaller one on the west wall, each with a stone sill (pigeon perches).
+                // Framed Blender windows (build_apartment_props.py shaft_window_*) when they exist, else dark panels.
+                var wide = FurnitureModel("shaft_window_wide", level);
+                if (wide != null) wide.SetPositionAndRotation(new Vector3(midX, floorY + 0.05f, c.z1 - 0.03f), Quaternion.LookRotation(Vector3.back));
+                else Box("ShaftWindow", new Vector3(midX, floorY + 0.7f, c.z1 - 0.005f), new Vector3(1.3f, 1.3f, 0.01f), window, collider: false);
                 Box("ShaftSill", new Vector3(midX, floorY - 0.025f, c.z1 - 0.1f), new Vector3(1.5f, 0.05f, 0.2f), stone, collider: false);
-                Box("ShaftWindow", new Vector3(c.x0 + 0.005f, floorY + 0.7f, midZ), new Vector3(0.01f, 1.3f, 0.9f), window, collider: false);
+                var narrow = FurnitureModel("shaft_window_narrow", level);
+                if (narrow != null) narrow.SetPositionAndRotation(new Vector3(c.x0 + 0.03f, floorY + 0.05f, midZ), Quaternion.LookRotation(Vector3.right));
+                else Box("ShaftWindow", new Vector3(c.x0 + 0.005f, floorY + 0.7f, midZ), new Vector3(0.01f, 1.3f, 0.9f), window, collider: false);
                 Box("ShaftSill", new Vector3(c.x0 + 0.1f, floorY - 0.025f, midZ), new Vector3(0.2f, 0.05f, 1.1f), stone, collider: false);
             }
             var zinc = Mat("Apt_Zinc", new Color(0.55f, 0.57f, 0.58f), 0.55f);
@@ -488,11 +672,19 @@ namespace Draho.EditorTools
             var root = new GameObject("GardenLamp");
             root.transform.SetParent(level, false);
             root.transform.position = new Vector3(-0.05f, 1.95f, 1.0f);
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.01f, 0f, 0f), new Vector3(0.02f, 0.16f, 0.1f), iron);   // wall plate
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.09f, 0.05f, 0f), new Vector3(0.16f, 0.02f, 0.02f), iron); // arm
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, 0.03f, 0f), new Vector3(0.12f, 0.02f, 0.12f), iron); // roof
-            var bulb = Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.05f, 0f), new Vector3(0.09f, 0.14f, 0.09f), glass);
-            Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.13f, 0f), new Vector3(0.11f, 0.02f, 0.11f), iron); // base
+            // The iron lantern from Blender (build_apartment_props.py garden_lantern), hung on the wall facing the
+            // garden (-x); without it, the old cube parts. The glowing glass stays here: NightLamp switches it.
+            var lantern = FurnitureModel("garden_lantern", root.transform);
+            if (lantern != null)
+                lantern.SetPositionAndRotation(root.transform.position, Quaternion.LookRotation(Vector3.left));
+            else
+            {
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.01f, 0f, 0f), new Vector3(0.02f, 0.16f, 0.1f), iron);   // wall plate
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.09f, 0.05f, 0f), new Vector3(0.16f, 0.02f, 0.02f), iron); // arm
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, 0.03f, 0f), new Vector3(0.12f, 0.02f, 0.12f), iron); // roof
+                Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.13f, 0f), new Vector3(0.11f, 0.02f, 0.11f), iron); // base
+            }
+            var bulb = Part(PrimitiveType.Cube, root.transform, new Vector3(-0.17f, -0.05f, 0f), new Vector3(0.09f, 0.155f, 0.09f), glass);
             var light = new GameObject("GardenLampLight").AddComponent<Light>();
             light.transform.SetParent(root.transform, false);
             light.transform.localPosition = new Vector3(-0.3f, -0.08f, 0f);
@@ -552,6 +744,18 @@ namespace Draho.EditorTools
             Box("Cap", root.transform.position + Vector3.up * (q.h + 0.42f), new Vector3(0.4f, 0.05f, 0.4f), iron, collider: false).transform.SetParent(root.transform, true);
             var bulb = Box("Lantern", root.transform.position + Vector3.up * (q.h + 0.22f), new Vector3(0.28f, 0.36f, 0.28f), glass, collider: false);
             bulb.transform.SetParent(root.transform, true);
+            // The Blender lamp (graphics review round 27): a fluted cast-iron foot and a lantern frame with a pyramid
+            // roof round the glowing glass. The post stays a cylinder (its height differs per lamp); the foot box keeps
+            // its collider, the cap box goes.
+            var footModel = FurnitureModel("street_lamp_base", root.transform);
+            var headModel = FurnitureModel("street_lamp_head", root.transform);
+            if (footModel != null && headModel != null)
+            {
+                footModel.localPosition = Vector3.zero;
+                headModel.localPosition = Vector3.up * q.h;
+                Object.DestroyImmediate(root.transform.Find("Foot").GetComponent<Renderer>());
+                Object.DestroyImmediate(root.transform.Find("Cap").gameObject);
+            }
             var light = new GameObject("QuayLampLight").AddComponent<Light>();
             light.transform.SetParent(root.transform, false);
             light.transform.localPosition = Vector3.up * (q.h - 0.1f);
@@ -829,15 +1033,36 @@ namespace Draho.EditorTools
             lid.transform.rotation = Quaternion.Euler(-25f, 0f, 0f); // open a crack, lifted by the storm
             lid.transform.SetParent(hatch, true);
 
-            // The front door: on the kitchen's east wall, between the fridge and the island.
-            float t = layout.wall.thickness, wallX = 7.6f - t / 2;
+            // The front door: in the kitchen's east wall, between the fridge and the island. The wall has a real
+            // opening there (layout opening "front_door"); the leaf is set back into it, with linings on the reveal and
+            // an architrave on the room side. (It used to be a board 11 cm in front of the wall, and the kitchen mouse
+            // hole was behind it, so the mouse ran into the door.)
+            var opening = (layout.openings ?? new Opening[0]).FirstOrDefault(o => o.id == "front_door");
+            float t = layout.wall.thickness, face = 7.6f;                    // the wall's room-side face
+            float z0 = opening?.from ?? 0.6f, z1 = opening?.to ?? 1.4f, doorTop = opening?.height ?? 2.08f, zc = (z0 + z1) / 2;
             var doorMat = Mat("Apt_FrontDoor", new Color(0.36f, 0.27f, 0.2f), 0.25f);
             var frame = Mat("Apt_DoorFrame", new Color(0.88f, 0.87f, 0.84f), 0.3f);
-            Box("FrontDoor", new Vector3(wallX - 0.015f, 1.0f, 1.0f), new Vector3(0.03f, 2.0f, 0.8f), doorMat, collider: false);
-            Box("FrontDoorFrame", new Vector3(wallX - 0.02f, 2.04f, 1.0f), new Vector3(0.04f, 0.08f, 0.96f), frame, collider: false);
+            const float doorLining = 0.03f, setBack = 0.12f, leafT = 0.04f;
+            var leaf = Box("FrontDoor", new Vector3(face + setBack + leafT / 2, (doorTop - doorLining) / 2, zc),
+                new Vector3(leafT, doorTop - doorLining, z1 - z0 - 2 * doorLining), doorMat);   // solid: the cat stays in
+            // The panelled leaf from Blender (build_apartment_props.py front_door_leaf); the box stays as its collider.
+            var leafModel = FurnitureModel("front_door_leaf", level);
+            if (leafModel != null)
+            {
+                leafModel.position = new Vector3(face + setBack + leafT / 2, 0f, zc);
+                leafModel.rotation = Quaternion.LookRotation(Vector3.left);           // its front (+Z) faces the kitchen
+                Object.DestroyImmediate(leaf.GetComponent<Renderer>());
+            }
+            Box("FrontDoorLining", new Vector3(face + t / 2, doorTop - doorLining / 2, zc), new Vector3(t, doorLining, z1 - z0), frame, collider: false);
+            foreach (float z in new[] { z0 + doorLining / 2, z1 - doorLining / 2 })
+                Box("FrontDoorLining", new Vector3(face + t / 2, doorTop / 2, z), new Vector3(t, doorTop, doorLining), frame, collider: false);
+            Box("FrontDoorArchitrave", new Vector3(face - 0.01f, doorTop + 0.04f, zc), new Vector3(0.02f, 0.08f, z1 - z0 + 0.16f), frame, collider: false);
             foreach (float s in new[] { -1f, 1f })
-                Box("FrontDoorFrame", new Vector3(wallX - 0.02f, 1.0f, 1.0f + s * 0.44f), new Vector3(0.04f, 2.08f, 0.08f), frame, collider: false);
-            Box("DoorHandle", new Vector3(wallX - 0.05f, 1.0f, 0.7f), new Vector3(0.04f, 0.03f, 0.12f), Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), collider: false);
+                Box("FrontDoorArchitrave", new Vector3(face - 0.01f, (doorTop + 0.08f) / 2, zc + s * ((z1 - z0) / 2 + 0.04f)),
+                    new Vector3(0.02f, doorTop + 0.08f, 0.08f), frame, collider: false);
+            if (leafModel == null) // the Blender leaf has its own handle
+                Box("DoorHandle", new Vector3(face + setBack - 0.03f, 1.0f, z0 + 0.12f), new Vector3(0.04f, 0.03f, 0.12f),
+                    Mat("Apt_Metal", new Color(0.55f, 0.56f, 0.58f), 0.6f), collider: false);
 
             // The humans, seen from cat height: legs, shoes and the hem of a coat. +Z of each person faces the room.
             var humans = new GameObject("Humans").transform;
@@ -848,12 +1073,21 @@ namespace Draho.EditorTools
             var coat2 = Mat("Human_Coat2", new Color(0.2f, 0.3f, 0.26f), 0.2f);
             var shoe = Mat("Human_Shoe", new Color(0.08f, 0.07f, 0.07f), 0.4f);
             var people = new[] { (new Vector3(7.05f, 0f, 0.85f), jeans, coat), (new Vector3(6.85f, 0f, 1.3f), trousers, coat2) };
+            int index = 0;
             foreach (var (pos, legs, top) in people)
             {
                 var person = new GameObject("Person").transform;
                 person.SetParent(humans, false);
                 person.position = pos;
                 person.rotation = Quaternion.Euler(0f, -90f, 0f); // facing into the kitchen (-x)
+                // Blender legs, shoes and coat (build_apartment_props.py human_a / human_b); else the primitives below.
+                var body = FurnitureModel(index++ == 0 ? "human_a" : "human_b", person);
+                if (body != null)
+                {
+                    body.localPosition = Vector3.zero;
+                    body.localRotation = Quaternion.identity;
+                    continue;
+                }
                 foreach (float s in new[] { -1f, 1f })
                 {
                     var leg = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -927,28 +1161,8 @@ namespace Draho.EditorTools
             Panel("Jumper", new Vector3(0.18f, 0.05f, 0.05f), new Vector3(0.22f, 0.04f, 0.2f), Mat("Suitcase_Jumper", new Color(0.3f, 0.45f, 0.35f), 0.05f), new Vector3(0f, 12f, 0f), solid: false);
             suitcase.gameObject.SetActive(false);
 
-            // The TV on a low stand by the front wall, facing the sofa (TvGlow: on at night in the epilogue).
-            var tv = new GameObject("TV").transform;
-            tv.SetParent(level, false);
-            tv.position = new Vector3(3.4f, 0f, 0.3f);
-            var tvDark = Mat("TV_Case", new Color(0.06f, 0.06f, 0.07f), 0.6f);
-            Box("TV_Stand", tv.position + new Vector3(0f, 0.2f, 0f), new Vector3(1.0f, 0.4f, 0.38f), Mat("TV_Stand", new Color(0.35f, 0.26f, 0.18f), 0.3f)).transform.SetParent(tv, true);
-            Box("TV_Case", tv.position + new Vector3(0f, 0.72f, 0f), new Vector3(0.9f, 0.52f, 0.05f), tvDark, collider: false).transform.SetParent(tv, true);
-            var screenMat = Mat("TV_Screen", new Color(0.02f, 0.02f, 0.03f), 0.9f);
-            screenMat.EnableKeyword("_EMISSION");
-            screenMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
-            screenMat.SetColor("_EmissionColor", Color.black);
-            var tvScreen = Box("TV_Screen", tv.position + new Vector3(0f, 0.72f, 0.027f), new Vector3(0.84f, 0.46f, 0.005f), screenMat, collider: false);
-            tvScreen.transform.SetParent(tv, true);
-            var tvLight = new GameObject("TV_Light").AddComponent<Light>();
-            tvLight.transform.SetParent(tv, false);
-            tvLight.transform.localPosition = new Vector3(0f, 0.75f, 0.6f);
-            tvLight.type = LightType.Point;
-            tvLight.range = 4.5f;
-            tvLight.intensity = 0f;
-            tvLight.enabled = false;
-            tvLight.shadows = LightShadows.None;
-            tv.gameObject.AddComponent<TvGlow>().Configure(tvLight, tvScreen.GetComponent<Renderer>());
+            // No TV in this flat (owner, November 2026): the dining bar (a high table with bar stools, layout prop
+            // "dining_bar") stands where the TV was. TvGlow is kept for a later scene.
 
             // The laser game (LaserDot): a small bright red disc on the floor and a tiny red light.
             var laser = new GameObject("LaserDot").transform;
@@ -1282,32 +1496,6 @@ namespace Draho.EditorTools
             go.AddComponent<RainSplashes>();
         }
 
-        /// <summary>Eight places to scratch (ScratchSpot): upright, rough things that are not climbable.</summary>
-        static void BuildScratchSpots()
-        {
-            var spots = new (string id, string title, Vector3 pos)[]
-            {
-                ("scratch_sisal", "your own scratching post (the only one you are allowed)", new Vector3(4.1f, 0.5f, 4.0f)),
-                ("scratch_sofa", "the sofa. The humans will not be pleased", new Vector3(2.0f, 0.5f, 3.9f)),
-                ("scratch_table", "a leg of the garden table", new Vector3(-2.35f, 0.5f, 1.8f)),
-                ("scratch_fence", "the old garden fence", new Vector3(-10f, 0.5f, 4.7f)),
-                ("scratch_chair", "the old chair in the wild garden", new Vector3(-17.5f, 0.5f, 7.1f)),
-                ("scratch_lamp", "the iron lamp-post on the quay", new Vector3(-33.6f, 0.5f, 3.2f)),
-                ("scratch_bakery", "the bakery's wooden door frame", new Vector3(-57.6f, 0.5f, -100.9f)),
-                ("scratch_church", "the church door of the begijnhof", new Vector3(51.6f, 0.8f, -208.6f)),
-            };
-            var ringMat = NoiseRingMaterial();
-            var marks = Mat("Claw_Marks", new Color(0.12f, 0.09f, 0.07f), 0.05f);
-            foreach (var (id, title, pos) in spots)
-            {
-                var go = new GameObject($"Scratch_{id.Substring(8)}");
-                go.transform.SetParent(level, false);
-                go.transform.position = pos;
-                go.AddComponent<LineRenderer>().sharedMaterial = ringMat;
-                go.AddComponent<ScratchSpot>().Configure(id, title, marks);
-            }
-        }
-
         /// <summary>Morning mist over the gardens: big faint billboard puffs (MorningMist), prewarmed.</summary>
         static void BuildMorningMist(Layout layout)
         {
@@ -1473,28 +1661,6 @@ namespace Draho.EditorTools
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             go.AddComponent<ShootingStars>();
-        }
-
-        /// <summary>Five viewpoints on the high roofs: a faint blue ring; stand still in it for a slow camera sweep.</summary>
-        static void BuildViewpoints()
-        {
-            var views = new (string id, string text, Vector3 pos)[]
-            {
-                ("view_ridge", "the ridge of the big roof. The whole street lies below, and the chimneys smoke.", new Vector3(14.4f, 12.4f, 4.6f)),
-                ("view_highroof", "the highest roof of the block. Gardens, roofs and the river, all yours.", new Vector3(-5.2f, 9.6f, -7.9f)),
-                ("view_flatroof", "the flat roof by the hatch. Every garden of the block in one look.", new Vector3(3.2f, 9.4f, 5.6f)),
-                ("view_gravel", "the big gravel roof. The geraniums, the light well and the maple.", new Vector3(-15.5f, 7.1f, -5.6f)),
-                ("view_riverhouse", "the riverhouse roof. The river, the quay and the far bank.", new Vector3(-25.6f, 7.0f, -12f)),
-            };
-            var mat = NoiseRingMaterial();
-            foreach (var (id, text, pos) in views)
-            {
-                var go = new GameObject($"Viewpoint_{id.Substring(5)}");
-                go.transform.SetParent(level, false);
-                go.transform.position = pos;
-                go.AddComponent<LineRenderer>().sharedMaterial = mat;
-                go.AddComponent<Viewpoint>().Configure(id, text);
-            }
         }
 
         /// <summary>Six gifts for the humans, one in each area, shown only in the epilogue (Gift).</summary>
@@ -1732,41 +1898,6 @@ namespace Draho.EditorTools
             bed.AddComponent<Catnip>().Configure(wisps.ToArray());
         }
 
-        /// <summary>
-        /// Twelve nap spots, the warmest places in every area (a side activity): sit in one to find it. Each spot drops
-        /// onto whatever is under it at run time (a rug, a table top, a roof).
-        /// </summary>
-        static void BuildNapSpots()
-        {
-            var spots = new (string id, string title, Vector3 pos)[]
-            {
-                ("nap_rug", "the red rug in the living room", new Vector3(2.2f, 0.5f, 2.6f)),
-                ("nap_cattree", "your own basket on the cat tree", new Vector3(4.1f, 1.2f, 4.35f)),
-                ("nap_table", "the garden table, still warm from the sun", new Vector3(-1.4f, 1.2f, 2.6f)),
-                ("nap_maple", "the shade under the maple", new Vector3(-21.2f, 0.5f, 3.3f)),
-                ("nap_gravel", "the warm gravel by the geraniums", new Vector3(-14.6f, 7f, -3.8f)),
-                ("nap_high", "the highest roof of the block", new Vector3(-5.6f, 9.1f, -7.5f)),
-                ("nap_chair", "the old chair in the wild garden", new Vector3(-17f, 1.2f, 7.6f)),
-                ("nap_quay", "the sunny quay stones", new Vector3(-32.4f, 0.5f, -24f)),
-                ("nap_church", "the church step of the begijnhof", new Vector3(51.2f, 0.8f, -208.8f)),
-                ("nap_bakery", "the bakery doorstep, smelling of bread", new Vector3(-57.1f, 0.5f, -100.6f)),
-                ("nap_court", "the sunny corner of the court", new Vector3(5.1f, 0.5f, 4.6f)),
-                ("nap_roof", "the flat roof of your own house", new Vector3(2.4f, 9.3f, 2.6f)),
-            };
-            var mat = NoiseRingMaterial();
-            foreach (var (id, title, pos) in spots)
-            {
-                var go = new GameObject($"NapSpot_{id.Substring(4)}");
-                go.transform.SetParent(level, false);
-                go.transform.position = pos;
-                go.AddComponent<LineRenderer>().sharedMaterial = mat;
-                go.AddComponent<NapSpot>().Configure(id, title);
-            }
-            var rested = new GameObject("WellRested");
-            rested.transform.SetParent(level, false);
-            rested.AddComponent<WellRested>().Configure(spots.Length);
-        }
-
         static void BuildFox()
         {
             var orange = Mat("Fox_Orange", new Color(0.78f, 0.36f, 0.12f), 0.2f);
@@ -1868,7 +1999,11 @@ namespace Draho.EditorTools
             var bar = Mat("Pigeon_Bar", new Color(0.18f, 0.18f, 0.2f), 0.3f);
             var pink = Mat("Pigeon_Feet", new Color(0.85f, 0.42f, 0.45f), 0.3f);
             var eye = Mat("Bird_Beak", new Color(0.95f, 0.6f, 0.08f), 0.5f);
-            var spots = new[] { new Vector3(c.x0 + 0.8f, 0f, c.z0 + 0.6f), new Vector3(midX + 0.3f, 0f, c.z1 - 0.5f), new Vector3(c.x1 - 0.5f, 0f, c.z0 + 0.5f) };
+            // The pigeons sit up the light well, never on the court stones (owner, November 2026). One perch is the
+            // ledge over the bedroom window, next to the drainpipe: chapter 8 is "climb the pipe and get close".
+            var bedroom = (layout.openings ?? new Opening[0]).FirstOrDefault(o => o.id == "bedroom_window");
+            if (bedroom != null) perches.Insert(0, new Vector3(c.x1 - 0.08f, bedroom.height + 0.05f, (bedroom.from + bedroom.to) / 2));
+            var spots = new[] { perches[0], perches[bedroom != null ? 1 : 0], perches[bedroom != null ? 3 : 2] };
             for (int i = 0; i < spots.Length; i++)
             {
                 var root = new GameObject($"Pigeon_{i + 1}");
@@ -1917,7 +2052,9 @@ namespace Draho.EditorTools
                 var right = Wing("WingR", 1f);
                 var model = AnimalModels.Swap("Pigeon", root.transform);
                 if (model != null) { body = AnimalModels.Find(model, "Body"); head = AnimalModels.Find(model, "Head"); left = AnimalModels.Find(model, "WingL"); right = AnimalModels.Find(model, "WingR"); }
-                root.AddComponent<Pigeon>().Configure(body, head, left, right, perches.ToArray(), yard);
+                var pigeon = root.AddComponent<Pigeon>();
+                pigeon.Configure(body, head, left, right, perches.ToArray(), yard);
+                pigeon.StayUp(1.1f);
             }
 
             // The jingle ball: behind a bracket of the court drainpipe, just under the top of the climb.
@@ -1951,6 +2088,7 @@ namespace Draho.EditorTools
             float yaw = FacingYaw(p.facing);
             Color color = Hex(p.color);
 
+            if (BlenderProp(root, p, yaw)) return;
             if (p.id == "cat_tree") { CatTree(root, p, color); return; }
             if (p.id == "picnic_table") { PicnicTable(root, p, color); return; }
             if (p.id == "firewood") { Firewood(root, p, color); return; }
@@ -2006,12 +2144,75 @@ namespace Draho.EditorTools
                 Fit(root, item, local, new Vector3(0.28f, 0.36f, 0.28f), yaw, Color.white);
             }
 
+            // Upholstered furniture: one box the size of the whole sofa put the cat on top of the backrest height,
+            // "sitting on air" above the seat. Use the model's own shape instead (static mesh colliders), so the seat,
+            // the backrest and the armrests each have their real height.
+            bool shaped = body.Any(s => s.Contains("Sofa") || s.Contains("Chair") || s.Contains("bed") || s.Contains("Bed"));
+            if (shaped && ShapedCollider(root, p.id)) return;
             if (p.h > 0.05f) // rugs are walk-over
             {
                 var col = root.gameObject.AddComponent<BoxCollider>();
                 col.center = new Vector3(0, p.h / 2, 0);
                 col.size = new Vector3(p.w, p.h, p.d);
             }
+        }
+
+        /// <summary>
+        /// A piece of furniture made in Blender (Tools/Blender/build_apartment_props.py, Art/Furniture/[id].fbx): real size,
+        /// palette material, a collider shaped from the mesh. False (nothing built) when there is no model for this id,
+        /// so the Kenney model or the code-built shape stays.
+        /// </summary>
+        static bool BlenderProp(Transform root, Prop p, float yaw)
+        {
+            string path = $"{PlaygroundBuilder.ArtDir}/Furniture/{p.id}.fbx";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) return false;
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path));
+            PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            go.transform.SetParent(root, false);
+            go.transform.localPosition = Vector3.zero;
+            // The Blender pieces face Unity +Z; the layout's "south" (yaw 0) is -Z, like the Kenney models.
+            go.transform.localRotation = Quaternion.Euler(0f, yaw + 180f, 0f);
+            var mat = AnimalModels.PaletteMaterial();
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                r.sharedMaterial = mat;
+                r.shadowCastingMode = ShadowCastingMode.On;
+            }
+            if (p.h > 0.05f && !ShapedCollider(root, p.id)) // rugs are walk-over: no collider
+            {
+                var col = root.gameObject.AddComponent<BoxCollider>();
+                col.center = new Vector3(0, p.h / 2, 0);
+                col.size = new Vector3(p.w, p.h, p.d);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// One static mesh collider on the prop's root, from all its meshes (Kenney models are low-poly). The mesh is
+        /// baked into the root's own unscaled space and saved as an asset: the models sit under a non-uniformly scaled
+        /// slot, and Unity cannot cook such a collider at run time from a mesh that is not readable (WebGL).
+        /// </summary>
+        static bool ShapedCollider(Transform root, string id)
+        {
+            var parts = root.GetComponentsInChildren<MeshFilter>()
+                .Where(mf => mf.sharedMesh != null)
+                .SelectMany(mf => Enumerable.Range(0, mf.sharedMesh.subMeshCount).Select(i => new CombineInstance
+                {
+                    mesh = mf.sharedMesh,
+                    subMeshIndex = i,
+                    transform = root.worldToLocalMatrix * mf.transform.localToWorldMatrix,
+                }))
+                .ToArray();
+            if (parts.Length == 0) return false;
+            var mesh = new Mesh { name = $"{id}_collider" };
+            mesh.CombineMeshes(parts, true, true);
+            string dir = $"{PlaygroundBuilder.ArtDir}/Colliders";
+            System.IO.Directory.CreateDirectory(dir);
+            string path = $"{dir}/{id}_collider.asset";
+            AssetDatabase.DeleteAsset(path); // remade every build, like the cloud cookie
+            AssetDatabase.CreateAsset(mesh, path);
+            root.gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
+            return true;
         }
 
         /// <summary>Instantiates a Kenney model and scales it to fill exactly the given box (bottom at local.y).</summary>
@@ -2102,6 +2303,7 @@ namespace Draho.EditorTools
                 float a = alongX ? Mathf.Min(e.from[0], e.to[0]) : Mathf.Min(e.from[1], e.to[1]);
                 float b = alongX ? Mathf.Max(e.from[0], e.to[0]) : Mathf.Max(e.from[1], e.to[1]);
                 if (e.style == "posts") PostFence(e, alongX, line, a, b);
+                else if (e.style == "mesh") MeshFence(e, alongX, line, a, b);
                 else
                 {
                     var mat = e.material == "brick"
@@ -2136,7 +2338,13 @@ namespace Draho.EditorTools
                     : Mat($"Apt_{b.id}", Hex(b.color), 0.08f, BrickTexture(), new Vector2(w, b.h));
                 var gravel = Mat($"Apt_{b.id}_roof", Hex(b.roof_color), 0.05f, PebbleTexture(), new Vector2(w, d) * 7f); // small stones
                 var stone = Mat("Apt_Coping", new Color(0.72f, 0.7f, 0.66f), 0.2f);
-                Box("Walls", new Vector3(cx, (b.base_y + b.h - roofT) / 2, cz), new Vector3(w, b.h - roofT - b.base_y, d), brick).transform.SetParent(root, true);
+                // A face that lies in the plane of a wall of the flat z-fights with it (the kitchen's east wall flickered
+                // between plaster and the neighbour's wall): pull it back 2 cm, inside that 20 cm wall.
+                string flush = b.flush ?? "";
+                const float tuck = 0.02f;
+                float wx0 = b.x0 + (flush.Contains("-x") ? tuck : 0f), wx1 = b.x1 - (flush.Contains("+x") ? tuck : 0f);
+                float wz0 = b.z0 + (flush.Contains("-z") ? tuck : 0f), wz1 = b.z1 - (flush.Contains("+z") ? tuck : 0f);
+                Box("Walls", new Vector3((wx0 + wx1) / 2, (b.base_y + b.h - roofT) / 2, (wz0 + wz1) / 2), new Vector3(wx1 - wx0, b.h - roofT - b.base_y, wz1 - wz0), brick).transform.SetParent(root, true);
                 Box("Roof", new Vector3(cx, b.h - roofT / 2, cz), new Vector3(w, roofT, d), gravel).transform.SetParent(root, true);
                 // A thin stone coping along the edges: the roof line reads clearly from the garden.
                 foreach (float z in new[] { b.z0, b.z1 })
@@ -2164,9 +2372,7 @@ namespace Draho.EditorTools
                 var body = Box($"Context_{n}", new Vector3(c.x, c.h / 2, c.z), new Vector3(c.w, c.h, c.d),
                     Mat($"Apt_Context_{n % tones.Length}", tone, 0.08f, BrickTexture(), new Vector2(6f, 6f)), collider: false);
                 body.transform.rotation = Quaternion.Euler(0f, c.yaw, 0f);
-                var roof = Box($"Context_{n}_roof", new Vector3(c.x, c.h + 0.05f, c.z), new Vector3(c.w + 0.2f, 0.1f, c.d + 0.2f),
-                    Mat("Apt_ContextRoof", new Color(0.33f, 0.31f, 0.3f), 0.1f), collider: false);
-                roof.transform.rotation = body.transform.rotation;
+                ContextRoofline(c, n, tone);
                 n++;
             }
             // Window panes on the scenery blocks, and on the faces of story buildings that ask for them.
@@ -2273,7 +2479,16 @@ namespace Draho.EditorTools
             // Brambles: dark, thorny clumps; low ones have no collider (the cat pushes through).
             var bramble = Mat("Apt_Bramble", new Color(0.17f, 0.25f, 0.12f), 0.15f);
             var bramble2 = Mat("Apt_Bramble2", new Color(0.24f, 0.3f, 0.14f), 0.15f);
+            bool blenderWild = AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/wild_bramble.fbx") != null;
             foreach (var b in w.bushes ?? new Spot[0])
+            {
+                if (blenderWild) // faceted bramble from Blender, built for r = 0.5
+                {
+                    var bush = FurnitureModel("wild_bramble", root);
+                    bush.SetPositionAndRotation(new Vector3(b.x, 0f, b.z), Quaternion.Euler(0f, Rand() * 360f, 0f));
+                    bush.localScale = Vector3.one * (b.r / 0.5f);
+                    continue;
+                }
                 for (int i = 0; i < 4; i++)
                 {
                     var blob = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -2284,6 +2499,21 @@ namespace Draho.EditorTools
                     blob.transform.localScale = new Vector3(b.r * 1.3f, b.r * (0.9f + 0.4f * Rand()), b.r * 1.3f);
                     blob.GetComponent<Renderer>().sharedMaterial = i % 2 == 0 ? bramble : bramble2;
                 }
+            }
+            // Blender models for the old wheelbarrow, the fallen chair and the rusty barrel: the code-built parts that
+            // carry colliders stay (renderers removed), the rest of their visuals is replaced.
+            void ReplaceVisuals(Transform owner, string model, Vector3 position, Quaternion rotation, params string[] keepColliders)
+            {
+                if (!blenderWild) return;
+                foreach (var r in owner.GetComponentsInChildren<Renderer>(true).ToArray())
+                {
+                    if (r.transform.IsChildOf(owner) && (r.name == "Leaves" || r.name == "Hoglet")) continue; // the nest stays
+                    if (keepColliders.Contains(r.name) || r.GetComponent<Collider>() != null) Object.DestroyImmediate(r);
+                    else Object.DestroyImmediate(r.gameObject);
+                }
+                var m = FurnitureModel(model, owner);
+                if (m != null) m.SetPositionAndRotation(position, rotation);
+            }
 
             var rust = Mat("Apt_Rust", new Color(0.45f, 0.24f, 0.13f), 0.25f);
             var oldWood = Mat("Apt_OldWood", new Color(0.42f, 0.36f, 0.28f), 0.1f);
@@ -2333,6 +2563,7 @@ namespace Draho.EditorTools
                 nest = new GameObject("Nest").transform;
                 nest.SetParent(wb, false);
                 nest.localPosition = new Vector3(0f, 0f, -0.15f);
+                ReplaceVisuals(wb, "wild_wheelbarrow", wb.position, wb.rotation);
             }
             if (w.chair != null) // a garden chair, fallen on its back
             {
@@ -2345,6 +2576,8 @@ namespace Draho.EditorTools
                 back.transform.SetParent(ch, true);
                 foreach (var leg in new[] { new Vector3(-0.2f, 0.1f, 0.2f), new Vector3(0.2f, 0.1f, 0.2f) })
                     Box("Leg", ch.TransformPoint(leg), new Vector3(0.03f, 0.22f, 0.03f), white, collider: false).transform.SetParent(ch, true);
+                // The Blender chair lies along +Y from its origin (the backrest end); the code chair's back is at -Z.
+                ReplaceVisuals(ch, "wild_chair", ch.TransformPoint(new Vector3(0f, 0f, 0.3f)), ch.rotation);
             }
             if (w.barrel != null)
             {
@@ -2354,6 +2587,12 @@ namespace Draho.EditorTools
                 barrel.transform.position = new Vector3(w.barrel.x, 0.45f, w.barrel.z);
                 barrel.transform.localScale = new Vector3(0.58f, 0.45f, 0.58f);
                 barrel.GetComponent<Renderer>().sharedMaterial = rust;
+                if (blenderWild)
+                {
+                    Object.DestroyImmediate(barrel.GetComponent<MeshRenderer>());
+                    var drum = FurnitureModel("wild_barrel", root);
+                    if (drum != null) drum.position = new Vector3(w.barrel.x, 0f, w.barrel.z);
+                }
             }
 
             if (w.hedgehog != null) HedgehogModel(root, w.hedgehog, nest);
@@ -3249,6 +3488,24 @@ namespace Draho.EditorTools
             bin.transform.position = new Vector3(-23.3f, 0.3f, 1.55f);
             bin.transform.localScale = new Vector3(0.45f, 0.3f, 0.45f);
             bin.GetComponent<Renderer>().sharedMaterial = grey;
+            // Blender models over the primitive colliders (round 27): a ribbed compost cone with a domed lid, and a
+            // grey wheelie bin (its collider grows to the bin's 1.05 m).
+            var compostModel = FurnitureModel("compost_bin", root);
+            if (compostModel != null)
+            {
+                compostModel.position = new Vector3(-23.4f, 0f, 0.7f);
+                Object.DestroyImmediate(compost.GetComponent<Renderer>());
+                Object.DestroyImmediate(lid);
+            }
+            var wheelieModel = FurnitureModel("wheelie_bin", root);
+            if (wheelieModel != null)
+            {
+                wheelieModel.position = new Vector3(-23.3f, 0f, 1.55f);
+                wheelieModel.rotation = Quaternion.Euler(0f, 90f, 0f); // lid hinge towards the fence
+                bin.transform.position = new Vector3(-23.3f, 0.53f, 1.55f);
+                bin.transform.localScale = new Vector3(0.6f, 0.53f, 0.6f);
+                Object.DestroyImmediate(bin.GetComponent<Renderer>());
+            }
         }
 
         static Vector2 Random2(System.Random rng)
@@ -3263,12 +3520,12 @@ namespace Draho.EditorTools
         {
             var water = Box("River", new Vector3((w.x0 + w.x1) / 2, w.top - 0.05f, (w.z0 + w.z1) / 2),
                 new Vector3(w.x1 - w.x0, 0.1f, w.z1 - w.z0),
-                Mat("Apt_River", Hex(w.color), 0.62f, RippleTexture(), new Vector2((w.x1 - w.x0) / 4f, (w.z1 - w.z0) / 4f)), collider: false);
+                Mat("Apt_River", Hex(w.color), 0.62f, RippleTexture(), new Vector2((w.x1 - w.x0) / 9f, (w.z1 - w.z0) / 9f)), collider: false);
             // A ripple normal map from the same waves as the ripple texture: the sun and the lamps sparkle on the
             // flowing water. Put on the material here, so the build keeps the normal-map shader variant.
             var riverMat = water.GetComponent<Renderer>().sharedMaterial;
             riverMat.SetTexture("_BumpMap", RippleNormalTexture());
-            riverMat.SetFloat("_BumpScale", 0.4f); // 0.7 was busy, almost moire, in the distance
+            riverMat.SetFloat("_BumpScale", 0.22f); // 0.7 was busy, almost moire; 0.4 still read as a corrugated roof
             riverMat.EnableKeyword("_NORMALMAP");
             riverMat.SetFloat("_Smoothness", 0.8f);
             EditorUtility.SetDirty(riverMat);
@@ -3322,30 +3579,89 @@ namespace Draho.EditorTools
                 stripe.transform.rotation = Quaternion.Euler(0f, 0f, -18f);
                 stripe.transform.SetParent(root, true);
             }
-            var window = Mat("Apt_ShopWindow", new Color(0.55f, 0.62f, 0.62f), 0.9f);
-            Box("ShopWindow", new Vector3(b.x + 0.03f, 1.5f, cz + 3f), new Vector3(0.05f, 1.6f, 5f), window, collider: false).transform.SetParent(root, true);
-            var bread = Mat("Apt_Bread", new Color(0.78f, 0.55f, 0.28f), 0.3f);
-            for (int i = 0; i < 6; i++) // loaves in the window
+            // The shopfront (graphics review round 29, Tools/Blender/build_apartment_props.py): painted pilasters, a fascia
+            // and cornice, a stallriser, glazing bars, a recessed door and a window display of bread. It stands 6.4 m
+            // wide on the middle of the front, between the outer mouse holes (the middle one is in its stallriser);
+            // the model's x runs along the wall, turned to face the street (+x). Shopfront x maps to z = centre + x.
+            const float shopCentre = -99.4f;
+            float shopZ = Mathf.Clamp(shopCentre, b.z0 + 3.5f, b.z1 - 3.5f);
+            var shop = FurnitureModel("bakery_shopfront", root);
+            if (shop != null)
             {
-                var loaf = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.DestroyImmediate(loaf.GetComponent<Collider>());
-                loaf.transform.SetParent(root, false);
-                loaf.transform.position = new Vector3(b.x - 0.15f, 1.0f, cz + 1f + i * 0.75f);
-                loaf.transform.localScale = new Vector3(0.22f, 0.14f, 0.4f);
-                loaf.GetComponent<Renderer>().sharedMaterial = bread;
+                shop.position = new Vector3(b.x, 0f, shopZ);
+                shop.rotation = Quaternion.Euler(0f, 90f, 0f);
+                // The glass of the shop window (x -1.475..3.075 on the model, 0.66..2.62 m high, 0.26 m out of the wall).
+                var glass = Box("ShopWindow", new Vector3(b.x + 0.26f, 1.64f, shopZ + 0.8f), new Vector3(0.012f, 1.96f, 4.55f), GlassMat(), collider: false);
+                glass.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                glass.transform.SetParent(root, true);
+                // The lit display (day/night work): a warm glow behind the loaves and a light in the window, on with the
+                // street lamps at dusk (NightLamp: faint by day, as a shop's lights are; bright at night).
+                var glowMat = Mat("Apt_BakeryDisplayGlow", new Color(0.16f, 0.13f, 0.1f), 0.1f);
+                glowMat.EnableKeyword("_EMISSION");
+                glowMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+                glowMat.SetColor("_EmissionColor", Color.black);
+                EditorUtility.SetDirty(glowMat);
+                var glowPanel = Box("DisplayGlow", new Vector3(b.x + 0.022f, 1.62f, shopZ + 0.8f), new Vector3(0.004f, 1.84f, 4.4f), glowMat, collider: false);
+                glowPanel.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                glowPanel.transform.SetParent(root, true);
+                var displayLight = new GameObject("DisplayLight").AddComponent<Light>();
+                displayLight.transform.SetParent(root, false);
+                displayLight.transform.position = new Vector3(b.x + 0.14f, 2.45f, shopZ + 0.8f); // inside, under the transom: no glare on the glass
+                displayLight.type = LightType.Point;
+                displayLight.color = new Color(1f, 0.78f, 0.52f);
+                displayLight.range = 4.5f;
+                displayLight.intensity = 0f;
+                displayLight.enabled = false;
+                displayLight.shadows = LightShadows.None;
+                var displayLamp = glowPanel.AddComponent<NightLamp>();
+                displayLamp.Configure(displayLight, glowPanel.GetComponent<Renderer>());
+                var lampSo = new SerializedObject(displayLamp);
+                lampSo.FindProperty("intensity").floatValue = 1.4f;
+                lampSo.FindProperty("glow").colorValue = new Color(1f, 0.74f, 0.45f) * 0.55f;
+                lampSo.ApplyModifiedPropertiesWithoutUndo();
+                // A collider for the shopfront's front (the cat walks along it, not into the display).
+                var front = Box("ShopfrontCollider", new Vector3(b.x + 0.16f, 1.6f, shopZ), new Vector3(0.32f, 3.2f, 6.6f), null);
+                Object.DestroyImmediate(front.GetComponent<Renderer>());
+                front.transform.SetParent(root, true);
             }
-            var sign = GameObject.CreatePrimitive(PrimitiveType.Sphere); // a golden pretzel-like sign above the door
-            Object.DestroyImmediate(sign.GetComponent<Collider>());
-            sign.transform.SetParent(root, false);
-            sign.transform.position = new Vector3(b.x + 0.5f, 3.6f, cz - 3f);
-            sign.transform.localScale = new Vector3(0.1f, 0.6f, 0.8f);
-            sign.GetComponent<Renderer>().sharedMaterial = Mat("Apt_Gold", new Color(0.85f, 0.65f, 0.2f), 0.7f);
+            else
+            {
+                var window = Mat("Apt_ShopWindow", new Color(0.55f, 0.62f, 0.62f), 0.9f);
+                Box("ShopWindow", new Vector3(b.x + 0.03f, 1.5f, cz + 3f), new Vector3(0.05f, 1.6f, 5f), window, collider: false).transform.SetParent(root, true);
+            }
+            // The hanging sign by the door end, above the awning: an iron bracket and a gilt pretzel.
+            var sign = FurnitureModel("bakery_sign", root);
+            if (sign != null)
+            {
+                sign.position = new Vector3(b.x, 4.1f, shopZ - 3.45f);
+                sign.rotation = Quaternion.Euler(0f, 90f, 0f);
+            }
+            // Bread crates by the door: the Blender crate over each collider box.
             var wood = Mat("Apt_CrateWood", new Color(0.62f, 0.48f, 0.3f), 0.15f);
+            int crateN = 0;
             foreach (var c in b.crates ?? new Spot[0])
-                Box("BreadCrate", new Vector3(c.x, 0.2f, c.z), new Vector3(0.5f, 0.4f, 0.7f), wood).transform.SetParent(root, true);
+            {
+                var crateBox = Box("BreadCrate", new Vector3(c.x, 0.2f, c.z), new Vector3(0.5f, 0.4f, 0.7f), wood);
+                crateBox.transform.SetParent(root, true);
+                var crate = FurnitureModel("bread_crate", root);
+                if (crate == null) continue;
+                crate.position = new Vector3(c.x, 0f, c.z);
+                crate.rotation = Quaternion.Euler(0f, (crateN++ * 23f) % 12f - 6f, 0f); // not quite square to each other
+                Object.DestroyImmediate(crateBox.GetComponent<Renderer>());
+            }
             var binMat = Mat("Apt_Bin", new Color(0.18f, 0.3f, 0.22f), 0.3f);
             foreach (var c in b.bins ?? new Spot[0])
-                Box("Bin", new Vector3(c.x, 0.55f, c.z), new Vector3(0.6f, 1.1f, 0.7f), binMat).transform.SetParent(root, true);
+            {
+                var binBox = Box("Bin", new Vector3(c.x, 0.55f, c.z), new Vector3(0.6f, 1.1f, 0.7f), binMat);
+                binBox.transform.SetParent(root, true);
+                // A Blender wheelie bin over the collider box (round 27).
+                var wheelie = FurnitureModel("wheelie_bin", root);
+                if (wheelie != null)
+                {
+                    wheelie.position = new Vector3(c.x, 0f, c.z);
+                    Object.DestroyImmediate(binBox.GetComponent<Renderer>());
+                }
+            }
             if (b.marker != null && b.marker.Length == 2)
             {
                 var m = new GameObject("Marker_Bakery");
@@ -3353,10 +3669,10 @@ namespace Draho.EditorTools
                 m.transform.position = new Vector3(b.marker[0], 0f, b.marker[1]);
             }
             if (b.mouse_holes != null && b.mouse_holes.Length > 0)
-                BuildMouseTerritory(new MouseTerritory { id = "BakeryMouse", name = "Bakery mouse", bounty = 15, holes = b.mouse_holes });
+                BuildMouseTerritory(new MouseTerritory { id = "BakeryMouse", name = "Bakery mouse", holes = b.mouse_holes });
         }
 
-        /// <summary>Mouse holes in walls and one mouse that lives there (a bounty on the board).</summary>
+        /// <summary>Mouse holes in walls and one mouse that lives there.</summary>
         static Mouse BuildMouseTerritory(MouseTerritory t)
         {
             var holes = new List<Transform>();
@@ -3377,38 +3693,8 @@ namespace Draho.EditorTools
             }
             var mouse = MouseModel(holes);
             mouse.name = t.id;
-            mouse.SetBounty(t.name, t.bounty);
+            mouse.SetName(t.name);
             return mouse;
-        }
-
-        /// <summary>Feathers to collect, floating a little above the place where they lie.</summary>
-        static void BuildFeathers(Layout layout)
-        {
-            var white = Mat("Feather_White", new Color(0.95f, 0.94f, 0.9f), 0.3f);
-            var tip = Mat("Feather_Tip", new Color(0.25f, 0.22f, 0.2f), 0.3f);
-            white.EnableKeyword("_EMISSION");
-            white.SetColor("_EmissionColor", new Color(0.35f, 0.33f, 0.28f));
-            EditorUtility.SetDirty(white);
-            foreach (var f in layout.feathers ?? new Feather[0])
-            {
-                var root = new GameObject($"Feather_{f.id}");
-                root.transform.SetParent(level, false);
-                root.transform.position = new Vector3(f.x, f.y + 0.2f, f.z);
-                var visual = new GameObject("Visual").transform;
-                visual.SetParent(root.transform, false);
-                var vane = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.DestroyImmediate(vane.GetComponent<Collider>());
-                vane.transform.SetParent(visual, false);
-                vane.transform.localScale = new Vector3(0.05f, 0.012f, 0.2f);
-                vane.GetComponent<Renderer>().sharedMaterial = white;
-                var end = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.DestroyImmediate(end.GetComponent<Collider>());
-                end.transform.SetParent(visual, false);
-                end.transform.localPosition = new Vector3(0f, 0f, 0.085f);
-                end.transform.localScale = new Vector3(0.035f, 0.013f, 0.05f);
-                end.GetComponent<Renderer>().sharedMaterial = tip;
-                root.AddComponent<Collectable>().Configure(f.id, visual);
-            }
         }
 
         /// <summary>Mallards on the river: drakes (green head) and brown ducks, in small groups.</summary>
@@ -3593,6 +3879,68 @@ namespace Draho.EditorTools
         }
 
         /// <summary>A house with a pitched roof (ridge along the long side), gables, a door and windows on its front.</summary>
+        /// <summary>
+        /// The top and foot of a scenery block (graphics review round 26). They were all flat boxes with a thin dark
+        /// slab, so the town read as cubes. Now about two in five of the mid-rise blocks get a gabled tile or slate
+        /// roof, the rest a pale stone cornice, and every block a darker plinth at street level. No colliders.
+        /// </summary>
+        static void ContextRoofline(ContextBuilding c, int n, Color tone)
+        {
+            var rot = Quaternion.Euler(0f, c.yaw, 0f);
+            var origin = new Vector3(c.x, 0f, c.z);
+            GameObject Part(string name, Vector3 local, Vector3 size, Material m, Quaternion? tilt = null)
+            {
+                var go = Box($"Context_{n}_{name}", origin + rot * local, size, m, collider: false);
+                go.transform.rotation = rot * (tilt ?? Quaternion.identity);
+                return go;
+            }
+            var plinth = Mat($"Apt_ContextPlinth_{n % 5}", tone * 0.62f, 0.1f, BrickTexture(), new Vector2(6f, 1f));
+            Part("plinth", new Vector3(0f, 0.45f, 0f), new Vector3(c.w + 0.06f, 0.9f, c.d + 0.06f), plinth);
+
+            bool pitched = c.h <= 13.5f && (n % 5 == 1 || n % 5 == 3);
+            if (!pitched)
+            {
+                var cornice = Mat("Apt_ContextCornice", new Color(0.7f, 0.68f, 0.64f), 0.15f);
+                Part("cornice", new Vector3(0f, c.h + 0.12f, 0f), new Vector3(c.w + 0.32f, 0.24f, c.d + 0.32f), cornice);
+                Part("roof", new Vector3(0f, c.h + 0.25f, 0f), new Vector3(c.w - 0.1f, 0.04f, c.d - 0.1f),
+                    Mat("Apt_ContextRoof", new Color(0.33f, 0.31f, 0.3f), 0.1f));
+                return;
+            }
+            // A gable roof, ridge along the long side, built like PitchedHouse in the block's own frame.
+            bool alongX = c.w >= c.d;
+            float span = alongX ? c.d : c.w, length = alongX ? c.w : c.d, ridge = span * 0.42f;
+            float slope = Mathf.Atan2(ridge, span / 2) * Mathf.Rad2Deg, slab = Mathf.Sqrt(span * span / 4 + ridge * ridge) + 0.35f;
+            var roofColour = n % 2 == 0 ? new Color(0.29f, 0.33f, 0.4f) : new Color(0.49f, 0.35f, 0.31f); // slate or tile
+            var tiles = alongX
+                ? Mat($"Apt_ContextTiles_{n % 2}_x", roofColour, 0.25f, RoofTexture(false), new Vector2(length + 0.3f, slab))
+                : Mat($"Apt_ContextTiles_{n % 2}_z", roofColour, 0.25f, RoofTexture(true), new Vector2(slab, length + 0.3f));
+            Vector3 across = alongX ? Vector3.forward : Vector3.right;
+            foreach (float side in new[] { -1f, 1f })
+                Part("roofside", new Vector3(0f, c.h + ridge / 2, 0f) + across * side * span / 4,
+                    alongX ? new Vector3(length + 0.3f, 0.14f, slab) : new Vector3(slab, 0.14f, length + 0.3f), tiles,
+                    alongX ? Quaternion.Euler(side * slope, 0f, 0f) : Quaternion.Euler(0f, 0f, -side * slope));
+            Part("ridge", new Vector3(0f, c.h + ridge + 0.04f, 0f),
+                alongX ? new Vector3(length + 0.3f, 0.12f, 0.26f) : new Vector3(0.26f, 0.12f, length + 0.3f),
+                Mat($"Apt_ContextRidge_{n % 2}", roofColour * 0.7f, 0.2f));
+            // Gable ends in the wall's colour: a cube turned 45 degrees and squeezed to the slope.
+            var wall = Mat($"Apt_Context_{n % 5}", tone, 0.08f, BrickTexture(), new Vector2(6f, 6f));
+            Vector3 along = alongX ? Vector3.right : Vector3.forward;
+            foreach (float end in new[] { -1f, 1f })
+            {
+                var gable = new GameObject($"Context_{n}_gable").transform;
+                gable.SetParent(level, false);
+                gable.position = origin + rot * (new Vector3(0f, c.h, 0f) + along * end * (length / 2 - 0.06f));
+                gable.rotation = rot * (alongX ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.identity);
+                gable.localScale = new Vector3(span / 2 / ridge, 1f, 1f);
+                var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Object.DestroyImmediate(cube.GetComponent<Collider>());
+                cube.transform.SetParent(gable, false);
+                cube.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                cube.transform.localScale = new Vector3(ridge * Mathf.Sqrt(2f), ridge * Mathf.Sqrt(2f), 0.1f);
+                cube.GetComponent<Renderer>().sharedMaterial = wall;
+            }
+        }
+
         static void PitchedHouse(Transform root, Building b)
         {
             float w = b.x1 - b.x0, d = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
@@ -3653,6 +4001,8 @@ namespace Draho.EditorTools
             for (int i = 0; i < bays; i++)
             {
                 float t = -faceLen / 2 + faceLen * (i + 0.5f) / bays;
+                // The bakery's middle bay is where the Blender shopfront stands (BuildBakery, round 29).
+                if (b.id == "bakery" && Mathf.Abs(t) < 1f) continue;
                 Vector3 at = faceCentre + tangent * t + n * 0.03f;
                 Box("Door", at + Vector3.up * 1.0f + tangent * -0.9f, faceAlongX ? new Vector3(0.95f, 2f, 0.08f) : new Vector3(0.08f, 2f, 0.95f), door, collider: false).transform.SetParent(root, true);
                 Box("Window", at + Vector3.up * 1.5f + tangent * 0.8f, faceAlongX ? new Vector3(1.0f, 1.2f, 0.06f) : new Vector3(0.06f, 1.2f, 1.0f), glass, collider: false).transform.SetParent(root, true);
@@ -3686,30 +4036,110 @@ namespace Draho.EditorTools
         }
 
         /// <summary>Concrete posts with horizontal wooden planks between them.</summary>
+        /// <summary>
+        /// A green welded-wire garden fence (the panels sold everywhere in Belgium): square green posts, a grid of thin
+        /// wires (20 cm wide, 5 cm high meshes with a fold near the top), a top rail. Low enough to jump on: the
+        /// collider is one 12 cm strip, so the cat lands on top and walks along it (e.h at most the cat's jump height).
+        /// </summary>
+        static void MeshFence(Edge e, bool alongX, float line, float a, float b)
+        {
+            var root = new GameObject(e.id).transform;
+            root.SetParent(level, false);
+            var green = Mat($"Apt_{e.id}", Hex(e.color), 0.3f);
+            var post = Mat($"Apt_{e.id}_post", Hex(e.post_color ?? e.color), 0.3f);
+            Vector3 At(float along, float y, float across = 0f) => alongX ? new Vector3(along, y, line + across) : new Vector3(line + across, y, along);
+            Vector3 Size(float along, float y, float across) => alongX ? new Vector3(along, y, across) : new Vector3(across, y, along);
+            void Part(string name, Vector3 c, Vector3 s, Material m) => Box(name, c, s, m, collider: false).transform.SetParent(root, true);
+            float spacing = e.post_spacing > 0f ? e.post_spacing : 2.5f;
+            int posts = Mathf.Max(1, Mathf.RoundToInt((b - a) / spacing));
+            for (int i = 0; i <= posts; i++)
+                Part("Post", At(a + (b - a) * i / posts, (e.h + 0.05f) / 2), Size(0.06f, e.h + 0.05f, 0.06f), post);
+            const float wire = 0.006f;
+            for (float t = a + 0.1f; t < b - 0.05f; t += 0.2f)                       // vertical wires
+                Part("Wire", At(t, e.h / 2), Size(wire, e.h, wire), green);
+            for (float y = 0.05f; y < e.h; y += y < e.h - 0.25f ? 0.2f : 0.05f)       // horizontal wires: tighter at the fold
+                Part("Wire", At((a + b) / 2, y), Size(b - a, wire, wire), green);
+            Part("Fold", At((a + b) / 2, e.h - 0.18f, 0.02f), Size(b - a, 0.012f, 0.025f), green); // the panel's stiffening fold
+            Part("TopRail", At((a + b) / 2, e.h - 0.01f), Size(b - a, 0.02f, 0.03f), post);
+            var col = Box("Collider", At((a + b) / 2, e.h / 2), Size(b - a, e.h, 0.12f), null);
+            Object.DestroyImmediate(col.GetComponent<Renderer>());
+            col.transform.SetParent(root, true);
+        }
+
+        /// <summary>
+        /// Faceted grass tufts (Art/Furniture/grass_tuft.fbx) on the lawn: dense along its long edges, where the lawn
+        /// meets the fence and the wall (the mower misses them), sparse over it, never on the stone path. One shared
+        /// palette material and no colliders; deterministic (seeded), so a rebuild gives the same garden.
+        /// </summary>
+        static void BuildGrassTufts(Layout layout)
+        {
+            if (AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/grass_tuft.fbx") == null) return;
+            var lawn = (layout.garden_zones ?? new Zone[0]).FirstOrDefault(z => z.material == "grass");
+            var garden = layout.rooms.FirstOrDefault(r => r.outdoor);
+            if (lawn == null || garden == null) return;
+            var root = new GameObject("GrassTufts").transform;
+            root.SetParent(level, false);
+            var rng = new System.Random(17);
+            float R(float a, float b) => a + (b - a) * (float)rng.NextDouble();
+            var paths = layout.garden_paths ?? new GardenPath[0];
+            bool OnPath(float x, float z) => paths.Any(p => z > Mathf.Min(p.from[1], p.to[1]) - p.w / 2 - 0.12f && z < Mathf.Max(p.from[1], p.to[1]) + p.w / 2 + 0.12f
+                && x > Mathf.Min(p.from[0], p.to[0]) - 0.1f && x < Mathf.Max(p.from[0], p.to[0]) + 0.1f);
+            void Tuft(float x, float z, float scale)
+            {
+                if (OnPath(x, z)) return;
+                var t = FurnitureModel("grass_tuft", root);
+                t.SetPositionAndRotation(new Vector3(x, -0.01f, z), Quaternion.Euler(0f, R(0f, 360f), 0f));
+                t.localScale = Vector3.one * scale;
+                foreach (var r in t.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+            float x0 = lawn.x0 + 0.1f, x1 = lawn.x1 - 0.1f;
+            foreach (float edge in new[] { garden.z0 + 0.12f, garden.z1 - 0.12f })     // along the wall and the fence
+                for (float x = x0; x < x1; x += R(0.12f, 0.3f))
+                    Tuft(x, edge + R(-0.08f, 0.08f) * (edge < 2f ? 1f : -1f), R(0.8f, 1.4f));
+            int scatter = Mathf.RoundToInt((x1 - x0) * (garden.z1 - garden.z0) * 1.2f);  // about 1 per m²
+            for (int i = 0; i < scatter; i++)
+                Tuft(R(x0, x1), R(garden.z0 + 0.4f, garden.z1 - 0.4f), R(0.6f, 1.0f));
+        }
+
         static void PostFence(Edge e, bool alongX, float line, float a, float b)
         {
             var root = new GameObject(e.id).transform;
             root.SetParent(level, false);
             var post = Mat($"Apt_{e.id}_post", Hex(e.post_color), 0.15f);
-            var plank = Mat($"Apt_{e.id}_plank", Hex(e.color), 0.1f);
-            var plankDark = Mat($"Apt_{e.id}_plank2", Hex(e.color) * 0.85f, 0.1f);
+            // Three plank tones (weathered wood is never one colour; two alternating tones read as stripes).
+            var tones = new[]
+            {
+                Mat($"Apt_{e.id}_plank", Hex(e.color), 0.1f),
+                Mat($"Apt_{e.id}_plank2", Hex(e.color) * 0.85f, 0.1f),
+                Mat($"Apt_{e.id}_plank3", Hex(e.color) * 0.93f, 0.1f),
+            };
+            var postCap = Mat($"Apt_{e.id}_postcap", Hex(e.post_color) * 1.06f, 0.15f);
+            var gravelBoard = Mat($"Apt_{e.id}_gravel", Hex(e.post_color) * 0.9f, 0.15f);
             Vector3 At(float along, float y) => alongX ? new Vector3(along, y, line) : new Vector3(line, y, along);
             Vector3 Size(float along, float y, float across) => alongX ? new Vector3(along, y, across) : new Vector3(across, y, along);
             float spacing = e.post_spacing > 0f ? e.post_spacing : 2f;
             int posts = Mathf.Max(1, Mathf.RoundToInt((b - a) / spacing));
             for (int i = 0; i <= posts; i++)
-                Box("Post", At(a + (b - a) * i / posts, (e.h + 0.1f) / 2), Size(0.12f, e.h + 0.1f, 0.12f), post, collider: false)
-                    .transform.SetParent(root, true);
-            const float board = 0.15f, gap = 0.035f;
-            int rows = Mathf.FloorToInt(e.h / (board + gap));
+            {
+                float t = a + (b - a) * i / posts;
+                Box("Post", At(t, (e.h + 0.1f) / 2), Size(0.12f, e.h + 0.1f, 0.12f), post, collider: false).transform.SetParent(root, true);
+                Box("PostCap", At(t, e.h + 0.12f), Size(0.15f, 0.04f, 0.15f), postCap, collider: false).transform.SetParent(root, true);
+            }
             bool hasGap = e.gap_w > 0f;
             float g0 = e.gap_at - e.gap_w / 2, g1 = e.gap_at + e.gap_w / 2, holeTop = 0f;
+            // A concrete gravel board along the bottom (Belgian garden fences stand on one), split round the cat hole.
+            const float baseH = 0.25f;
+            void Gravel(float from, float to) =>
+                Box("GravelBoard", At((from + to) / 2, baseH / 2), Size(to - from, baseH, 0.045f), gravelBoard, collider: false).transform.SetParent(root, true);
+            if (hasGap) { Gravel(a, g0); Gravel(g1, b); } else Gravel(a, b);
+            const float board = 0.15f, gap = 0.035f;
+            int rows = Mathf.FloorToInt((e.h - baseH - 0.02f) / (board + gap));
             void Plank(float from, float to, float y, Material m) =>
                 Box("Plank", At((from + to) / 2, y), Size(to - from, board, 0.03f), m, collider: false).transform.SetParent(root, true);
             for (int r = 0; r < rows; r++)
             {
-                float bottom = 0.04f + r * (board + gap), y = bottom + board / 2;
-                var m = r % 2 == 0 ? plank : plankDark;
+                float bottom = baseH + 0.02f + r * (board + gap), y = bottom + board / 2;
+                var m = tones[(r * 7 + e.id.Length) % 3];
                 if (hasGap && bottom < e.gap_h)
                 {
                     // Loose planks: the bottom rows have a cat-sized hole.
@@ -3731,7 +4161,7 @@ namespace Draho.EditorTools
             AddCollider(g0, g1, holeTop, e.h);
             // The loose plank lies in the grass on the far side.
             var fallen = Box("FallenPlank", At(e.gap_at + 0.1f, 0.02f) + (alongX ? new Vector3(0f, 0f, 0.35f) : new Vector3(0.35f, 0f, 0f)),
-                Size(e.gap_w + 0.5f, 0.03f, board), plankDark, collider: false);
+                Size(e.gap_w + 0.5f, 0.03f, board), tones[1], collider: false);
             fallen.transform.rotation = Quaternion.Euler(0f, 25f, 0f);
             fallen.transform.SetParent(root, true);
         }
@@ -3829,10 +4259,39 @@ namespace Draho.EditorTools
                 pipe.transform.localPosition = Vector3.up * (c.bottom + len / 2);
                 pipe.transform.localScale = new Vector3(c.radius * 2, len / 2, c.radius * 2);
                 pipe.GetComponent<Renderer>().sharedMaterial = Mat($"Apt_{c.id}", Hex(c.color), 0.5f);
-                for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
-                    Box("Bracket", root.position + Vector3.up * y + (c.wall == "-x" ? Vector3.left : c.wall == "+x" ? Vector3.right : Vector3.back) * c.radius,
-                        new Vector3(c.radius * 2.4f, 0.03f, c.radius * 2.4f),
-                        Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
+                Vector3 toWall = c.wall == "-x" ? Vector3.left : c.wall == "+x" ? Vector3.right : c.wall == "+z" ? Vector3.forward : Vector3.back;
+                // Blender parts (build_apartment_props.py pipe_*): 1 m segments with socket collars, clip brackets with
+                // an arm to the wall, a shoe at the foot. The primitive stays as the climbing collider only.
+                var segAsset = AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/pipe_segment.fbx");
+                if (segAsset != null)
+                {
+                    Object.DestroyImmediate(pipe.GetComponent<MeshRenderer>());
+                    float s = c.radius / 0.05f;
+                    var facing = Quaternion.LookRotation(-toWall);                    // the parts' -Z (Blender +Y) is the wall side
+                    bool shoe = c.bottom < 0.05f;
+                    float y0 = c.bottom + (shoe ? 0.2f : 0f);
+                    if (shoe)
+                    {
+                        var sh = FurnitureModel("pipe_shoe", root);
+                        if (sh != null) { sh.SetPositionAndRotation(root.position, facing); sh.localScale = new Vector3(s, 1f, s); }
+                    }
+                    for (float y = y0; y < c.h - 0.01f; y += 1f)
+                    {
+                        var seg = FurnitureModel("pipe_segment", root);
+                        seg.SetPositionAndRotation(root.position + Vector3.up * y, facing);
+                        seg.localScale = new Vector3(s, Mathf.Min(1f, c.h - y), s);
+                    }
+                    for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
+                    {
+                        var br = FurnitureModel("pipe_bracket", root);
+                        if (br != null) { br.SetPositionAndRotation(root.position + Vector3.up * y, facing); br.localScale = new Vector3(s, 1f, s); }
+                    }
+                }
+                else
+                    for (float y = c.bottom + 0.5f; y < c.h; y += 0.9f)
+                        Box("Bracket", root.position + Vector3.up * y + toWall * c.radius,
+                            new Vector3(c.radius * 2.4f, 0.03f, c.radius * 2.4f),
+                            Mat($"Apt_{c.id}", Hex(c.color), 0.5f), collider: false).transform.SetParent(root, true);
                 climbable.Configure(c.climb_top, c.standable);
                 return;
             }
@@ -3865,6 +4324,16 @@ namespace Draho.EditorTools
                 trunk.transform.localPosition = Vector3.up * c.h / 2;
                 trunk.transform.localScale = new Vector3(c.radius * 2, c.h / 2, c.radius * 2);
                 trunk.GetComponent<Renderer>().sharedMaterial = wood;
+                // The faceted Blender tree (build_apartment_props.py tree_[id]); the cylinder stays as the climbing
+                // collider only.
+                var model = FurnitureModel($"tree_{c.id}", root);
+                if (model != null)
+                {
+                    model.SetPositionAndRotation(root.position, Quaternion.identity);
+                    Object.DestroyImmediate(trunk.GetComponent<MeshRenderer>());
+                    climbable.Configure(c.climb_top, false);
+                    return;
+                }
                 var rng = new System.Random(5);
                 float Rand() => (float)rng.NextDouble();
                 for (int i = 0; i < 4; i++) // branches from the fork, no colliders
@@ -4050,6 +4519,7 @@ namespace Draho.EditorTools
         // ------------------------------------------------------------------ light
         static void BuildLamps(Layout layout)
         {
+            var lamps = new List<Light>();
             foreach (var l in layout.lamps ?? new Lamp[0])
             {
                 var light = new GameObject(l.id).AddComponent<Light>();
@@ -4060,7 +4530,98 @@ namespace Draho.EditorTools
                 light.intensity = l.intensity;
                 light.range = l.range;
                 light.shadows = LightShadows.None; // cheap on the phone
+                lamps.Add(light);
+                // The fitting (Blender, Art/Furniture/lamp_[id].fbx, built at real height) and a glowing bulb in it.
+                var fitting = FurnitureModel($"lamp_{l.id}", level);
+                if (fitting != null)
+                {
+                    fitting.position = new Vector3(l.x, 0f, l.z);
+                    foreach (var r in fitting.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+                    var bulb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    bulb.name = $"{l.id}_bulb";
+                    Object.DestroyImmediate(bulb.GetComponent<Collider>());
+                    bulb.transform.SetParent(level, false);
+                    bulb.transform.position = new Vector3(l.x, l.y - 0.08f, l.z);
+                    bulb.transform.localScale = Vector3.one * 0.07f;
+                    var br = bulb.GetComponent<Renderer>();
+                    br.sharedMaterial = BulbMat();
+                    br.shadowCastingMode = ShadowCastingMode.Off;
+                }
             }
+
+            Light Spot(string name, Vector3 pos, Vector3 target, float angle, float range, Color color, bool shadows)
+            {
+                var s = new GameObject(name).AddComponent<Light>();
+                s.transform.SetParent(level, false);
+                s.transform.position = pos;
+                s.transform.rotation = Quaternion.LookRotation(target - pos);
+                s.type = LightType.Spot;
+                s.spotAngle = angle;
+                s.innerSpotAngle = angle * 0.45f;
+                s.range = range;
+                s.color = color;
+                s.shadows = shadows ? LightShadows.Soft : LightShadows.None;
+                s.shadowStrength = 0.85f;
+                return s;
+            }
+
+            // Daylight through the sliding glass door: from outside, down into the room, with shadows, so the walls
+            // frame a bright patch on the floor by the glass and the back of the room stays darker.
+            var door = (layout.openings ?? new Opening[0]).FirstOrDefault(o => o.id == "sliding_door");
+            float doorZ = door != null ? (door.from + door.to) / 2 : 2.9f;
+            var window = Spot("WindowLight", new Vector3(-1.6f, 2.7f, doorZ), new Vector3(1.6f, 0f, doorZ), 115f, 7f,
+                new Color(0.86f, 0.9f, 0.97f), true);
+            // The light well: a softer daylight through the court glass into the kitchen and the living room.
+            var c = (layout.courts ?? new Court[0]).FirstOrDefault();
+            Light court = null;
+            if (c != null)
+                court = Spot("CourtLight", new Vector3((c.x0 + c.x1) / 2 + 0.4f, 3.2f, c.z1 - 0.2f),
+                    new Vector3((c.x0 + c.x1) / 2 - 0.6f, 0f, c.z0 - 1.2f), 100f, 6f, new Color(0.86f, 0.9f, 0.97f), false);
+
+            // The spots above the sink: two recessed downlights in the ceiling over the back counter.
+            var spots = new List<Light>();
+            var fittings = new List<Renderer>();
+            var counter = (layout.props ?? new Prop[0]).FirstOrDefault(x => x.id == "back_counter");
+            if (counter != null)
+            {
+                var fitting = Mat("Apt_Downlight", new Color(1f, 0.95f, 0.85f), 0.3f);
+                fitting.EnableKeyword("_EMISSION");
+                fitting.SetColor("_EmissionColor", new Color(1f, 0.85f, 0.65f) * 1.5f);
+                fitting.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+                EditorUtility.SetDirty(fitting);
+                float ceilingY = layout.wall.height;
+                foreach (float dx in new[] { -0.4f, 0.4f })
+                {
+                    var pos = new Vector3(counter.x + dx, ceilingY - 0.03f, counter.z + 0.12f);
+                    spots.Add(Spot("SinkSpot", pos, pos + Vector3.down, 75f, 3.2f, new Color(1f, 0.87f, 0.7f), false));
+                    var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    disc.name = "SinkDownlight";
+                    Object.DestroyImmediate(disc.GetComponent<Collider>());
+                    disc.transform.SetParent(level, false);
+                    disc.transform.position = new Vector3(pos.x, ceilingY - 0.005f, pos.z);
+                    disc.transform.localScale = new Vector3(0.09f, 0.005f, 0.09f);
+                    var r = disc.GetComponent<Renderer>();
+                    r.sharedMaterial = fitting;
+                    r.shadowCastingMode = ShadowCastingMode.Off;
+                    fittings.Add(r);
+                }
+            }
+            var openAir = (layout.courts ?? new Court[0]).Select(x => Rect.MinMaxRect(x.x0, x.z0, x.x1, x.z1)).ToArray();
+            var indoor = new GameObject("IndoorLight").AddComponent<IndoorLight>();
+            indoor.Configure(window, court, lamps.ToArray(), spots.ToArray(), fittings.ToArray(), openAir);
+            indoor.SetBulbs(BulbMat());
+        }
+
+        /// <summary>The ceiling lamps' bulbs: warm emissive, switched with the lamps by IndoorLight.</summary>
+        static Material BulbMat()
+        {
+            if (materials.TryGetValue("Apt_Bulb", out var m)) return m;
+            m = Mat("Apt_Bulb", new Color(1f, 0.93f, 0.78f), 0.5f);
+            m.EnableKeyword("_EMISSION");
+            m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            m.SetColor("_EmissionColor", Color.black); // off by day; IndoorLight turns it on with the lamps
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         // ------------------------------------------------------------------ story: chapter 1
@@ -4089,9 +4650,8 @@ namespace Draho.EditorTools
 
             BuildBirds(layout);
             Mouse mouse = MouseModel(holes);
-            mouse.SetBounty("Kitchen mouse", 10);
+            mouse.SetName("Kitchen mouse");
             foreach (var t in layout.mouse_territories ?? new MouseTerritory[0]) BuildMouseTerritory(t);
-            BuildFeathers(layout);
             BuildGardenCharacters();
             BuildNeighbourFlat();
             BuildCourtLife(layout);
@@ -4109,16 +4669,11 @@ namespace Draho.EditorTools
             BuildGlowWorms(layout.wild_garden);
             BuildCloudShadows();
             BuildGifts();
-            BuildViewpoints();
-            var rewards = new GameObject("SetRewards");
-            rewards.transform.SetParent(level, false);
-            rewards.AddComponent<SetRewards>().Configure(8, 6, Mat("Collar_Red", new Color(0.75f, 0.08f, 0.08f), 0.5f), Mat("Apt_Gold", new Color(0.85f, 0.65f, 0.2f), 0.7f));
             BuildShootingStars();
             BuildLightningBolt();
             BuildRainbow();
             BuildSkyClouds();
             BuildMorningMist(layout);
-            BuildScratchSpots();
             BuildRainSplashes();
             new GameObject("Soundscape").AddComponent<Soundscape>().transform.SetParent(level, false);
             var swifts = new GameObject("Swifts");
@@ -4139,8 +4694,6 @@ namespace Draho.EditorTools
             BuildCatnip(layout);
             BuildFarBankLamps(layout);
             BuildStreetLamps();
-            BuildNapSpots();
-            BountyBoard(layout.bounty_board);
             ProgressPanel(hud);
             new GameObject("Progress").AddComponent<Draho.Core.Progress>().transform.SetParent(level, false);
             new GameObject("PerfProbe").AddComponent<Draho.Core.PerfProbe>().transform.SetParent(level, false);
@@ -4252,6 +4805,7 @@ namespace Draho.EditorTools
 
             var black = Mat("Bird_Black", new Color(0.04f, 0.04f, 0.045f), 0.45f);
             var orange = Mat("Bird_Beak", new Color(0.95f, 0.6f, 0.08f), 0.5f);
+            int birdIndex = 0;
             foreach (var spot in layout.birds)
             {
                 var root = new GameObject(spot.id);
@@ -4295,7 +4849,9 @@ namespace Draho.EditorTools
                 }
                 var left = Wing("WingL", -1f);
                 var right = Wing("WingR", 1f);
-                var model = AnimalModels.Swap("Blackbird", root.transform);
+                // Every second blackbird is a brown hen, so the lawn has pairs.
+                var model = (birdIndex++ % 2 == 1 ? AnimalModels.Swap("Blackbird_Hen", root.transform) : null)
+                    ?? AnimalModels.Swap("Blackbird", root.transform);
                 if (model != null) { body = AnimalModels.Find(model, "Body"); head = AnimalModels.Find(model, "Head"); left = AnimalModels.Find(model, "WingL"); right = AnimalModels.Find(model, "WingR"); }
                 root.AddComponent<Bird>().Configure(body, head, left, right, perches.ToArray(), lawn);
             }
@@ -4304,7 +4860,7 @@ namespace Draho.EditorTools
         /// <summary>Fatsocat (the big white rival) and Zlatenka (the leopard tortoise) in the garden.</summary>
         static void BuildGardenCharacters()
         {
-            var fat = PlaygroundBuilder.NpcCatModel("Fatsocat", level, new Color(0.93f, 0.93f, 0.9f), 1.45f);
+            var fat = PlaygroundBuilder.NpcCatModel("Fatsocat", level, new Color(0.93f, 0.93f, 0.9f), 1.4f, girth: 1.3f); // big and stout
             var model = fat.transform.GetChild(0);
             model.localScale = Vector3.Scale(model.localScale, new Vector3(1.3f, 1.05f, 1.1f)); // very fat
             fat.transform.SetPositionAndRotation(new Vector3(-23.6f, 0f, 2.5f), Quaternion.Euler(0f, 90f, 0f));
@@ -4500,43 +5056,6 @@ namespace Draho.EditorTools
             }
         }
 
-        /// <summary>A cork board on the kitchen wall with paper notes: the mouse bounties.</summary>
-        static void BountyBoard(float[] at)
-        {
-            if (at == null || at.Length < 4) return;
-            var root = new GameObject("BountyBoard").transform;
-            root.SetParent(level, false);
-            root.SetPositionAndRotation(new Vector3(at[0], at[1], at[2]), Quaternion.Euler(0f, at[3], 0f));
-            var cork = Mat("Apt_Cork", new Color(0.66f, 0.5f, 0.33f), 0.1f);
-            var frame = Mat("Apt_BoardFrame", new Color(0.35f, 0.25f, 0.16f), 0.2f);
-            var paper = Mat("Apt_Paper", new Color(0.95f, 0.93f, 0.86f), 0.1f);
-            var pin = Mat("Apt_Pin", new Color(0.8f, 0.15f, 0.12f), 0.6f);
-            Part(root, "Frame", new Vector3(0f, 0f, 0f), new Vector3(0.66f, 0.48f, 0.03f), frame);
-            Part(root, "Cork", new Vector3(0f, 0f, 0.01f), new Vector3(0.6f, 0.42f, 0.02f), cork);
-            var notes = new[] { new Vector3(-0.17f, 0.08f, 0f), new Vector3(0.05f, 0.1f, 0f), new Vector3(0.18f, -0.06f, 0f), new Vector3(-0.08f, -0.1f, 0f) };
-            for (int i = 0; i < notes.Length; i++)
-            {
-                var note = Part(root, "Note", notes[i] + new Vector3(0f, 0f, 0.022f), new Vector3(0.12f, 0.15f, 0.004f), paper);
-                note.localRotation = Quaternion.Euler(0f, 0f, (i % 2 == 0 ? 1f : -1f) * 6f);
-                Part(root, "Pin", notes[i] + new Vector3(0f, 0.06f, 0.028f), Vector3.one * 0.015f, pin);
-            }
-            var marker = new GameObject("Marker_BountyBoard").transform;
-            marker.SetParent(level, false);
-            marker.position = new Vector3(at[0], 0f, at[2]) + root.forward * 0.4f;
-
-            Transform Part(Transform parent, string name, Vector3 local, Vector3 scale, Material m)
-            {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.name = name;
-                Object.DestroyImmediate(go.GetComponent<Collider>());
-                go.transform.SetParent(parent, false);
-                go.transform.localPosition = local;
-                go.transform.localScale = scale;
-                go.GetComponent<Renderer>().sharedMaterial = m;
-                return go.transform;
-            }
-        }
-
         static Material NoiseRingMaterial()
         {
             // Sprites/Default: unlit, alpha-blended and uses the line's vertex colours.
@@ -4550,7 +5069,7 @@ namespace Draho.EditorTools
             return m;
         }
 
-        /// <summary>Coins and feathers (top right) and the bounty list panel (shown at the board).</summary>
+        /// <summary>The side-moment line (top right), the "New game" button and the goal compass.</summary>
         static void ProgressPanel(Transform canvas)
         {
             Text MakeText(string name, Transform parent, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize, TextAnchor align)
@@ -4571,31 +5090,15 @@ namespace Draho.EditorTools
                 go.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.6f);
                 return t;
             }
-            var counters = MakeText("Counters", canvas, new Vector2(1f, 1f), new Vector2(-40f, -230f), new Vector2(700f, 60f), 36, TextAnchor.MiddleRight);
-            counters.horizontalOverflow = HorizontalWrapMode.Overflow; // right-aligned: a longer line grows to the left
+            var toast = MakeText("Toast", canvas, new Vector2(1f, 1f), new Vector2(-40f, -230f), new Vector2(900f, 60f), 32, TextAnchor.MiddleRight);
+            toast.horizontalOverflow = HorizontalWrapMode.Overflow; // right-aligned: a longer line grows to the left
             // "New game" in the top-left corner (tap twice).
             var newGame = MakeText("NewGame", canvas, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(250f, 50f), 26, TextAnchor.MiddleLeft);
             newGame.text = "New game";
             newGame.color = new Color(1f, 0.92f, 0.7f, 0.75f);
             newGame.raycastTarget = true;
             newGame.gameObject.AddComponent<NewGameButton>().Configure(newGame);
-            var panel = new GameObject("BountyPanel", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
-            var prt = (RectTransform)panel.transform;
-            prt.SetParent(canvas, false);
-            prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0f);
-            prt.anchoredPosition = new Vector2(0f, 40f);
-            prt.sizeDelta = new Vector2(1100f, 420f);
-            var bg = panel.GetComponent<Image>();
-            bg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
-            bg.type = Image.Type.Sliced;
-            bg.color = new Color(0.25f, 0.17f, 0.1f, 0.85f);
-            bg.raycastTarget = false;
-            var group = panel.GetComponent<CanvasGroup>();
-            group.alpha = 0f;
-            group.blocksRaycasts = false;
-            var board = MakeText("BountyList", prt, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1020f, 380f), 34, TextAnchor.MiddleCenter);
-            var hud = canvas.gameObject.AddComponent<ProgressHud>();
-            hud.Configure(counters, board, group);
+            canvas.gameObject.AddComponent<ProgressHud>().Configure(toast);
 
             // Goal compass under the story panel: a chevron of two bars and the distance.
             var compass = new GameObject("GoalCompass", typeof(RectTransform), typeof(CanvasGroup));
@@ -4717,6 +5220,19 @@ namespace Draho.EditorTools
         }
 
         static Color Hex(string hex) => ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.magenta;
+
+        /// <summary>Saves a material made in code as Materials/[name].mat (or updates the saved one) and returns the asset.</summary>
+        static Material SaveMaterial(Material m)
+        {
+            string path = $"{PlaygroundBuilder.MaterialDir}/{m.name}.mat";
+            var saved = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (saved == null) { AssetDatabase.CreateAsset(m, path); return m; }
+            saved.shader = m.shader;
+            saved.CopyPropertiesFromMaterial(m);
+            saved.renderQueue = m.renderQueue;
+            EditorUtility.SetDirty(saved);
+            return saved;
+        }
 
         static Material Mat(string name, Color color, float smoothness, Texture tex = null, Vector2? tiling = null)
         {
@@ -4977,6 +5493,23 @@ namespace Draho.EditorTools
             return Mathf.Lerp(top, bottom, fy);
         }
 
+        /// <summary>White, darkening softly towards the bottom (v = 0): the walls' floor-to-ceiling gradient (a tint).</summary>
+        static Texture2D WallGradientTexture() => MakeTexture("WallGradient.png", 64, (x, y, size) =>
+        {
+            float v = (y + 0.5f) / size;
+            float g = Mathf.Lerp(0.92f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(v / 0.6f)));
+            return new Color(g, g, g * 0.995f);
+        });
+
+        /// <summary>A soft grey gradient: lighter in the middle, darker at the edges (the court's ground under the stones).</summary>
+        static Texture2D CourtGroundTexture() => MakeTexture("CourtGround.png", 64, (x, y, size) =>
+        {
+            float u = (x + 0.5f) / size * 2f - 1f, v = (y + 0.5f) / size * 2f - 1f;
+            float edge = Mathf.Clamp01(Mathf.Max(Mathf.Abs(u), Mathf.Abs(v)));
+            float g = Mathf.Lerp(0.42f, 0.3f, edge * edge);
+            return new Color(g, g * 0.99f, g * 0.97f);
+        });
+
         static Texture2D PebbleTexture() => MakeTexture("Pebbles.png", 256, (x, y, size) =>
         {
             // Round stones: a jittered grid of discs, light on top, dark gaps between them.
@@ -5000,27 +5533,40 @@ namespace Draho.EditorTools
             return new Color(light, light * 0.97f, light * 0.92f);
         });
 
-        static Texture2D RippleTexture() => MakeTexture("Ripples.png", 128, (x, y, size) =>
+        // Calm canal water (graphics review round 28). The old ripples were three waves on the texture's own axes,
+        // repeated every 4 m: a regular grid of bumps that read as a corrugated roof. Now a dozen small waves run in
+        // different directions (integer wave numbers, so the tile is still seamless) with a little domain warp, the
+        // tile covers 9 m, the colour barely varies and the normals are gentle: the water mostly mirrors the sky.
+        static readonly (int ku, int kv, float amp, float phase)[] WaterWaves =
         {
-            // Soft long ripples across the flow, darker troughs; tiles seamlessly.
+            (1, 3, 0.20f, 0.0f), (2, -3, 0.17f, 1.3f), (4, 1, 0.14f, 2.1f), (-3, 5, 0.12f, 0.7f), (5, 4, 0.10f, 4.0f),
+            (7, -2, 0.08f, 2.9f), (-6, 7, 0.07f, 5.2f), (9, 5, 0.06f, 1.1f), (3, -10, 0.05f, 3.6f), (11, 6, 0.04f, 0.4f),
+            (-13, 4, 0.035f, 2.4f), (8, 13, 0.03f, 5.7f),
+        };
+
+        static float WaterHeight(float x, float y, int size)
+        {
             float u = x * 2f * Mathf.PI / size, v = y * 2f * Mathf.PI / size;
-            float r = 0.5f + 0.25f * Mathf.Sin(v * 3f + Mathf.Sin(u * 2f) * 1.5f) + 0.15f * Mathf.Sin(u * 5f + v * 7f) + 0.1f * Mathf.Sin(v * 11f - u * 3f);
-            float t = 0.75f + 0.35f * r;
+            float warp = 0.6f * Mathf.Sin(2f * u + v + 0.5f) + 0.4f * Mathf.Sin(-u + 3f * v + 2f);
+            float h = 0f;
+            foreach (var (ku, kv, amp, phase) in WaterWaves)
+                h += amp * Mathf.Sin(ku * u + kv * v + phase + warp * (ku * ku + kv * kv > 40 ? 1f : 0.3f));
+            return h;
+        }
+
+        static Texture2D RippleTexture() => MakeTexture("Ripples2.png", 256, (x, y, size) =>
+        {
+            float t = 0.93f + 0.12f * WaterHeight(x, y, size); // about +-8 %: shading, not stripes
             return new Color(t, t, t);
         });
 
-        /// <summary>The slope of the ripple waves as a tangent-space normal map (imported as a normal map).</summary>
+        /// <summary>The slope of the water waves as a tangent-space normal map (imported as a normal map).</summary>
         static Texture2D RippleNormalTexture()
         {
-            float Height(float x, float y, int size)
+            var tex = MakeTexture("RippleNormal2.png", 256, (x, y, size) =>
             {
-                float u = x * 2f * Mathf.PI / size, v = y * 2f * Mathf.PI / size;
-                return 0.25f * Mathf.Sin(v * 3f + Mathf.Sin(u * 2f) * 1.5f) + 0.15f * Mathf.Sin(u * 5f + v * 7f) + 0.1f * Mathf.Sin(v * 11f - u * 3f);
-            }
-            var tex = MakeTexture("RippleNormal.png", 128, (x, y, size) =>
-            {
-                float dx = (Height(x + 1, y, size) - Height(x - 1, y, size)) * 6f;
-                float dy = (Height(x, y + 1, size) - Height(x, y - 1, size)) * 6f;
+                float dx = (WaterHeight(x + 1, y, size) - WaterHeight(x - 1, y, size)) * 4f;
+                float dy = (WaterHeight(x, y + 1, size) - WaterHeight(x, y - 1, size)) * 4f;
                 var n = new Vector3(-dx, -dy, 1f).normalized;
                 return new Color(n.x * 0.5f + 0.5f, n.y * 0.5f + 0.5f, n.z * 0.5f + 0.5f);
             });

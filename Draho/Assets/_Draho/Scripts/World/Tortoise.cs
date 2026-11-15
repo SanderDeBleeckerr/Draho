@@ -1,5 +1,4 @@
 using Draho.Cat;
-using Draho.Core;
 using Draho.UI;
 using UnityEngine;
 
@@ -16,7 +15,6 @@ namespace Draho.World
         [SerializeField] float speed = 0.05f;
         [SerializeField] float napDistance = 1.0f;
         [SerializeField] float napTime = 5f;
-        [SerializeField] int napCoins = 3;
         [SerializeField] float napCooldown = 120f;
 
         CatMotor cat;
@@ -67,9 +65,7 @@ namespace Draho.World
             if (nap >= napTime && cooldown <= 0f)
             {
                 cooldown = napCooldown;
-                Progress.Instance?.AddCoins(napCoins, "nap with Zlatenka");
-                Progress.Instance?.Save();
-                ProgressHud.Toast($"A warm nap in the sun with Zlatenka. +{napCoins} coins");
+                ProgressHud.Toast("A warm nap in the sun with Zlatenka. She blinks at you, very slowly.");
                 Debug.Log("STORY nap with Zlatenka");
             }
         }

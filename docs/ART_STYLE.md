@@ -65,6 +65,10 @@ Keep the existing low-poly geometry (brief §3); improve it, don't replace it.
 
 `draho_style.soften(obj)` and `draho_style.facet(obj)` apply these rules in Blender.
 
+**Exception, proposed (November 2026): Drahomil.** The player sees the hero cat close up all game, and its
+800 fur triangles read as blocky (square chest, stick legs). Its body is now subdivided once and shaded
+smooth with sharp ridges: see §4.
+
 ## 3. Light (the most important part)
 
 The look is made by **cool ambient + warm sources**. The frames use this rig; Unity gets the same values.
@@ -97,12 +101,44 @@ Rules:
   floor surface needs a light border or a light patch near it. The concept frames showed this: on a deep
   blue rug, the cat disappeared.
 - Amber eyes stay the brightest part of the cat; `EyeShine` handles the night.
+- **Body (November 2026):** `convert_lowpoly_cat.py` step 3b welds the glTF's split faces, removes two inner
+  faces in the hind paws, and adds one Catmull-Clark level. Edges sharper than 70° are creased, so the ears
+  and paws keep their points. The weights are limited to 4 bones per vertex and normalised. Shading is
+  smooth, with edges sharper than 35° kept sharp. Fur: 794 → 4,752 triangles; whole cat 2,316 → 6,274.
+  The face parts are projected onto the refined head as before; the nose frame tilts up, so the pad lies on
+  the snout instead of sticking out of its tip. `--subdiv 0 --shading facet` gives the old faceted cat
+  back. The QA check reports only the expected items (palette/decal UVs, layered eye decals).
+
+  ![Before and after](images/style/cat_refine_before_after.jpg)
+- **Creases:** only the ears and paws are creased. The source tail and legs have a square cross-section;
+  creased, the tail stayed a square block stuck into the rump.
+- **Crouch:** in CrouchIdle and CrouchWalk the hind legs are driven from the paw, not the hock: the paw stays
+  on the ground 2.3 cm further forward, a pole target keeps the knee forward, and the foot bone aims at the
+  paw. Before, the knee folded onto the floor and the paw floated or dragged behind. `crouchClipSpeed` is
+  0.148 m/s (the planted paws' speed).
+- **Fur (proposed, November 2026):** shell fur. Strand fur (Blender's hair curves) cannot run in a phone
+  browser; shell fur draws the fur surface in layers and a shader cuts each layer into strand dots. WebGL has
+  no geometry shader, so the layers are in the mesh: the converter's step 5b writes `DrahomilFur`, 8 copies of
+  the fur faces (38,016 triangles, one draw call, no shadow), with the layer, the rest position and a fur
+  length mask in its UV channels. [`Draho/ShellFur`](../Draho/Assets/_Draho/Art/Shaders/ShellFur.shader)
+  pushes the layers out (14 mm along the hair) and draws 520 strands per metre from the rest position, so it
+  needs no texture or unwrap. The mask leaves the eyes, nose and inner ears clear and shortens the fur on the
+  head, ears and lower legs. `PlaygroundBuilder.FurShellMaterial` sets the look; a scene rebuild resets it.
+  - **Combed, not spiky.** Hair that stands straight up looks like a hedgehog. The fur mesh's normals lean
+    about 63° from the skin towards the lay of the coat: away from the nose on the head, back along the body,
+    down the legs, along the tail. The layers go out along these normals, so the hairs lie flat and overlap.
+    Unity skins normals, so the lay follows the legs and tail. The light uses the surface itself (from the
+    pixel's position), not the leaning normals.
+  - **One colour.** The lowest layer is a solid undercoat, and the body under the fur uses the same shader
+    with `_Skin` on, so no lighter skin shows between the hairs or round the eyes. The body casts the shadow.
+  `--fur-shells 0` builds the cat without fur. Open: frame time on a phone (38k extra triangles and
+  alpha-tested overdraw), and whether fur fits the low-poly style at all: the owner decides.
 
 ## 5. Budgets (mobile WebGL and iPhone)
 
 | Asset | Triangles | Textures |
 |---|---|---|
-| Drahomil | 8–15k (now 2.3k) | the palette + eye and nose textures (256 px) |
+| Drahomil | 8–15k (now 6.3k, plus 38k fur layers: over budget, see §4) | the palette + eye and nose textures (256 px) |
 | Other animals | 3–6k | palette only |
 | Furniture, props | 0.2–2k | palette only |
 | A building | 0.5–3k | palette only |

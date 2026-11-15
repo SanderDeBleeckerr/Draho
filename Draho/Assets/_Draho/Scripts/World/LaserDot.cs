@@ -1,5 +1,4 @@
 using Draho.Cat;
-using Draho.Core;
 using Draho.Story;
 using Draho.UI;
 using UnityEngine;
@@ -107,9 +106,7 @@ namespace Draho.World
             Show(false);
             rest = won ? 90f : 20f;
             if (!won) return;
-            var p = Progress.Instance;
-            p?.AddCoins(10, "laser game");
-            ProgressHud.Toast("The dot stops on a treat. \"Good hunting, Drahomil!\" Crunch. (+10 coins)");
+            ProgressHud.Toast("The dot stops on a treat. \"Good hunting, Drahomil!\" Crunch.");
             Debug.Log("STORY laser game won");
         }
 

@@ -109,6 +109,12 @@ namespace Draho.EditorTools
             SetIfFound(so, "m_SupportsHDR", true);
             SetIfFound(so, "m_SupportsLightCookies", true); // cloud shadows on the sun (keep the cookie shader variants)
             SetIfFound(so, "m_SupportsLightLayers", true);  // "Use Rendering Layers": the rim light lights only the cat
+            SetIfFound(so, "m_AdditionalLightShadowsSupported", true); // the window light's shadow (IndoorLight)
+            SetIfFound(so, "m_AdditionalLightsShadowmapResolution", 1024);
+            // Forward: each object takes its brightest 4 extra lights by default. The flat's big wall and floor meshes are
+            // reached by more (window, court, sink spots, three lamps, the cat's fill): the dimmest dropped out and the
+            // dining corner went dark at night. 8 is URP's Forward maximum; the lights are small and range-culled.
+            SetIfFound(so, "m_AdditionalLightsPerObjectLimit", 8);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(urp);
 
@@ -121,6 +127,58 @@ namespace Draho.EditorTools
                 Debug.Log($"Draho: post-process data assigned: {rendererAsset.postProcessData != null}");
                 EditorUtility.SetDirty(rendererAsset);
             }
+            if (rendererAsset != null) EnsureAmbientOcclusion(rendererAsset);
+        }
+
+        /// <summary>
+        /// Screen-space ambient occlusion (URP renderer feature): contact shadows where walls meet the floor and under
+        /// the furniture, so things sit on the ground (docs/APARTMENT_GRAPHICS.md). Half resolution, few samples and a
+        /// short radius for phones. The settings are internal, so they are set through the serialized fields.
+        /// </summary>
+        static void EnsureAmbientOcclusion(UniversalRendererData renderer)
+        {
+            var type = typeof(UniversalRendererData).Assembly.GetType("UnityEngine.Rendering.Universal.ScreenSpaceAmbientOcclusion");
+            if (type == null) { Debug.LogWarning("Draho: URP has no ScreenSpaceAmbientOcclusion feature."); return; }
+            var feature = renderer.rendererFeatures.FirstOrDefault(f => f != null && f.GetType() == type);
+            if (feature == null)
+            {
+                feature = (ScriptableRendererFeature)ScriptableObject.CreateInstance(type);
+                feature.name = "AmbientOcclusion";
+                AssetDatabase.AddObjectToAsset(feature, renderer);
+                var rso = new SerializedObject(renderer);
+                var list = rso.FindProperty("m_RendererFeatures");
+                var map = rso.FindProperty("m_RendererFeatureMap");
+                list.arraySize++;
+                list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = feature;
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out _, out long localId);
+                map.arraySize++;
+                map.GetArrayElementAtIndex(map.arraySize - 1).longValue = localId;
+                rso.ApplyModifiedPropertiesWithoutUndo();
+            }
+            var so = new SerializedObject(feature);
+            void Set(string name, object value)
+            {
+                var p = so.FindProperty("m_Settings." + name);
+                if (p == null) { Debug.LogWarning($"Draho: SSAO setting '{name}' not found."); return; }
+                if (value is bool b) p.boolValue = b;
+                else if (value is float f) p.floatValue = f;
+                else if (p.propertyType == SerializedPropertyType.Enum) p.enumValueIndex = (int)value;
+                else p.intValue = (int)value;
+            }
+            // Blue noise at half resolution drew dashed lines along every edge; interleaved gradient at full resolution
+            // with the high blur is smooth. AdaptiveQuality lowers the render scale on slow phones anyway.
+            Set("AOMethod", 1);                   // InterleavedGradient
+            Set("Downsample", false);
+            Set("Samples", 1);                    // Medium
+            Set("BlurQuality", 0);                // High
+            Set("Intensity", 0.9f);
+            Set("Radius", 0.2f);                  // metres: the gap under a sofa, the corner of a room
+            Set("DirectLightingStrength", 0.2f);  // mostly in the shade, not on top of sunlight
+            Set("Falloff", 25f);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            feature.SetActive(true);
+            EditorUtility.SetDirty(feature);
+            EditorUtility.SetDirty(renderer);
         }
 
         /// <summary>Rendering layer 1: Drahomil. The rim light shines on this layer only.</summary>
@@ -380,11 +438,13 @@ namespace Draho.EditorTools
                 LitMaterial("InnerEar", new Color(0.36f, 0.22f, 0.25f), 0.2f),
                 LitMaterial("Whisker", new Color(0.82f, 0.82f, 0.8f), 0.4f),
             }.ToDictionary(m => m.name);
+            materials["FurShell"] = FurShellMaterial("FurShell", materials["Fur"]);
             foreach (var r in model.GetComponentsInChildren<Renderer>())
             {
                 r.sharedMaterials = r.sharedMaterials
                     .Select(m => m != null && materials.TryGetValue(m.name, out var ours) ? ours : m).ToArray();
-                r.shadowCastingMode = ShadowCastingMode.On;
+                // The fur layers cast no shadow: the body under them already does.
+                r.shadowCastingMode = r.sharedMaterial == materials["FurShell"] ? ShadowCastingMode.Off : ShadowCastingMode.On;
                 r.renderingLayerMask |= CatRenderingLayer; // only the hero cat gets the rim light
             }
 
@@ -404,7 +464,6 @@ namespace Draho.EditorTools
             var dust = DustPuff(root.transform);
             SetField(catAnimator, "dust", dust);
             SetField(root.AddComponent<CatShake>(), "dust", dust);
-            root.AddComponent<SniffSense>();
             root.AddComponent<CatVoice>();
             var tailLife = root.AddComponent<CatTailLife>();
             SetField(tailLife, "motor", motor);
@@ -416,6 +475,38 @@ namespace Draho.EditorTools
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabDir + "/Drahomil.prefab");
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        /// <summary>
+        /// The fur layers (the DrahomilFur mesh, shader Draho/ShellFur) in the colour of a cat's Fur material.
+        /// Length, density and the other looks are set here, so a rebuild resets them.
+        /// </summary>
+        static Material FurShellMaterial(string name, Material fur)
+        {
+            string path = $"{MaterialDir}/{name}.mat";
+            var shader = Shader.Find("Draho/ShellFur");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.SetFloat("_Skin", 0f);
+            // The body under the fur gets the same shader (as bare skin), so skin and coat have one colour.
+            Color colour = fur.GetColor("_BaseColor");
+            fur.shader = shader;
+            fur.SetColor("_BaseColor", colour);
+            fur.SetFloat("_Skin", 1f);
+            EditorUtility.SetDirty(fur);
+            mat.SetColor("_BaseColor", colour);
+            mat.SetFloat("_FurLength", 0.014f);
+            mat.SetFloat("_Density", 520f);
+            mat.SetFloat("_RootShade", 0.8f);
+            mat.SetFloat("_Rim", 0.15f);
+            mat.SetColor("_TipColor", new Color(1.08f, 1.08f, 1.12f, 1f));
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         /// <summary>Face textures painted by Tools/Blender/convert_lowpoly_cat.py (clamped: they cover one part each).</summary>
@@ -435,12 +526,21 @@ namespace Draho.EditorTools
         /// Another cat (a character, not the player): the Drahomil model with its own fur colour and size,
         /// the same animator (it idles), no motor. Used by the level builder.
         /// </summary>
-        internal static GameObject NpcCatModel(string name, Transform parent, Color fur, float scale)
+        internal static GameObject NpcCatModel(string name, Transform parent, Color fur, float scale, float girth = 1f)
         {
             var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(CatFbx);
             var root = new GameObject(name);
             root.transform.SetParent(parent, false);
-            var model = (GameObject)PrefabUtility.InstantiatePrefab(fbx, root.transform);
+            // girth > 1 widens the cat sideways only (a stout cat), on a node between the root and the rigged model,
+            // so the animator (which drives the bones, not this node) keeps the shape.
+            var build = root.transform;
+            if (!Mathf.Approximately(girth, 1f))
+            {
+                build = new GameObject("Girth").transform;
+                build.SetParent(root.transform, false);
+                build.localScale = new Vector3(girth, 1f, 1f);
+            }
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(fbx, build);
             PrefabUtility.UnpackPrefabInstance(model, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             model.name = "Model";
             FixModelOrientationAndScale(model);
@@ -450,9 +550,14 @@ namespace Draho.EditorTools
             animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ArtDir + "/Cat/Drahomil.controller");
             animator.applyRootMotion = false;
             var furMat = LitMaterial($"Fur_{name}", fur, 0.3f);
+            var shellMat = FurShellMaterial($"FurShell_{name}", furMat);
             foreach (var r in model.GetComponentsInChildren<Renderer>())
+            {
                 r.sharedMaterials = r.sharedMaterials.Select(m =>
-                    m == null ? m : m.name == "Fur" ? furMat : AssetDatabase.LoadAssetAtPath<Material>($"{MaterialDir}/{m.name}.mat") ?? m).ToArray();
+                    m == null ? m : m.name == "Fur" ? furMat : m.name == "FurShell" ? shellMat
+                    : AssetDatabase.LoadAssetAtPath<Material>($"{MaterialDir}/{m.name}.mat") ?? m).ToArray();
+                if (r.sharedMaterial == shellMat) r.shadowCastingMode = ShadowCastingMode.Off;
+            }
             return root;
         }
 

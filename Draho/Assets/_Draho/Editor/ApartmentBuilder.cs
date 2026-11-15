@@ -465,6 +465,42 @@ namespace Draho.EditorTools
             Transform fixedGlass = door.GetComponentsInChildren<Transform>().First(t => t.name == "FixedGlass");
             Bounds sb = WorldBounds(slider.gameObject), fb = WorldBounds(fixedGlass.gameObject);
 
+            // The frame has a 12 cm kick strip standing in the doorway half (two triangles, behind the sash's bottom
+            // rail when it is closed). Once the sash slid open it stood across the open doorway, and with the
+            // two-sided frame it showed from the room as a white plate (owner, round 28). Drop the triangles that are
+            // vertical (parallel to the wall), low (1.5-20 cm) and lie wholly within the sash's closed span.
+            Vector3 wallAlong = alongX ? Vector3.right : Vector3.forward;
+            float spanMin = Vector3.Dot(sb.min, wallAlong), spanMax = Vector3.Dot(sb.max, wallAlong);
+            var frameFilter = door.GetComponentsInChildren<MeshFilter>().FirstOrDefault(m => m.name == "Frame");
+            if (frameFilter != null)
+            {
+                var mesh = Object.Instantiate(frameFilter.sharedMesh);
+                mesh.name = "SlidingDoorFrame_NoKickStrip";
+                var verts = mesh.vertices;
+                var m2w = frameFilter.transform.localToWorldMatrix;
+                int removed = 0;
+                for (int sub = 0; sub < mesh.subMeshCount; sub++)
+                {
+                    var tris = mesh.GetTriangles(sub);
+                    var keep = new List<int>(tris.Length);
+                    for (int t = 0; t < tris.Length; t += 3)
+                    {
+                        Vector3 a = m2w.MultiplyPoint3x4(verts[tris[t]]), b2 = m2w.MultiplyPoint3x4(verts[tris[t + 1]]), c2 = m2w.MultiplyPoint3x4(verts[tris[t + 2]]);
+                        Vector3 n = Vector3.Cross(b2 - a, c2 - a).normalized;
+                        float lo = Mathf.Min(a.y, b2.y, c2.y) - root.position.y, hi = Mathf.Max(a.y, b2.y, c2.y) - root.position.y;
+                        float pMin = Mathf.Min(Vector3.Dot(a, wallAlong), Vector3.Dot(b2, wallAlong), Vector3.Dot(c2, wallAlong));
+                        float pMax = Mathf.Max(Vector3.Dot(a, wallAlong), Vector3.Dot(b2, wallAlong), Vector3.Dot(c2, wallAlong));
+                        bool vertical = Mathf.Abs(n.y) < 0.05f && Mathf.Abs(Vector3.Dot(n, wallAlong)) < 0.05f;
+                        bool strip = vertical && lo > 0.015f && hi < 0.2f && hi - lo > 0.08f && pMin >= spanMin - 0.1f && pMax <= spanMax + 0.1f;
+                        if (strip) { removed++; continue; }
+                        keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]);
+                    }
+                    mesh.SetTriangles(keep, sub);
+                }
+                frameFilter.sharedMesh = mesh;
+                Debug.Log($"Draho: sliding door frame, removed {removed} kick-strip triangles in the doorway half");
+            }
+
             // Colliders: the sliding panel moves with its collider; the fixed half has its own box.
             var sliderCol = slider.gameObject.AddComponent<BoxCollider>();
             sliderCol.center = slider.InverseTransformPoint(sb.center);

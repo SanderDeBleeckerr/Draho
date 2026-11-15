@@ -41,6 +41,10 @@ namespace Draho.EditorTools
             ("town_east", new Vector3(4f, 14f, 3f), new Vector3(32f, 5f, 12f)),                // over the roofs: the town to the east
             ("town_west", new Vector3(-2f, 14f, 3f), new Vector3(-34f, 5f, -6f)),              // and to the west, towards the river
             ("street", new Vector3(18.6f, 1.7f, 0f), new Vector3(21.6f, 2.6f, 9f)),           // the street lamps
+            ("door_out", new Vector3(-1.4f, 0.45f, 4.6f), new Vector3(0.1f, 0.25f, 2.4f)),     // the open sliding door from the garden, cat height
+            ("door_out_b", new Vector3(-0.8f, 0.4f, 1.1f), new Vector3(0.1f, 0.25f, 3.2f)),   // and from the other side
+            ("door_in", new Vector3(1.1f, 0.4f, 4.9f), new Vector3(-0.2f, 0.12f, 3.0f)),      // the open door from inside, cat height
+            ("door_in_b", new Vector3(1.1f, 0.4f, 0.9f), new Vector3(-0.2f, 0.12f, 2.8f)),    // and from the other end
             ("garden_end", new Vector3(-21.0f, 1.2f, 2.8f), new Vector3(-23.4f, 0.45f, 1.1f)),  // the compost and wheelie bin by the end fence
         };
 
@@ -102,12 +106,23 @@ namespace Draho.EditorTools
             var rimUpdate = rimType?.GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
             var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32) { antiAliasing = 1 };
             var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
+            var slidersClosed = new System.Collections.Generic.Dictionary<Transform, Vector3>();
             foreach (string moodName in moods)
             {
                 if (!Enum.TryParse(moodName.Trim(), out SkyMood.Mood mood)) continue;
                 SkyMood.Set(mood, 0f);
                 foreach (var v in views)
                 {
+                    // "door_" views: the sliding door open (its sash moved by the door's own openOffset), else closed.
+                    foreach (var sd in UnityEngine.Object.FindObjectsByType<Draho.World.SlidingDoor>(FindObjectsSortMode.None))
+                    {
+                        var f = typeof(Draho.World.SlidingDoor).GetField("slider", BindingFlags.Instance | BindingFlags.NonPublic);
+                        var o = typeof(Draho.World.SlidingDoor).GetField("openOffset", BindingFlags.Instance | BindingFlags.NonPublic);
+                        var slider = f?.GetValue(sd) as Transform;
+                        if (slider == null || o == null) continue;
+                        if (!slidersClosed.ContainsKey(slider)) slidersClosed[slider] = slider.position;
+                        slider.position = slidersClosed[slider] + (v.name.StartsWith("door_") ? (Vector3)o.GetValue(sd) : Vector3.zero);
+                    }
                     camGo.transform.position = v.pos;
                     camGo.transform.rotation = Quaternion.LookRotation(v.target - v.pos);
                     // The rim light follows the game camera at run time: put that camera here and let it update.

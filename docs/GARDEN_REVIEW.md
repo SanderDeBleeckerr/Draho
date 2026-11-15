@@ -13,7 +13,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 2 | Yard wall (whitewash skin) | repeating orange bow-tie brick spots | **Done, round 2** |
 | 3 | Lawn | one flat saturated green | **Done, round 3** |
 | 4 | Grass tufts | sparse spiky tufts | **Done, round 4** |
-| 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | check |
+| 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | **Done, round 5** |
 | 6 | Ivy on the wall | flat green panel | leafy edge, depth |
 | 7 | Stepping-stone path | grey slabs | worn edges, moss, sunk in the lawn |
 | 8 | Terrace tiles | plain grey grid | check |
@@ -118,3 +118,24 @@ palette material.
 - **Light:** the seed heads and the straw blades catch the sun along the wall, and the long margins read as long
   grass against the lawn's darker bands.
 - **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` (Day), plus a cat-height crop.
+
+## Round 5: the corrugated cladding above the yard wall
+
+**Brief:** the neighbour's workshop cladding, 13 x 3.9 m and 8 x 3.2 m: the largest surface over the garden, seen from
+everywhere. A procedural mesh (an exact sine profile, so code is the right tool, not Blender), about 1,200 tris for the
+two areas, plus a texture.
+
+- **Before:** two flat boxes with the ridges painted into a 1 m tile, so the light could not rake across them.
+- **Now:**
+  - `CorrugatedSheets`: real corrugations, 177 mm pitch and 25 mm deep, sampled 8 times a wave, with smooth normals
+    from the slope, facing the garden. Low sun now gives each ridge a lit side and a shadow side.
+  - `CorrugatedSheetsTexture` (1024 px, 8 x 8 m): no painted ridges. Each 1 m sheet has its own grey, with a darker
+    line where two sheets overlap and where one row laps the next. There are fixing bolts along the purlins, grey dirt
+    streaks running down from the top, and lichen in patches. The second area starts at another texture offset, so
+    the two walls do not match.
+- **Fixes on the way:**
+  1. The first mesh did not show: seen from the garden (looking towards -z), +x runs to the left on screen, so the
+     triangles' winding was reversed.
+  2. Generalised round 2's fix: `Mat()` now clears a stale normal map on any material whose texture has no relief
+     map of its own, so no material can keep an old texture's bumps.
+- **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` in Day and Evening.

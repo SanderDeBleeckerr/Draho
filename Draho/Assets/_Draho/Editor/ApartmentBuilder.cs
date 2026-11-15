@@ -3404,10 +3404,13 @@ namespace Draho.EditorTools
             // One texture covers 8 m of wall (garden review round 2): the old 1 m tile repeated its peel spots 21 times.
             var wash = Mat("Apt_Whitewash", Color.white, 0.08f, WhitewashWallTexture(), new Vector2(21f / 8f, 2.6f / 8f));
             Box("Whitewash", new Vector3(-13.5f, 1.3f, 0.012f), new Vector3(21f, 2.6f, 0.02f), wash, collider: false).transform.SetParent(root, true);
-            var sheets = Mat("Apt_Corrugated", new Color(0.92f, 0.92f, 0.9f), 0.15f, CorrugatedTexture(), new Vector2(13f, 3.9f));
-            Box("Sheets_A", new Vector3(-17.5f, 4.55f, 0.02f), new Vector3(13f, 3.9f, 0.03f), sheets, collider: false).transform.SetParent(root, true);
-            var sheetsB = Mat("Apt_CorrugatedB", new Color(0.86f, 0.86f, 0.84f), 0.15f, CorrugatedTexture(), new Vector2(8f, 3.2f));
-            Box("Sheets_B", new Vector3(-7f, 4.2f, 0.02f), new Vector3(8f, 3.2f, 0.03f), sheetsB, collider: false).transform.SetParent(root, true);
+            // The neighbour's workshop cladding (garden review round 5): real corrugations (the low sun rakes across them)
+            // and an 8 m texture with a tone per sheet, overlaps, fixings, dirt streaks and lichen. It was two flat boxes
+            // with ridges painted into a 1 m tile.
+            var sheets = Mat("Apt_Corrugated", new Color(0.92f, 0.92f, 0.9f), 0.15f, CorrugatedSheetsTexture(), Vector2.one);
+            CorrugatedSheets("Sheets_A", new Vector3(-17.5f, 4.55f, 0.005f), 13f, 3.9f, sheets, 0f).SetParent(root, true);
+            var sheetsB = Mat("Apt_CorrugatedB", new Color(0.86f, 0.86f, 0.84f), 0.15f, CorrugatedSheetsTexture(), Vector2.one);
+            CorrugatedSheets("Sheets_B", new Vector3(-7f, 4.2f, 0.005f), 8f, 3.2f, sheetsB, 0.37f).SetParent(root, true);
             var flashing = Mat("Apt_Flashing", new Color(0.2f, 0.19f, 0.18f), 0.3f);
             Box("Flashing", new Vector3(-13.5f, 2.62f, 0.05f), new Vector3(21f, 0.06f, 0.08f), flashing, collider: false).transform.SetParent(root, true);
 
@@ -5289,10 +5292,10 @@ namespace Draho.EditorTools
                 m.EnableKeyword("_NORMALMAP");
                 EditorUtility.SetDirty(m);
             }
-            else if (tex != null && tex.name == "WhitewashWall")
+            else if (tex != null && m.GetTexture("_BumpMap") != null)
             {
-                // The garden wall's 8 m whitewash paints its joints faintly under the paint and needs no relief map. The
-                // material asset kept the 1 m brick normal from the old texture, which drew giant bricks at the new tiling.
+                // A texture without a relief map of its own: clear the one a material asset may have kept from an older
+                // texture (the garden wall's whitewash kept the 1 m brick normal and drew giant bricks at its new tiling).
                 m.SetTexture("_BumpMap", null);
                 m.DisableKeyword("_NORMALMAP");
                 EditorUtility.SetDirty(m);
@@ -5457,6 +5460,72 @@ namespace Draho.EditorTools
             }
             c = Color.Lerp(c, new Color(0.42f, 0.5f, 0.36f), algae * 0.45f);
             return c;
+        });
+
+        /// <summary>
+        /// A wall of corrugated sheets as one mesh, facing +z: a sine profile of 177 mm pitch and 25 mm depth across the
+        /// width (8 samples a wave), smooth normals from the slope, UVs in metres / 8 (CorrugatedSheetsTexture covers 8 m).
+        /// centre is the middle of the wall's back plane; uOffset shifts the texture so two walls do not match.
+        /// </summary>
+        static Transform CorrugatedSheets(string name, Vector3 centre, float width, float height, Material mat, float uOffset)
+        {
+            const float pitch = 0.177f, depth = 0.025f;
+            int cols = Mathf.CeilToInt(width / pitch * 8f);
+            var v = new List<Vector3>(); var n = new List<Vector3>(); var uv = new List<Vector2>(); var tris = new List<int>();
+            for (int i = 0; i <= cols; i++)
+            {
+                float x = -width / 2 + width * i / cols;
+                float ph = (x + width / 2) / pitch * Mathf.PI * 2f;
+                float z = depth * (0.5f + 0.5f * Mathf.Sin(ph));
+                float slope = depth * 0.5f * Mathf.Cos(ph) * Mathf.PI * 2f / pitch; // dz/dx
+                var normal = new Vector3(-slope, 0f, 1f).normalized;
+                foreach (float y in new[] { -height / 2, height / 2 })
+                {
+                    v.Add(new Vector3(x, y, z));
+                    n.Add(normal);
+                    uv.Add(new Vector2((x + width / 2) / 8f + uOffset, (y + height / 2) / 8f));
+                }
+                if (i < cols)
+                {
+                    int b = i * 2;
+                    tris.AddRange(new[] { b, b + 3, b + 1, b, b + 2, b + 3 }); // clockwise seen from +z (the garden side)
+                }
+            }
+            var mesh = new Mesh { name = name };
+            mesh.SetVertices(v); mesh.SetNormals(n); mesh.SetUVs(0, uv); mesh.SetTriangles(tris, 0);
+            mesh.RecalculateBounds();
+            mesh.RecalculateTangents();
+            var go = new GameObject(name);
+            go.transform.SetParent(level, false);
+            go.transform.position = centre;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = mat;
+            return go.transform;
+        }
+
+        /// <summary>
+        /// Old fibre-cement cladding over 8 x 8 m (128 px a metre): sheets 1 m wide in rows of 2 m, each sheet its own grey,
+        /// a darker line where they overlap, rows of fixing bolts along the purlins, dirt streaks running down from the top,
+        /// lichen in patches. The ridges are in the mesh (CorrugatedSheets), not painted.
+        /// </summary>
+        static Texture2D CorrugatedSheetsTexture() => MakeTexture("CorrugatedSheets.png", 1024, (x, y, size) =>
+        {
+            float mx = x / 128f, my = y / 128f;                       // metres
+            int sheet = Mathf.FloorToInt(mx), row = Mathf.FloorToInt(my / 2f);
+            float h = Mathf.Abs(Mathf.Sin(sheet * 12.9898f + row * 78.233f) * 43758.5453f) % 1f;
+            float t = 0.66f + 0.1f * (h - 0.5f);
+            float fx = mx - sheet, fy = my / 2f - row;
+            if (fx < 0.012f || fx > 0.992f) t -= 0.07f;                  // the overlap between two sheets
+            if (fy < 0.006f) t -= 0.1f;                                    // the row below's top edge under this one
+            float rowY = fy * 2f;                                          // metres up this row
+            bool bolt = (Mathf.Abs(rowY - 0.12f) < 0.012f || Mathf.Abs(rowY - 1.88f) < 0.012f) && (fx * 1000f % 177f) < 10f;
+            if (bolt) t -= 0.2f;
+            float streak = Mathf.Clamp01((TileNoise(x, 0, size, 0.06f, 4.4f, 8.8f) - 0.5f) * 2.4f) * (0.4f + 0.6f * fy);
+            float dirt = TileNoise(x, y, size, 0.02f, 2.2f, 6.6f);
+            t -= streak * 0.16f + dirt * 0.06f;
+            float lichen = Mathf.Clamp01((TileNoise(x, y, size, 0.035f, 7.7f, 3.3f) - 0.68f) * 4f);
+            return Color.Lerp(new Color(t, t, t * 1.02f), new Color(0.6f, 0.64f, 0.44f), lichen * 0.65f);
         });
 
         static Texture2D WhitewashTexture() => MakeTexture("Whitewash.png", 256, (x, y, size) =>

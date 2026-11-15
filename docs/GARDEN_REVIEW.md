@@ -16,7 +16,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | **Done, round 5** |
 | 6 | Ivy on the wall | flat green panel | **Done, round 6** |
 | 7 | Stepping-stone path | grey slabs | **Done, round 7** |
-| 8 | Terrace tiles | plain grey grid | check |
+| 8 | Terrace tiles | plain grey grid | **Done, round 8** |
 | 9 | Fallen leaves | flat cubes | Blender leaf shapes |
 | 10 | Blue tarp | three boxes | Blender crumpled tarp |
 | 11 | Neighbour's fence (posts) | Blender-era boards | check |
@@ -179,3 +179,20 @@ carries the cat).
   nudged ±4 cm sideways and scaled 0.92-1.08, and set 6 mm proud of the turf, so the line reads as laid by hand,
   alongside round 3's trodden strip.
 - **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` (Day), plus a cat-height crop.
+
+## Round 8: the terrace
+
+**Brief:** a texture (no mesh): the 5 x 5 m terrace of 50 cm concrete tiles between the sliding door and the lawn.
+
+- **Before:** the generic floor-tile texture (the same one as the town's pavements), an even, clean grey grid.
+- **Now:** `TerraceTexture`, one 1024 px texture over the terrace (205 px a metre, clamped):
+  - each tile is its own grey, with a fine grain;
+  - dark grout with moss in places, and grass creeping into the joints near the lawn edge;
+  - a darker, damp drip line under the eaves along the house wall;
+  - the rusty ring of a plant pot that once stood in the corner by the yard wall, about 1.1 m from the house;
+  - pale lichen dots.
+  - Checked in the capture: the pot ring sits in that corner, so the u direction and the house side are right. v is
+    flipped as on the lawn.
+- **Light:** the grout lines and the moss give the terrace a fine grid of shade in low sun. It stays the calmest,
+  lightest surface in the garden, which leads the eye from the door to the lawn.
+- **Checked:** Unity `garden_over`, `garden`, `door_out` (Day) and `garden_over` (Evening).

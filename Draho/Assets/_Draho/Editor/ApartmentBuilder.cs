@@ -2294,7 +2294,7 @@ namespace Draho.EditorTools
                 // fence, moss at the damp foot of the wall, a worn strip beside the stepping stones, a dry patch in the sun.
                 var mat = zone.material == "grass"
                     ? Mat($"Apt_{zone.id}", Hex(zone.color), 0.05f, LawnTexture(len, depth, layout.garden_paths), Vector2.one)
-                    : Mat($"Apt_{zone.id}", Hex(zone.color), 0.2f, TileTexture(), new Vector2(len, depth) / 0.5f);
+                    : Mat($"Apt_{zone.id}", Hex(zone.color), 0.2f, TerraceTexture(len, depth, 1f), Vector2.one);
                 Box(zone.id, new Vector3((zone.x0 + zone.x1) / 2, -0.06f, midZ), new Vector3(len, 0.1f, depth), mat);
             }
 
@@ -5902,6 +5902,48 @@ namespace Draho.EditorTools
                 c = Color.Lerp(c, new Color(1f, 0.88f, 0.5f) * (0.85f + 0.15f * blade), worn * 0.9f);            // trodden, yellowed
                 c = Color.Lerp(c, new Color(0.9f, 0.62f, 0.4f), soil * 0.9f);                                      // bare earth
                 c = Color.Lerp(c, new Color(0.98f, 0.92f, 0.5f) * v, dry * 0.6f);                                  // sun-dried
+                return c;
+            });
+        }
+
+        /// <summary>
+        /// The garden terrace as one texture (garden review round 8), 50 cm concrete tiles over len x depth metres: each tile
+        /// its own grey, dark grout with moss in places, grass creeping into the joints at the lawn edge, a dark drip line
+        /// under the eaves along the house wall, the rusty ring of a pot that once stood in the corner by the yard wall, pale
+        /// lichen dots. houseSide: +1 when the house is at the terrace's +x end. u runs along x, v from the fence to the wall
+        /// (as on the lawn).
+        /// </summary>
+        static Texture2D TerraceTexture(float len, float depth, float houseSide)
+        {
+            int w = 1024, h = Mathf.RoundToInt(1024 * depth / len);
+            return MakeTextureWH("Terrace.png", w, h, (x, y) =>
+            {
+                float mx = (x + 0.5f) / w * len, mz = depth - (y + 0.5f) / h * depth;   // metres: along x from the u=0 end, from the wall
+                float fromHouse = houseSide > 0f ? len - mx : mx;                          // metres from the house wall
+                float fromLawn = len - fromHouse;
+                const float tile = 0.5f, joint = 0.008f;
+                int tx = Mathf.FloorToInt(mx / tile), tz = Mathf.FloorToInt(mz / tile);
+                float jx = mx - tx * tile, jz = mz - tz * tile;
+                bool grout = jx < joint || jz < joint;
+                float th = Mathf.Abs(Mathf.Sin(tx * 12.9898f + tz * 78.233f) * 43758.5453f) % 1f;
+                float grain = Mathf.PerlinNoise(mx * 18f, mz * 18f);
+                float t = 0.86f + 0.1f * (th - 0.5f) + 0.06f * (grain - 0.5f);
+                var c = new Color(t, t * 0.99f, t * 0.97f);
+                if (grout)
+                {
+                    float moss = Mathf.Clamp01((Mathf.PerlinNoise(mx * 3f + 2f, mz * 3f + 9f) - 0.45f) * 3f);
+                    float grass = Mathf.Clamp01(1f - fromLawn / 1.2f);
+                    c = Color.Lerp(new Color(0.5f, 0.49f, 0.47f), new Color(0.45f, 0.6f, 0.32f), Mathf.Max(moss * 0.7f, grass));
+                }
+                // the drip line under the eaves: a darker, damp band along the house wall
+                float drip = Mathf.Clamp01(1f - Mathf.Abs(fromHouse - 0.35f) / 0.18f) * (0.7f + 0.3f * Mathf.PerlinNoise(mz * 6f, 1f));
+                c *= 1f - 0.18f * drip;
+                // the pot ring in the corner by the yard wall
+                float ring = Mathf.Abs(Vector2.Distance(new Vector2(fromHouse, mz), new Vector2(1.1f, 0.55f)) - 0.17f);
+                if (ring < 0.025f) c = Color.Lerp(c, new Color(0.62f, 0.45f, 0.33f), 0.55f * (1f - ring / 0.025f));
+                // lichen dots
+                if (!grout && Mathf.PerlinNoise(mx * 40f + 5f, mz * 40f) > 0.8f && Mathf.PerlinNoise(mx * 2f, mz * 2f + 4f) > 0.55f)
+                    c = Color.Lerp(c, new Color(0.92f, 0.92f, 0.84f), 0.6f);
                 return c;
             });
         }

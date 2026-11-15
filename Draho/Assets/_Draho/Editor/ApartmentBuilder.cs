@@ -4272,10 +4272,24 @@ namespace Draho.EditorTools
                 float h = c.h - c.bottom, z = c.z + 0.04f + c.d / 2; // in front of the wall face
                 var slab = Box("IvyBody", new Vector3(c.x, c.bottom + h / 2, z), new Vector3(c.w, h, c.d), wood);
                 slab.transform.SetParent(root, true);
+                // Garden review round 6: the box stays as the climbing collider, out of sight. What you see is an irregular
+                // ivy mass (narrow at the foot, spreading above, ragged sides and top, runners along the wall), woody stems
+                // from the ground, and three-lobed leaves thickest at the edges and spilling past them.
+                Object.DestroyImmediate(slab.GetComponent<MeshRenderer>());
+                var mass = new GameObject("IvyMass");
+                mass.transform.SetParent(root, false);
+                mass.transform.position = new Vector3(c.x, 0f, c.z + 0.04f);
+                mass.AddComponent<MeshFilter>().sharedMesh = IvyMassMesh(c, h, out Mesh stems);
+                mass.AddComponent<MeshRenderer>().sharedMaterial = Mat("Apt_IvyMass", Hex(c.color) * 0.62f, 0.1f);
+                var stemGo = new GameObject("IvyStems");
+                stemGo.transform.SetParent(root, false);
+                stemGo.transform.position = mass.transform.position;
+                stemGo.AddComponent<MeshFilter>().sharedMesh = stems;
+                stemGo.AddComponent<MeshRenderer>().sharedMaterial = Mat("Apt_IvyStem", new Color(0.33f, 0.26f, 0.19f), 0.1f);
                 // The leaves: one mesh of small flat leaves (one draw call), facing out of the wall and a bit down.
                 var leaves = new GameObject("Leaves");
                 leaves.transform.SetParent(root, false);
-                leaves.transform.position = new Vector3(c.x, 0f, z + c.d / 2);
+                leaves.transform.position = new Vector3(c.x, 0f, c.z + 0.04f);
                 leaves.AddComponent<MeshFilter>().sharedMesh = IvyLeafMesh(c, h);
                 var leafRenderer = leaves.AddComponent<MeshRenderer>();
                 leafRenderer.sharedMaterial = IvyLeafMat();
@@ -4416,6 +4430,102 @@ namespace Draho.EditorTools
         /// Ivy leaves as one mesh: many small pointed leaves, denser at the top, ragged at the bottom.
         /// Local space: x along the wall, y up, +z out of the wall. The colour comes from a 4-pixel strip.
         /// </summary>
+        /// <summary>The ivy's outline: half its width at height y above c.bottom (0 outside it), ragged and spreading upward.</summary>
+        static float IvyHalfWidth(ClimbableInfo c, float h, float y)
+        {
+            float t = Mathf.Clamp01(y / h);
+            float spread = Mathf.Lerp(0.18f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.45f)));
+            float rag = 1f + 0.18f * (Mathf.PerlinNoise(y * 1.7f, 3.3f) - 0.5f) * 2f;
+            float top = t > 0.9f ? Mathf.Clamp01((1f - t) / 0.1f + (Mathf.PerlinNoise(y * 3f, 8f) - 0.5f)) : 1f;
+            return c.w * 0.5f * spread * rag * top;
+        }
+
+        /// <summary>How far the ivy stands off the wall at (x, y): lumpy, thickest in the middle, thin at the edges.</summary>
+        static float IvyDepth(ClimbableInfo c, float h, float x, float y)
+        {
+            float hw = IvyHalfWidth(c, h, y);
+            float edge = hw <= 0f ? 0f : Mathf.Clamp01(1f - Mathf.Abs(x) / hw);
+            float lump = 0.6f + 0.8f * Mathf.PerlinNoise(x * 2.2f + 5f, y * 2.2f + 1f);
+            return (0.03f + 0.12f * Mathf.Sqrt(edge)) * lump;
+        }
+
+        /// <summary>
+        /// The ivy's body: a lumpy dark mass inside the outline (a grid of 10 cm cells, only those inside it), so the wall
+        /// does not show between the leaves and the shape is no longer a rectangle; plus the woody stems as thin boxes.
+        /// Local to the wall face at the ivy's middle (x across, y up, +z out of the wall).
+        /// </summary>
+        static Mesh IvyMassMesh(ClimbableInfo c, float h, out Mesh stemMesh)
+        {
+            const float cell = 0.1f;
+            int nx = Mathf.CeilToInt(c.w / cell) + 1, ny = Mathf.CeilToInt(h / cell) + 1;
+            var v = new List<Vector3>(); var tris = new List<int>();
+            var index = new int[nx, ny];
+            for (int j = 0; j < ny; j++)
+                for (int i = 0; i < nx; i++)
+                {
+                    float x = -c.w / 2 + i * cell, y = j * cell;
+                    index[i, j] = v.Count;
+                    v.Add(new Vector3(x, c.bottom + y, IvyDepth(c, h, x, y)));
+                }
+            for (int j = 0; j < ny - 1; j++)
+                for (int i = 0; i < nx - 1; i++)
+                {
+                    float x = -c.w / 2 + (i + 0.5f) * cell, y = (j + 0.5f) * cell;
+                    if (Mathf.Abs(x) > IvyHalfWidth(c, h, y) - 0.05f) continue;
+                    int a = index[i, j], b = index[i + 1, j], cc = index[i + 1, j + 1], d = index[i, j + 1];
+                    tris.AddRange(new[] { a, b, cc, a, cc, d }); // clockwise seen from +z (out of the wall: screen x is -x)
+                }
+            var mesh = new Mesh { name = $"IvyMass_{c.id}" };
+            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            mesh.SetVertices(v); mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals(); mesh.RecalculateBounds();
+
+            // Woody stems: four from the ground, wandering up and forking, as on the foot of old ivy.
+            var rng = new System.Random(23);
+            float R() => (float)rng.NextDouble();
+            var sv = new List<Vector3>(); var st = new List<int>();
+            void Segment(Vector3 p0, Vector3 p1, float r)
+            {
+                Vector3 d = (p1 - p0).normalized, side = Vector3.Cross(d, Vector3.forward).normalized * r;
+                Vector3 outz = Vector3.forward * r;
+                int b0 = sv.Count;
+                sv.AddRange(new[] { p0 - side, p0 + outz, p0 + side, p1 - side, p1 + outz, p1 + side });
+                st.AddRange(new[] { b0, b0 + 4, b0 + 1, b0, b0 + 3, b0 + 4, b0 + 1, b0 + 5, b0 + 2, b0 + 1, b0 + 4, b0 + 5 });
+            }
+            for (int k = 0; k < 4; k++)
+            {
+                var p = new Vector3((k - 1.5f) * 0.16f + (R() - 0.5f) * 0.08f, c.bottom, 0.02f);
+                float r = 0.022f - k * 0.002f;
+                for (int step = 0; step < 9; step++)
+                {
+                    var q = p + new Vector3((R() - 0.5f) * 0.35f + Mathf.Sign(p.x + 0.001f) * 0.08f, 0.3f + R() * 0.15f, 0f);
+                    q.z = Mathf.Max(0.015f, IvyDepth(c, h, q.x, q.y - c.bottom) * 0.35f);
+                    Segment(p, q, r);
+                    if (step % 3 == 2)                           // a fork off to the side
+                        Segment(q, q + new Vector3((R() < 0.5f ? -1f : 1f) * (0.25f + R() * 0.2f), 0.18f, 0f), r * 0.6f);
+                    p = q;
+                    r *= 0.9f;
+                }
+            }
+            int one = st.Count;
+            for (int k = 0; k < one; k += 3) st.AddRange(new[] { st[k], st[k + 2], st[k + 1] }); // both windings: thin boxes
+            stemMesh = new Mesh { name = $"IvyStems_{c.id}" };
+            stemMesh.SetVertices(sv); stemMesh.SetTriangles(st, 0);
+            stemMesh.RecalculateNormals(); stemMesh.RecalculateBounds();
+            string dir = $"{PlaygroundBuilder.ArtDir}/Meshes";
+            Directory.CreateDirectory(dir);
+            AssetDatabase.DeleteAsset($"{dir}/IvyMass_{c.id}.asset");
+            AssetDatabase.CreateAsset(mesh, $"{dir}/IvyMass_{c.id}.asset");
+            AssetDatabase.DeleteAsset($"{dir}/IvyStems_{c.id}.asset");
+            AssetDatabase.CreateAsset(stemMesh, $"{dir}/IvyStems_{c.id}.asset");
+            return mesh;
+        }
+
+        /// <summary>
+        /// The ivy's leaves as one mesh (one draw call), local to the wall face at the ivy's middle: three-lobed ivy
+        /// leaves (6 triangles each) on the lumpy mass, thickest towards the outline and spilling past it so the edge is
+        /// ragged, facing out of the wall and tipped up to catch the sun. uv.x picks the leaf colour, uv.y is the sway.
+        /// </summary>
         static Mesh IvyLeafMesh(ClimbableInfo c, float h)
         {
             var rng = new System.Random(11);
@@ -4424,33 +4534,42 @@ namespace Draho.EditorTools
             var normals = new List<Vector3>();
             var uvs = new List<Vector2>();
             var tris = new List<int>();
-            int count = Mathf.RoundToInt(c.w * h * 70f);
+            int count = Mathf.RoundToInt(c.w * h * 52f);
+            // the outline of an ivy leaf: stem point, two side lobes, the tip lobe, with notches between (fan from the middle)
+            var outline = new[]
+            {
+                new Vector3(0f, -0.12f, 0f), new Vector3(-0.42f, 0.02f, 0f), new Vector3(-0.5f, 0.38f, 0f), new Vector3(-0.2f, 0.5f, 0f),
+                new Vector3(0f, 1f, 0f), new Vector3(0.2f, 0.5f, 0f), new Vector3(0.5f, 0.38f, 0f), new Vector3(0.42f, 0.02f, 0f),
+            };
             for (int i = 0; i < count; i++)
             {
-                float v = Mathf.Pow(Rand(), 0.75f); // more leaves high up
-                float y = c.bottom - 0.12f + v * (h + 0.2f);
-                float spread = c.w * (0.7f + 0.3f * (y - c.bottom) / h);
-                float x = (Rand() - 0.5f) * spread;
-                float size = 0.06f + 0.07f * Rand();
-                // Turn in the wall plane (Unity applies z first), then tilt the face up a little to catch the sun.
+                float y = Mathf.Pow(Rand(), 0.85f) * (h + 0.15f) - 0.08f;
+                float hw = IvyHalfWidth(c, h, Mathf.Max(0f, y));
+                if (hw <= 0.02f) continue;
+                // across: biased towards the edges, and 15 % reaching up to 18 cm past them
+                float u = Rand() * 2f - 1f;
+                u = Mathf.Sign(u) * Mathf.Pow(Mathf.Abs(u), 0.7f);
+                float x = u * hw + (Rand() < 0.15f ? Mathf.Sign(u) * Rand() * 0.18f : 0f);
+                float size = 0.06f + 0.06f * Rand();
                 float tilt = 15f + 30f * Rand();
                 Quaternion rot = Quaternion.Euler(-tilt, 0f, (Rand() - 0.5f) * 140f);
-                // Far enough from the wall that the tilted tip stays in front of it.
-                Vector3 o = new Vector3(x, y, size * Mathf.Sin(tilt * Mathf.Deg2Rad) + 0.005f + 0.05f * Rand());
+                float baseZ = Mathf.Abs(x) <= hw ? IvyDepth(c, h, x, Mathf.Max(0f, y)) : 0.02f;
+                Vector3 o = new Vector3(x, c.bottom + y, baseZ + size * Mathf.Sin(tilt * Mathf.Deg2Rad) + 0.004f + 0.03f * Rand());
                 Vector3 n = rot * Vector3.forward;
                 float colour = (rng.Next(4) + 0.5f) / 4f;
                 int b = verts.Count;
-                // A pointed leaf: stem, two wide sides, tip.
-                foreach (var p in new[] { new Vector3(0f, -0.15f, 0f), new Vector3(-0.5f, 0.35f, 0f), new Vector3(0f, 1f, 0f), new Vector3(0.5f, 0.35f, 0f) })
+                verts.Add(o + rot * (new Vector3(0f, 0.32f, 0f) * size)); normals.Add(n); uvs.Add(new Vector2(colour, 0.4f));
+                foreach (var p in outline)
                 {
-                    Vector3 q = rot * (p * size);
-                    verts.Add(o + q);
+                    verts.Add(o + rot * (p * size));
                     normals.Add(n);
-                    uvs.Add(new Vector2(colour, p.y > 0.9f ? 1f : p.y > 0f ? 0.55f : 0f)); // uv.y: wind sway weight, the tip moves most
+                    uvs.Add(new Vector2(colour, p.y > 0.9f ? 1f : p.y > 0.3f ? 0.6f : 0f));
                 }
-                tris.AddRange(new[] { b, b + 1, b + 2, b, b + 2, b + 3 });
+                for (int k = 0; k < outline.Length; k++)
+                    tris.AddRange(new[] { b, b + 1 + k, b + 1 + (k + 1) % outline.Length });
             }
             var mesh = new Mesh { name = $"Ivy_{c.id}" };
+            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.SetVertices(verts);
             mesh.SetNormals(normals);
             mesh.SetUVs(0, uvs);

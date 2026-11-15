@@ -14,7 +14,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 3 | Lawn | one flat saturated green | **Done, round 3** |
 | 4 | Grass tufts | sparse spiky tufts | **Done, round 4** |
 | 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | **Done, round 5** |
-| 6 | Ivy on the wall | flat green panel | leafy edge, depth |
+| 6 | Ivy on the wall | flat green panel | **Done, round 6** |
 | 7 | Stepping-stone path | grey slabs | worn edges, moss, sunk in the lawn |
 | 8 | Terrace tiles | plain grey grid | check |
 | 9 | Fallen leaves | flat cubes | Blender leaf shapes |
@@ -139,3 +139,25 @@ two areas, plus a texture.
   2. Generalised round 2's fix: `Mat()` now clears a stale normal map on any material whose texture has no relief
      map of its own, so no material can keep an old texture's bumps.
 - **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` in Day and Evening.
+
+## Round 6: the ivy
+
+**Brief:** a climbable (the cat climbs it to the flat roof), 4 m wide and 6.5 m high at the end of the yard wall.
+Procedural meshes in the builder, about 9,000 tris in three meshes (mass, stems, leaves): the leaves are one draw call
+on the existing wind-sway material.
+
+- **Before:** a 12 cm green box, 4 x 6.5 m, with about 1,800 small diamond leaves on its face. It read as a flat green
+  rectangle on the wall.
+- **Now:**
+  - The box stays as the climbing collider, with its renderer removed.
+  - `IvyMassMesh` is a lumpy dark-green mass in 10 cm cells inside an outline (`IvyHalfWidth`): 18 % of the width at
+    the foot, spreading to the full width by about half way up, with ragged sides and a ragged top. It stands 3-15 cm
+    off the wall (`IvyDepth`), thickest in the middle, so the wall never shows between the leaves.
+  - Four woody stems rise from the ground, wandering up and forking, as on the foot of old ivy.
+  - The leaves are about 1,300 three-lobed ivy leaves (stem point, two side lobes, a tip lobe, 8 triangles), set on
+    the lumpy surface, biased towards the outline, and 15 % of them spill up to 18 cm past it, so the silhouette is
+    ragged. They face out of the wall and tip up to catch the sun, with the sway weight on the tips.
+- **Light:** the tipped-up leaves catch the sun in many small facets over a dark interior, which gives depth. The
+  dark mass stops the white wall glowing through.
+- **Checked:** the triangle winding by hand before building (lesson from round 5), and the stems are double-sided. Unity
+  `garden_end`, `garden_mid` and `garden_over` in Day and Evening.

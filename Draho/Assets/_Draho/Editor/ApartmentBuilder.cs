@@ -4164,6 +4164,10 @@ namespace Draho.EditorTools
                 for (float x = x0 + 0.15f; x < x1; x += R(0.3f, 0.6f))
                     Tuft(x, edge + inward * R(0.2f, 0.42f), R(0.6f, 0.95f), R(0f, 1f) < 0.6f ? "grass_tuft_tall" : "grass_tuft");
             }
+            // Garden review round 12: long grass along the foot of the green end fence too (the mower never reaches it), a
+            // few tufts poking through the wire.
+            for (float z = garden.z0 + 0.3f; z < garden.z1 - 0.3f; z += R(0.2f, 0.36f))
+                Tuft(lawn.x0 + R(-0.04f, 0.22f), z, R(0.75f, 1.15f), R(0f, 1f) < 0.8f ? "grass_tuft_tall" : "grass_tuft");
             int scatter = Mathf.RoundToInt((x1 - x0) * (garden.z1 - garden.z0) * 0.8f);  // a little under 1 per m²
             for (int i = 0; i < scatter; i++)
             {

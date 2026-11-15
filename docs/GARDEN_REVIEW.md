@@ -20,7 +20,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 9 | Fallen leaves | flat cubes | **Done, round 9** |
 | 10 | Blue tarp | three boxes | **Done, round 10** |
 | 11 | Neighbour's fence (posts) | Blender-era boards | **Done, round 11** |
-| 12 | Green end fence | mesh panels | check |
+| 12 | Green end fence | mesh panels | **Done, round 12** |
 | 13 | Maple tree | Blender | check |
 | 14 | Picnic table, firewood store, wall lantern | Blender | check |
 | 15 | Compost and wheelie bins | Blender (round 27) | check |
@@ -254,3 +254,15 @@ show the wild garden behind), plus two improvements to the planks.
 - **Light:** the bays now break the long fence into a rhythm of panels, and the grain is faint on the dark weathered
   wood, as it should be.
 - **Checked:** Unity `garden_back` (Day), crop at cat height.
+
+## Round 12: the green end fence
+
+**Brief:** a check. The welded-wire panel fence (square green posts, 20 x 5 cm meshes with the stiffening fold near
+the top, a top rail, one 12 cm collider strip so the cat lands on top and walks along it) holds up: it is the panel
+sold in every Belgian garden centre. It is left as it is.
+
+- **One gap:** the long grass along the wall and the side fence (rounds 3-4) stopped dead at the end fence, with
+  bare mown lawn right up to the wire. A mower never reaches the foot of a wire fence.
+- **Now:** a row of tufts along the foot of the end fence, about 80 % tall ones, some poking through the wire. The
+  long-grass margin now runs round three sides of the lawn.
+- **Checked:** Unity `garden_end` and `garden_mid` (Day).

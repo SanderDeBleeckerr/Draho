@@ -21,8 +21,8 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 10 | Blue tarp | three boxes | **Done, round 10** |
 | 11 | Neighbour's fence (posts) | Blender-era boards | **Done, round 11** |
 | 12 | Green end fence | mesh panels | **Done, round 12** |
-| 13 | Maple tree | Blender | Done |
-| 14 | Picnic table, firewood store, wall lantern | Blender | check |
+| 13 | Maple tree | Blender | **Done, round 13** |
+| 14 | Picnic table, firewood store, wall lantern | Blender | **Done, round 14** |
 | 15 | Compost and wheelie bins | Blender (round 27) | check |
 | 16 | Animals in the garden (blackbirds, Fatsocat, Zlatenka) | done in the graphics review | check in place |
 
@@ -277,3 +277,21 @@ sold in every Belgian garden centre. It is left as it is.
   terracotta, which ties in with the litter below. The leaves at the edges fray the silhouette.
 - **Budget:** 7,808 tris (was about 1,900), one palette material.
 - **Checked:** a Blender review sheet, then Unity `maple` (Day), the new close view under the crown.
+
+## Round 14: picnic table, firewood store, wall lantern
+
+- **New views:** `picnic` (the table from the terrace corner) and `firewood` (the log store from the path). Both were
+  only ever seen from far off before.
+- **Picnic table, before:** the planks used stone greys (`warm_grey`, `grey_stone`), which read as white plastic in
+  Unity.
+- **Picnic table, now:** weathered oak planks (`oak`, `oak_light`, the odd silvered `grey_mid`) on a darker walnut
+  frame. A terracotta pot of rosemary sits at the far end of the table, so the terrace looks lived in. 2,276 tris.
+- **Firewood store, before:** about 80 identical octagonal pegs in a perfect grid, with smooth pale ends like ball
+  bearings.
+- **Firewood store, now:** the new `_split_log` helper builds split firewood: rounds, halves and quarter wedges, each
+  rolled at random. Each has a flat-shaded cut end (a pale heart inset in a darker sapwood ring), bark on the round
+  sides and pale wood on the split faces. The logs vary in size and in how far they stick out. 3,176 tris, every log
+  still inside the frame.
+- **Wall lantern:** checked, no change. The black iron frame reads at day, and at night it throws a warm pool over
+  the whitewash and the brick.
+- **Checked:** Unity `picnic` (Day, Night) and `firewood` (Day).

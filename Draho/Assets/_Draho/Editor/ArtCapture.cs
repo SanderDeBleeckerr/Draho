@@ -53,6 +53,8 @@ namespace Draho.EditorTools
             ("garden_mid", new Vector3(-8f, 0.5f, 4.2f), new Vector3(-12f, 0.4f, 0.6f)),       // mid-garden at cat height: lawn, path, wall
             ("garden_back", new Vector3(-20f, 1.4f, 2.5f), new Vector3(-2f, 0.8f, 2.5f)),      // from the end fence back to the house
             ("maple", new Vector3(-18.6f, 1.1f, 2.4f), new Vector3(-22f, 1.6f, 4.3f)),         // the climbable maple in the corner
+            ("picnic", new Vector3(-3.7f, 1.2f, 4.3f), new Vector3(-1.4f, 0.55f, 2.4f)),         // the picnic table on the terrace
+            ("firewood", new Vector3(-5.3f, 0.8f, 1.9f), new Vector3(-7.0f, 0.45f, 0.3f)),      // the log store against the house wall
         };
 
         /// <summary>The fixed views, plus a side view of the cat (readability).</summary>

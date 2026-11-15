@@ -12,6 +12,7 @@ Run it in a live Blender (the Blender MCP: exec this file) or headless:
 """
 import argparse
 import math
+import mathutils
 import os
 import sys
 
@@ -583,7 +584,8 @@ def picnic_table():
     W, D, H = 1.8, 1.5, 0.75
     top_d, n_top = 0.75, 5
     pw = top_d / n_top
-    woods = ("warm_grey", "grey_stone", "stone")
+    # Garden review round 14: weathered oak, not stone greys (in Unity they read as white plastic); a darker frame.
+    woods = ("oak", "oak_light", "oak", "grey_mid")
     parts = []
     for i in range(n_top):
         y = -top_d / 2 + pw * (i + 0.5)
@@ -595,16 +597,29 @@ def picnic_table():
     for e in (-1, 1):
         x = e * (W / 2 - 0.22)
         for s in (-1, 1):                                                   # the A: two legs from the top to the ground
-            leg = ds.box("Leg", (0, 0, 0), (0.07, 0.07, 0.9), "grey_stone", bevel=0.006)
+            leg = ds.box("Leg", (0, 0, 0), (0.07, 0.07, 0.9), "walnut", bevel=0.006)
             leg.rotation_euler.x = math.radians(s * 34)
             leg.location = (x, s * 0.26, 0.37)
             parts.append(leg)
-        parts.append(ds.box("CrossBar", (x, 0, 0.395), (0.07, D - 0.06, 0.05), "grey_stone", bevel=0.005))  # carries the benches
-        parts.append(ds.box("TopBar", (x, 0, H - 0.07), (0.07, top_d - 0.04, 0.05), "grey_stone", bevel=0.005))
+        parts.append(ds.box("CrossBar", (x, 0, 0.395), (0.07, D - 0.06, 0.05), "walnut", bevel=0.005))  # carries the benches
+        parts.append(ds.box("TopBar", (x, 0, H - 0.07), (0.07, top_d - 0.04, 0.05), "walnut", bevel=0.005))
         for s in (-1, 1):
             parts.append(ds.cylinder("Bolt", (x - 0.036, s * 0.2, 0.395), 0.012, 0.006, "metal_dark", segments=6, bevel=0))
-    brace = ds.box("Brace", (0, 0, 0.42), (W - 0.5, 0.05, 0.05), "grey_stone", bevel=0.005)
+    brace = ds.box("Brace", (0, 0, 0.42), (W - 0.5, 0.05, 0.05), "walnut", bevel=0.005)
     parts.append(brace)
+    # A terracotta pot of rosemary left at the end of the table (round 14): a lived-in garden.
+    px, py = W / 2 - 0.3, -0.12
+    parts.append(ds.cylinder("Pot", (px, py, H), 0.075, 0.13, "terracotta", segments=10, radius_top=0.09, bevel=0.004, smooth=False))
+    parts.append(ds.cylinder("Rim", (px, py, H + 0.12), 0.095, 0.025, "terracotta", segments=10, bevel=0.003, smooth=False))
+    parts.append(ds.cylinder("Soil", (px, py, H + 0.13), 0.082, 0.012, "walnut_dark", segments=10, bevel=0, smooth=False))
+    for k in range(9):
+        a = k / 9 * math.tau + 0.4
+        tilt = math.radians(8 + 14 * (k % 3))
+        st = ds.cylinder("Rosemary", (0, 0, 0), 0.012, 0.2 + 0.05 * (k % 4), "leaf_dark" if k % 2 else "olive",
+                         segments=5, radius_top=0.004, bevel=0, smooth=False)
+        st.rotation_euler = (-math.sin(a) * tilt, math.cos(a) * tilt, 0)   # leaning out at azimuth a
+        st.location = (px + math.cos(a) * 0.03, py + math.sin(a) * 0.03, H + 0.13)
+        parts.append(st)
     return parts
 
 
@@ -1348,6 +1363,49 @@ def human_b():
     return _human("grey_deep", "leaf_dark", "walnut_dark", 0.5, bag=True)
 
 
+def _split_log(rnd, kind, r, length, front_centre, roll):
+    """One piece of firewood lying along +Y, its cut end at front_centre (the garden side): a round, a half or a
+    quarter wedge (a cross-section polygon extruded), the front end inset into a pale heart and a sapwood ring. Bark
+    on the arc sides, lighter wood on the split (chord) sides; flat shaded."""
+    import bmesh
+    n = {"round": 8, "half": 5, "quarter": 3}[kind]
+    span = {"round": math.tau, "half": math.pi, "quarter": math.pi / 2}[kind]
+    pts = [(math.cos(roll + span * k / (n if kind == "round" else n - 1)) * r * rnd.uniform(0.93, 1.05),
+            math.sin(roll + span * k / (n if kind == "round" else n - 1)) * r * rnd.uniform(0.93, 1.05)) for k in range(n)]
+    if kind != "round":
+        pts.append((0.0, 0.0))                          # the split faces meet at the heart
+    cx, cy, cz = front_centre
+    bm = bmesh.new()
+    fr = [bm.verts.new((cx + px, cy, cz + pz)) for px, pz in pts]
+    bk = [bm.verts.new((cx + px, cy + length, cz + pz)) for px, pz in pts]
+    m = len(pts)
+    for k in range(m):
+        bm.faces.new((fr[k], fr[(k + 1) % m], bk[(k + 1) % m], bk[k]))
+    front = bm.faces.new(list(reversed(fr)))
+    bm.faces.new(bk)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bmesh.ops.inset_individual(bm, faces=[front], thickness=r * 0.22, depth=-0.004)   # heart + sapwood ring
+    o = ds._obj("Log", bm, (0, 0, 0))
+    ds.facet(o)
+    ds.paint(o, lambda poly: _log_colour(poly, cx, cz, kind, r, rnd))
+    return o
+
+
+def _log_colour(poly, cx, cz, kind, r, rnd):
+    """Colour a face of _split_log from its normal and centre: the cut end (-Y) a pale heart in a sapwood ring, the
+    back end plain, the sides bark where they face away from the heart and pale split wood along a radius."""
+    nx, ny, nz = poly.normal
+    c = poly.center
+    radial = mathutils.Vector((c.x - cx, 0, c.z - cz))
+    if ny < -0.5:
+        return "oak" if radial.length > r * 0.62 else rnd.choice(("linen", "oak_light"))
+    if ny > 0.7:
+        return "walnut"
+    if kind != "round" and radial.length > 1e-6 and radial.normalized().dot(mathutils.Vector((nx, 0, nz))) < 0.6:
+        return "oak_light"
+    return rnd.choice(("walnut_dark", "walnut_dark", "walnut"))
+
+
 @prop
 def firewood():
     """1.4 x 0.45 x 0.9 m log store against the house wall: two side planks, a back board, base slats and a sloping
@@ -1368,25 +1426,23 @@ def firewood():
     parts.append(roof)
     inner = W - 2 * T - 0.02                           # room between the side planks
     y0 = 0.043                                         # on the slats
+    # Garden review round 14: split firewood, not a grid of identical round pegs: rounds, halves and quarter
+    # wedges, each rolled at random, its flat-shaded cut end a pale heart in a darker sapwood ring, bark on the
+    # round sides and lighter split faces; the logs stick out by different amounts.
     row = 0
     while True:
-        r_row = 0.055
-        z = y0 + r_row + row * 2 * r_row * 0.92
+        r_row = 0.06
+        z = y0 + r_row + row * 2 * r_row * 0.86
         if z + r_row > H - 0.08:
             break
-        x = -inner / 2 + (r_row if row % 2 == 0 else r_row * 1.6)
-        while x + r_row <= inner / 2:
-            r = r_row * rnd.uniform(0.78, 1.0)
-            length = rnd.uniform(D - 0.1, D - 0.05)    # always shorter than the store is deep
-            log = ds.cylinder("Log", (0, 0, -length / 2), r, length, "walnut", segments=8, bevel=0)
-            # Pale cut ends, dark bark.
-            ds.paint(log, lambda p: "linen" if abs(p.normal.z) > 0.9 else rnd.choice(("walnut", "walnut_dark", "oak")))
-            log.rotation_euler.x = math.radians(90)    # along the depth: the cut ends face the garden
-            # The pivot is the log's base and the turn lays it towards the front (-Y): shift it back by half its
-            # length, so the log sits between the back board and the front edge of the store.
-            log.location = (x, length / 2 - 0.03 + rnd.uniform(-0.012, 0.012), z)
-            parts.append(log)
-            x += 2 * r_row * 1.02
+        x = -inner / 2 + (r_row if row % 2 == 0 else r_row * 1.5)
+        while x + r_row * 0.9 <= inner / 2:
+            kind = rnd.choices(("round", "half", "quarter"), (3, 4, 3))[0]
+            r = r_row * rnd.uniform(0.85, 1.0) * (1.1 if kind == "quarter" else 1.0)
+            length = rnd.uniform(D - 0.12, D - 0.04)
+            front = -D / 2 + rnd.uniform(0.0, 0.05)    # how far the cut end sits back from the front edge
+            parts.append(_split_log(rnd, kind, r, length, (x, front, z), rnd.uniform(0, math.tau)))
+            x += 2 * r_row * rnd.uniform(0.92, 1.02)
         row += 1
     return parts
 

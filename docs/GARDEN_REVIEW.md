@@ -21,7 +21,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 10 | Blue tarp | three boxes | **Done, round 10** |
 | 11 | Neighbour's fence (posts) | Blender-era boards | **Done, round 11** |
 | 12 | Green end fence | mesh panels | **Done, round 12** |
-| 13 | Maple tree | Blender | check |
+| 13 | Maple tree | Blender | Done |
 | 14 | Picnic table, firewood store, wall lantern | Blender | check |
 | 15 | Compost and wheelie bins | Blender (round 27) | check |
 | 16 | Animals in the garden (blackbirds, Fatsocat, Zlatenka) | done in the graphics review | check in place |
@@ -266,3 +266,14 @@ sold in every Belgian garden centre. It is left as it is.
 - **Now:** a row of tufts along the foot of the end fence, about 80 % tall ones, some poking through the wire. The
   long-grass margin now runs round three sides of the lawn.
 - **Checked:** Unity `garden_end` and `garden_mid` (Day).
+
+## Round 13: the maple
+
+- **Before:** the crown was five smooth faceted blobs. From the garden it read as a generic lollipop tree, with nothing
+  to say it is a maple or that it is autumn (with leaf litter already lying under it).
+- **Now:** `_tree` takes `leafy` and `turning`. Each crown clump carries 20 two-sided maple leaves (about 0.3-0.4 m,
+  stylised so they read from the lawn), set just outside the clump's flattened surface. They cover the underside too,
+  because the garden looks up at the tree. Each leaf tilts to follow the surface. One in five has turned mustard or
+  terracotta, which ties in with the litter below. The leaves at the edges fray the silhouette.
+- **Budget:** 7,808 tris (was about 1,900), one palette material.
+- **Checked:** a Blender review sheet, then Unity `maple` (Day), the new close view under the crown.

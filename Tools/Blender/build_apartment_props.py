@@ -1143,7 +1143,7 @@ def garden_tarp():
     return parts
 
 
-def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
+def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light"), leafy=0, turning=0.0):
     """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
     branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at
     the foot of the trunk. ApartmentBuilder keeps its cylinder as the invisible climbing collider."""
@@ -1165,13 +1165,24 @@ def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
         size = rnd.uniform(0.55, 0.85) * crown / 1.6
         colour = greens[2] if z > h + 1.6 else rnd.choice(greens[:2])
         parts.append(ds.blob("Leaves", (math.cos(a) * r, math.sin(a) * r, z), size, (1.0, 1.0, 0.72), colour, subdiv=2, seed=seed * 31 + i))
+        # leafy > 0 (garden review round 13, the maple): maple leaves over the clump's outside, facing out, so the crown
+        # frays into leaves at its edge instead of reading as smooth balls; some turning (the fallen leaves come from here)
+        for k in range(leafy):
+            b = rnd.uniform(0, 2 * math.pi)
+            up = rnd.uniform(-0.8, 0.85)                            # the underside too: the garden looks up at it
+            cx, cy = math.cos(a) * r, math.sin(a) * r
+            ring = size * 1.06 * math.sqrt(1 - up * up)            # just outside the clump's (flattened) surface
+            pos = (cx + math.cos(b) * ring, cy + math.sin(b) * ring, z + size * 0.72 * 1.06 * up)
+            leaf_colour = rnd.choice(("mustard", "terracotta")) if rnd.random() < turning else rnd.choice(greens)
+            parts.append(_maple_leaf("Leaf", pos, rnd.uniform(0.3, 0.4) * crown / 1.6, 90 - 60 * up + rnd.uniform(-15, 15),  # stylised: read from the garden
+                                     math.degrees(b) + 90, leaf_colour))
     return parts
 
 
 @prop
 def tree_maple():
     """The garden maple (layout climbable "maple": trunk 2.4 m, radius 0.14)."""
-    return _tree(2.4, 0.14, 1.6, 5)
+    return _tree(2.4, 0.14, 1.6, 5, leafy=20, turning=0.2)
 
 
 @prop

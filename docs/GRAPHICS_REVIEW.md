@@ -41,7 +41,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 26 | Town buildings near the flat | **Done, round 26** | window frames, roof edges |
 | 27 | Courtyard / street props (bins, cars, lamps) | **Done, round 27** | Blender props |
 | 28 | Quay, bridges, boats, water | **Done, round 28** | water colour and glint, quay stones |
-| 29 | Bakery, begijnhof | code | facades |
+| 29 | Bakery, begijnhof | **Done, round 29** | facades |
 | 30 | Sky, clouds, fog | shaders | blue-hour colour check |
 | 31+ | Day/night cycle | `SkyMood` presets | review, then decide |
 
@@ -419,3 +419,32 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   Left as they are.
 - **New capture views:** `quay` (the north quay, down the river) and `footbridge`.
 - **Checked:** Unity captures in Day, Evening and Night: `quay` and `footbridge`.
+
+## Round 29: the bakery (and the begijnhof)
+
+- **Bakery shopfront (new):** the front was a grey panel for a shop window, flat door and window slabs from
+  `PitchedHouse` (one bay drawn over the shop window), primitive spheres for loaves and a gold disc for a sign. It is
+  now `bakery_shopfront` (3,228 tris), 6.4 m wide, in painted timber (`teal_dark`, `cream` trim):
+  - pilasters with capitals and plinths, and a fascia with a border and a cornice;
+  - a stallriser with a panel, a sill, two glazing bars and a transom;
+  - a recessed door with a glazed upper half, a kick panel, a brass knob and a stone step;
+  - behind the glass, a dark interior panel and two shelves of round and long loaves, buns and baguettes.
+
+  The glass is a Unity panel with the shared glass material. The old panel was opaque grey and hid the display.
+- **Crates and sign:**
+  - `bread_crate` (1,916 tris): a slatted crate with loaves, over the existing collider boxes, each turned a few
+    degrees.
+  - `bakery_sign` (640 tris): a scrolled iron bracket with a gilt pretzel on two links, hung at 4.1 m by the door end
+    so it clears the awning.
+- **Layout:**
+  - The shopfront stands between the outer mouse holes (z -95.5 and -104).
+  - The middle hole (z -99.8) moves 28 cm out, into the shopfront's stallriser.
+  - `PitchedHouse` skips the bakery's middle bay.
+  - A collider box covers the shopfront's front.
+- **Light:** the cream fascia and stallriser panel catch the light under the awning's shade, the loaves read warm
+  against the dark interior, and the gilt pretzel catches the sun. At night the window is dark. A lit display
+  (a warm interior light) is noted for the day/night work after round 30.
+- **Begijnhof:** about 200 m away, and in the captures it sits inside the distance fog. It is background scenery at
+  this range, so it was left as it is and its capture view was dropped.
+- **Checked:** Blender QA (one 1 mm bun on its shelf, fixed; the remaining "z-fighting" pairs are back faces hidden
+  inside other parts); Unity `bakery` view in Day and Night.

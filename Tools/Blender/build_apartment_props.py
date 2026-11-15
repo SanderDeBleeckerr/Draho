@@ -703,6 +703,141 @@ def compost_bin():
     return parts
 
 
+def _tube(name, points, radius, colour, sides=6):
+    """A faceted tube along a polyline (closed at both ends), for bent iron and dough."""
+    import bmesh
+    from mathutils import Vector
+    pts = [Vector(q) for q in points]
+    bm = bmesh.new()
+    rings = []
+    for i, q in enumerate(pts):
+        t = (pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]).normalized()
+        a = t.cross(Vector((0, 0, 1)) if abs(t.z) < 0.9 else Vector((1, 0, 0))).normalized()
+        b = t.cross(a)
+        rings.append([bm.verts.new(q + (a * math.cos(k / sides * math.tau) + b * math.sin(k / sides * math.tau)) * radius)
+                      for k in range(sides)])
+    for r0, r1 in zip(rings, rings[1:]):
+        for k in range(sides):
+            bm.faces.new((r0[k], r0[(k + 1) % sides], r1[(k + 1) % sides], r1[k]))
+    bm.faces.new(rings[0][::-1])
+    bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    o = ds._obj(name, bm, (0, 0, 0))
+    ds.facet(o)
+    ds.paint(o, colour)
+    return o
+
+
+def _loaf(name, c, length, width, colour, seed):
+    return ds.blob(name, c, width / 2, (1.0, length / width, 0.72), colour, subdiv=1, seed=seed)
+
+
+@prop
+def bakery_shopfront():
+    """A painted timber shopfront for the bakery (chapter 6), 6.4 m wide, against the house wall. Origin: the foot
+    of the wall at the middle of the shopfront; Blender -Y is out of the wall (the street). From -X: a recessed door
+    with a glazed upper half, a pilaster, then the shop window (4.55 m, two glazing bars and a transom) over a
+    stallriser with a sill, a fascia with a cornice along the top. Behind the glass (the glass itself stays in Unity):
+    a dark interior panel and two display shelves of loaves, baguettes and buns."""
+    paint, trim = "teal_dark", "cream"
+    W2 = 3.2
+    p = []
+    for x in (-W2, -1.6, W2):                                       # pilasters with capitals and plinths
+        p.append(ds.box("Pilaster", (x, -0.15, 1.35), (0.25, 0.3, 2.7), paint, bevel=0.02))
+        p.append(ds.box("Capital", (x, -0.17, 2.66), (0.31, 0.34, 0.08), trim, bevel=0.01))
+        p.append(ds.box("Plinth", (x, -0.16, 0.08), (0.29, 0.32, 0.16), "grey_dark", bevel=0.01))
+    p += [ds.box("Fascia", (0, -0.16, 2.93), (2 * W2 + 0.3, 0.32, 0.46), paint, bevel=0.02),
+          ds.box("FasciaBorder", (0, -0.323, 2.93), (2 * W2 - 0.1, 0.012, 0.34), trim, bevel=0.0),
+          ds.box("FasciaPanel", (0, -0.331, 2.93), (2 * W2 - 0.25, 0.012, 0.26), paint, bevel=0.0),
+          ds.box("Cornice", (0, -0.18, 3.19), (2 * W2 + 0.45, 0.4, 0.07), trim, bevel=0.012)]
+    wx0, wx1 = -1.475, 3.075
+    wc, ww = (wx0 + wx1) / 2, wx1 - wx0
+    p += [ds.box("Stallriser", (wc, -0.14, 0.31), (ww, 0.28, 0.62), paint, bevel=0.012),
+          ds.box("StallPanel", (wc, -0.283, 0.31), (ww - 0.24, 0.012, 0.4), trim, bevel=0.0),
+          ds.box("Sill", (wc, -0.165, 0.645), (ww + 0.06, 0.33, 0.05), trim, bevel=0.01),
+          ds.box("TopRail", (wc, -0.26, 2.66), (ww, 0.06, 0.08), paint, bevel=0.006),
+          ds.box("Transom", (wc, -0.27, 2.27), (ww, 0.05, 0.05), paint, bevel=0.006),
+          ds.box("Interior", (wc, -0.012, 1.64), (ww, 0.012, 1.96), "charcoal", bevel=0.0)]
+    for x in (wx0 + ww / 3, wx0 + 2 * ww / 3):
+        p.append(ds.box("GlazingBar", (x, -0.27, 1.45), (0.05, 0.05, 1.62), paint, bevel=0.006))
+    # display: a low shelf on the sill line and a higher one, loaves and baguettes on them
+    p.append(ds.box("ShelfLow", (wc, -0.13, 0.69), (ww - 0.05, 0.22, 0.03), "oak", bevel=0.004))
+    p.append(ds.box("ShelfHigh", (wc, -0.11, 1.32), (ww - 0.05, 0.18, 0.025), "oak", bevel=0.004))
+    import random
+    rnd = random.Random(6)
+    x = wx0 + 0.25
+    k = 0
+    while x < wx1 - 0.25:                                           # round and long loaves on the low shelf
+        long_ = k % 3 == 1
+        p.append(_loaf("Loaf", (x, -0.13, 0.74), 0.34 if long_ else 0.2, 0.16 if long_ else 0.19,
+                       "a_corgi_tan" if k % 2 else "oak_light", seed=k))
+        x += 0.36 + rnd.random() * 0.08
+        k += 1
+    x = wx0 + 0.2
+    while x < wx1 - 0.7:                                            # buns on the high shelf, baguettes at the end
+        p.append(_loaf("Bun", (x, -0.11, 1.36), 0.11, 0.1, "a_corgi_tan", seed=k))  # resting on the shelf
+        x += 0.17
+        k += 1
+    for i in range(4):
+        b = ds.cylinder("Baguette", (wx1 - 0.45 + i * 0.07, -0.1, 1.33), 0.022, 0.55, "oak_light", segments=6, bevel=0, smooth=False)
+        b.rotation_euler.y = math.radians(-14 + i * 6)
+        p.append(b)
+    # the door: recessed, a frame, a glazed upper half (dark glass), a kick panel, a brass knob; a transom above
+    dx0, dx1 = -W2 + 0.125, -1.6 - 0.125
+    dc, dw = (dx0 + dx1) / 2, dx1 - dx0
+    p += [ds.box("DoorTransom", (dc, -0.06, 2.45), (dw, 0.12, 0.42), "slate", bevel=0.0),
+          ds.box("DoorHead", (dc, -0.2, 2.24), (dw, 0.2, 0.06), paint, bevel=0.006),
+          ds.box("DoorLeaf", (dc, -0.05, 1.1), (dw - 0.12, 0.05, 2.18), paint, bevel=0.01),
+          ds.box("DoorGlass", (dc, -0.077, 1.5), (dw - 0.36, 0.008, 1.05), "slate", bevel=0.0),
+          ds.box("DoorPanel", (dc, -0.077, 0.45), (dw - 0.36, 0.008, 0.5), trim, bevel=0.0),
+          ds.box("Step", (dc, -0.17, 0.04), (dw + 0.1, 0.34, 0.08), "stone", bevel=0.01)]
+    knob = ds.cylinder("Knob", (0, 0, 0), 0.025, 0.05, "mustard", segments=8, bevel=0.005, smooth=False)
+    knob.rotation_euler.x = math.radians(90)
+    knob.location = (dc + dw / 2 - 0.16, -0.075, 1.02)
+    p.append(knob)
+    return p
+
+
+@prop
+def bread_crate():
+    """A slatted wooden bread crate (0.5 x 0.7 x 0.4 m) with loaves in it. Front -Y."""
+    wood = "oak_light"
+    p = [ds.box("Bottom", (0, 0, 0.02), (0.5, 0.7, 0.03), wood, bevel=0.004)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            p.append(ds.box("Post", (sx * 0.23, sy * 0.33, 0.2), (0.04, 0.04, 0.4), "oak", bevel=0.005))
+    for z in (0.08, 0.2, 0.33):
+        for sy in (-1, 1):
+            p.append(ds.box("SlatLong", (0, sy * 0.34, z), (0.46, 0.015, 0.07), wood, bevel=0.003))
+        for sx in (-1, 1):
+            p.append(ds.box("SlatShort", (sx * 0.24, 0, z - 0.004), (0.015, 0.66, 0.062), wood, bevel=0.003))  # not flush with the long slats
+    for i, (x, y) in enumerate(((-0.11, -0.18), (0.1, -0.15), (-0.08, 0.12), (0.11, 0.17))):
+        p.append(_loaf("Loaf", (x, y, 0.3), 0.3, 0.17, "a_corgi_tan" if i % 2 else "oak_light", seed=20 + i))
+    return p
+
+
+@prop
+def bakery_sign():
+    """The bakery's hanging sign: a wall plate, a scrolled iron bracket and a gilt pretzel hanging from two links.
+    Origin: on the wall where the plate is fixed (Blender -Y out of the wall); the pretzel hangs 0.6 m out."""
+    iron, gold = "black", "mustard"
+    p = [ds.box("Plate", (0, -0.01, 0), (0.12, 0.02, 0.3), iron, bevel=0.004),
+         ds.box("Arm", (0, -0.45, 0.1), (0.03, 0.9, 0.03), iron, bevel=0.004),
+         _tube("Scroll", [(0, -0.02, -0.12), (0, -0.12, -0.08), (0, -0.25, 0.0), (0, -0.4, 0.08), (0, -0.55, 0.1)], 0.012, iron)]
+    for y in (-0.48, -0.72):
+        p.append(ds.box("Link", (0, y, 0.0), (0.012, 0.012, 0.18), iron, bevel=0.0))
+    # the pretzel, in the plane of the bracket (seen from up and down the street): a loop and two crossed arms
+    cy, cz, r = -0.6, -0.38, 0.27
+
+    def at(u, v):
+        return (0.0, cy + u, cz + v)
+    loop = [at(r * math.cos(math.radians(a)), r * math.sin(math.radians(a))) for a in range(-70, 251, 20)]
+    p.append(_tube("PretzelA", loop + [at(0.04, -0.06), at(0.25, 0.07)], 0.04, gold, sides=8))
+    p.append(_tube("PretzelB", [at(r * math.cos(math.radians(-70)), r * math.sin(math.radians(-70))),
+                                at(-0.04, -0.06), at(-0.25, 0.07)], 0.04, gold, sides=8))
+    return p
+
+
 def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
     """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
     branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at

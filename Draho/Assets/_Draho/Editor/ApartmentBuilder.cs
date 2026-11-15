@@ -3579,27 +3579,51 @@ namespace Draho.EditorTools
                 stripe.transform.rotation = Quaternion.Euler(0f, 0f, -18f);
                 stripe.transform.SetParent(root, true);
             }
-            var window = Mat("Apt_ShopWindow", new Color(0.55f, 0.62f, 0.62f), 0.9f);
-            Box("ShopWindow", new Vector3(b.x + 0.03f, 1.5f, cz + 3f), new Vector3(0.05f, 1.6f, 5f), window, collider: false).transform.SetParent(root, true);
-            var bread = Mat("Apt_Bread", new Color(0.78f, 0.55f, 0.28f), 0.3f);
-            for (int i = 0; i < 6; i++) // loaves in the window
+            // The shopfront (graphics review round 29, Tools/Blender/build_apartment_props.py): painted pilasters, a fascia
+            // and cornice, a stallriser, glazing bars, a recessed door and a window display of bread. It stands 6.4 m
+            // wide on the middle of the front, between the outer mouse holes (the middle one is in its stallriser);
+            // the model's x runs along the wall, turned to face the street (+x). Shopfront x maps to z = centre + x.
+            const float shopCentre = -99.4f;
+            float shopZ = Mathf.Clamp(shopCentre, b.z0 + 3.5f, b.z1 - 3.5f);
+            var shop = FurnitureModel("bakery_shopfront", root);
+            if (shop != null)
             {
-                var loaf = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.DestroyImmediate(loaf.GetComponent<Collider>());
-                loaf.transform.SetParent(root, false);
-                loaf.transform.position = new Vector3(b.x - 0.15f, 1.0f, cz + 1f + i * 0.75f);
-                loaf.transform.localScale = new Vector3(0.22f, 0.14f, 0.4f);
-                loaf.GetComponent<Renderer>().sharedMaterial = bread;
+                shop.position = new Vector3(b.x, 0f, shopZ);
+                shop.rotation = Quaternion.Euler(0f, 90f, 0f);
+                // The glass of the shop window (x -1.475..3.075 on the model, 0.66..2.62 m high, 0.26 m out of the wall).
+                var glass = Box("ShopWindow", new Vector3(b.x + 0.26f, 1.64f, shopZ + 0.8f), new Vector3(0.012f, 1.96f, 4.55f), GlassMat(), collider: false);
+                glass.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                glass.transform.SetParent(root, true);
+                // A collider for the shopfront's front (the cat walks along it, not into the display).
+                var front = Box("ShopfrontCollider", new Vector3(b.x + 0.16f, 1.6f, shopZ), new Vector3(0.32f, 3.2f, 6.6f), null);
+                Object.DestroyImmediate(front.GetComponent<Renderer>());
+                front.transform.SetParent(root, true);
             }
-            var sign = GameObject.CreatePrimitive(PrimitiveType.Sphere); // a golden pretzel-like sign above the door
-            Object.DestroyImmediate(sign.GetComponent<Collider>());
-            sign.transform.SetParent(root, false);
-            sign.transform.position = new Vector3(b.x + 0.5f, 3.6f, cz - 3f);
-            sign.transform.localScale = new Vector3(0.1f, 0.6f, 0.8f);
-            sign.GetComponent<Renderer>().sharedMaterial = Mat("Apt_Gold", new Color(0.85f, 0.65f, 0.2f), 0.7f);
+            else
+            {
+                var window = Mat("Apt_ShopWindow", new Color(0.55f, 0.62f, 0.62f), 0.9f);
+                Box("ShopWindow", new Vector3(b.x + 0.03f, 1.5f, cz + 3f), new Vector3(0.05f, 1.6f, 5f), window, collider: false).transform.SetParent(root, true);
+            }
+            // The hanging sign by the door end, above the awning: an iron bracket and a gilt pretzel.
+            var sign = FurnitureModel("bakery_sign", root);
+            if (sign != null)
+            {
+                sign.position = new Vector3(b.x, 4.1f, shopZ - 3.45f);
+                sign.rotation = Quaternion.Euler(0f, 90f, 0f);
+            }
+            // Bread crates by the door: the Blender crate over each collider box.
             var wood = Mat("Apt_CrateWood", new Color(0.62f, 0.48f, 0.3f), 0.15f);
+            int crateN = 0;
             foreach (var c in b.crates ?? new Spot[0])
-                Box("BreadCrate", new Vector3(c.x, 0.2f, c.z), new Vector3(0.5f, 0.4f, 0.7f), wood).transform.SetParent(root, true);
+            {
+                var crateBox = Box("BreadCrate", new Vector3(c.x, 0.2f, c.z), new Vector3(0.5f, 0.4f, 0.7f), wood);
+                crateBox.transform.SetParent(root, true);
+                var crate = FurnitureModel("bread_crate", root);
+                if (crate == null) continue;
+                crate.position = new Vector3(c.x, 0f, c.z);
+                crate.rotation = Quaternion.Euler(0f, (crateN++ * 23f) % 12f - 6f, 0f); // not quite square to each other
+                Object.DestroyImmediate(crateBox.GetComponent<Renderer>());
+            }
             var binMat = Mat("Apt_Bin", new Color(0.18f, 0.3f, 0.22f), 0.3f);
             foreach (var c in b.bins ?? new Spot[0])
             {
@@ -3952,6 +3976,8 @@ namespace Draho.EditorTools
             for (int i = 0; i < bays; i++)
             {
                 float t = -faceLen / 2 + faceLen * (i + 0.5f) / bays;
+                // The bakery's middle bay is where the Blender shopfront stands (BuildBakery, round 29).
+                if (b.id == "bakery" && Mathf.Abs(t) < 1f) continue;
                 Vector3 at = faceCentre + tangent * t + n * 0.03f;
                 Box("Door", at + Vector3.up * 1.0f + tangent * -0.9f, faceAlongX ? new Vector3(0.95f, 2f, 0.08f) : new Vector3(0.08f, 2f, 0.95f), door, collider: false).transform.SetParent(root, true);
                 Box("Window", at + Vector3.up * 1.5f + tangent * 0.8f, faceAlongX ? new Vector3(1.0f, 1.2f, 0.06f) : new Vector3(0.06f, 1.2f, 1.0f), glass, collider: false).transform.SetParent(root, true);

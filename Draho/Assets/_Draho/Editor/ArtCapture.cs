@@ -49,6 +49,9 @@ namespace Draho.EditorTools
             ("door_in", new Vector3(1.1f, 0.4f, 4.9f), new Vector3(-0.2f, 0.12f, 3.0f)),      // the open door from inside, cat height
             ("door_in_b", new Vector3(1.1f, 0.4f, 0.9f), new Vector3(-0.2f, 0.12f, 2.8f)),    // and from the other end
             ("garden_end", new Vector3(-21.0f, 1.2f, 2.8f), new Vector3(-23.4f, 0.45f, 1.1f)),  // the compost and wheelie bin by the end fence
+            ("garden_over", new Vector3(-0.6f, 3.6f, 4.4f), new Vector3(-12f, 0f, 2f)),        // the whole garden from above the terrace
+            ("garden_mid", new Vector3(-8f, 0.5f, 4.2f), new Vector3(-12f, 0.4f, 0.6f)),       // mid-garden at cat height: lawn, path, wall
+            ("garden_back", new Vector3(-20f, 1.4f, 2.5f), new Vector3(-2f, 0.8f, 2.5f)),      // from the end fence back to the house
         };
 
         /// <summary>The fixed views, plus a side view of the cat (readability).</summary>

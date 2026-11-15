@@ -3435,9 +3435,21 @@ namespace Draho.EditorTools
             var stemMat = Mat("Sapling_Stem", new Color(0.35f, 0.27f, 0.2f), 0.1f);
             var leafGreen = Mat("Sapling_Leaf", new Color(0.33f, 0.45f, 0.18f), 0.15f);
             var leafTurning = Mat("Sapling_LeafYellow", new Color(0.66f, 0.62f, 0.2f), 0.15f);
+            int saplingN = 0;
             foreach (var at in new[] { new Vector2(-7.5f, 3.4f), new Vector2(-9.2f, 2.3f), new Vector2(-12.6f, 3.8f), new Vector2(-15.4f, 2.6f), new Vector2(-18.1f, 3.6f), new Vector2(-10.8f, 4.3f) })
             {
                 float h = 0.8f + R() * 0.7f;
+                // The Blender sapling (garden review round 1): a bending stem, twigs and clusters of five-lobed maple
+                // leaves, green or turning; each one turned and sized differently. It replaced a cylinder with flat discs.
+                var sapling = FurnitureModel(saplingN++ % 3 == 1 ? "sapling_turning" : "sapling_green", root);
+                if (sapling != null)
+                {
+                    sapling.position = new Vector3(at.x, 0f, at.y);
+                    sapling.rotation = Quaternion.Euler(0f, R() * 360f, 0f);
+                    sapling.localScale = Vector3.one * (h / 1.2f);
+                    foreach (var r in sapling.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.TwoSided;
+                    continue;
+                }
                 var stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 Object.DestroyImmediate(stem.GetComponent<Collider>());
                 stem.name = "Sapling";

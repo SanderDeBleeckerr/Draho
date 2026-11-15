@@ -852,6 +852,85 @@ def bakery_sign():
     return p
 
 
+def _maple_leaf(name, centre, size, normal_tilt, yaw, colour):
+    """A small maple leaf: a five-lobed flat outline (fan from the middle), made twice with opposite windings and
+    1 mm apart, so it shows from both sides with the one-sided palette material. size = tip-to-stem length (m)."""
+    import bmesh
+    from mathutils import Vector, Matrix
+    lobes = [(90, 1.0), (35, 0.82), (145, 0.82), (-15, 0.5), (195, 0.5)]
+    pts = []
+    order = sorted(lobes, key=lambda l: l[0])
+    for i, (a, r) in enumerate(order):
+        a2 = order[(i + 1) % len(order)][0] + (360 if i == len(order) - 1 else 0)
+        pts.append((a, r))
+        pts.append(((a + a2) / 2, 0.34))                      # the notch between two lobes
+    bm = bmesh.new()
+    rot = Matrix.Rotation(math.radians(yaw), 3, "Z") @ Matrix.Rotation(math.radians(normal_tilt), 3, "X")
+    c = Vector(centre)
+    for side, off in ((1, 0.0005), (-1, -0.0005)):
+        mid = bm.verts.new(c + rot @ Vector((0, 0, off)))
+        ring = [bm.verts.new(c + rot @ Vector((math.cos(math.radians(a)) * r * size * 0.5,
+                                                math.sin(math.radians(a)) * r * size * 0.5, off))) for a, r in pts]
+        for k in range(len(ring)):
+            f = (mid, ring[k], ring[(k + 1) % len(ring)])
+            bm.faces.new(f if side > 0 else f[::-1])
+    o = ds._obj(name, bm, (0, 0, 0))
+    ds.facet(o)
+    ds.paint(o, colour)
+    return o
+
+
+def _sapling(seed, turning):
+    """A young maple shoot in the overgrown lawn: a thin, slightly bending trunk, two or three twigs, and clusters
+    of five-lobed leaves at the twig ends and the top (some turning yellow and orange in the 'turning' variant).
+    Origin at its foot on the ground; about 1.2 m high."""
+    import random
+    rnd = random.Random(seed)
+    bark = "walnut"
+    h = 1.2
+    lean = (rnd.uniform(-0.06, 0.06), rnd.uniform(-0.06, 0.06))
+    trunk = [(lean[0] * (t / 6) ** 1.5, lean[1] * (t / 6) ** 1.5, h * t / 6) for t in range(7)]
+    parts = [_tube("Trunk", trunk, 0.011, bark, sides=5)]
+    tips = [trunk[-1]]
+    for k in range(3):
+        t = 0.42 + 0.17 * k
+        base = (lean[0] * t ** 1.5, lean[1] * t ** 1.5, h * t)
+        a = math.radians(rnd.uniform(0, 360) + k * 125)
+        L = rnd.uniform(0.22, 0.32)
+        mid = (base[0] + math.cos(a) * L * 0.5, base[1] + math.sin(a) * L * 0.5, base[2] + L * 0.25)
+        tip = (base[0] + math.cos(a) * L, base[1] + math.sin(a) * L, base[2] + L * 0.42)
+        parts.append(_tube("Twig", [base, mid, tip], 0.006, bark, sides=4))
+        tips.append(tip)
+    greens = ["leaf", "leaf_dark", "leaf_light"]
+    autumn = ["mustard", "terracotta", "leaf_light"]
+    n = 0
+    # Clusters of 8 at the twig ends and the top, 15-22 cm leaves (a young maple's are big for its size), and a few
+    # single leaves along the upper trunk, so it reads as a leafy shoot from cat height, not a bare stick.
+    spots = [(tip, 8, 0.12) for tip in tips]
+    for k in range(6):
+        t = 0.5 + 0.08 * k
+        spots.append(((lean[0] * t ** 1.5, lean[1] * t ** 1.5, h * t), 1, 0.06))
+    for (tx, ty, tz), count, spread in spots:
+        for j in range(count):
+            a = rnd.uniform(0, 360)
+            r = rnd.uniform(0.03, spread)
+            c = (tx + math.cos(math.radians(a)) * r, ty + math.sin(math.radians(a)) * r, tz + rnd.uniform(-0.06, 0.05))
+            colour = rnd.choice(autumn) if turning and rnd.random() < 0.55 else rnd.choice(greens)
+            parts.append(_maple_leaf("Leaf", c, rnd.uniform(0.15, 0.22), rnd.uniform(15, 55), a + 90, colour))
+            n += 1
+    return parts
+
+
+@prop
+def sapling_green():
+    return _sapling(seed=11, turning=False)
+
+
+@prop
+def sapling_turning():
+    return _sapling(seed=23, turning=True)
+
+
 def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
     """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
     branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at

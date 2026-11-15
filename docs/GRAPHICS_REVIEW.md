@@ -42,7 +42,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 27 | Courtyard / street props (bins, cars, lamps) | **Done, round 27** | Blender props |
 | 28 | Quay, bridges, boats, water | **Done, round 28** | water colour and glint, quay stones |
 | 29 | Bakery, begijnhof | **Done, round 29** | facades |
-| 30 | Sky, clouds, fog | shaders | blue-hour colour check |
+| 30 | Sky, clouds, fog | **Done, round 30** | blue-hour colour check |
 | 31+ | Day/night cycle | `SkyMood` presets | review, then decide |
 
 ## Rounds
@@ -448,3 +448,28 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   this range, so it was left as it is and its capture view was dropped.
 - **Checked:** Blender QA (one 1 mm bun on its shelf, fixed; the remaining "z-fighting" pairs are back faces hidden
   inside other parts); Unity `bakery` view in Day and Night.
+
+## Round 30: the sky, the clouds, the fog
+
+- **Capture fix:** the clouds take their colour from the mood in `SkyClouds.Update`, which only runs at run time, so
+  every evening and night capture showed daytime-white clouds. Bright white puffs in the night sky looked like a bug
+  but were not one in play. `ArtCapture` now runs `SkyClouds` (Awake once, then Update) for each view, as it already
+  did for `SkyMood`, so the review pictures show the clouds as the game does.
+- **Evening clouds (changed):** with the real colours visible, the evening clouds were a muddy brown-mauve. The
+  cloud shader is unlit, but the evening exposure is low, so (1, 0.72, 0.52) over (0.55, 0.42, 0.5) came out dull.
+  The evening now uses HDR colours: lit (1.7, 1.25, 0.88) over shade (1.25, 0.8, 0.74). The clouds glow peach and
+  salmon, brighter than the dimmed land, as clouds catch a low sun.
+- **Night clouds (checked):** faint, dark blue-grey shapes against the stars, at half opacity. Right.
+- **Day sky, fog (checked):** the day sky runs from deep blue overhead to a pale horizon, with white cumulus with
+  grey bases. The fog fades the far blocks and the skyline trees to the horizon colour, giving depth without hiding
+  the town. Unchanged.
+- **Checked:** Unity captures of `town_west` and `quay` in Day, Evening and Night.
+
+## After 30 rounds
+
+All 30 entities in the backlog have had a pass. Notes carried forward to the day/night work:
+- The dining corner is almost dark at night.
+- The bakery window is dark at night (a warm lit display).
+- Zlatenka's shell could use scute relief for low sun.
+- There are two placeholder slabs on the pavement at the street corner.
+- The lamps glow only at run time (captures cannot show them).

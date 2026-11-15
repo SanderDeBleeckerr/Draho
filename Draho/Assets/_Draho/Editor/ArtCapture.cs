@@ -137,6 +137,18 @@ namespace Draho.EditorTools
                     var indoor = indoorType != null ? UnityEngine.Object.FindAnyObjectByType(indoorType) : null;
                     indoorType?.GetMethod("Refresh")?.Invoke(indoor, new object[] { v.pos, true });
                     typeof(SkyMood).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(sky, null);
+                    // The clouds take their colour from the mood in SkyClouds.Update (run time only): without it they
+                    // stayed daytime white in the evening and night pictures.
+                    var cloudsType = Type.GetType("Draho.World.SkyClouds, Assembly-CSharp");
+                    var cloudsUpdate = cloudsType?.GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (cloudsType != null)
+                        foreach (var c in UnityEngine.Object.FindObjectsByType(cloudsType, FindObjectsSortMode.None))
+                        {
+                            var matField = cloudsType.GetField("material", BindingFlags.Instance | BindingFlags.NonPublic);
+                            if (matField != null && matField.GetValue(c) == null) // Awake once: it makes the material instance
+                                cloudsType.GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(c, null);
+                            cloudsUpdate?.Invoke(c, null);
+                        }
                     // Twice: the first frame after a change can miss state (the first picture came out red).
                     for (int pass = 0; pass < 2; pass++)
                     {

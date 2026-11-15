@@ -24,7 +24,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 13 | Maple tree | Blender | **Done, round 13** |
 | 14 | Picnic table, firewood store, wall lantern | Blender | **Done, round 14** |
 | 15 | Compost and wheelie bins | Blender (round 27) | **Done, round 15** |
-| 16 | Animals in the garden (blackbirds, Fatsocat, Zlatenka) | done in the graphics review | check in place |
+| 16 | Animals in the garden (blackbirds, Fatsocat, Zlatenka) | done in the graphics review | **Checked, round 16** |
 
 ## Round 1: the saplings
 
@@ -307,3 +307,16 @@ sold in every Belgian garden centre. It is left as it is.
   90° like the wheelie bin, so the hatch faces the garden (it faced the wall). The bin is octagonal, so nothing else
   changes. 1,268 tris.
 - **Checked:** Unity `bins` (Day).
+
+## Round 16: the animals in place
+
+- **Checked, no change:** the blackbirds (a brown hen on the path, a black cock on the lawn), Zlatenka the leopard
+  tortoise in the middle of the lawn, and Fatsocat by the end fence. All are grounded, at the right scale and easy to
+  read against the new lawn, path and litter. Views: `garden_mid`, `garden_back`, `bins`, `maple` (Day).
+
+## Summary
+
+All 16 garden entities are reviewed. 15 changed and one was only checked. New capture views: `garden_over`,
+`garden_mid`, `garden_back`, `maple`, `picnic`, `firewood`, `bins`. New Blender props and helpers: saplings, grass
+tufts and dandelions, stepping stones, leaf litter, the tarp, the leafy maple, split firewood, and the bin and table
+details. New Unity textures and meshes: whitewash, lawn, terrace, corrugated sheets, ivy leaves and fence wood grain.

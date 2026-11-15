@@ -10,7 +10,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | # | Entity | Now | Plan |
 |---|--------|-----|------|
 | 1 | Saplings (young maple shoots) | cylinder + flat disc "leaves" (lollipops) | **Done, round 1** |
-| 2 | Yard wall (whitewash skin) | repeating orange bow-tie brick spots | break the repeat, softer patches |
+| 2 | Yard wall (whitewash skin) | repeating orange bow-tie brick spots | **Done, round 2** |
 | 3 | Lawn | one flat saturated green | mown/long variation, worn path, edges |
 | 4 | Grass tufts | sparse spiky tufts | denser at the edges, under the wall |
 | 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | check |
@@ -51,3 +51,24 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 - **In Unity:** every third sapling is the turning one. Each is turned at random and scaled to its old height
   (0.8-1.5 m), and casts two-sided shadows, so the leaves throw dappled shade on the lawn.
 - **Checked:** Blender review sheet; Unity `garden_mid`, `garden_back` and `garden_over` in Day and Evening.
+
+## Round 2: the yard wall's whitewash
+
+**Brief:** a texture fix (no mesh), the biggest surface in the garden: 21 x 2.6 m along the whole south side.
+
+- **Before:** a 256 px whitewash tile of 1 m, repeated 21 times. Its fine "peel" noise left the same small orange
+  brick spots every metre, a bow-tie pattern that marched down the wall.
+- **Now:** `WhitewashWallTexture` (2048 px, 8 x 8 m at 256 px a metre; the wall uses the bottom 2.6 m):
+  - Peeling in patches, as whitewash weathers: ragged three-octave noise, much more of it in the bottom metre (rising
+    damp), and a few small flakes higher up. A thin rim of flaking paint around each patch.
+  - The brick under the peel is in its own shades, each brick a different red-brown, darker in the damp.
+  - Grey rain streaks run down from the coping, stronger towards the top.
+  - There is green algae at the foot, and the mortar courses show faintly through the paint.
+  - One tile covers 8 m, so the 21 m wall shows it 2.6 times, with no visible rhythm.
+- **Fix found on the way:** `Mat()` adds a normal map by texture name. The material asset still held the 1 m brick
+  normal from the old "Whitewash" texture, and at the new tiling it drew giant blurred bricks. The wall material
+  now clears its normal map explicitly: the joints are painted, and a 2048 normal map would cost memory on the
+  phone.
+- **Light:** low sun now rakes across an even, matte white with a weathered foot, instead of a speckled
+  surface. The evening light turns it a warm grey.
+- **Checked:** Unity `garden_mid`, `garden_back` and `garden_over` in Day and Evening.

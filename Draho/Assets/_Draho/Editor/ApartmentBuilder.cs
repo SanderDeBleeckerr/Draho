@@ -3399,7 +3399,8 @@ namespace Draho.EditorTools
             var root = new GameObject("GardenDetails").transform;
             root.SetParent(level, false);
             // The wall faces at z = 0 (the buildings stand at z < 0): a skin 1-2 cm in front of them, no colliders.
-            var wash = Mat("Apt_Whitewash", Color.white, 0.08f, WhitewashTexture(), new Vector2(21f, 2.6f));
+            // One texture covers 8 m of wall (garden review round 2): the old 1 m tile repeated its peel spots 21 times.
+            var wash = Mat("Apt_Whitewash", Color.white, 0.08f, WhitewashWallTexture(), new Vector2(21f / 8f, 2.6f / 8f));
             Box("Whitewash", new Vector3(-13.5f, 1.3f, 0.012f), new Vector3(21f, 2.6f, 0.02f), wash, collider: false).transform.SetParent(root, true);
             var sheets = Mat("Apt_Corrugated", new Color(0.92f, 0.92f, 0.9f), 0.15f, CorrugatedTexture(), new Vector2(13f, 3.9f));
             Box("Sheets_A", new Vector3(-17.5f, 4.55f, 0.02f), new Vector3(13f, 3.9f, 0.03f), sheets, collider: false).transform.SetParent(root, true);
@@ -5271,6 +5272,14 @@ namespace Draho.EditorTools
                 m.EnableKeyword("_NORMALMAP");
                 EditorUtility.SetDirty(m);
             }
+            else if (tex != null && tex.name == "WhitewashWall")
+            {
+                // The garden wall's 8 m whitewash paints its joints faintly under the paint and needs no relief map. The
+                // material asset kept the 1 m brick normal from the old texture, which drew giant bricks at the new tiling.
+                m.SetTexture("_BumpMap", null);
+                m.DisableKeyword("_NORMALMAP");
+                EditorUtility.SetDirty(m);
+            }
             materials[name] = m;
             return m;
         }
@@ -5393,6 +5402,46 @@ namespace Draho.EditorTools
 
         /// <summary>Old lime-washed brick, 1 m square (the brick layout): off-white, with patches where the paint
         /// has come off and the red brick shows, and grey streaks running down.</summary>
+        /// <summary>
+        /// The garden's whitewashed yard wall, 8 x 8 m at 256 px a metre (the wall uses the bottom 2.6 m; v = 0 is its
+        /// foot). Whitewash weathers in patches, not spots: large peeled areas, mostly in the bottom metre (rising damp)
+        /// and a few higher up, with ragged edges; the brick under it in its own shades; grey rain streaks running down
+        /// from the coping; green algae at the foot; the mortar courses faintly through the paint. No repeat along the
+        /// 21 m wall reads as a pattern (the old 1 m tile showed the same orange spots every metre).
+        /// </summary>
+        static Texture2D WhitewashWallTexture() => MakeTexture("WhitewashWall.png", 2048, (x, y, size) =>
+        {
+            const int rowH = 16, brickW = 58, mortar = 2;
+            int row = y / rowH;
+            int shifted = x + (row % 2) * brickW / 2;
+            bool joint = y % rowH < mortar || shifted % brickW < mortar;
+            float metres = y / 256f;
+            // ragged peel: three octaves, more of it near the foot of the wall
+            float fbm = 0.55f * TileNoise(x, y, size, 0.006f, 3.1f, 8.2f) + 0.3f * TileNoise(x, y, size, 0.018f, 5.7f, 1.4f)
+                        + 0.15f * TileNoise(x, y, size, 0.06f, 9.3f, 4.6f);
+            float damp = Mathf.Clamp01(1f - metres / 1.1f);
+            float peel = fbm + 0.22f * damp - 0.06f;
+            // rain streaks: thin vertical bands, stronger towards the top
+            float streak = Mathf.Clamp01((TileNoise(x, 0, size, 0.05f, 2.2f, 7.7f) - 0.45f) * 2.5f) * Mathf.Clamp01((metres - 0.6f) / 2f);
+            float algae = Mathf.Clamp01(1f - metres / 0.35f) * (0.6f + 0.4f * TileNoise(x, y, size, 0.03f, 6.6f, 2.9f));
+            Color c;
+            if (!joint && peel > 0.62f)
+            {
+                // bare brick: each brick its own red-brown, darker in the damp
+                int bx = shifted / brickW, by = row;
+                float h = Mathf.Abs(Mathf.Sin(bx * 12.9898f + by * 78.233f) * 43758.5453f) % 1f;
+                c = Color.Lerp(new Color(0.6f, 0.35f, 0.27f), new Color(0.5f, 0.3f, 0.25f), h) * (1f - 0.12f * damp);
+                if (peel < 0.66f) c = Color.Lerp(c, new Color(0.85f, 0.83f, 0.79f), 0.5f); // a thin rim of flaking paint
+            }
+            else
+            {
+                float t = (joint ? 0.86f : 0.92f) - 0.035f * fbm - 0.1f * streak;
+                c = new Color(t, t * 0.985f, t * 0.955f);
+            }
+            c = Color.Lerp(c, new Color(0.42f, 0.5f, 0.36f), algae * 0.45f);
+            return c;
+        });
+
         static Texture2D WhitewashTexture() => MakeTexture("Whitewash.png", 256, (x, y, size) =>
         {
             const int rowH = 16, brickW = 64, mortar = 2;

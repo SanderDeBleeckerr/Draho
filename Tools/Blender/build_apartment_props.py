@@ -852,7 +852,7 @@ def bakery_sign():
     return p
 
 
-def _maple_leaf(name, centre, size, normal_tilt, yaw, colour):
+def _maple_leaf(name, centre, size, normal_tilt, yaw, colour, two_sided=True):
     """A small maple leaf: a five-lobed flat outline (fan from the middle), made twice with opposite windings and
     1 mm apart, so it shows from both sides with the one-sided palette material. size = tip-to-stem length (m)."""
     import bmesh
@@ -867,7 +867,7 @@ def _maple_leaf(name, centre, size, normal_tilt, yaw, colour):
     bm = bmesh.new()
     rot = Matrix.Rotation(math.radians(yaw), 3, "Z") @ Matrix.Rotation(math.radians(normal_tilt), 3, "X")
     c = Vector(centre)
-    for side, off in ((1, 0.0005), (-1, -0.0005)):
+    for side, off in (((1, 0.0005), (-1, -0.0005)) if two_sided else ((1, 0.0),)):
         mid = bm.verts.new(c + rot @ Vector((0, 0, off)))
         ring = [bm.verts.new(c + rot @ Vector((math.cos(math.radians(a)) * r * size * 0.5,
                                                 math.sin(math.radians(a)) * r * size * 0.5, off))) for a, r in pts]
@@ -1060,6 +1060,42 @@ def stepping_stone_b():
 @prop
 def stepping_stone_c():
     return _stepping_stone(43, (0.5, 0.34), tone="grey_dark")
+
+
+def _leaf_litter(seed, count, area):
+    """Fallen maple leaves lying in the grass (garden review round 9): count leaves scattered over area (('disc', r) or
+    ('strip', length, width)), almost flat, overlapping a little, in autumn palette colours; single-sided (seen from
+    above), about 10 tris a leaf. Origin on the ground at the middle."""
+    import random
+    rnd = random.Random(seed)
+    colours = ["mustard", "mustard", "terracotta", "walnut", "oak_light", "oak", "leaf_light"]
+    parts = []
+    for i in range(count):
+        if area[0] == "disc":
+            r = area[1] * math.sqrt(rnd.random()) * (0.6 + 0.4 * rnd.random())
+            a = rnd.uniform(0, math.tau)
+            x, y = math.cos(a) * r, math.sin(a) * r
+        else:
+            x, y = rnd.uniform(-area[1] / 2, area[1] / 2), rnd.uniform(-area[2] / 2, area[2] / 2)
+        z = 0.004 + 0.0012 * i % 0.012
+        parts.append(_maple_leaf("Leaf", (x, y, z), rnd.uniform(0.07, 0.11), rnd.uniform(-18, 18),
+                                 rnd.uniform(0, 360), rnd.choice(colours), two_sided=False))
+    return parts
+
+
+@prop
+def leaf_litter_dense():
+    return _leaf_litter(61, 40, ("disc", 0.9))
+
+
+@prop
+def leaf_litter_sparse():
+    return _leaf_litter(62, 14, ("disc", 0.8))
+
+
+@prop
+def leaf_litter_strip():
+    return _leaf_litter(63, 24, ("strip", 2.0, 0.35))
 
 
 def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):

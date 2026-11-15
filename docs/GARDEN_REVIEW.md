@@ -17,7 +17,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 6 | Ivy on the wall | flat green panel | **Done, round 6** |
 | 7 | Stepping-stone path | grey slabs | **Done, round 7** |
 | 8 | Terrace tiles | plain grey grid | **Done, round 8** |
-| 9 | Fallen leaves | flat cubes | Blender leaf shapes |
+| 9 | Fallen leaves | flat cubes | **Done, round 9** |
 | 10 | Blue tarp | three boxes | Blender crumpled tarp |
 | 11 | Neighbour's fence (posts) | Blender-era boards | check |
 | 12 | Green end fence | mesh panels | check |
@@ -196,3 +196,25 @@ carries the cat).
 - **Light:** the grout lines and the moss give the terrace a fine grid of shade in low sun. It stays the calmest,
   lightest surface in the garden, which leads the eye from the door to the lawn.
 - **Checked:** Unity `garden_over`, `garden`, `door_out` (Day) and `garden_over` (Evening).
+
+## Round 9: the fallen leaves
+
+**Brief:** litter props (Blender), three patch variants, palette, one material, single-sided (only seen from above),
+no shadows.
+
+- **Before:** 260 flat cube primitives, each its own GameObject and draw call. They read as coloured confetti
+  rectangles.
+- **Now:** patches of real maple leaves, the same five-lobed shape as the saplings' leaves (`_maple_leaf`, now
+  optionally single-sided), in autumn palette colours: `mustard`, `terracotta`, `walnut`, `oak`, `oak_light`.
+  - `leaf_litter_dense`: 40 leaves on a 0.9 m disc, 400 tris.
+  - `leaf_litter_sparse`: 14 leaves, 140 tris.
+  - `leaf_litter_strip`: 24 leaves over 2 x 0.35 m, 240 tris.
+  - The leaves lie almost flat (tilted ±18°) and overlap a little.
+- **Fix on the way:** the first export stood the leaves on edge: the leaf outline already lies flat, and the tilt
+  was set about 90° too far. It was caught by checking the mean face normal (0 → 0.98).
+- **Placement** (`BuildGardenDetails`):
+  - three dense and two sparse patches in the maple corner (where the cube cluster was);
+  - strips along the foot of the wall and the fence;
+  - six sparse patches on the lawn.
+  - That is about 25 objects instead of 260, and the cubes stay as the fallback.
+- **Checked:** Unity `garden_end`, `garden_back` and `garden_over` (Day).

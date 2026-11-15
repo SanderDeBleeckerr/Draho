@@ -3422,7 +3422,25 @@ namespace Draho.EditorTools
                 Mat("Leaf_Yellow", new Color(0.78f, 0.62f, 0.18f), 0.1f), Mat("Leaf_Orange", new Color(0.7f, 0.38f, 0.12f), 0.1f),
                 Mat("Leaf_Brown", new Color(0.42f, 0.3f, 0.18f), 0.1f),
             };
-            for (int i = 0; i < 260; i++)
+            // Garden review round 9: patches of Blender maple leaves (palette, one material; about 25 objects instead of 260
+            // cubes): dense under the maple corner, strips along the foot of the wall and the fence, a few sparse ones on
+            // the lawn. The cubes below stay as the fallback.
+            bool litter = AssetDatabase.LoadAssetAtPath<GameObject>($"{PlaygroundBuilder.ArtDir}/Furniture/leaf_litter_dense.fbx") != null;
+            void Litter(string model, float x, float z, float yaw)
+            {
+                var l = FurnitureModel(model, root);
+                l.SetPositionAndRotation(new Vector3(x, -0.008f, z), Quaternion.Euler(0f, yaw, 0f));
+                foreach (var r in l.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+            if (litter)
+            {
+                foreach (var (x, z) in new[] { (-22.2f, 4.1f), (-21.0f, 3.4f), (-23.1f, 3.0f) }) Litter("leaf_litter_dense", x, z, R() * 360f);
+                foreach (var (x, z) in new[] { (-19.8f, 4.3f), (-22.4f, 1.9f) }) Litter("leaf_litter_sparse", x, z, R() * 360f);
+                for (float x = -20.5f; x > -6f; x -= 3.4f + R() * 1.6f) Litter("leaf_litter_strip", x, 0.25f, R() * 10f - 5f);    // the wall
+                for (float x = -18.5f; x > -6f; x -= 3.8f + R() * 1.8f) Litter("leaf_litter_strip", x, 4.72f, 180f + R() * 10f); // the fence
+                for (int i = 0; i < 6; i++) Litter("leaf_litter_sparse", -18f + R() * 12f, 1.7f + R() * 2.4f, R() * 360f);
+            }
+            for (int i = 0; i < (litter ? 0 : 260); i++)
             {
                 float x, z;
                 if (i < 110) { var c = new Vector2(-22f, 4.3f) + Random2(rng) * 2.6f; x = c.x; z = c.y; } // under the maple

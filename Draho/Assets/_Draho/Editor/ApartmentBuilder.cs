@@ -4099,21 +4099,36 @@ namespace Draho.EditorTools
             var paths = layout.garden_paths ?? new GardenPath[0];
             bool OnPath(float x, float z) => paths.Any(p => z > Mathf.Min(p.from[1], p.to[1]) - p.w / 2 - 0.12f && z < Mathf.Max(p.from[1], p.to[1]) + p.w / 2 + 0.12f
                 && x > Mathf.Min(p.from[0], p.to[0]) - 0.1f && x < Mathf.Max(p.from[0], p.to[0]) + 0.1f);
-            void Tuft(float x, float z, float scale)
+            void Tuft(float x, float z, float scale, string model = "grass_tuft")
             {
                 if (OnPath(x, z)) return;
-                var t = FurnitureModel("grass_tuft", root);
+                var t = FurnitureModel(model, root) ?? FurnitureModel("grass_tuft", root);
                 t.SetPositionAndRotation(new Vector3(x, -0.01f, z), Quaternion.Euler(0f, R(0f, 360f), 0f));
                 t.localScale = Vector3.one * scale;
                 foreach (var r in t.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
             }
             float x0 = lawn.x0 + 0.1f, x1 = lawn.x1 - 0.1f;
-            foreach (float edge in new[] { garden.z0 + 0.12f, garden.z1 - 0.12f })     // along the wall and the fence
-                for (float x = x0; x < x1; x += R(0.12f, 0.3f))
-                    Tuft(x, edge + R(-0.08f, 0.08f) * (edge < 2f ? 1f : -1f), R(0.8f, 1.4f));
-            int scatter = Mathf.RoundToInt((x1 - x0) * (garden.z1 - garden.z0) * 1.2f);  // about 1 per m²
+            // Garden review round 4: the long margins the mower misses (the lawn texture's darker bands) get tall, arching
+            // tufts with seed heads, two rows deep; short tufts thin out over the lawn and avoid the trodden line beside
+            // the stones; dandelions dot the sunny middle.
+            float pathZ = paths.Length > 0 ? paths[0].from[1] : 1.15f;
+            foreach (float edge in new[] { garden.z0 + 0.1f, garden.z1 - 0.1f })      // along the wall and the fence
+            {
+                float inward = edge < 2f ? 1f : -1f;
+                for (float x = x0; x < x1; x += R(0.22f, 0.4f))
+                    Tuft(x, edge + inward * R(0f, 0.12f), R(0.8f, 1.2f), "grass_tuft_tall");
+                for (float x = x0 + 0.15f; x < x1; x += R(0.3f, 0.6f))
+                    Tuft(x, edge + inward * R(0.2f, 0.42f), R(0.6f, 0.95f), R(0f, 1f) < 0.6f ? "grass_tuft_tall" : "grass_tuft");
+            }
+            int scatter = Mathf.RoundToInt((x1 - x0) * (garden.z1 - garden.z0) * 0.8f);  // a little under 1 per m²
             for (int i = 0; i < scatter; i++)
-                Tuft(R(x0, x1), R(garden.z0 + 0.4f, garden.z1 - 0.4f), R(0.6f, 1.0f));
+            {
+                float z = R(garden.z0 + 0.5f, garden.z1 - 0.5f);
+                if (Mathf.Abs(z - (pathZ + 0.3f)) < 0.3f && R(0f, 1f) < 0.8f) continue;  // the trodden line stays short
+                Tuft(R(x0, x1), z, R(0.6f, 1.0f));
+            }
+            for (int i = 0; i < 22; i++)
+                Tuft(R(x0 + 1f, x1 - 1f), R(garden.z0 + 1.7f, garden.z1 - 0.7f), R(0.8f, 1.2f), "dandelion");
         }
 
         static void PostFence(Edge e, bool alongX, float line, float a, float b)

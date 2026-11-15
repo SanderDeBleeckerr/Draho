@@ -12,7 +12,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 1 | Saplings (young maple shoots) | cylinder + flat disc "leaves" (lollipops) | **Done, round 1** |
 | 2 | Yard wall (whitewash skin) | repeating orange bow-tie brick spots | **Done, round 2** |
 | 3 | Lawn | one flat saturated green | **Done, round 3** |
-| 4 | Grass tufts | sparse spiky tufts | denser at the edges, under the wall |
+| 4 | Grass tufts | sparse spiky tufts | **Done, round 4** |
 | 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | check |
 | 6 | Ivy on the wall | flat green panel | leafy edge, depth |
 | 7 | Stepping-stone path | grey slabs | worn edges, moss, sunk in the lawn |
@@ -95,3 +95,26 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 - **Light:** the trodden line and the dry patches catch the low sun warmly, and the long margins stay dark and cool in
   the shade of the wall and the fence, so the lawn has depth instead of one flat value.
 - **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` in Day and Evening, plus a cat-height crop.
+
+## Round 4: the grass tufts (and dandelions)
+
+**Brief:** small vegetation props, many instances, about 150 tris each, no shadows (too small to matter), one
+palette material.
+
+- **Before:** one six-blade tuft (8-16 cm, 24 tris) in a line along the wall and fence and about 1.2 per m² over
+  the lawn. Every clump was the same short spike, and nothing followed the long margins painted into the lawn in
+  round 3.
+- **New props:**
+  - `grass_tuft_tall` (168 tris): ten arching, double-sided blades of 24-38 cm in three greens and a straw tone,
+    fanned out from a 7 cm base, with two seed stalks carrying buff seed heads.
+  - `dandelion` (128 tris): a flat rosette of six leaves, a stem with a yellow flower head, and a stem with a white
+    seed clock.
+  - A `_blade` helper: a tapering, arching strip made double-sided, for grass and leaf shapes.
+- **Placement** (`BuildGrassTufts`):
+  - The margins along the wall and the fence get two rows of tall tufts (every 0.22-0.4 m, then a looser row behind),
+    mixed with some short ones.
+  - Short tufts thin out to about 0.8 per m² and mostly skip the trodden line beside the stones.
+  - Twenty-two dandelions dot the sunny lawn.
+- **Light:** the seed heads and the straw blades catch the sun along the wall, and the long margins read as long
+  grass against the lawn's darker bands.
+- **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` (Day), plus a cat-height crop.

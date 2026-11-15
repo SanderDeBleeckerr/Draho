@@ -931,6 +931,77 @@ def sapling_turning():
     return _sapling(seed=23, turning=True)
 
 
+def _blade(name, base, height, width, lean_dir, lean, colour, segs=3):
+    """A grass blade or leaf strip: tapering to a point and arching over as it rises, made double-sided (two
+    windings 1 mm apart) for the one-sided palette material. lean_dir in radians; lean = how far the tip falls (m)."""
+    import bmesh
+    from mathutils import Vector
+    d = Vector((math.cos(lean_dir), math.sin(lean_dir), 0))
+    side = Vector((-d.y, d.x, 0))
+    bm = bmesh.new()
+    for s_ in (1, -1):
+        off = Vector((0, 0, 0)) + d * 0.0005 * s_
+        rows = []
+        for k in range(segs + 1):
+            t = k / segs
+            c = Vector(base) + d * (lean * t * t) + Vector((0, 0, height * math.sin(t * math.pi / 2) * (1 - 0.25 * t * t))) + off
+            w = width * (1 - t) * 0.5
+            rows.append((bm.verts.new(c - side * w), bm.verts.new(c + side * w)) if k < segs else (bm.verts.new(c),))
+        for k in range(segs):
+            a, b = rows[k], rows[k + 1]
+            if len(b) == 2:
+                f = (a[0], a[1], b[1], b[0])
+            else:
+                f = (a[0], a[1], b[0])
+            bm.faces.new(f if s_ > 0 else f[::-1])
+    o = ds._obj(name, bm, (0, 0, 0))
+    ds.facet(o)
+    ds.paint(o, colour)
+    return o
+
+
+@prop
+def grass_tuft_tall():
+    """Long grass for the margins the mower misses (garden review round 4): ten arching blades 25-40 cm in two greens
+    and a straw tone, and two seed stalks with buff heads. About 150 tris; origin on the ground."""
+    import random
+    rnd = random.Random(31)
+    parts = []
+    for i in range(10):
+        a = i * 2 * math.pi / 10 + rnd.uniform(-0.3, 0.3)
+        base = (math.cos(a) * 0.035, math.sin(a) * 0.035, 0)
+        parts.append(_blade("Blade", base, rnd.uniform(0.24, 0.38), rnd.uniform(0.018, 0.026), a, rnd.uniform(0.12, 0.24),
+                            rnd.choice(("grass", "leaf", "leaf_dark", "leaf_light")), segs=3))
+    for j in range(2):
+        a = rnd.uniform(0, 2 * math.pi)
+        h = rnd.uniform(0.42, 0.52)
+        tip = (math.cos(a) * 0.05, math.sin(a) * 0.05, h)
+        parts.append(_tube("Stalk", [(0, 0, 0), (tip[0] * 0.5, tip[1] * 0.5, h * 0.55), tip], 0.003, "leaf_light", sides=3))
+        parts.append(ds.blob("SeedHead", (tip[0], tip[1], h + 0.03), 0.012, (1.0, 1.0, 3.0), "oak_light", subdiv=1, seed=j))
+    return parts
+
+
+@prop
+def dandelion():
+    """A dandelion in the lawn: a flat rosette of six toothed leaves, two flower stems with yellow heads and, now and
+    then, a white seed clock. About 130 tris; origin on the ground."""
+    import random
+    rnd = random.Random(5)
+    parts = []
+    for i in range(6):
+        a = i * 2 * math.pi / 6 + rnd.uniform(-0.2, 0.2)
+        parts.append(_blade("Leaf", (0, 0, 0.004), 0.025, 0.045, a, rnd.uniform(0.11, 0.15), "leaf", segs=3))
+    for j, (h, head) in enumerate(((0.16, "mustard"), (0.2, "white"))):
+        a = j * 2.4 + 0.5
+        tip = (math.cos(a) * 0.03, math.sin(a) * 0.03, h)
+        parts.append(_tube("Stem", [(0, 0, 0), (tip[0] * 0.5, tip[1] * 0.5, h * 0.5), tip], 0.0035, "leaf_light", sides=3))
+        if head == "mustard":
+            parts.append(ds.blob("Flower", (tip[0], tip[1], h + 0.008), 0.022, (1.0, 1.0, 0.45), "mustard", subdiv=1, seed=j))
+        else:
+            parts.append(ds.blob("Clock", (tip[0], tip[1], h + 0.02), 0.024, (1.0, 1.0, 1.0), "white", subdiv=1, seed=j))
+    return parts
+
+
 def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
     """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
     branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at

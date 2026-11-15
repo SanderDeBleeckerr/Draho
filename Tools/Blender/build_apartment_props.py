@@ -1098,6 +1098,51 @@ def leaf_litter_strip():
     return _leaf_litter(63, 24, ("strip", 2.0, 0.35))
 
 
+@prop
+def garden_tarp():
+    """A blue tarp left on the lawn (garden review round 10), 1.2 x 0.9 m: a faceted cloth grid crumpled in soft folds
+    (one ridge along a diagonal, the rest settling into the grass), one corner folded back over itself (its underside
+    a lighter teal), metal eyelets at the corners. Origin on the ground at the middle; about 250 tris."""
+    import bmesh
+    import random
+    rnd = random.Random(9)
+    W, D, nx, ny = 1.2, 0.9, 12, 9
+    bm = bmesh.new()
+    verts = {}
+    for j in range(ny + 1):
+        for i in range(nx + 1):
+            x, y = -W / 2 + W * i / nx, -D / 2 + D * j / ny
+            # folds: a ridge along the diagonal, two softer waves, a little noise; clamp to the ground
+            d = (x / W - y / D) * 1.4
+            z = 0.05 * math.exp(-(d * d) * 9) + 0.018 * math.sin(x * 9 + 1) * math.sin(y * 7) + rnd.uniform(0, 0.008)
+            z = max(0.003, z)
+            # the folded corner (x > 0.3, y > 0.2): flipped back over the tarp, lying on top of it
+            if x - 0.3 + (y - 0.2) * 0.6 > 0:
+                f = x - 0.3 + (y - 0.2) * 0.6
+                k = 2 * f / 1.36                                 # an exact mirror across the fold line (normal (1, 0.6))
+                x, y, z = x - k, y - k * 0.6, 0.012 + 0.03 * min(f, 0.5) + 0.004
+            verts[i, j] = bm.verts.new((x, y, z))
+    folded = set()
+    for j in range(ny):
+        for i in range(nx):
+            f = bm.faces.new((verts[i, j], verts[i + 1, j], verts[i + 1, j + 1], verts[i, j + 1]))
+            x0, y0 = -W / 2 + W * (i + 0.5) / nx, -D / 2 + D * (j + 0.5) / ny
+            if x0 - 0.3 + (y0 - 0.2) * 0.6 > 0:
+                folded.add(f.index)
+    bm.normal_update()
+    for f in bm.faces:                                     # every face up (the folded part is mirrored)
+        if f.normal.z < 0:
+            f.normal_flip()
+    bm.faces.index_update()
+    o = ds._obj("Tarp", bm, (0, 0, 0))
+    ds.facet(o)
+    ds.paint(o, lambda poly: "teal" if poly.index in folded else "navy")
+    parts = [o]
+    for (cx, cy) in ((-W / 2 + 0.04, -D / 2 + 0.04), (-W / 2 + 0.04, D / 2 - 0.04), (W / 2 - 0.04, -D / 2 + 0.04)):
+        parts.append(ds.cylinder("Eyelet", (cx, cy, 0.004), 0.012, 0.006, "metal", segments=6, bevel=0, smooth=False))
+    return parts
+
+
 def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
     """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
     branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at

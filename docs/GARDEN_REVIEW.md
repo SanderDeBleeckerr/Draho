@@ -18,7 +18,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 7 | Stepping-stone path | grey slabs | **Done, round 7** |
 | 8 | Terrace tiles | plain grey grid | **Done, round 8** |
 | 9 | Fallen leaves | flat cubes | **Done, round 9** |
-| 10 | Blue tarp | three boxes | Blender crumpled tarp |
+| 10 | Blue tarp | three boxes | **Done, round 10** |
 | 11 | Neighbour's fence (posts) | Blender-era boards | check |
 | 12 | Green end fence | mesh panels | check |
 | 13 | Maple tree | Blender | check |
@@ -218,3 +218,21 @@ no shadows.
   - six sparse patches on the lawn.
   - That is about 25 objects instead of 260, and the cubes stay as the fallback.
 - **Checked:** Unity `garden_end`, `garden_back` and `garden_over` (Day).
+
+## Round 10: the blue tarp
+
+**Brief:** a prop (Blender), 1.2 x 0.9 m, 276 tris, palette, no collider (the cat and the blackbirds walk over it).
+
+- **Before:** three small boxes stacked at angles on the lawn.
+- **Now:** `garden_tarp`:
+  - a faceted 12 x 9 cloth grid crumpled in soft folds: a ridge along one diagonal and two gentle waves, settling to the
+    ground;
+  - one corner folded back over the tarp, an exact mirror across the fold line, showing its lighter `teal` underside
+    against the `navy` top;
+  - metal eyelets at three corners.
+- **Fixes on the way:**
+  1. The first fold used approximate mirror factors and tore the corner into a staircase. The exact reflection across
+     the line (normal (1, 0.6), so p - 2f/1.36 x (1, 0.6)) folds it cleanly.
+  2. A dandelion grew up through the tarp. `BuildGrassTufts` now keeps tufts and dandelions out of a 0.75 m circle
+     under it.
+- **Checked:** Blender review sheet; Unity `garden_over` (Day), crop.

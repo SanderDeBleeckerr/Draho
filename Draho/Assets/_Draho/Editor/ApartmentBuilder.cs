@@ -3497,7 +3497,11 @@ namespace Draho.EditorTools
             // A crumpled blue tarp on the lawn: matte and dark, so it reads as cloth, not as a puddle that mirrors
             // the sky (it did, once the palette made it pale and it stayed shiny).
             var tarp = Mat("Tarp_Blue", new Color(0.22f, 0.27f, 0.36f), 0.1f);
-            for (int k = 0; k < 3; k++)
+            // Garden review round 10: a crumpled Blender tarp (folds, a corner folded back, eyelets); the boxes are the fallback.
+            var tarpModel = FurnitureModel("garden_tarp", root);
+            if (tarpModel != null)
+                tarpModel.SetPositionAndRotation(new Vector3(-6.3f, -0.005f, 3.0f), Quaternion.Euler(0f, 28f, 0f));
+            for (int k = 0; k < (tarpModel != null ? 0 : 3); k++)
             {
                 var t = Box("Tarp", new Vector3(-6.4f + k * 0.12f, 0.03f + k * 0.02f, 2.9f + k * 0.08f), new Vector3(0.5f - k * 0.1f, 0.05f, 0.35f - k * 0.06f), tarp, collider: false);
                 t.transform.rotation = Quaternion.Euler(R() * 14f - 7f, 20f + k * 35f, R() * 14f - 7f);
@@ -4141,6 +4145,7 @@ namespace Draho.EditorTools
             void Tuft(float x, float z, float scale, string model = "grass_tuft")
             {
                 if (OnPath(x, z)) return;
+                if ((new Vector2(x, z) - new Vector2(-6.3f, 3.0f)).sqrMagnitude < 0.75f * 0.75f) return; // not through the tarp
                 var t = FurnitureModel(model, root) ?? FurnitureModel("grass_tuft", root);
                 t.SetPositionAndRotation(new Vector3(x, -0.01f, z), Quaternion.Euler(0f, R(0f, 360f), 0f));
                 t.localScale = Vector3.one * scale;

@@ -110,12 +110,29 @@ namespace Draho.EditorTools
             var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32) { antiAliasing = 1 };
             var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
             var slidersClosed = new System.Collections.Generic.Dictionary<Transform, Vector3>();
+            // Passes: one per mood (-captureMoods), and one per clock hour (-captureHours 7,13,20.5 renders the views in
+            // -captureHourViews, default garden and town_west, at those hours: the sun's arc and the moon). The clock
+            // stands still while capturing, so the pictures do not depend on how long a frame took.
+            SkyMood.ClockRunning = false;
+            var passes = new System.Collections.Generic.List<(string label, Action apply, Func<string, bool> want)>();
             foreach (string moodName in moods)
+                if (Enum.TryParse(moodName.Trim(), out SkyMood.Mood m))
+                    passes.Add((m.ToString(), () => SkyMood.Set(m, 0f), _ => true));
+            string hourArg = Arg("-captureHours");
+            if (!string.IsNullOrEmpty(hourArg))
             {
-                if (!Enum.TryParse(moodName.Trim(), out SkyMood.Mood mood)) continue;
-                SkyMood.Set(mood, 0f);
+                var hourViews = (Arg("-captureHourViews") ?? "garden,town_west").Split(',');
+                var testHour = typeof(SkyMood).GetMethod("TestHour");
+                foreach (string hs in hourArg.Split(','))
+                    if (float.TryParse(hs, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float h))
+                        passes.Add(($"{h:00.00}h".Replace(',', '.'), () => testHour?.Invoke(sky, new object[] { h }), n => Array.IndexOf(hourViews, n) >= 0));
+            }
+            foreach (var pass in passes)
+            {
+                pass.apply();
                 foreach (var v in views)
                 {
+                    if (!pass.want(v.name)) continue;
                     // "door_" views: the sliding door open (its sash moved by the door's own openOffset), else closed.
                     foreach (var sd in UnityEngine.Object.FindObjectsByType<Draho.World.SlidingDoor>(FindObjectsSortMode.None))
                     {
@@ -150,7 +167,7 @@ namespace Draho.EditorTools
                             cloudsUpdate?.Invoke(c, null);
                         }
                     // Twice: the first frame after a change can miss state (the first picture came out red).
-                    for (int pass = 0; pass < 2; pass++)
+                    for (int renderPass = 0; renderPass < 2; renderPass++)
                     {
                         var request = new RenderPipeline.StandardRequest { destination = rt };
                         if (RenderPipeline.SupportsRenderRequest(cam, request))
@@ -167,7 +184,7 @@ namespace Draho.EditorTools
                     tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
                     tex.Apply();
                     RenderTexture.active = prev;
-                    string file = Path.Combine(outDir, $"{v.name}_{mood}.png");
+                    string file = Path.Combine(outDir, $"{v.name}_{pass.label}.png");
                     File.WriteAllBytes(file, tex.EncodeToPNG());
                     Debug.Log($"ARTCAPTURE {file}");
                 }

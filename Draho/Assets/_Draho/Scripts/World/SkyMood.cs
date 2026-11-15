@@ -30,8 +30,7 @@ namespace Draho.World
 
         Light sun, fill;
         Material sky;
-        Preset day, from, to;
-        float blend = 1f, duration = 1f;
+        Preset day;
         Preset now;
         float flash;
         ColorAdjustments grade;
@@ -48,11 +47,71 @@ namespace Draho.World
             if (instance == null) new GameObject("SkyMood").AddComponent<SkyMood>();
         }
 
-        /// <summary>Change the mood over some seconds (the first second after loading: at once).</summary>
+        // ---- The clock (day/night cycle, after the 30-round graphics review; docs/DAY_NIGHT_PLAN.md) ----
+        // Time runs everywhere: 24 game hours in DayMinutes real minutes. The four presets are keyframes on the clock;
+        // the sun follows an arc from its dawn bearing to its evening bearing and the moon has its own arc at night;
+        // the one directional light hands over from sun to moon around dusk (and back at dawn). Nothing is baked: the
+        // light is real time, so a moving sun costs nothing more. The story still sets the time: Set(mood) runs the
+        // clock forward (a time-lapse over the given seconds) to the next time that mood starts, unless it is already
+        // there. The storm is weather on top of the clock.
+
+        /// <summary>Real minutes for one game day.</summary>
+        public const float DayMinutes = 24f;
+        /// <summary>The game's time of day, 0..24.</summary>
+        public static float Hours { get; private set; } = 9f;
+        /// <summary>False: the clock stands still (the art captures, tests).</summary>
+        public static bool ClockRunning { get; set; } = true;
+
+        static readonly (float hour, Mood mood)[] Keys =
+        {
+            (0f, Mood.Night), (5f, Mood.Night), (6.5f, Mood.Dawn), (9f, Mood.Day), (17f, Mood.Day),
+            (19.5f, Mood.Evening), (21.5f, Mood.Night), (24f, Mood.Night),
+        };
+
+        /// <summary>The hour the story jumps to for a mood (its typical look).</summary>
+        static float HourFor(Mood m) => m == Mood.Dawn ? 6.5f : m == Mood.Evening ? 19.5f : m == Mood.Night ? 22.5f : 10f;
+
+        static Mood MoodAt(float h) => h >= 5.75f && h < 7.75f ? Mood.Dawn : h >= 7.75f && h < 18.25f ? Mood.Day
+            : h >= 18.25f && h < 20.5f ? Mood.Evening : Mood.Night;
+
+        float jumpFrom, jumpBy, jumpT = 1f, jumpDuration = 1f;
+        float storm, stormTarget, stormSpeed = 1f;
+        Preset[] presets;
+
+        /// <summary>
+        /// Change the time of day over some seconds (the first second after loading: at once). Day, Evening, Night,
+        /// Dawn: the clock runs on to that part of the day (no change if it is already there). Storm: weather.
+        /// </summary>
         public static void Set(Mood mood, float seconds = 8f)
         {
             if (instance == null) Create();
             instance.Begin(mood, Time.timeSinceLevelLoad < 1f ? 0f : seconds);
+        }
+
+        /// <summary>The direction of the key light (sun by day, moon by night) at an hour, as Euler angles.</summary>
+        Vector3 LightEuler(float h, out float moonShare)
+        {
+            float dayY = day.sunEuler.y;
+            float f = (h - 5.5f) / 15.5f;                                   // sunrise 05:30 .. sunset 21:00
+            float sunEl = 52f * Mathf.Sin(Mathf.PI * f);                    // negative below the horizon
+            float sunAz = dayY - 140f + 180f * f;                           // the dawn bearing .. the evening bearing
+            float mf = Mathf.Clamp01(Mathf.Repeat(h - 19.5f, 24f) / 11f);   // moonrise 19:30 .. moonset 06:30
+            float moonEl = 10f + 30f * Mathf.Sin(Mathf.PI * mf);
+            float moonAz = dayY - 130f + 120f * mf;
+            moonShare = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-4f, 6f, sunEl));
+            return Quaternion.Slerp(Quaternion.Euler(Mathf.Max(sunEl, 2f), sunAz, 0f), Quaternion.Euler(moonEl, moonAz, 0f), moonShare).eulerAngles;
+        }
+
+        Preset PresetAt(float h)
+        {
+            int i = 0;
+            while (i < Keys.Length - 2 && h >= Keys[i + 1].hour) i++;
+            var (ha, ma) = Keys[i];
+            var (hb, mb) = Keys[i + 1];
+            var p = Lerp(presets[(int)ma], presets[(int)mb], Smooth(Mathf.InverseLerp(ha, hb, h)));
+            p.sunEuler = LightEuler(h, out float moon);
+            p.sunIntensity *= 1f - 0.55f * Mathf.Sin(Mathf.PI * moon); // dim while the light swings from sun to moon
+            return p;
         }
 
         void Awake()
@@ -76,7 +135,10 @@ namespace Draho.World
                 if (!profile.TryGet(out split)) split = profile.Add<SplitToning>(true);
             }
             day = Capture();
-            from = to = now = day; // Update re-applies `now` every frame (indoor dimming): it must never start black
+            now = day; // Update re-applies the clock's preset every frame: it must never start black
+            presets = new Preset[5];
+            foreach (Mood m in System.Enum.GetValues(typeof(Mood))) presets[(int)m] = For(m);
+            Apply(PresetAt(Hours));
         }
 
         Preset Capture() => new Preset
@@ -188,22 +250,51 @@ namespace Draho.World
 
         void Begin(Mood mood, float seconds)
         {
-            from = Current == mood && blend >= 1f ? For(mood) : Lerp(from, to, Smooth(blend));
-            to = For(mood);
-            Current = mood;
-            duration = Mathf.Max(0.01f, seconds);
-            blend = seconds <= 0f ? 1f : 0f;
-            Apply(seconds <= 0f ? to : from);
-            Debug.Log($"SKY mood {mood} over {seconds:0} s");
+            stormSpeed = 1f / Mathf.Max(0.01f, seconds);
+            if (mood == Mood.Storm)
+            {
+                stormTarget = 1f;
+                if (seconds <= 0f) storm = 1f;
+            }
+            else
+            {
+                stormTarget = 0f;
+                if (seconds <= 0f) storm = 0f;
+                if (MoodAt(Hours) != mood)
+                {
+                    float by = Mathf.Repeat(HourFor(mood) - Hours, 24f);
+                    if (seconds <= 0f) { Hours = Mathf.Repeat(Hours + by, 24f); jumpT = 1f; }
+                    else { jumpFrom = Hours; jumpBy = by; jumpT = 0f; jumpDuration = seconds; }
+                }
+            }
+            Tick(0f);
+            Debug.Log($"SKY mood {mood} over {seconds:0} s (clock {Hours:00.0} h)");
+        }
+
+        /// <summary>Run the clock (or the story's time-lapse) and the storm, then light the scene for that moment.</summary>
+        void Tick(float dt)
+        {
+            if (jumpT < 1f)
+            {
+                jumpT = Mathf.Min(1f, jumpT + dt / jumpDuration);
+                Hours = Mathf.Repeat(jumpFrom + jumpBy * Smooth(jumpT), 24f);
+            }
+            else if (ClockRunning) Hours = Mathf.Repeat(Hours + dt * 24f / (DayMinutes * 60f), 24f);
+            storm = Mathf.MoveTowards(storm, stormTarget, dt * stormSpeed);
+            var p = PresetAt(Hours);
+            if (storm > 0f)
+            {
+                var s = presets[(int)Mood.Storm];
+                s.sunEuler = p.sunEuler; // the clouds hide the light; it does not swing round
+                p = Lerp(p, s, Smooth(storm));
+            }
+            Current = storm > 0.5f ? Mood.Storm : MoodAt(Hours);
+            Apply(p);
         }
 
         void Update()
         {
-            if (blend < 1f)
-            {
-                blend = Mathf.Min(1f, blend + Time.deltaTime / duration);
-                Apply(Lerp(from, to, Smooth(blend)));
-            }
+            Tick(Time.deltaTime);
             float pulse = 0f;
             if (flash > 0f)
             {
@@ -292,6 +383,14 @@ namespace Draho.World
         public void TestMood(string mood)
         {
             if (System.Enum.TryParse(mood, out Mood m)) Begin(m, 0f);
+        }
+
+        /// <summary>Test hook: SendMessage('SkyMood', 'TestHour', 19.75f): set the clock.</summary>
+        public void TestHour(float hour)
+        {
+            Hours = Mathf.Repeat(hour, 24f);
+            jumpT = 1f;
+            Tick(0f);
         }
     }
 }

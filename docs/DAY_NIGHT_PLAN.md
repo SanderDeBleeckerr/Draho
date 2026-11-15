@@ -50,3 +50,47 @@ Written after the 30-round graphics review (docs/GRAPHICS_REVIEW.md).
    within each chapter)?
 2. **How long is a day?** About 16 minutes (as now), 24 minutes, or tied to the real clock?
 3. **The sun:** a real arc (the shadows move), or keep the fixed preset angles?
+
+## Decisions (owner, after round 30)
+
+1. **Where does time run:** everywhere, freely.
+2. **Day length:** about 24 minutes.
+3. **The sun:** "make a smart choice given that we bake the textures." Nothing in the game bakes light: the scenes
+   are built in code, there are no lightmaps or light probes, the sun is a real-time light with soft shadows, and the
+   ambient light is set by SkyMood. The palette textures and Blender models carry colour only, never light. So a
+   **real arc costs nothing extra** (the shadow map is redrawn every frame anyway), and the moon needs no second bake
+   either: the same light takes the moon's own arc at night, cooler, dimmer and with softer contrast.
+
+## Implemented (step 1: the clock)
+
+- `SkyMood.Hours` (starts at 09:00) runs at 24 game hours per `SkyMood.DayMinutes` = 24 real minutes.
+  `SkyMood.ClockRunning` stops it (the captures do).
+- **Presets as keyframes:** Night until 05:00, Dawn 06:30, Day 09:00 to 17:00, Evening 19:30, Night from 21:30.
+  The whole preset (colours, fog, exposure, sky tint, grade, clouds, `NightAmount`) is interpolated by the hour, so
+  the lamps, windows, moths, glow-worms and stars follow the clock with no changes of their own.
+- **Sun arc:** sunrise 05:30 to sunset 21:00, up to 52 degrees at midday, from the old dawn bearing round to the old
+  evening bearing.
+- **Moon arc:** moonrise 19:30 to moonset 06:30, 10 to 40 degrees up.
+- **Hand-over:** one directional light changes from sun to moon as the sun goes below about 6 degrees. Its
+  intensity dips while it swings, so the turn of the shadows is not seen.
+- **Story:** `SkyMood.Set(mood, s)` time-lapses the clock forward to that mood's hour (Dawn 06:30, Day 10:00,
+  Evening 19:30, Night 22:30) over `s` seconds, and does nothing if it is already that time of day. Every existing
+  beat works unchanged. The storm is weather blended over the clock; the light does not swing during it.
+- `SkyMood.Current` is derived from the hour (or Storm). `DayCycle` now only says "Evening comes..." and the other
+  lines in the epilogue.
+- **Tests:** `SendMessage('SkyMood', 'TestHour', 19.75)`; ArtCapture's `-captureHours 6,13,20.5
+  -captureHourViews garden,town_west`.
+
+Verified in play mode (a probe, not committed):
+- 10 s moved the clock by 0.17 h.
+- `Set(Night, 2)` from 09:13 ran through Evening (18:18) and Night (20:30) to 22:30, with the moonlight at 0.32.
+- A second `Set(Night)` did not jump.
+- The storm faded the light to 0.16 without moving it.
+- `Set(Dawn)` ran forward to 06:30, with a low warm sun at 11 degrees.
+
+## Next steps
+
+- The night pass: a warm pendant over the dining bar, and a lit bakery display.
+- Check the story chapters that are set by day now that time runs (the sunbeam on the floor, the shadows in the
+  court).
+- Save and restore the clock with the progress.

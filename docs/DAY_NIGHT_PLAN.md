@@ -1,0 +1,52 @@
+# Day/night cycle: what exists, and a plan
+
+Written after the 30-round graphics review (docs/GRAPHICS_REVIEW.md).
+
+## What exists today
+
+- **SkyMood** (`Scripts/World/SkyMood.cs`) has five preset moods: Day, Evening, Night, Storm and Dawn.
+  - `SkyMood.Set(mood, seconds)` blends the whole look from one preset to the next. That covers the sun's direction
+    (a low sun for Evening, a "moon" position for Night), the sun, sky, equator and ground colours, fog, exposure,
+    sky tint, colour grade, clouds and the cat's fill light.
+  - `SkyMood.NightAmount` (0 day, 0.5 evening, 1 night) is the switch that about 18 systems listen to: `IndoorLight`
+    (lamps, bulbs, sink spots), `NightLamp` (street, quay and garden lamps), `NightWindows`, `WindowGlow`, `TvGlow`,
+    moths, glow-worms, shooting stars, swifts, chimney smoke, eyeshine, the soundscape and the clouds.
+- **The story sets the time.** Chapter 8 ends in Evening (`StoryDirector`), chapter 9 is Night, the homecoming goes
+  Night, then Dawn, then Day, and the storm sets Storm. Between those beats, time stands still.
+- **DayCycle** (`Scripts/World/DayCycle.cs`) runs only in the free-roam epilogue: a 16.5 minute day (Day 8 min,
+  Evening 2, Night 5, Dawn 1.5) that jumps between the presets with 20 to 40 s blends.
+
+## What is missing
+
+1. **No sun path.** A blend slerps the sun between two fixed directions. There is no arc across the sky, and the
+   shadows do not sweep round the garden over a day.
+2. **No clock.** Nothing knows "19:30". Moods are states, so nothing can be "a little later in the evening", and
+   nothing can happen at a given hour.
+3. **Time stands still during the story.** Each chapter keeps its mood until a beat changes it.
+4. **Weak spots at night** (from the review):
+   - the dining corner is almost dark;
+   - the bakery window is dark (it should be a warm, lit display);
+   - lamps glow only at run time.
+
+## Proposal (recommended)
+
+**A continuous clock with the presets as keyframes.**
+
+- `TimeOfDay.Hours` (0 to 24) drives `SkyMood`. The presets sit at hours (Dawn 6:30, Day 12:00, Evening 19:30,
+  Night 23:00), and the look between them is interpolated by the clock rather than by a fixed blend timer.
+- **The sun follows an arc.** Its azimuth and elevation come from the hour: up in the east, high at noon, down in the
+  west. At night the moon takes over (it is already the "sun" light at night). `NightAmount` follows the sun's
+  elevation, so the lamps come on at dusk by themselves.
+- **The story keeps control.** A beat sets a target hour instead of a mood: `TimeOfDay.GoTo(19.5f, seconds)`, and
+  `SkyMood.Set(mood)` maps onto it, so the existing beats keep working. Within a chapter the clock can creep forward
+  slowly, so a long chapter goes from afternoon into early evening, never past the next story beat.
+- **DayCycle** becomes `TimeOfDay` running freely in the epilogue: the same day length, with a sun that moves.
+- **Night pass:** a warm pendant over the dining bar, a lit bakery display (an interior light and an emissive
+  shelf), and a check that every lamp and window comes on at dusk.
+
+## Decisions for the owner
+
+1. **Where does time run?** Only in the epilogue (as now, but with a moving sun), or also during the story (slowly,
+   within each chapter)?
+2. **How long is a day?** About 16 minutes (as now), 24 minutes, or tied to the real clock?
+3. **The sun:** a real arc (the shadows move), or keep the fixed preset angles?

@@ -5,7 +5,7 @@ The game uses Unity.
 
 **▶ Play it now in your browser (phone or desktop): https://sanderdebleeckerr.github.io/Draho/**
 
-![Drahomil, low-poly](docs/images/lowpoly_cat_sheet.png)
+![Draho: Drahomil at home by the garden door at golden hour](docs/images/Draho_teaser.png)
 
 - [Game Design Document](docs/GDD.md)
 - [Art style](docs/ART_STYLE.md): cozy low-poly at blue hour (the [brief](docs/ART_DIRECTION_BRIEF.md)), the palette, the concept frames and the Blender pipeline

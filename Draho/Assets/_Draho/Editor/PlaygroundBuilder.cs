@@ -111,6 +111,10 @@ namespace Draho.EditorTools
             SetIfFound(so, "m_SupportsLightLayers", true);  // "Use Rendering Layers": the rim light lights only the cat
             SetIfFound(so, "m_AdditionalLightShadowsSupported", true); // the window light's shadow (IndoorLight)
             SetIfFound(so, "m_AdditionalLightsShadowmapResolution", 1024);
+            // Forward: each object takes its brightest 4 extra lights by default. The flat's big wall and floor meshes are
+            // reached by more (window, court, sink spots, three lamps, the cat's fill): the dimmest dropped out and the
+            // dining corner went dark at night. 8 is URP's Forward maximum; the lights are small and range-culled.
+            SetIfFound(so, "m_AdditionalLightsPerObjectLimit", 8);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(urp);
 

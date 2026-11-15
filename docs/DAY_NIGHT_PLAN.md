@@ -88,9 +88,24 @@ Verified in play mode (a probe, not committed):
 - The storm faded the light to 0.16 without moving it.
 - `Set(Dawn)` ran forward to 06:30, with a low warm sun at 11 degrees.
 
+## Implemented (step 2: the night pass, saving the clock)
+
+- **Dining pendant:** `lamp_dining_lamp` (Blender, 848 tris). A teal cone shade with a brass rim and a cream inside,
+  hung low (light at 1.95 m, 1.1, range 2.6, #FFCB8E) over the dining bar. It is a layout lamp, so `IndoorLight` turns
+  it on at dusk with the others.
+- **Per-object light limit 4 to 8** (`PlaygroundBuilder`, URP Forward). The flat's big wall and floor meshes are
+  reached by more than four extra lights (window, court, the sink spots, three lamps, the cat's fill), so the dimmest
+  dropped out. That is why the dining corner was dark at night even before the pendant: its lamp lost to the
+  others. 8 is URP Forward's maximum, and the lights are small and range-culled.
+- **Bakery display:** an emissive back panel behind the loaves and a warm point light inside under the transom
+  (outside, it glared on the glass). Both are driven by `NightLamp`: faint by day, as a shop's lights are, and bright
+  at night.
+- **Captures:** ArtCapture runs `NightLamp` per view, so the evening and night pictures show the street lamps and the
+  display lit.
+- **The clock is saved:** `Progress` stores `hours` with every save and restores it on load (`SkyMood.SetClock`).
+  Saves from before have -1 and start at 09:00.
+
 ## Next steps
 
-- The night pass: a warm pendant over the dining bar, and a lit bakery display.
 - Check the story chapters that are set by day now that time runs (the sunbeam on the floor, the shadows in the
   court).
-- Save and restore the clock with the progress.

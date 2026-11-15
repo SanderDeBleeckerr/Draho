@@ -20,6 +20,8 @@ namespace Draho.Core
             public float x, y, z, yaw;
             // Older saves also hold coins, feathers, nap spots and bounty counts: JsonUtility skips those fields.
             public List<string> collected = new List<string>();
+            /// <summary>The time of day when saved (SkyMood.Hours), or -1 in saves from before the day/night cycle.</summary>
+            public float hours = -1f;
         }
 
         const string Key = "draho_save_v1";
@@ -48,7 +50,13 @@ namespace Draho.Core
                 catch (Exception) { data = new Data(); }
             }
             cat = FindAnyObjectByType<CatMotor>();
-            Debug.Log($"SAVE loaded: beat {data.beat}");
+            Debug.Log($"SAVE loaded: beat {data.beat}, time {data.hours:0.0} h");
+        }
+
+        void Start()
+        {
+            // Carry on at the time of day of the save (the clock runs all game); older saves start at the morning.
+            if (data.hours >= 0f) Draho.World.SkyMood.SetClock(data.hours);
         }
 
         void Update()
@@ -99,6 +107,7 @@ namespace Draho.Core
 
         public void Save()
         {
+            data.hours = Draho.World.SkyMood.Hours;
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data));
             PlayerPrefs.Save();
             Changed?.Invoke();

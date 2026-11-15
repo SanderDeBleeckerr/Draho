@@ -3594,6 +3594,31 @@ namespace Draho.EditorTools
                 var glass = Box("ShopWindow", new Vector3(b.x + 0.26f, 1.64f, shopZ + 0.8f), new Vector3(0.012f, 1.96f, 4.55f), GlassMat(), collider: false);
                 glass.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
                 glass.transform.SetParent(root, true);
+                // The lit display (day/night work): a warm glow behind the loaves and a light in the window, on with the
+                // street lamps at dusk (NightLamp: faint by day, as a shop's lights are; bright at night).
+                var glowMat = Mat("Apt_BakeryDisplayGlow", new Color(0.16f, 0.13f, 0.1f), 0.1f);
+                glowMat.EnableKeyword("_EMISSION");
+                glowMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+                glowMat.SetColor("_EmissionColor", Color.black);
+                EditorUtility.SetDirty(glowMat);
+                var glowPanel = Box("DisplayGlow", new Vector3(b.x + 0.022f, 1.62f, shopZ + 0.8f), new Vector3(0.004f, 1.84f, 4.4f), glowMat, collider: false);
+                glowPanel.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                glowPanel.transform.SetParent(root, true);
+                var displayLight = new GameObject("DisplayLight").AddComponent<Light>();
+                displayLight.transform.SetParent(root, false);
+                displayLight.transform.position = new Vector3(b.x + 0.14f, 2.45f, shopZ + 0.8f); // inside, under the transom: no glare on the glass
+                displayLight.type = LightType.Point;
+                displayLight.color = new Color(1f, 0.78f, 0.52f);
+                displayLight.range = 4.5f;
+                displayLight.intensity = 0f;
+                displayLight.enabled = false;
+                displayLight.shadows = LightShadows.None;
+                var displayLamp = glowPanel.AddComponent<NightLamp>();
+                displayLamp.Configure(displayLight, glowPanel.GetComponent<Renderer>());
+                var lampSo = new SerializedObject(displayLamp);
+                lampSo.FindProperty("intensity").floatValue = 1.4f;
+                lampSo.FindProperty("glow").colorValue = new Color(1f, 0.74f, 0.45f) * 0.55f;
+                lampSo.ApplyModifiedPropertiesWithoutUndo();
                 // A collider for the shopfront's front (the cat walks along it, not into the display).
                 var front = Box("ShopfrontCollider", new Vector3(b.x + 0.16f, 1.6f, shopZ), new Vector3(0.32f, 3.2f, 6.6f), null);
                 Object.DestroyImmediate(front.GetComponent<Renderer>());

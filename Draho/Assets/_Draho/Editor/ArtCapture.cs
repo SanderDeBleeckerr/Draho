@@ -166,6 +166,11 @@ namespace Draho.EditorTools
                                 cloudsType.GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(c, null);
                             cloudsUpdate?.Invoke(c, null);
                         }
+                    // The street, quay and garden lamps and the bakery display (NightLamp) switch with the time of day at
+                    // run time only: run them too, so the evening and night pictures show them lit.
+                    var lampUpdate = typeof(Draho.World.NightLamp).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
+                    foreach (var lamp in UnityEngine.Object.FindObjectsByType<Draho.World.NightLamp>(FindObjectsSortMode.None))
+                        lampUpdate?.Invoke(lamp, null);
                     // Twice: the first frame after a change can miss state (the first picture came out red).
                     for (int renderPass = 0; renderPass < 2; renderPass++)
                     {

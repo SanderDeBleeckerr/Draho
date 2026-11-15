@@ -88,6 +88,13 @@ namespace Draho.World
             instance.Begin(mood, Time.timeSinceLevelLoad < 1f ? 0f : seconds);
         }
 
+        /// <summary>Put the clock at an hour at once (a loaded save carries on at its time of day).</summary>
+        public static void SetClock(float hour)
+        {
+            if (instance == null) Create();
+            instance.TestHour(hour);
+        }
+
         /// <summary>The direction of the key light (sun by day, moon by night) at an hour, as Euler angles.</summary>
         Vector3 LightEuler(float h, out float moonShare)
         {

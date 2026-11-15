@@ -500,6 +500,20 @@ def lamp_living_lamp():
             ds.cylinder("Diffuser", (0, 0, 2.19), 0.235, 0.004, "pale_yellow", segments=24, bevel=0)]
 
 
+@prop
+def lamp_dining_lamp():
+    """Pendant over the dining bar (layout "dining_lamp", light at 1.95 m: about 0.9 m over the bar top, low and
+    warm so the corner reads at night). A ceiling rose, a long cord and a painted cone shade with a brass rim and a
+    pale inside (the bulb is added in Unity, emissive). Origin on the floor under the lamp, the ceiling at 2.6 m."""
+    C = 2.6
+    return [ds.cylinder("Rose", (0, 0, C - 0.03), 0.045, 0.03, "teal_dark", segments=12, bevel=0.004),
+            ds.cylinder("Cord", (0, 0, 2.06), 0.004, C - 0.03 - 2.06, "black", segments=6, bevel=0),
+            ds.cylinder("Cap", (0, 0, 2.02), 0.03, 0.045, "mustard", segments=12, bevel=0.003),
+            ds.cylinder("Shade", (0, 0, 1.86), 0.16, 0.17, "teal", segments=20, radius_top=0.035, bevel=0.003),
+            ds.cylinder("ShadeInside", (0, 0, 1.865), 0.15, 0.16, "cream", segments=20, radius_top=0.03, bevel=0),
+            ds.cylinder("Rim", (0, 0, 1.855), 0.165, 0.012, "mustard", segments=20, bevel=0.002)]
+
+
 def _shaft_window(W, H=1.3):
     """An upper-floor window in the court's light well, W x H: a light frame (6 cm) with a mullion and a transom,
     dark blue-grey panes set back 3 cm, a handle on the opening sash. Origin bottom middle; front Blender -Y."""

@@ -355,7 +355,13 @@ def leg_offset(u, duty, stride, lift, hover=0.0):
 PAWS = ("Fingers.L", "Fingers.R", "Toe.L", "Toe.R")
 
 
-def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False, hind_paws=False):
+def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False, hind_paws=False, pole_at=None, sagittal=False):
+    """pole_at: {IK owner: t} - the moment of the cycle at which to choose that leg's knee pole angle (default 0).
+    The choice needs a bent knee: in the walk the hind leg is nearly straight at t = 0, every angle looked the
+    same and the one picked turned the knee sideways, so the paw crossed under the body mid-swing.
+    sagittal: keep each hind leg in its own upright plane - the knee pole straight ahead of the hip, the pole
+    angle (every 15 degrees) scored on a forward knee that stays over the hip sideways, and the toes held in
+    their rest direction (left free, they rolled with the foot and pointed across the body)."""
     for owner, (e, base) in targets.items():
         e.animation_data_clear()
     for owner, (p, base) in paw_targets.items():
@@ -378,18 +384,42 @@ def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False, hind_paws=False):
             c = arm.pose.bones[n].constraints.new("DAMPED_TRACK")
             c.target = aim
             cons.append((n, c))
+    saved_poles = {o: k.location.copy() for o, k in knee_poles.items()}
+    if hind_paws and sagittal:
+        for owner, k in knee_poles.items():
+            hip = arm.matrix_world @ arm.data.bones[owner].parent.head_local
+            k.location = hip + Vector((0.0, 0.5, -0.1))          # straight ahead of the hip
+        for n in ("Toe.L", "Toe.R"):
+            # Straight ahead in the toe's rest heading, tipped down so the toe tip touches the floor when the paw
+            # stands (the rest direction is level and held the tips 1.7 cm in the air).
+            bone = arm.data.bones[n]
+            head = arm.matrix_world @ bone.head_local
+            d = arm.matrix_world.to_3x3() @ (bone.tail_local - bone.head_local)
+            flat = Vector((d.x, d.y, 0.0)).normalized()
+            length = d.length                                    # in world units (the armature is scaled)
+            dz = -min(head.z, length * 0.9) / length
+            print(f"CHECK walk toe aim {n}: head z {head.z:.4f} length {length:.4f} tilt {math.degrees(math.asin(dz)):.1f} deg")
+            aim = bpy.data.objects.new(f"Aim_{n}", None)
+            scene.collection.objects.link(aim)
+            aim.location = head + (flat * math.sqrt(1 - dz * dz) + UP * dz) * 50
+            c = arm.pose.bones[n].constraints.new("DAMPED_TRACK")
+            c.target = aim
+            cons.append((n, c))
     if hind_paws:
-        reset_pose()
-        pose_fn(0.0, 0)
         for owner, foot in HIND.items():
+            reset_pose()
+            pose_fn((pole_at or {}).get(owner, 0.0), 0)
             ik = next(c for o, c in cons if o == owner and c.type == "IK")
             ik.pole_target = knee_poles[owner]
-            # The pole angle depends on the bone roll: take the quarter turn that puts the knee furthest forward.
+            # The pole angle depends on the bone roll: take the turn that puts the knee furthest forward
+            # (sagittal: and keeps it over the hip sideways).
+            hip_x = (arm.matrix_world @ arm.data.bones[owner].parent.head_local).x
             knee_y = {}
-            for deg in (0, 90, 180, -90):
+            for deg in (range(-180, 180, 15) if sagittal else (0, 90, 180, -90)):
                 ik.pole_angle = math.radians(deg)
                 bpy.context.view_layer.update()
-                knee_y[deg] = (arm.matrix_world @ arm.pose.bones[owner].head).y
+                knee = arm.matrix_world @ arm.pose.bones[owner].head
+                knee_y[deg] = knee.y - (4.0 * abs(knee.x - hip_x) if sagittal else 0.0)
             ik.pole_angle = math.radians(max(knee_y, key=knee_y.get))
             print(f"CHECK {name} {owner} pole angle {max(knee_y, key=knee_y.get)} (knee y by angle: "
                   f"{ {d: round(y, 3) for d, y in knee_y.items()} })")
@@ -414,6 +444,8 @@ def bake_clip(name, frames, pose_fn, use_ik, flat_paws=False, hind_paws=False):
             bpy.data.objects.remove(c.target, do_unlink=True)
         arm.pose.bones[owner].constraints.remove(c)
     bpy.data.actions.remove(tmp)
+    for o, loc in saved_poles.items():
+        knee_poles[o].location = loc
     return baked
 
 
@@ -434,8 +466,10 @@ def move_world(pb, offset):
     pb.matrix = Matrix.Translation(offset) @ pb.matrix
 
 
-def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0, tuck=None):
-    """tuck (metres): the hind legs are driven from the paw (see HIND), set this far forward of the rest spot."""
+def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0, tuck=None, foot=None):
+    """tuck (metres): the hind legs are driven from the paw (see HIND), set this far forward of the rest spot.
+    foot(owner, back) -> angle of the foot (hock to paw) above the floor, in radians; back = 0 with the paw fully
+    forward, 1 fully back. Default: the crouch's low foot, 30 degrees forward to 60 degrees at push-off."""
     for owner, phase in phases.items():
         e, base = targets[owner]
         out = SIDE * (spread if owner.endswith(".L") else -spread)  # elbows and knees out when low
@@ -446,15 +480,32 @@ def set_legs(t, phases, duty, stride, lift, f, hover=0.0, spread=0.0, tuck=None)
             p.keyframe_insert("location", frame=f)
             # The foot (hock to paw) lies low while the paw is forward and stands up as the leg pushes off.
             back = 0.5 - off.dot(FWD) / stride if duty else 0.5   # 0 = paw fully forward, 1 = fully back
-            a = math.radians(30 + 30 * back)
+            a = foot(owner, back) if foot else math.radians(30 + 30 * back)
             e.location = p.location + (UP * math.sin(a) - FWD * math.cos(a)) * FOOT_LEN
         else:
             e.location = base + out + off
         e.keyframe_insert("location", frame=f)
 
 
+# The walk's hind legs used to pin only the hock (IK on the shin, no pole). Nothing said which way the knee
+# bends, so in the slow walk the knee swung in and the hind paws crossed under the body, scissoring (owner's
+# video DrahoNonchalantWalk.mp4). Like the crouch and the sit, the walk now drives each hind leg from the paw:
+# the hock stands above and behind it at the rest pose's foot angle (a little flatter as the paw reaches
+# forward, steeper at push-off), a pole keeps the knee forward and out, and the foot aims at the paw.
+def _rest_foot_angle(owner):
+    hock = targets[owner][1]
+    paw = paw_targets[owner][1]
+    d = hock - paw
+    return math.atan2(d.z, max(-d.y, 1e-4))
+
+
+WALK_FOOT = {owner: _rest_foot_angle(owner) for owner in HIND}
+print("CHECK walk rest foot angles (deg): " + " ".join(f"{o}={math.degrees(a):.1f}" for o, a in WALK_FOOT.items()))
+
+
 def walk_pose(t, f):
-    set_legs(t, LEGS, WALK_DUTY, WALK_STRIDE, WALK_LIFT, f)
+    set_legs(t, LEGS, WALK_DUTY, WALK_STRIDE, WALK_LIFT, f, tuck=0.0,
+             foot=lambda owner, back: WALK_FOOT[owner] + math.radians(10) * (back - 0.5) * 2)
     pb = arm.pose.bones
     w = 2 * math.pi * t
     rot_world(pb["Hips"], FWD, 0.05 * math.sin(w))          # hip roll
@@ -661,7 +712,9 @@ def sit_pose(t, f):
         rot_world(pb[name], UP, 0.55 + 0.03 * math.sin(w - 0.5 * i) if i > 0 else 0.25)
 
 
-walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True)
+# Each hind leg's pole is chosen at its mid-swing, when the knee is bent.
+walk = bake_clip("Walk", WALK_FRAMES, walk_pose, use_ik=True, hind_paws=True,
+                 pole_at={o: (WALK_DUTY + (1 - WALK_DUTY) / 2 - LEGS[o]) % 1.0 for o in HIND}, sagittal=True)
 idle = bake_clip("Idle", IDLE_FRAMES, idle_pose, use_ik=True)
 crouch_idle = bake_clip("CrouchIdle", IDLE_FRAMES, crouch_idle_pose, use_ik=True, flat_paws=True, hind_paws=True)
 crouch_walk = bake_clip("CrouchWalk", CROUCH_FRAMES, crouch_walk_pose, use_ik=True, flat_paws=True, hind_paws=True)

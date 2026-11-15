@@ -624,6 +624,85 @@ def garden_lantern():
     return parts
 
 
+@prop
+def street_lamp_base():
+    """The foot of the street and quay lamp-posts: a fluted cast-iron plinth with mouldings (old dark green paint).
+    Origin: the ground under the post. The post itself stays a Unity cylinder (its height differs per lamp)."""
+    iron = "metal_dark"
+    parts = [ds.cylinder("Plinth", (0, 0, 0), 0.17, 0.08, iron, segments=12, radius_top=0.16, bevel=0.01, smooth=False),
+             ds.cylinder("Bell", (0, 0, 0.08), 0.14, 0.42, iron, segments=12, radius_top=0.085, bevel=0.0, smooth=False),
+             ds.cylinder("Ring", (0, 0, 0.5), 0.1, 0.04, iron, segments=12, bevel=0.008, smooth=False),
+             ds.cylinder("Neck", (0, 0, 0.54), 0.075, 0.26, iron, segments=12, radius_top=0.06, bevel=0.0, smooth=False),
+             ds.cylinder("Ring2", (0, 0, 0.8), 0.08, 0.03, iron, segments=12, bevel=0.006, smooth=False)]
+    for k in range(6):                                            # flutes down the bell
+        a = k / 6 * math.tau
+        f = ds.box("Flute", (math.cos(a) * 0.118, math.sin(a) * 0.118, 0.29), (0.02, 0.02, 0.34), iron, bevel=0.004)
+        f.rotation_euler.z = a
+        f.location = (math.cos(a) * 0.118, math.sin(a) * 0.118, 0.29)
+        parts.append(f)
+    return parts
+
+
+@prop
+def street_lamp_head():
+    """The lantern on top of the lamp-posts. Origin: the top of the post. A collar, four corner posts round the glass
+    (the glass stays in Unity: NightLamp switches its glow; it is 0.28 x 0.36 x 0.28 m, its centre 0.22 m up), a
+    flared pyramid roof with a finial, and a little crossbar for a ladder."""
+    iron = "metal_dark"
+    parts = [ds.cylinder("Collar", (0, 0, -0.06), 0.06, 0.08, iron, segments=10, radius_top=0.09, bevel=0, smooth=False),
+             ds.box("Base", (0, 0, 0.035), (0.34, 0.34, 0.03), iron, bevel=0.006),
+             ds.box("Top", (0, 0, 0.405), (0.34, 0.34, 0.02), iron, bevel=0.005)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            parts.append(ds.box("Post", (sx * 0.15, sy * 0.15, 0.22), (0.022, 0.022, 0.36), iron, bevel=0.003))
+    roof = ds.cylinder("Roof", (0, 0, 0.415), 0.27, 0.14, iron, segments=4, radius_top=0.03, bevel=0, smooth=False)
+    roof.rotation_euler.z = math.radians(45)
+    roof.location = (0, 0, 0.415)
+    parts.append(roof)
+    parts.append(ds.cylinder("Finial", (0, 0, 0.555), 0.025, 0.09, iron, segments=6, radius_top=0.0, bevel=0, smooth=False))
+    parts.append(ds.box("LadderBar", (0, 0, -0.16), (0.5, 0.025, 0.025), iron, bevel=0.004))
+    return parts
+
+
+@prop
+def wheelie_bin():
+    """A 240 l wheelie bin: a slightly tapered body (wider at the top), a lid with an overhang and a hinge, a handle
+    bar and two wheels at the back. Front (-Y) faces the street. 0.58 x 0.74 x 1.07 m."""
+    body, lid = "grey_mid", "grey_dark"
+    parts = [ds.cylinder("Body", (0, 0, 0.04), 0.36, 0.95, body, segments=4, radius_top=0.42, bevel=0.0, smooth=False)]
+    parts[0].rotation_euler.z = math.radians(45)
+    parts[0].scale = (0.92, 1.18, 1.0)
+    parts += [ds.box("Lid", (0, -0.015, 1.02), (0.62, 0.79, 0.05), lid, bevel=0.012),
+              ds.box("LidLip", (0, -0.4, 0.985), (0.6, 0.03, 0.06), lid, bevel=0.008),
+              ds.box("Hinge", (0, 0.39, 0.99), (0.56, 0.05, 0.05), lid, bevel=0.01),
+              ds.box("Handle", (0, 0.43, 0.93), (0.5, 0.035, 0.035), lid, bevel=0.008),
+              ds.box("Axle", (0, 0.31, 0.11), (0.6, 0.06, 0.06), "black", bevel=0.01)]
+    for sx in (-1, 1):
+        w = ds.cylinder("Wheel", (sx * 0.31, 0.31, 0.11), 0.11, 0.06, "black", segments=12, bevel=0.01, smooth=False)
+        w.rotation_euler.y = math.radians(90)
+        w.location = (sx * 0.28, 0.31, 0.11)
+        parts.append(w)
+    return parts
+
+
+@prop
+def compost_bin():
+    """A black plastic compost bin: an octagonal cone (narrower at the top), ribs, a domed lid with a knob and a
+    little hatch at the foot. 0.7 m across, 0.88 m high."""
+    c = "black"
+    parts = [ds.cylinder("Body", (0, 0, 0), 0.36, 0.82, c, segments=8, radius_top=0.29, bevel=0.0, smooth=False),
+             ds.cylinder("Lid", (0, 0, 0.82), 0.31, 0.05, c, segments=8, radius_top=0.24, bevel=0.0, smooth=False),
+             ds.cylinder("Knob", (0, 0, 0.87), 0.05, 0.03, c, segments=8, bevel=0.005, smooth=False),
+             ds.box("Hatch", (0, -0.345, 0.12), (0.26, 0.03, 0.18), "charcoal", bevel=0.01)]
+    for k in range(8):
+        a = (k + 0.5) / 8 * math.tau
+        r = ds.box("Rib", (0, 0, 0), (0.03, 0.03, 0.8), "charcoal", bevel=0.005)
+        r.rotation_euler = (0.0, math.radians(-4.5), a)
+        r.location = (math.cos(a) * 0.315, math.sin(a) * 0.315, 0.41)  # half sunk into the wall
+        parts.append(r)
+    return parts
+
+
 def _tree(h, radius, crown, seed, greens=("leaf", "leaf_dark", "leaf_light")):
     """A climbable garden tree, faceted (organic): a tapering bark trunk of height h with a root flare, four or five
     branches out of the fork, and a crown of irregular low-poly leaf clumps (three greens, lighter on top). Origin at

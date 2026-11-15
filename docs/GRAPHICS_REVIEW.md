@@ -39,7 +39,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 24 | Fatsocat, the grey cat (NPC cats) | **Done, round 24** | colour per cat, fur settings |
 | 25 | Drahomil | **Done, round 25** | fur at night, eye shine |
 | 26 | Town buildings near the flat | **Done, round 26** | window frames, roof edges |
-| 27 | Courtyard / street props (bins, cars, lamps) | code | Blender props |
+| 27 | Courtyard / street props (bins, cars, lamps) | **Done, round 27** | Blender props |
 | 28 | Quay, bridges, boats, water | code | water colour and glint, quay stones |
 | 29 | Bakery, begijnhof | code | facades |
 | 30 | Sky, clouds, fog | shaders | blue-hour colour check |
@@ -373,3 +373,27 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   cornices catch a bright line along each flat roof.
 - **New capture views:** `town_east` and `town_west`, high over the roofs.
 - **Checked:** the full Unity capture cycle (48 views): the town in Day and Evening from both new views.
+
+## Round 27: the street props (lamps, bins)
+
+- **Lamps (shape):** the street and quay lamps were a box foot, a cylinder post, a glowing box and a flat cap. Two
+  Blender props now replace the foot and the cap:
+  - `street_lamp_base` (868 tris): a fluted cast-iron plinth with a bell, a ring and a neck.
+  - `street_lamp_head` (814 tris): a collar, four corner posts round the glass, a flared pyramid roof with a finial,
+    and a ladder bar.
+  - The post stays a cylinder, because its height differs per lamp (4.2 and 4.5 m). The glowing glass box stays
+    too, so `NightLamp` still switches its emission. The foot box keeps its collider, and the cap box is gone.
+  - This applies to all lamps from `BuildQuayLamp`: the street, the quay and the far bank.
+- **Bins (shape):**
+  - `wheelie_bin` (640 tris): a tapered 240 l body, a lid with a lip, a hinge, a handle bar and two wheels. It
+    replaces the grey cylinder at the garden end, whose collider now matches its 1.05 m, and the bakery's box bins.
+  - `compost_bin` (1,056 tris): an octagonal ribbed cone with a domed lid, a knob and a foot hatch. It replaces the
+    black cylinder and its lid.
+- **Texture/light:** palette only. The lamp iron is `metal_dark`, the wheelie bin `grey_mid` with a `grey_dark` lid,
+  and the compost bin `black` with `charcoal` ribs. The ribs and the lid lip give the bins a light side and a shadow
+  side in the sun, which the cylinders did not have.
+- **New capture views:** `street` (the lamps) and `garden_end` (the bins).
+- **Noted:** two plain slabs on the pavement by the street corner (a dark brown and a blue-grey board) still read
+  as placeholders. To identify and dress in a later pass.
+- **Checked:** Blender QA (only "floating" is the lamp head's ladder bar, which the post passes through); the full
+  Unity capture cycle (54 views): `street` Day and Night, `garden_end` Day.

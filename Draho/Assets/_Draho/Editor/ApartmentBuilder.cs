@@ -708,6 +708,18 @@ namespace Draho.EditorTools
             Box("Cap", root.transform.position + Vector3.up * (q.h + 0.42f), new Vector3(0.4f, 0.05f, 0.4f), iron, collider: false).transform.SetParent(root.transform, true);
             var bulb = Box("Lantern", root.transform.position + Vector3.up * (q.h + 0.22f), new Vector3(0.28f, 0.36f, 0.28f), glass, collider: false);
             bulb.transform.SetParent(root.transform, true);
+            // The Blender lamp (graphics review round 27): a fluted cast-iron foot and a lantern frame with a pyramid
+            // roof round the glowing glass. The post stays a cylinder (its height differs per lamp); the foot box keeps
+            // its collider, the cap box goes.
+            var footModel = FurnitureModel("street_lamp_base", root.transform);
+            var headModel = FurnitureModel("street_lamp_head", root.transform);
+            if (footModel != null && headModel != null)
+            {
+                footModel.localPosition = Vector3.zero;
+                headModel.localPosition = Vector3.up * q.h;
+                Object.DestroyImmediate(root.transform.Find("Foot").GetComponent<Renderer>());
+                Object.DestroyImmediate(root.transform.Find("Cap").gameObject);
+            }
             var light = new GameObject("QuayLampLight").AddComponent<Light>();
             light.transform.SetParent(root.transform, false);
             light.transform.localPosition = Vector3.up * (q.h - 0.1f);
@@ -3440,6 +3452,24 @@ namespace Draho.EditorTools
             bin.transform.position = new Vector3(-23.3f, 0.3f, 1.55f);
             bin.transform.localScale = new Vector3(0.45f, 0.3f, 0.45f);
             bin.GetComponent<Renderer>().sharedMaterial = grey;
+            // Blender models over the primitive colliders (round 27): a ribbed compost cone with a domed lid, and a
+            // grey wheelie bin (its collider grows to the bin's 1.05 m).
+            var compostModel = FurnitureModel("compost_bin", root);
+            if (compostModel != null)
+            {
+                compostModel.position = new Vector3(-23.4f, 0f, 0.7f);
+                Object.DestroyImmediate(compost.GetComponent<Renderer>());
+                Object.DestroyImmediate(lid);
+            }
+            var wheelieModel = FurnitureModel("wheelie_bin", root);
+            if (wheelieModel != null)
+            {
+                wheelieModel.position = new Vector3(-23.3f, 0f, 1.55f);
+                wheelieModel.rotation = Quaternion.Euler(0f, 90f, 0f); // lid hinge towards the fence
+                bin.transform.position = new Vector3(-23.3f, 0.53f, 1.55f);
+                bin.transform.localScale = new Vector3(0.6f, 0.53f, 0.6f);
+                Object.DestroyImmediate(bin.GetComponent<Renderer>());
+            }
         }
 
         static Vector2 Random2(System.Random rng)
@@ -3536,7 +3566,17 @@ namespace Draho.EditorTools
                 Box("BreadCrate", new Vector3(c.x, 0.2f, c.z), new Vector3(0.5f, 0.4f, 0.7f), wood).transform.SetParent(root, true);
             var binMat = Mat("Apt_Bin", new Color(0.18f, 0.3f, 0.22f), 0.3f);
             foreach (var c in b.bins ?? new Spot[0])
-                Box("Bin", new Vector3(c.x, 0.55f, c.z), new Vector3(0.6f, 1.1f, 0.7f), binMat).transform.SetParent(root, true);
+            {
+                var binBox = Box("Bin", new Vector3(c.x, 0.55f, c.z), new Vector3(0.6f, 1.1f, 0.7f), binMat);
+                binBox.transform.SetParent(root, true);
+                // A Blender wheelie bin over the collider box (round 27).
+                var wheelie = FurnitureModel("wheelie_bin", root);
+                if (wheelie != null)
+                {
+                    wheelie.position = new Vector3(c.x, 0f, c.z);
+                    Object.DestroyImmediate(binBox.GetComponent<Renderer>());
+                }
+            }
             if (b.marker != null && b.marker.Length == 2)
             {
                 var m = new GameObject("Marker_Bakery");

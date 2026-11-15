@@ -40,6 +40,8 @@ namespace Draho.EditorTools
             ("sliding_door", new Vector3(1.3f, 1.0f, 2.2f), new Vector3(-0.1f, 0.05f, 2.9f)),  // the sliding door's sill and frames, from above
             ("town_east", new Vector3(4f, 14f, 3f), new Vector3(32f, 5f, 12f)),                // over the roofs: the town to the east
             ("town_west", new Vector3(-2f, 14f, 3f), new Vector3(-34f, 5f, -6f)),              // and to the west, towards the river
+            ("street", new Vector3(18.6f, 1.7f, 0f), new Vector3(21.6f, 2.6f, 9f)),           // the street lamps
+            ("garden_end", new Vector3(-21.0f, 1.2f, 2.8f), new Vector3(-23.4f, 0.45f, 1.1f)),  // the compost and wheelie bin by the end fence
         };
 
         /// <summary>The fixed views, plus a side view of the cat (readability).</summary>

@@ -3534,6 +3534,7 @@ namespace Draho.EditorTools
             if (compostModel != null)
             {
                 compostModel.position = new Vector3(-23.4f, 0f, 0.7f);
+                compostModel.rotation = Quaternion.Euler(0f, 90f, 0f);   // garden review round 15: hatch and spill to the garden, like the wheelie bin
                 Object.DestroyImmediate(compost.GetComponent<Renderer>());
                 Object.DestroyImmediate(lid);
             }

@@ -55,6 +55,7 @@ namespace Draho.EditorTools
             ("maple", new Vector3(-18.6f, 1.1f, 2.4f), new Vector3(-22f, 1.6f, 4.3f)),         // the climbable maple in the corner
             ("picnic", new Vector3(-3.7f, 1.2f, 4.3f), new Vector3(-1.4f, 0.55f, 2.4f)),         // the picnic table on the terrace
             ("firewood", new Vector3(-5.3f, 0.8f, 1.9f), new Vector3(-7.0f, 0.45f, 0.3f)),      // the log store against the house wall
+            ("bins", new Vector3(-21.3f, 1.2f, 2.4f), new Vector3(-23.3f, 0.5f, 1.1f)),         // the compost and wheelie bins at the far end
         };
 
         /// <summary>The fixed views, plus a side view of the cat (readability).</summary>

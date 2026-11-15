@@ -711,6 +711,22 @@ def wheelie_bin():
         w.rotation_euler.y = math.radians(90)
         w.location = (sx * 0.28, 0.31, 0.11)
         parts.append(w)
+    # Garden review round 15: what makes it read as a real bin, not a grey box. A rim band under the lid, the lift
+    # bar the lorry grabs, a grip under the lid's front lip, an address sticker (house number) and a dirty foot.
+    # The front face leans out by about 3 degrees (the body tapers), so the details lean with it.
+    lean = math.radians(3)
+    def front(name, z, size, colour, out=0.0, bevel=0.004):
+        y = -(0.30 + 0.05 * (z - 0.04) / 0.95) - size[1] / 2 - out
+        b = ds.box(name, (0, 0, 0), size, colour, bevel=bevel)
+        b.rotation_euler.x = lean
+        b.location = (0, y, z)
+        return b
+    parts += [ds.box("Rim", (0, -0.0, 0.955), (0.6, 0.74, 0.05), body, bevel=0.01),
+              front("LiftBar", 0.86, (0.46, 0.05, 0.05), lid, out=0.015, bevel=0.01),
+              front("Grip", 0.975, (0.3, 0.03, 0.025), lid, out=0.04),
+              front("Sticker", 0.66, (0.17, 0.004, 0.11), "linen", bevel=0.0),
+              front("Number", 0.66, (0.1, 0.004, 0.045), "charcoal", out=0.002, bevel=0.0),
+              front("Dirt", 0.1, (0.5, 0.004, 0.12), "grey_dark", bevel=0.0)]
     return parts
 
 
@@ -729,6 +745,16 @@ def compost_bin():
         r.rotation_euler = (0.0, math.radians(-4.5), a)
         r.location = (math.cos(a) * 0.315, math.sin(a) * 0.315, 0.41)  # half sunk into the wall
         parts.append(r)
+    # Garden review round 15: compost spilling from the hatch, with a few grass clippings and a peel on top.
+    import random
+    rnd = random.Random(15)
+    parts.append(ds.blob("Spill", (0, -0.4, 0.0), 0.16, (1.2, 0.8, 0.28), "walnut_dark"))
+    for k in range(7):
+        g = ds.box("Clipping", (0, 0, 0), (0.008, 0.07, 0.006), rnd.choice(("leaf", "leaf_light", "olive")), bevel=0)
+        g.rotation_euler = (0, 0, rnd.uniform(0, math.pi))
+        g.location = (rnd.uniform(-0.12, 0.12), -0.4 + rnd.uniform(-0.06, 0.06), 0.04)
+        parts.append(g)
+    parts.append(ds.box("Peel", (0.05, -0.43, 0.045), (0.05, 0.03, 0.01), "mustard", bevel=0.004))
     return parts
 
 

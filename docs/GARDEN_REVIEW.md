@@ -23,7 +23,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 12 | Green end fence | mesh panels | **Done, round 12** |
 | 13 | Maple tree | Blender | **Done, round 13** |
 | 14 | Picnic table, firewood store, wall lantern | Blender | **Done, round 14** |
-| 15 | Compost and wheelie bins | Blender (round 27) | check |
+| 15 | Compost and wheelie bins | Blender (round 27) | **Done, round 15** |
 | 16 | Animals in the garden (blackbirds, Fatsocat, Zlatenka) | done in the graphics review | check in place |
 
 ## Round 1: the saplings
@@ -295,3 +295,15 @@ sold in every Belgian garden centre. It is left as it is.
 - **Wall lantern:** checked, no change. The black iron frame reads at day, and at night it throws a warm pool over
   the whitewash and the brick.
 - **Checked:** Unity `picnic` (Day, Night) and `firewood` (Day).
+
+## Round 15: compost and wheelie bins
+
+- **New view:** `bins`, the far corner by the end fence and the yard wall.
+- **Wheelie bin, before:** a tapered grey box with a lid, with nothing on its front to say "bin".
+- **Wheelie bin, now:** a rim band under the lid, the lift bar the lorry grabs, a grip under the lid's front lip, a
+  white address sticker with the house number, and a dirty foot. All of them lean with the body's 3° taper.
+  1,000 tris.
+- **Compost bin:** a spill of compost at the hatch, with grass clippings and a bit of peel. The model is now turned
+  90° like the wheelie bin, so the hatch faces the garden (it faced the wall). The bin is octagonal, so nothing else
+  changes. 1,268 tris.
+- **Checked:** Unity `bins` (Day).

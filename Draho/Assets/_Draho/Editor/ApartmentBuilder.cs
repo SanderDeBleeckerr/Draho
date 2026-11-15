@@ -2290,8 +2290,10 @@ namespace Draho.EditorTools
             foreach (var zone in zones)
             {
                 float len = zone.x1 - zone.x0;
+                // The lawn has one texture over its whole area (garden review round 3): long grass along the wall and the
+                // fence, moss at the damp foot of the wall, a worn strip beside the stepping stones, a dry patch in the sun.
                 var mat = zone.material == "grass"
-                    ? Mat($"Apt_{zone.id}", Hex(zone.color), 0.05f, GrassTexture(), new Vector2(len, depth) / 1.5f)
+                    ? Mat($"Apt_{zone.id}", Hex(zone.color), 0.05f, LawnTexture(len, depth, layout.garden_paths), Vector2.one)
                     : Mat($"Apt_{zone.id}", Hex(zone.color), 0.2f, TileTexture(), new Vector2(len, depth) / 0.5f);
                 Box(zone.id, new Vector3((zone.x0 + zone.x1) / 2, -0.06f, midZ), new Vector3(len, 0.1f, depth), mat);
             }
@@ -5639,6 +5641,72 @@ namespace Draho.EditorTools
                 tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             }
             return tex;
+        }
+
+        /// <summary>
+        /// The garden lawn as one texture (about 108 px a metre, u along the lawn from its west end, v from the yard wall
+        /// at z = 0 to the fence). An overgrown city lawn tells its story at the metre scale: longer, darker grass in
+        /// the strips the mower misses along the wall and the fence; moss in the damp at the foot of the wall; a worn,
+        /// yellowed strip with bare earth beside the stepping stones where feet go; a dry patch in the sunniest middle.
+        /// Fine blades and clumps on top, so it still reads as grass close up. Multiplied by the lawn's colour.
+        /// </summary>
+        static Texture2D LawnTexture(float len, float depth, GardenPath[] paths)
+        {
+            float pathZ = paths != null && paths.Length > 0 ? paths[0].from[1] : 1.15f;
+            int w = 2048, h = Mathf.RoundToInt(2048 * depth / len);
+            return MakeTextureWH("Lawn.png", w, h, (x, y) =>
+            {
+                // metres along the lawn, and from the wall: on the lawn box's top face v runs from the fence (z = depth)
+                // to the wall, so flip it (seen in the capture: the worn strip came out beside the fence)
+                float mx = x / (float)w * len, mz = depth - (y + 0.5f) / h * depth;
+                int hsh = (x * 73856093) ^ (y * 19349663);
+                float blade = ((hsh >> 4) & 255) / 255f;
+                float clump = Mathf.PerlinNoise(mx * 9f + 3.1f, mz * 9f + 7.7f);
+                float broad = Mathf.PerlinNoise(mx * 0.45f + 11f, mz * 0.8f + 2f);
+                // the bands (wide and strong: the lawn colour multiplies them down)
+                float wobbleW = (Mathf.PerlinNoise(mx * 2.3f, 1f) - 0.5f) * 0.25f, wobbleF = (Mathf.PerlinNoise(mx * 2.1f, 9f) - 0.5f) * 0.25f;
+                float edgeWall = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((mz - 0.15f + wobbleW) / 0.5f));
+                float edgeFence = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((depth - mz - 0.12f + wobbleF) / 0.45f));
+                float longGrass = Mathf.Max(edgeWall, edgeFence);
+                float moss = (1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(mz / 0.35f))) * Mathf.Clamp01((Mathf.PerlinNoise(mx * 1.7f + 5f, 3f) - 0.25f) * 2.5f);
+                // feet step off the stones on the lawn side: the trodden line runs just beside them, 0.25 m wide at its core
+                float worn = (1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.Abs(mz - (pathZ + 0.3f)) / 0.38f))) * (0.7f + 0.3f * Mathf.PerlinNoise(mx * 1.3f, 4f));
+                float soil = worn > 0.5f && Mathf.PerlinNoise(mx * 12f, mz * 12f) > 0.52f ? 1f : 0f;
+                float dry = Mathf.Clamp01((Mathf.PerlinNoise(mx * 0.35f + 7f, mz * 0.6f + 1f) - 0.55f) * 4f) * Mathf.Clamp01((mz - 1.7f) / 1.0f);
+                // the colour: lawn green, then the bands over it
+                float v = 0.84f + 0.1f * blade + 0.14f * (clump - 0.5f) + 0.12f * (broad - 0.5f);
+                var c = new Color(0.62f * v, 0.72f * v, 0.5f * v);
+                c = Color.Lerp(c, new Color(0.4f, 0.56f, 0.34f) * (0.75f + 0.35f * blade), longGrass * 0.85f);  // long, darker, bluer
+                c = Color.Lerp(c, new Color(0.72f, 0.98f, 0.42f) * (0.85f + 0.15f * clump), moss * 0.85f);       // bright moss
+                c = Color.Lerp(c, new Color(1f, 0.88f, 0.5f) * (0.85f + 0.15f * blade), worn * 0.9f);            // trodden, yellowed
+                c = Color.Lerp(c, new Color(0.9f, 0.62f, 0.4f), soil * 0.9f);                                      // bare earth
+                c = Color.Lerp(c, new Color(0.98f, 0.92f, 0.5f) * v, dry * 0.6f);                                  // sun-dried
+                return c;
+            });
+        }
+
+        /// <summary>A generated texture of any size (MakeTexture is square): written once, then reused.</summary>
+        static Texture2D MakeTextureWH(string file, int w, int h, Func<int, int, Color> pixel)
+        {
+            string path = $"{PlaygroundBuilder.ArtDir}/Textures/{file}";
+            if (!File.Exists(path))
+            {
+                var tex = new Texture2D(w, h, TextureFormat.RGB24, false);
+                var px = new Color[w * h];
+                for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                    px[y * w + x] = pixel(x, y);
+                tex.SetPixels(px);
+                File.WriteAllBytes(path, tex.EncodeToPNG());
+                Object.DestroyImmediate(tex);
+                AssetDatabase.ImportAsset(path);
+                if (AssetImporter.GetAtPath(path) is TextureImporter ti)
+                {
+                    ti.wrapMode = TextureWrapMode.Clamp; // one copy over the whole lawn
+                    ti.SaveAndReimport();
+                }
+            }
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         static Texture2D GrassTexture() => MakeTexture("Grass.png", 256, (x, y, size) =>

@@ -11,7 +11,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 |---|--------|-----|------|
 | 1 | Saplings (young maple shoots) | cylinder + flat disc "leaves" (lollipops) | **Done, round 1** |
 | 2 | Yard wall (whitewash skin) | repeating orange bow-tie brick spots | **Done, round 2** |
-| 3 | Lawn | one flat saturated green | mown/long variation, worn path, edges |
+| 3 | Lawn | one flat saturated green | **Done, round 3** |
 | 4 | Grass tufts | sparse spiky tufts | denser at the edges, under the wall |
 | 5 | Neighbour's workshop wall above the yard wall | flat grey corrugated sheet | check |
 | 6 | Ivy on the wall | flat green panel | leafy edge, depth |
@@ -72,3 +72,26 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 - **Light:** low sun now rakes across an even, matte white with a weathered foot, instead of a speckled
   surface. The evening light turns it a warm grey.
 - **Checked:** Unity `garden_mid`, `garden_back` and `garden_over` in Day and Evening.
+
+## Round 3: the lawn
+
+**Brief:** a texture (no mesh): the lawn is one 19 x 5 m box, the floor of every garden shot.
+
+- **Before:** a 256 px grass tile repeated every 1.5 m. It had fine blades but nothing at the metre scale, so the
+  lawn read as one flat green from wall to fence.
+- **Now:** `LawnTexture`, one 2048 x 539 texture (about 108 px a metre) over the whole lawn. `MakeTextureWH` handles
+  non-square sizes, and the texture is clamped, not tiled. It tells the lawn's story:
+  - longer, darker, bluer grass in the margins the mower misses: about 0.5 m along the wall and 0.45 m along the
+    fence, with wavering edges;
+  - bright moss at the damp foot of the wall;
+  - a trodden line just on the lawn side of the stepping stones, where feet step off: yellowed grass with bare-earth
+    specks;
+  - sun-dried yellow patches in the open middle, and the fine blades and clumps on top.
+- **Two fixes on the way:**
+  1. The lawn's dark green tint (#4A6332) multiplies the texture, so the first bands were far too faint. Their
+     colours are now pushed much harder.
+  2. On the box's top face v runs from the fence to the wall: the first worn strip came out beside the fence, and the
+     texture now flips v. Checked in the PNG: the strip is at 1.11 m from the wall, where the path is.
+- **Light:** the trodden line and the dry patches catch the low sun warmly, and the long margins stay dark and cool in
+  the shade of the wall and the fence, so the lawn has depth instead of one flat value.
+- **Checked:** Unity `garden_over`, `garden_mid` and `garden_back` in Day and Evening, plus a cat-height crop.

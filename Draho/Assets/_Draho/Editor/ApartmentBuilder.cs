@@ -3520,12 +3520,12 @@ namespace Draho.EditorTools
         {
             var water = Box("River", new Vector3((w.x0 + w.x1) / 2, w.top - 0.05f, (w.z0 + w.z1) / 2),
                 new Vector3(w.x1 - w.x0, 0.1f, w.z1 - w.z0),
-                Mat("Apt_River", Hex(w.color), 0.62f, RippleTexture(), new Vector2((w.x1 - w.x0) / 4f, (w.z1 - w.z0) / 4f)), collider: false);
+                Mat("Apt_River", Hex(w.color), 0.62f, RippleTexture(), new Vector2((w.x1 - w.x0) / 9f, (w.z1 - w.z0) / 9f)), collider: false);
             // A ripple normal map from the same waves as the ripple texture: the sun and the lamps sparkle on the
             // flowing water. Put on the material here, so the build keeps the normal-map shader variant.
             var riverMat = water.GetComponent<Renderer>().sharedMaterial;
             riverMat.SetTexture("_BumpMap", RippleNormalTexture());
-            riverMat.SetFloat("_BumpScale", 0.4f); // 0.7 was busy, almost moire, in the distance
+            riverMat.SetFloat("_BumpScale", 0.22f); // 0.7 was busy, almost moire; 0.4 still read as a corrugated roof
             riverMat.EnableKeyword("_NORMALMAP");
             riverMat.SetFloat("_Smoothness", 0.8f);
             EditorUtility.SetDirty(riverMat);
@@ -5482,27 +5482,40 @@ namespace Draho.EditorTools
             return new Color(light, light * 0.97f, light * 0.92f);
         });
 
-        static Texture2D RippleTexture() => MakeTexture("Ripples.png", 128, (x, y, size) =>
+        // Calm canal water (graphics review round 28). The old ripples were three waves on the texture's own axes,
+        // repeated every 4 m: a regular grid of bumps that read as a corrugated roof. Now a dozen small waves run in
+        // different directions (integer wave numbers, so the tile is still seamless) with a little domain warp, the
+        // tile covers 9 m, the colour barely varies and the normals are gentle: the water mostly mirrors the sky.
+        static readonly (int ku, int kv, float amp, float phase)[] WaterWaves =
         {
-            // Soft long ripples across the flow, darker troughs; tiles seamlessly.
+            (1, 3, 0.20f, 0.0f), (2, -3, 0.17f, 1.3f), (4, 1, 0.14f, 2.1f), (-3, 5, 0.12f, 0.7f), (5, 4, 0.10f, 4.0f),
+            (7, -2, 0.08f, 2.9f), (-6, 7, 0.07f, 5.2f), (9, 5, 0.06f, 1.1f), (3, -10, 0.05f, 3.6f), (11, 6, 0.04f, 0.4f),
+            (-13, 4, 0.035f, 2.4f), (8, 13, 0.03f, 5.7f),
+        };
+
+        static float WaterHeight(float x, float y, int size)
+        {
             float u = x * 2f * Mathf.PI / size, v = y * 2f * Mathf.PI / size;
-            float r = 0.5f + 0.25f * Mathf.Sin(v * 3f + Mathf.Sin(u * 2f) * 1.5f) + 0.15f * Mathf.Sin(u * 5f + v * 7f) + 0.1f * Mathf.Sin(v * 11f - u * 3f);
-            float t = 0.75f + 0.35f * r;
+            float warp = 0.6f * Mathf.Sin(2f * u + v + 0.5f) + 0.4f * Mathf.Sin(-u + 3f * v + 2f);
+            float h = 0f;
+            foreach (var (ku, kv, amp, phase) in WaterWaves)
+                h += amp * Mathf.Sin(ku * u + kv * v + phase + warp * (ku * ku + kv * kv > 40 ? 1f : 0.3f));
+            return h;
+        }
+
+        static Texture2D RippleTexture() => MakeTexture("Ripples2.png", 256, (x, y, size) =>
+        {
+            float t = 0.93f + 0.12f * WaterHeight(x, y, size); // about +-8 %: shading, not stripes
             return new Color(t, t, t);
         });
 
-        /// <summary>The slope of the ripple waves as a tangent-space normal map (imported as a normal map).</summary>
+        /// <summary>The slope of the water waves as a tangent-space normal map (imported as a normal map).</summary>
         static Texture2D RippleNormalTexture()
         {
-            float Height(float x, float y, int size)
+            var tex = MakeTexture("RippleNormal2.png", 256, (x, y, size) =>
             {
-                float u = x * 2f * Mathf.PI / size, v = y * 2f * Mathf.PI / size;
-                return 0.25f * Mathf.Sin(v * 3f + Mathf.Sin(u * 2f) * 1.5f) + 0.15f * Mathf.Sin(u * 5f + v * 7f) + 0.1f * Mathf.Sin(v * 11f - u * 3f);
-            }
-            var tex = MakeTexture("RippleNormal.png", 128, (x, y, size) =>
-            {
-                float dx = (Height(x + 1, y, size) - Height(x - 1, y, size)) * 6f;
-                float dy = (Height(x, y + 1, size) - Height(x, y - 1, size)) * 6f;
+                float dx = (WaterHeight(x + 1, y, size) - WaterHeight(x - 1, y, size)) * 4f;
+                float dy = (WaterHeight(x, y + 1, size) - WaterHeight(x, y - 1, size)) * 4f;
                 var n = new Vector3(-dx, -dy, 1f).normalized;
                 return new Color(n.x * 0.5f + 0.5f, n.y * 0.5f + 0.5f, n.z * 0.5f + 0.5f);
             });

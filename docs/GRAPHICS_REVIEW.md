@@ -40,7 +40,7 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
 | 25 | Drahomil | **Done, round 25** | fur at night, eye shine |
 | 26 | Town buildings near the flat | **Done, round 26** | window frames, roof edges |
 | 27 | Courtyard / street props (bins, cars, lamps) | **Done, round 27** | Blender props |
-| 28 | Quay, bridges, boats, water | code | water colour and glint, quay stones |
+| 28 | Quay, bridges, boats, water | **Done, round 28** | water colour and glint, quay stones |
 | 29 | Bakery, begijnhof | code | facades |
 | 30 | Sky, clouds, fog | shaders | blue-hour colour check |
 | 31+ | Day/night cycle | `SkyMood` presets | review, then decide |
@@ -397,3 +397,25 @@ this log (sofa, coffee table, cat tree, radiator, poster, rug, dining bar, bedro
   as placeholders. To identify and dress in a later pass.
 - **Checked:** Blender QA (only "floating" is the lamp head's ladder bar, which the post passes through); the full
   Unity capture cycle (54 views): `street` Day and Night, `garden_end` Day.
+
+## Round 28: the quay, the bridges, the boats, the water
+
+- **Water (changed):** the river read as a corrugated tin roof: three waves on the texture's own axes, a tile every
+  4 m, about 30 % colour contrast and strong normals, so there was a grid of identical bumps right up to the far
+  bank.
+  - The height field is now 12 small waves in different directions, with integer wave numbers so the tile stays
+    seamless, a little domain warp on the short waves, and amplitudes falling with frequency.
+  - The texture is 256 px and repeats every 9 m.
+  - The colour varies only about ±8 %.
+  - The normal map is gentler (slope factor 6 to 4) and its strength drops from 0.4 to 0.22.
+  - The water now mostly mirrors the sky, with soft, irregular ripples, and the lamps' glitter paths still have
+    ripples to break on.
+  - The far surroundings' water (`Sur_Water`) uses the same textures and changes with it.
+  - The textures are written under new names (`Ripples2.png`, `RippleNormal2.png`), because `MakeTexture` keeps
+    existing files.
+- **Quay, footbridge (checked, unchanged):** the paved quays with their kerb, the stone footbridge with its iron
+  railings, the bollards along the far bank and the fisherman read well in both lights.
+- **Boats:** these are box hulls and cabins in the far surroundings, too small and far to matter at this distance.
+  Left as they are.
+- **New capture views:** `quay` (the north quay, down the river) and `footbridge`.
+- **Checked:** Unity captures in Day, Evening and Night: `quay` and `footbridge`.

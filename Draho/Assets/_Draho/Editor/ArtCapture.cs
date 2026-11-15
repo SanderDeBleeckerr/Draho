@@ -41,6 +41,8 @@ namespace Draho.EditorTools
             ("town_east", new Vector3(4f, 14f, 3f), new Vector3(32f, 5f, 12f)),                // over the roofs: the town to the east
             ("town_west", new Vector3(-2f, 14f, 3f), new Vector3(-34f, 5f, -6f)),              // and to the west, towards the river
             ("street", new Vector3(18.6f, 1.7f, 0f), new Vector3(21.6f, 2.6f, 9f)),           // the street lamps
+            ("quay", new Vector3(-33.5f, 1.4f, -20f), new Vector3(-42f, -1f, -60f)),          // the north quay, down the river
+            ("footbridge", new Vector3(-33.2f, 1.6f, -82f), new Vector3(-41.5f, 0f, -93f)),   // the footbridge over the river
             ("door_out", new Vector3(-1.4f, 0.45f, 4.6f), new Vector3(0.1f, 0.25f, 2.4f)),     // the open sliding door from the garden, cat height
             ("door_out_b", new Vector3(-0.8f, 0.4f, 1.1f), new Vector3(0.1f, 0.25f, 3.2f)),   // and from the other side
             ("door_in", new Vector3(1.1f, 0.4f, 4.9f), new Vector3(-0.2f, 0.12f, 3.0f)),      // the open door from inside, cat height

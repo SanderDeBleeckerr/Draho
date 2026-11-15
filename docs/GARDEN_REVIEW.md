@@ -19,7 +19,7 @@ Unity from the garden capture views (`garden_over`, `garden_mid`, `garden_back`,
 | 8 | Terrace tiles | plain grey grid | **Done, round 8** |
 | 9 | Fallen leaves | flat cubes | **Done, round 9** |
 | 10 | Blue tarp | three boxes | **Done, round 10** |
-| 11 | Neighbour's fence (posts) | Blender-era boards | check |
+| 11 | Neighbour's fence (posts) | Blender-era boards | **Done, round 11** |
 | 12 | Green end fence | mesh panels | check |
 | 13 | Maple tree | Blender | check |
 | 14 | Picnic table, firewood store, wall lantern | Blender | check |
@@ -236,3 +236,21 @@ no shadows.
   2. A dandelion grew up through the tarp. `BuildGrassTufts` now keeps tufts and dandelions out of a 0.75 m circle
      under it.
 - **Checked:** Blender review sheet; Unity `garden_over` (Day), crop.
+
+## Round 11: the neighbour's fence
+
+**Brief:** a check (the fence holds up: concrete posts with caps, a gravel board, horizontal planks with gaps that
+show the wild garden behind), plus two improvements to the planks.
+
+- **Before:** each plank row was one box running the whole fence (19 m), in one flat colour per row. Up close it read
+  as long stripes with no joints and no grain.
+- **Now:**
+  - **Per bay:** the planks run post to post, and each bay and row picks its own tone of the three (the index counts
+    from the fence's start; the first try used the world x, which is negative here, and crashed the build with a
+    negative index).
+  - **Grain:** `WoodGrainTexture` (256 px, 1 m of plank), tiled once a metre and multiplied by the plank colour.
+    Streaky grain wandering along the board, two knots a metre, a fine split, and greyer, darker weathering
+    towards the lower edge, where the rain runs off.
+- **Light:** the bays now break the long fence into a rhythm of panels, and the grain is faint on the dark weathered
+  wood, as it should be.
+- **Checked:** Unity `garden_back` (Day), crop at cat height.

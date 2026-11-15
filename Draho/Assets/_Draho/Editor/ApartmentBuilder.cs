@@ -4181,11 +4181,15 @@ namespace Draho.EditorTools
             root.SetParent(level, false);
             var post = Mat($"Apt_{e.id}_post", Hex(e.post_color), 0.15f);
             // Three plank tones (weathered wood is never one colour; two alternating tones read as stripes).
+            // Garden review round 11: wood grain on the planks (one texture metre per metre of plank), and the planks run per
+            // bay between the posts (they ran the whole fence as one board per row), each bay and row its own tone.
+            float bayLen = (b - a) / Mathf.Max(1, Mathf.RoundToInt((b - a) / (e.post_spacing > 0f ? e.post_spacing : 2f)));
+            var grain = WoodGrainTexture();
             var tones = new[]
             {
-                Mat($"Apt_{e.id}_plank", Hex(e.color), 0.1f),
-                Mat($"Apt_{e.id}_plank2", Hex(e.color) * 0.85f, 0.1f),
-                Mat($"Apt_{e.id}_plank3", Hex(e.color) * 0.93f, 0.1f),
+                Mat($"Apt_{e.id}_plank", Hex(e.color), 0.1f, grain, new Vector2(bayLen, 1f)),
+                Mat($"Apt_{e.id}_plank2", Hex(e.color) * 0.85f, 0.1f, grain, new Vector2(bayLen, 1f)),
+                Mat($"Apt_{e.id}_plank3", Hex(e.color) * 0.93f, 0.1f, grain, new Vector2(bayLen, 1f)),
             };
             var postCap = Mat($"Apt_{e.id}_postcap", Hex(e.post_color) * 1.06f, 0.15f);
             var gravelBoard = Mat($"Apt_{e.id}_gravel", Hex(e.post_color) * 0.9f, 0.15f);
@@ -4221,7 +4225,9 @@ namespace Draho.EditorTools
                     Plank(g1, b, y, m);
                     holeTop = bottom + board + gap;
                 }
-                else Plank(a, b, y, m);
+                else
+                    for (float bay = a; bay < b - 0.01f; bay += bayLen)            // per bay, post to post
+                        Plank(bay, Mathf.Min(b, bay + bayLen) - 0.004f, y, tones[(r * 7 + Mathf.RoundToInt((bay - a) / bayLen) * 5 + e.id.Length) % 3]);
             }
             void AddCollider(float from, float to, float y0, float y1)
             {
@@ -5970,6 +5976,32 @@ namespace Draho.EditorTools
                 return c;
             });
         }
+
+        /// <summary>
+        /// Weathered softwood plank grain, 1 m along u: streaky grain that wanders along the board, the odd knot, a fine
+        /// split, and greyer, darker weathering towards the lower edge (v = 0) where the rain runs off. Multiplied by the
+        /// plank colour, so the fence keeps its tones.
+        /// </summary>
+        static Texture2D WoodGrainTexture() => MakeTexture("WoodGrain.png", 256, (x, y, size) =>
+        {
+            float u = x / (float)size, v = y / (float)size;
+            float wander = TileNoise(x, y, size, 0.02f, 3.3f, 1.1f) * 6f;
+            float rings = 0.5f + 0.5f * Mathf.Sin((v * 28f + wander) * Mathf.PI);
+            float fine = TileNoise(x, y, size, 0.25f, 7.1f, 2.2f);
+            float t = 0.88f + 0.08f * (rings - 0.5f) + 0.05f * (fine - 0.5f);
+            // a knot or two (they tile with the texture: one every metre of plank)
+            foreach (var k in new[] { new Vector2(0.27f, 0.45f), new Vector2(0.71f, 0.62f) })
+            {
+                float d = new Vector2((u - k.x) * 4f, v - k.y).magnitude;
+                if (d < 0.07f) t -= 0.22f * (1f - d / 0.07f);
+                else if (d < 0.12f) t -= 0.05f * Mathf.Sin((d - 0.07f) / 0.05f * Mathf.PI * 3f);
+            }
+            if (Mathf.Abs(v - 0.2f) < 0.006f && u > 0.55f && u < 0.85f) t -= 0.18f;   // a fine split
+            float weather = Mathf.Clamp01(1f - v / 0.35f);
+            t *= 1f - 0.12f * weather;
+            float g = Mathf.Lerp(1f, 0.93f, weather);                                // greyer where the rain runs off
+            return new Color(t, t * (0.97f * g + 0.03f), t * (0.92f * g + 0.08f));
+        });
 
         /// <summary>A generated texture of any size (MakeTexture is square): written once, then reused.</summary>
         static Texture2D MakeTextureWH(string file, int w, int h, Func<int, int, Color> pixel)

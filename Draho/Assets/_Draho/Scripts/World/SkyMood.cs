@@ -61,6 +61,11 @@ namespace Draho.World
         public static float Hours { get; private set; } = 9f;
         /// <summary>False: the clock stands still (the art captures, tests).</summary>
         public static bool ClockRunning { get; set; } = true;
+        /// <summary>
+        /// A story beat that needs a time of day (the butterflies by day, the moths by night): while set, the running clock
+        /// does not cross out of that part of the day; it waits at its edge until the beat is done.
+        /// </summary>
+        public static Mood? Hold { get; set; }
 
         static readonly (float hour, Mood mood)[] Keys =
         {
@@ -286,7 +291,12 @@ namespace Draho.World
                 jumpT = Mathf.Min(1f, jumpT + dt / jumpDuration);
                 Hours = Mathf.Repeat(jumpFrom + jumpBy * Smooth(jumpT), 24f);
             }
-            else if (ClockRunning) Hours = Mathf.Repeat(Hours + dt * 24f / (DayMinutes * 60f), 24f);
+            else if (ClockRunning)
+            {
+                float next = Mathf.Repeat(Hours + dt * 24f / (DayMinutes * 60f), 24f);
+                bool held = Hold.HasValue && MoodAt(Hours) == Hold.Value && MoodAt(next) != Hold.Value;
+                if (!held) Hours = next;
+            }
             storm = Mathf.MoveTowards(storm, stormTarget, dt * stormSpeed);
             var p = PresetAt(Hours);
             if (storm > 0f)

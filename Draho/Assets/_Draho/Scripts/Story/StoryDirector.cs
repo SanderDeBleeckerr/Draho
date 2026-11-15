@@ -32,6 +32,9 @@ namespace Draho.Story
             public Func<bool> Done;
             public Action Begin;
             public Func<Vector3?> Target; // where the goal compass points (null: no compass)
+            // The time of day this beat needs (the day/night cycle runs all game): while the beat is on, the clock does
+            // not leave that part of the day (SkyMood.Hold), and it runs on to it if the beat starts at another time.
+            public SkyMood.Mood? HoldTime;
         }
 
         Beat[] beats;
@@ -247,6 +250,7 @@ namespace Draho.Story
                 {
                     Story = "A fine jump! Nobody comes up here. Except cats... and butterflies: two dance over a pot of red geraniums.",
                     Goal = "Catch a butterfly. They zigzag, and they escape when you walk at them: sneak close (DUCK), then jump when one flutters low.",
+                    HoldTime = SkyMood.Mood.Day, // butterflies fly by day only
                     Target = () => P(-13.5f, 6.9f, -5f),
                     Done = () => Moth.ButterfliesCaught >= 1,
                 },
@@ -636,6 +640,12 @@ namespace Draho.Story
                     Done = () => false,
                 },
             };
+            // Chapters 9 and 10 happen in one night (the moths, the fox, the high roofs, the storm): hold the night until
+            // the homecoming beat brings the dawn, so a slow hunter does not see the moths vanish at sunrise.
+            int nightFrom = Array.FindIndex(beats, b => b.Story != null && b.Story.StartsWith("Chapter 9: Night"));
+            int nightTo = Array.FindIndex(beats, b => b.Story != null && b.Story.StartsWith("Warm and dry"));
+            if (nightFrom >= 0 && nightTo > nightFrom)
+                for (int i = nightFrom; i < nightTo; i++) beats[i].HoldTime ??= SkyMood.Mood.Night;
 
             bool urlBeat = ApplyUrlArguments(out int startBeat);
             // Continue a saved game (unless the URL picks a beat, as the playtest does).
@@ -684,6 +694,9 @@ namespace Draho.Story
             beatTime = 0f;
             Beat beat = beats[index];
             beat.Begin?.Invoke();
+            SkyMood.Hold = beat.HoldTime;
+            if (beat.HoldTime.HasValue && SkyMood.Current != beat.HoldTime.Value && SkyMood.Current != SkyMood.Mood.Storm)
+                SkyMood.Set(beat.HoldTime.Value, 8f);
             if (hud != null) hud.Show(beat.Story, beat.Goal);
             Draho.Core.Progress.Instance?.BeatReached(index);
             Debug.Log($"STORY beat {index}: {beat.Story}");

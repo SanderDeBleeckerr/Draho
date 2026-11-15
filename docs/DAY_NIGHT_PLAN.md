@@ -105,7 +105,20 @@ Verified in play mode (a probe, not committed):
 - **The clock is saved:** `Progress` stores `hours` with every save and restores it on load (`SkyMood.SetClock`).
   Saves from before have -1 and start at 09:00.
 
-## Next steps
+## Implemented (step 3: the story and the running clock)
 
-- Check the story chapters that are set by day now that time runs (the sunbeam on the floor, the shadows in the
-  court).
+Beats that need a time of day could have broken when the clock ran on.
+- **Butterflies:** the "catch a butterfly" beat needs daytime butterflies (they fly when `NightAmount` < 0.3).
+- **Moths:** "catch 3 moths" needs night moths, and night lasts about 7.5 real minutes.
+- **Night chapters:** chapters 9 and 10 (moths, fox, high roofs, storm) are one night in the story.
+
+`Beat.HoldTime` and `SkyMood.Hold` handle this.
+- **Holding:** while a beat with a hold is on, the clock does not cross out of that part of the day. It waits at the
+  edge, which games commonly do for timed objectives. If a beat starts at another time, the clock time-lapses to it.
+- **Holds set:** the butterfly beat holds Day, and every beat from "Chapter 9: Night" up to the homecoming at dawn
+  holds Night. The other daytime chapters run freely (owner: "everywhere, freely"). Their puzzles do not depend on
+  the time.
+- **Sunbeam:** `SunBeam` (the decorative light patch) follows the real sun now. It fades at night and moves with the
+  hour.
+- **Verified in play mode (probe, not committed):** with Night held at 05:40, the clock stopped at the edge (05:45,
+  Night). Released, it went on to 05:51, Dawn.
